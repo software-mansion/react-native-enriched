@@ -1,6 +1,5 @@
 package com.swmansion.reactnativerichtexteditor
 
-import android.graphics.Color
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -30,9 +29,17 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     return ReactNativeRichTextEditorView(context)
   }
 
-  @ReactProp(name = "color")
-  override fun setColor(view: ReactNativeRichTextEditorView?, color: String?) {
-    view?.setBackgroundColor(Color.parseColor(color))
+  @ReactProp(name = "defaultValue")
+  override fun setDefaultValue(view: ReactNativeRichTextEditorView?, value: String?) {
+    view?.setDefaultValue(value)
+  }
+
+  override fun focus(view: ReactNativeRichTextEditorView?) {
+    view?.requestFocus()
+  }
+
+  override fun blur(view: ReactNativeRichTextEditorView?) {
+    view?.clearFocus()
   }
 
   companion object {
