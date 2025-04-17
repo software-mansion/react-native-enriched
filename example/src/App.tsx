@@ -1,17 +1,26 @@
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import {
   RichTextInput,
   type RichTextInputInstance,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
+import type { OnChangeTextEvent } from '../../src/ReactNativeRichTextEditorViewNativeComponent';
 
 const DEFAULT_VALUE = 'This is fully native Rich Text Editor component';
 
 export default function App() {
   const [defaultValue, setDefaultValue] = useState(DEFAULT_VALUE);
-
   const ref = useRef<RichTextInputInstance>(null);
+
+  const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
+    console.log('Text changed:', e?.nativeEvent.value);
+  };
 
   const handleFocus = () => {
     ref.current?.focus();
@@ -30,8 +39,9 @@ export default function App() {
       <Text style={styles.label}>SWM Rich Text Editor</Text>
       <RichTextInput
         ref={ref}
-        defaultValue={defaultValue}
         style={styles.input}
+        defaultValue={defaultValue}
+        onChangeText={handleChangeText}
       />
       <Button title="Focus" onPress={handleFocus} />
       <Button title="Blur" onPress={handleBlur} />

@@ -7,8 +7,13 @@ import {
 import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
+  type OnChangeTextEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
-import type { NativeMethods, ViewStyle } from 'react-native';
+import type {
+  NativeMethods,
+  NativeSyntheticEvent,
+  ViewStyle,
+} from 'react-native';
 
 export interface RichTextInputInstance {
   focus: () => void;
@@ -19,6 +24,7 @@ export interface RichTextInputProps {
   ref?: RefObject<RichTextInputInstance | null>;
   defaultValue?: string;
   style?: ViewStyle;
+  onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -35,6 +41,7 @@ export const RichTextInput = ({
   ref,
   defaultValue,
   style,
+  onChangeText,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -52,6 +59,7 @@ export const RichTextInput = ({
       ref={nativeRef}
       defaultValue={defaultValue}
       style={style}
+      onChangeText={onChangeText}
     />
   );
 };

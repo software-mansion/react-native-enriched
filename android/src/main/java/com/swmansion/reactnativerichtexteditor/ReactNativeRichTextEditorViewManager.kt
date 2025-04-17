@@ -1,5 +1,6 @@
 package com.swmansion.reactnativerichtexteditor
 
+import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -28,6 +29,13 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   public override fun createViewInstance(context: ThemedReactContext): ReactNativeRichTextEditorView {
     return ReactNativeRichTextEditorView(context)
   }
+
+   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
+     return MapBuilder.of(
+              "onChangeText",
+              MapBuilder.of("registrationName", "onChangeText"),
+      )
+   }
 
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: ReactNativeRichTextEditorView?, value: String?) {
