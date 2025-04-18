@@ -1,18 +1,14 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_CXX_STANDARD 20)
 
 set(LIB_LITERAL RNReactNativeRichTextEditorViewSpec)
 set(LIB_TARGET_NAME react_codegen_${LIB_LITERAL})
 
 set(LIB_ANDROID_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
-set(LIB_CPP_DIR ${LIB_ANDROID_DIR}/../cpp)
-set(LIB_CUSTOM_SOURCES_DIR ${LIB_CPP_DIR}/react/renderer/components/${LIB_LITERAL})
 set(LIB_ANDROID_GENERATED_JNI_DIR ${LIB_ANDROID_DIR}/build/generated/jni)
 set(LIB_ANDROID_GENERATED_COMPONENTS_DIR ${LIB_ANDROID_GENERATED_JNI_DIR}/react/renderer/components/${LIB_LITERAL})
 
-file(GLOB LIB_MODULE_SRCS CONFIGURE_DEPENDS *.cpp react/renderer/components/RNReactNativeRichTextEditorViewSpec/*.cpp)
-file(GLOB LIB_CUSTOM_SRCS CONFIGURE_DEPENDS ${LIB_CUSTOM_SOURCES_DIR}/*.cpp)
+file(GLOB LIB_MODULE_SRCS CONFIGURE_DEPENDS *.cpp react/renderer/components/${LIB_LITERAL}/*.cpp)
 file(GLOB LIB_CODEGEN_SRCS CONFIGURE_DEPENDS ${LIB_ANDROID_GENERATED_COMPONENTS_DIR}/*.cpp)
 
 add_library(
@@ -27,7 +23,7 @@ target_include_directories(
         ${LIB_TARGET_NAME}
         PUBLIC
         .
-        ./react/renderer/components/RNReactNativeRichTextEditorViewSpec
+        ./react/renderer/components/${LIB_LITERAL}
         ${LIB_ANDROID_GENERATED_JNI_DIR}
         ${LIB_ANDROID_GENERATED_COMPONENTS_DIR}
         ${LIB_CPP_DIR}
