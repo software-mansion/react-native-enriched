@@ -5,7 +5,10 @@ module.exports = {
   dependency: {
     platforms: {
       android: {
-        cmakeListsPath: 'generated/jni/CMakeLists.txt',
+        cmakeListsPath: '../android/src/main/new_arch/CMakeLists.txt',
+        componentDescriptors: [
+          'ReactNativeRichTextEditorViewComponentDescriptor',
+        ],
       },
     },
   },

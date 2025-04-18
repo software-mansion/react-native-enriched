@@ -2,6 +2,8 @@ package com.swmansion.reactnativerichtexteditor
 
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.uimanager.BaseViewManager
+import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
@@ -10,7 +12,7 @@ import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInter
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
-class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTextEditorView>(),
+class ReactNativeRichTextEditorViewManager : BaseViewManager<ReactNativeRichTextEditorView, LayoutShadowNode>(),
   ReactNativeRichTextEditorViewManagerInterface<ReactNativeRichTextEditorView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeRichTextEditorView>
 
@@ -28,6 +30,18 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   public override fun createViewInstance(context: ThemedReactContext): ReactNativeRichTextEditorView {
     return ReactNativeRichTextEditorView(context)
+  }
+
+  override fun createShadowNodeInstance(): LayoutShadowNode {
+    return LayoutShadowNode()
+  }
+
+  override fun getShadowNodeClass(): Class<LayoutShadowNode> {
+    return LayoutShadowNode::class.java
+  }
+
+  public override fun updateExtraData(editor: ReactNativeRichTextEditorView, extraData: Any?) {
+    TODO("Not yet implemented")
   }
 
    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
