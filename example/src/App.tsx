@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   type NativeSyntheticEvent,
+  TextInput,
 } from 'react-native';
 import {
   RichTextInput,
@@ -43,6 +44,7 @@ export default function App() {
         defaultValue={defaultValue}
         onChangeText={handleChangeText}
       />
+      <TextInput multiline style={styles.input} />
       <Button title="Focus" onPress={handleFocus} />
       <Button title="Blur" onPress={handleBlur} />
       <Button title="Toggle Default Value" onPress={toggleDefaultValue} />
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 24,
-    minHeight: 100,
+    minHeight: 20,
     width: '100%',
     backgroundColor: 'gainsboro',
   },
