@@ -9,7 +9,18 @@ namespace facebook::react {
 class ReactNativeRichTextEditorViewComponentDescriptor final
     : public ConcreteComponentDescriptor<ReactNativeRichTextEditorShadowNode> {
 public:
-  using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
+    using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
+
+  void adopt(ShadowNode &shadowNode) const override {
+    react_native_assert(dynamic_cast<ReactNativeRichTextEditorShadowNode *>(&shadowNode));
+
+    const auto reactNativeRichTextEditorShadowNode = dynamic_cast<ReactNativeRichTextEditorShadowNode *>(&shadowNode);
+    const auto state = reactNativeRichTextEditorShadowNode->getStateData();
+
+    reactNativeRichTextEditorShadowNode->setSize({state.getWidth(), state.getHeight()});
+
+    ConcreteComponentDescriptor::adopt(shadowNode);
+  }
 };
 
 } // namespace facebook::react

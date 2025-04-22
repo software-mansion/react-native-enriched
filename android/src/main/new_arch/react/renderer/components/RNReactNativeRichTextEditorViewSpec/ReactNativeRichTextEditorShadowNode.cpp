@@ -11,5 +11,5 @@
 #include "ReactNativeRichTextEditorShadowNode.h"
 
 namespace facebook::react {
-extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTextEditor";
+extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTextEditorView";
 } // namespace facebook::react

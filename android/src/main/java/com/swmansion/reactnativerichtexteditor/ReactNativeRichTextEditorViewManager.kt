@@ -4,7 +4,9 @@ import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.LayoutShadowNode
+import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
+import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -12,7 +14,7 @@ import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInter
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
-class ReactNativeRichTextEditorViewManager : BaseViewManager<ReactNativeRichTextEditorView, LayoutShadowNode>(),
+class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTextEditorView>(),
   ReactNativeRichTextEditorViewManagerInterface<ReactNativeRichTextEditorView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeRichTextEditorView>
 
@@ -32,16 +34,14 @@ class ReactNativeRichTextEditorViewManager : BaseViewManager<ReactNativeRichText
     return ReactNativeRichTextEditorView(context)
   }
 
-  override fun createShadowNodeInstance(): LayoutShadowNode {
-    return LayoutShadowNode()
-  }
+  override fun updateState(
+    view: ReactNativeRichTextEditorView,
+    props: ReactStylesDiffMap?,
+    stateWrapper: StateWrapper?
+  ): Any? {
+    view.setStateWrapper(stateWrapper)
 
-  override fun getShadowNodeClass(): Class<LayoutShadowNode> {
-    return LayoutShadowNode::class.java
-  }
-
-  public override fun updateExtraData(editor: ReactNativeRichTextEditorView, extraData: Any?) {
-    TODO("Not yet implemented")
+    return super.updateState(view, props, stateWrapper)
   }
 
    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
