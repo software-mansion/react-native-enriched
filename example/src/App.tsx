@@ -39,7 +39,6 @@ export default function App() {
     <View style={styles.container}>
       <Text style={styles.label}>SWM Rich Text Editor</Text>
       <RichTextInput
-        width={200}
         ref={ref}
         style={styles.input}
         defaultValue={defaultValue}
@@ -78,8 +77,11 @@ const styles = StyleSheet.create({
   input: {
     marginTop: 24,
     width: 300,
+    // height: 120,
+    // maxHeight: 100,
     backgroundColor: 'gainsboro',
     fontSize: 18,
-    padding: 0,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
   },
 });

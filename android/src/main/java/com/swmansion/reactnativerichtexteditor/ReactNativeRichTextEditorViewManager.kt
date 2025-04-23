@@ -1,5 +1,6 @@
 package com.swmansion.reactnativerichtexteditor
 
+import android.util.Log
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.PixelUtil
@@ -39,6 +40,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     stateWrapper: StateWrapper?
   ): Any? {
     view.setStateWrapper(stateWrapper)
+    Log.d("ReactNativeRichTextEditorViewManager", "props: ${props.toString()}")
 
     return super.updateState(view, props, stateWrapper)
   }
@@ -55,11 +57,26 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
-  @ReactProp(name = "width")
-  override fun setWidth(view: ReactNativeRichTextEditorView?, width: Int) {
-    // TODO: this should be applied through styles
-    view?.mWidth = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
-    view?.width = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
+//  @ReactPropGroup(names = ["width"], defaultInt = 0)
+//  fun setWidth(view: ReactNativeRichTextEditorView?, index: Int, width: Int) {
+//    // TODO: this should be applied through styles
+//
+//    Log.d("ReactNativeRichTextEditorViewManager", "width: $width")
+//
+//    view?.mWidth = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
+//    view?.width = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
+//  }
+
+  override fun setPadding(
+    view: ReactNativeRichTextEditorView?,
+    left: Int,
+    top: Int,
+    right: Int,
+    bottom: Int
+  ) {
+    super.setPadding(view, left, top, right, bottom)
+
+    view?.setPadding(left, top, right, bottom)
   }
 
   override fun focus(view: ReactNativeRichTextEditorView?) {

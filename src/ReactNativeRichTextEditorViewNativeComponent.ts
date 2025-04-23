@@ -1,9 +1,6 @@
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import type {
-  DirectEventHandler,
-  Int32,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
 import type { HostComponent, ViewProps } from 'react-native';
 import React from 'react';
 
@@ -12,7 +9,6 @@ export interface OnChangeTextEvent {
 }
 
 export interface NativeProps extends ViewProps {
-  width: Int32;
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
 }

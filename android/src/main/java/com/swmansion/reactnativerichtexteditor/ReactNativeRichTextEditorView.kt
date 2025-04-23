@@ -18,6 +18,10 @@ import com.facebook.react.uimanager.UIManagerHelper
 class ReactNativeRichTextEditorView : AppCompatEditText {
   private var stateWrapper: StateWrapper? = null
   var mWidth: Int = 0
+  var mPaddingLeft: Int = 0
+  var mPaddingRight: Int = 0
+  var mPaddingTop: Int = 0
+  var mPaddingBottom: Int = 0
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -51,11 +55,15 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       }
     }
 
-    // TODO: finalize proper styling
-    this.width = this.mWidth
+    // TODO: add borders support
+
+    // TODO: add width support (number, px, percent)
+
+    // TODO: add fixed height support
+
+//    this.width = this.mWidth
     this.isSingleLine = false
-    this.setPadding(0, 0, 0, 0)
-    this.setBackgroundColor(Color.LTGRAY)
+    this.setBackgroundColor(Color.TRANSPARENT)
     this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     this.isHorizontalScrollBarEnabled = false
     addTextChangedListener(EditorTextWatcher())
@@ -77,20 +85,34 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
   }
 
+  override fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {
+    this.mPaddingLeft = left
+    this.mPaddingTop = top
+    this.mPaddingRight = right
+    this.mPaddingBottom = bottom
+
+    measureTextHeight()
+    super.setPadding(left, top, right, bottom)
+  }
+
 
   fun measureTextHeight() {
     val paint = this.paint
     val spannable = this.text as Spannable
     val spannableLength = spannable.length
 
+    val width = this.mWidth
+    val widthPadding = this.mPaddingLeft + this.mPaddingRight
+    val heightPadding = this.mPaddingTop + this.mPaddingBottom
+
     val staticLayout = StaticLayout.Builder
-      .obtain(spannable, 0, spannableLength, paint, this.mWidth)
-      .setIncludePad(false)
+      .obtain(spannable, 0, spannableLength, paint, width - widthPadding)
+      .setIncludePad(true)
       .setLineSpacing(0f, 1f)
       .build()
 
-    val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat())
-    val widthInSP = PixelUtil.toDIPFromPixel(this.mWidth.toFloat())
+    val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat() + heightPadding)
+    val widthInSP = PixelUtil.toDIPFromPixel(width.toFloat())
 
     stateWrapper?.updateState(Arguments.createMap().apply {
       putDouble("height", heightInSP.toDouble())
