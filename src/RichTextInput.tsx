@@ -21,6 +21,7 @@ export interface RichTextInputInstance {
 }
 
 export interface RichTextInputProps {
+  width: number;
   ref?: RefObject<RichTextInputInstance | null>;
   defaultValue?: string;
   style?: ViewStyle;
@@ -42,6 +43,7 @@ export const RichTextInput = ({
   defaultValue,
   style,
   onChangeText,
+  width,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -56,6 +58,7 @@ export const RichTextInput = ({
 
   return (
     <ReactNativeRichTextEditorView
+      width={width}
       ref={nativeRef}
       defaultValue={defaultValue}
       style={style}

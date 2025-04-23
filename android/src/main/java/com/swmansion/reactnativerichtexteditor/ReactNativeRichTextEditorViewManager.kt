@@ -2,8 +2,7 @@ package com.swmansion.reactnativerichtexteditor
 
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.BaseViewManager
-import com.facebook.react.uimanager.LayoutShadowNode
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
@@ -54,6 +53,13 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: ReactNativeRichTextEditorView?, value: String?) {
     view?.setDefaultValue(value)
+  }
+
+  @ReactProp(name = "width")
+  override fun setWidth(view: ReactNativeRichTextEditorView?, width: Int) {
+    // TODO: this should be applied through styles
+    view?.mWidth = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
+    view?.width = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
   }
 
   override fun focus(view: ReactNativeRichTextEditorView?) {

@@ -39,12 +39,22 @@ export default function App() {
     <View style={styles.container}>
       <Text style={styles.label}>SWM Rich Text Editor</Text>
       <RichTextInput
+        width={200}
         ref={ref}
         style={styles.input}
         defaultValue={defaultValue}
         onChangeText={handleChangeText}
       />
-      <TextInput multiline style={styles.input} />
+      <TextInput
+        onContentSizeChange={(e) =>
+          console.log(
+            e.nativeEvent.contentSize.height,
+            e.nativeEvent.contentSize.width
+          )
+        }
+        multiline
+        style={styles.input}
+      />
       <Button title="Focus" onPress={handleFocus} />
       <Button title="Blur" onPress={handleBlur} />
       <Button title="Toggle Default Value" onPress={toggleDefaultValue} />
@@ -67,8 +77,9 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 24,
-    minHeight: 20,
-    width: '100%',
+    width: 300,
     backgroundColor: 'gainsboro',
+    fontSize: 18,
+    padding: 0,
   },
 });

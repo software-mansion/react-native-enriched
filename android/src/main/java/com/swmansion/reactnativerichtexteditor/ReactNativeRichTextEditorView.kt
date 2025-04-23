@@ -1,24 +1,23 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
-import android.os.Build
+import android.graphics.Color
 import android.text.Editable
-import android.text.Layout
+import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.util.Log
-import android.view.ViewGroup
-import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 
 
 class ReactNativeRichTextEditorView : AppCompatEditText {
   private var stateWrapper: StateWrapper? = null
+  var mWidth: Int = 0
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -40,11 +39,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     class EditorTextWatcher : TextWatcher {
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        measureTextHeight()
+      }
 
       override fun afterTextChanged(s: Editable?) {
-        updateSize()
-
         val context = context as ReactContext
         val surfaceId = UIManagerHelper.getSurfaceId(context)
         val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
@@ -52,30 +51,20 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       }
     }
 
-
-    this.inputType = android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
-    this.width = 300
+    // TODO: finalize proper styling
+    this.width = this.mWidth
+    this.isSingleLine = false
+    this.setPadding(0, 0, 0, 0)
+    this.setBackgroundColor(Color.LTGRAY)
+    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+    this.isHorizontalScrollBarEnabled = false
     addTextChangedListener(EditorTextWatcher())
   }
 
-  @RequiresApi(Build.VERSION_CODES.Q)
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
 
-    updateSize()
-  }
-
-  private fun updateSize() {
-    this.measure(0, 0)
-    val height = this.measuredHeight / 2.0
-    val width = this.measuredWidth
-
-    Log.d("ReactNativeRichTextEditorView", "Height: $height, width: ${this.measuredWidth}, measured: ${this.measuredHeight}")
-
-    stateWrapper?.updateState(Arguments.createMap().apply {
-      putDouble("height", height)
-      putDouble("width", width.toDouble())
-    })
+    measureTextHeight()
   }
 
   fun setStateWrapper(stateWrapper: StateWrapper?) {
@@ -86,5 +75,26 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (value != null) {
       setText(value)
     }
+  }
+
+
+  fun measureTextHeight() {
+    val paint = this.paint
+    val spannable = this.text as Spannable
+    val spannableLength = spannable.length
+
+    val staticLayout = StaticLayout.Builder
+      .obtain(spannable, 0, spannableLength, paint, this.mWidth)
+      .setIncludePad(false)
+      .setLineSpacing(0f, 1f)
+      .build()
+
+    val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat())
+    val widthInSP = PixelUtil.toDIPFromPixel(this.mWidth.toFloat())
+
+    stateWrapper?.updateState(Arguments.createMap().apply {
+      putDouble("height", heightInSP.toDouble())
+      putDouble("width", widthInSP.toDouble())
+    })
   }
 }
