@@ -1,9 +1,9 @@
 package com.swmansion.reactnativerichtexteditor
 
-import android.util.Log
+import android.content.Context
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
@@ -12,11 +12,14 @@ import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
+import com.facebook.yoga.YogaMeasureMode
+import com.facebook.yoga.YogaMeasureOutput
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
 class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTextEditorView>(),
   ReactNativeRichTextEditorViewManagerInterface<ReactNativeRichTextEditorView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeRichTextEditorView>
+  private var view: ReactNativeRichTextEditorView? = null
 
   init {
     mDelegate = ReactNativeRichTextEditorViewManagerDelegate(this)
@@ -31,7 +34,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   }
 
   public override fun createViewInstance(context: ThemedReactContext): ReactNativeRichTextEditorView {
-    return ReactNativeRichTextEditorView(context)
+    val view = ReactNativeRichTextEditorView(context)
+    this.view = view
+
+    return view
+  }
+
+  override fun updateExtraData(root: ReactNativeRichTextEditorView, extraData: Any?) {
+    super.updateExtraData(root, extraData)
   }
 
   override fun updateState(
@@ -40,8 +50,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     stateWrapper: StateWrapper?
   ): Any? {
     view.setStateWrapper(stateWrapper)
-    Log.d("ReactNativeRichTextEditorViewManager", "props: ${props.toString()}")
-
     return super.updateState(view, props, stateWrapper)
   }
 
@@ -57,15 +65,11 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
-//  @ReactPropGroup(names = ["width"], defaultInt = 0)
-//  fun setWidth(view: ReactNativeRichTextEditorView?, index: Int, width: Int) {
-//    // TODO: this should be applied through styles
-//
-//    Log.d("ReactNativeRichTextEditorViewManager", "width: $width")
-//
-//    view?.mWidth = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
-//    view?.width = PixelUtil.toPixelFromSP(width.toDouble()).toInt()
-//  }
+  @ReactProp(name = "value")
+  override fun setValue(view: ReactNativeRichTextEditorView?, value: String?) {
+    // Our component is not controlled, however we are setting value to explicitly tell Yoga to recalculate layout
+    // See https://github.com/facebook/react-native/issues/17968
+  }
 
   override fun setPadding(
     view: ReactNativeRichTextEditorView?,
@@ -77,6 +81,26 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     super.setPadding(view, left, top, right, bottom)
 
     view?.setPadding(left, top, right, bottom)
+  }
+
+  override fun measure(
+    context: Context,
+    localData: ReadableMap?,
+    props: ReadableMap?,
+    state: ReadableMap?,
+    width: Float,
+    widthMode: YogaMeasureMode?,
+    height: Float,
+    heightMode: YogaMeasureMode?,
+    attachmentsPositions: FloatArray?
+  ): Long {
+    val size = this.view?.measureSize(width)
+
+    if (size != null) {
+      return YogaMeasureOutput.make(size.first, size.second)
+    }
+
+    return YogaMeasureOutput.make(0, 0)
   }
 
   override fun focus(view: ReactNativeRichTextEditorView?) {

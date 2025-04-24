@@ -1,26 +1,34 @@
 #pragma once
 
-#include <react/renderer/components/RNReactNativeRichTextEditorViewSpec/ReactNativeRichTextEditorShadowNode.h>
-#include <react/debug/react_native_assert.h>
+#include "RichTextEditorMeasurementManager.h"
+#include "ReactNativeRichTextEditorShadowNode.h"
+
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
 namespace facebook::react {
 
 class ReactNativeRichTextEditorViewComponentDescriptor final
-    : public ConcreteComponentDescriptor<ReactNativeRichTextEditorShadowNode> {
+        : public ConcreteComponentDescriptor<ReactNativeRichTextEditorShadowNode> {
 public:
-    using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
+    ReactNativeRichTextEditorViewComponentDescriptor(
+            const ComponentDescriptorParameters& parameters)
+            : ConcreteComponentDescriptor(parameters),
+              measurementsManager_(
+                      std::make_shared<RichTextEditorMeasurementManager>(
+                              contextContainer_)) {}
 
-  void adopt(ShadowNode &shadowNode) const override {
-    react_native_assert(dynamic_cast<ReactNativeRichTextEditorShadowNode *>(&shadowNode));
+    void adopt(ShadowNode& shadowNode) const override {
+        ConcreteComponentDescriptor::adopt(shadowNode);
+        auto& editorShadowNode = static_cast<ReactNativeRichTextEditorShadowNode&>(shadowNode);
 
-    const auto reactNativeRichTextEditorShadowNode = dynamic_cast<ReactNativeRichTextEditorShadowNode *>(&shadowNode);
-    const auto state = reactNativeRichTextEditorShadowNode->getStateData();
+        // `ReactNativeRichTextEditorShadowNode` uses
+        // `RichTextEditorMeasurementManager` to provide measurements to Yoga.
+        editorShadowNode.setMeasurementsManager(measurementsManager_);
+    }
 
-    reactNativeRichTextEditorShadowNode->setSize({state.getWidth(), state.getHeight()});
-
-    ConcreteComponentDescriptor::adopt(shadowNode);
-  }
+private:
+    const std::shared_ptr<RichTextEditorMeasurementManager>
+            measurementsManager_;
 };
 
 } // namespace facebook::react

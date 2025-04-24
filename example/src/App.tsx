@@ -44,16 +44,7 @@ export default function App() {
         defaultValue={defaultValue}
         onChangeText={handleChangeText}
       />
-      <TextInput
-        onContentSizeChange={(e) =>
-          console.log(
-            e.nativeEvent.contentSize.height,
-            e.nativeEvent.contentSize.width
-          )
-        }
-        multiline
-        style={styles.input}
-      />
+      <TextInput multiline defaultValue={defaultValue} style={styles.input} />
       <Button title="Focus" onPress={handleFocus} />
       <Button title="Blur" onPress={handleBlur} />
       <Button title="Toggle Default Value" onPress={toggleDefaultValue} />
@@ -76,12 +67,11 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 24,
-    width: 300,
-    // height: 120,
-    // maxHeight: 100,
+    width: '100%',
+    maxHeight: 120,
     backgroundColor: 'gainsboro',
     fontSize: 18,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
 });
