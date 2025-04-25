@@ -2,9 +2,7 @@ package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
@@ -54,10 +52,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   }
 
    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
-     return MapBuilder.of(
-              "onChangeText",
-              MapBuilder.of("registrationName", "onChangeText"),
-      )
+     val map = mutableMapOf<String, Any>()
+     map.put("onChangeText", mapOf("registrationName" to "onChangeText"))
+
+     return map
    }
 
   @ReactProp(name = "defaultValue")
