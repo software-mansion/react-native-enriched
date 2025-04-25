@@ -150,7 +150,7 @@
   },
   "codegenConfig": {
     "name": "RNReactNativeRichTextEditorViewSpec",
-    "type": "all",
+    "type": "components",
     "jsSrcsDir": "src",
     "outputDir": {
       "ios": "ios/generated",
