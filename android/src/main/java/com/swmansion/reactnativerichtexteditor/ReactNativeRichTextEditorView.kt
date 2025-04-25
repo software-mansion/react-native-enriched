@@ -7,15 +7,27 @@ import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import kotlin.math.ceil
 
 
 class ReactNativeRichTextEditorView : AppCompatEditText {
   private var stateWrapper: StateWrapper? = null
+
+  private var typefaceDirty = false
+  private var fontSize: Float? = null
+  private var fontFamily: String? = null
+  private var fontStyle: Int = ReactConstants.UNSET
+  private var fontWeight: Int = ReactConstants.UNSET
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -47,8 +59,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       }
     }
 
-    // TODO: allow customizing font (color, size, family, weight, line height)
-
     // TODO: add borders support
 
     this.isSingleLine = false
@@ -68,8 +78,51 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   fun setDefaultValue(value: String?) {
-    if (value != null) {
-      setText(value)
+    if (value == null) return
+
+    setText(value)
+  }
+
+  fun setColor(colorInt: Int?) {
+    if (colorInt == null) {
+      this.setTextColor(Color.BLACK)
+      return
+    }
+
+    this.setTextColor(colorInt)
+  }
+
+  // TODO: setting font should recalculate layout (for auto growing input)
+  fun setFontSize(size: Float) {
+    if (size == 0f) return
+
+    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    fontSize = sizeInt
+    setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
+  }
+
+  fun setFontFamily(family: String?) {
+    if (family != this.fontFamily) {
+      this.fontFamily = family
+      typefaceDirty = true
+    }
+  }
+
+  fun setFontWeight(weight: String?) {
+    val fontWeight = parseFontWeight(weight)
+
+    if (fontWeight != this.fontStyle) {
+      this.fontWeight = fontWeight
+      typefaceDirty = true
+    }
+  }
+
+  fun setFontStyle(style: String?) {
+    val fontStyle = parseFontStyle(style)
+
+    if (fontStyle != this.fontStyle) {
+      this.fontStyle = fontStyle
+      typefaceDirty = true
     }
   }
 
@@ -88,5 +141,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val widthInSP = PixelUtil.toDIPFromPixel(maxWidth)
 
     return Pair(widthInSP, heightInSP)
+  }
+
+  fun updateTypeface() {
+    if (!typefaceDirty) return
+    typefaceDirty = false
+
+    val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
+    typeface = newTypeface
+    paint.typeface = newTypeface
   }
 }

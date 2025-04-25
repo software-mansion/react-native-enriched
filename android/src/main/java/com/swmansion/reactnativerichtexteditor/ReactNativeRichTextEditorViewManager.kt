@@ -1,6 +1,9 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
@@ -8,7 +11,9 @@ import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
@@ -65,10 +70,44 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
+  // TODO: fixme
+  @ReactProp(name = ViewProps.COLOR, customType = "Color")
+  override fun setColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+
+    Log.d("ReactNativeRichTextEditorViewManager", "setColor: $color")
+
+    view?.setColor(color)
+  }
+
+  @ReactProp(name = "fontSize", defaultFloat = ViewDefaults.FONT_SIZE_SP)
+  override fun setFontSize(view: ReactNativeRichTextEditorView?, size: Float) {
+    view?.setFontSize(size)
+  }
+
+  @ReactProp(name = "fontFamily")
+  override fun setFontFamily(view: ReactNativeRichTextEditorView?, family: String?) {
+    view?.setFontFamily(family)
+  }
+
+  @ReactProp(name = "fontWeight")
+  override fun setFontWeight(view: ReactNativeRichTextEditorView?, weight: String?) {
+    view?.setFontWeight(weight)
+  }
+
+  @ReactProp(name = "fontStyle")
+  override fun setFontStyle(view: ReactNativeRichTextEditorView?, style: String?) {
+    view?.setFontStyle(style)
+  }
+
   @ReactProp(name = "value")
   override fun setValue(view: ReactNativeRichTextEditorView?, value: String?) {
     // Our component is not controlled, however we are setting value to explicitly tell Yoga to recalculate layout
     // See https://github.com/facebook/react-native/issues/17968
+  }
+
+  override fun onAfterUpdateTransaction(view: ReactNativeRichTextEditorView) {
+    super.onAfterUpdateTransaction(view)
+    view.updateTypeface()
   }
 
   override fun setPadding(

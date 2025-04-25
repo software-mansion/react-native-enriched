@@ -1,7 +1,10 @@
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
-import type { HostComponent, ViewProps } from 'react-native';
+import type {
+  DirectEventHandler,
+  Float,
+} from 'react-native/Libraries/Types/CodegenTypes';
+import type { ColorValue, HostComponent, ViewProps } from 'react-native';
 import React from 'react';
 
 export interface OnChangeTextEvent {
@@ -12,6 +15,14 @@ export interface NativeProps extends ViewProps {
   value: string;
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
+
+  // Style related props - used for generating proper setters in component's manager
+  // These should not be passed as regular props
+  color?: ColorValue;
+  fontSize?: Float;
+  fontFamily?: string;
+  fontWeight?: string;
+  fontStyle?: string;
 }
 
 type ComponentType = HostComponent<NativeProps>;
