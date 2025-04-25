@@ -43,6 +43,7 @@ using namespace facebook::react;
 
 - (void)setupTextView {
   textView = [[UITextView alloc] init];
+  textView.backgroundColor = UIColor.clearColor;
   textView.delegate = self;
 }
 
