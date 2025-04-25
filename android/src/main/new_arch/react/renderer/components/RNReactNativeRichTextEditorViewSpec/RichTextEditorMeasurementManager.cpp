@@ -15,7 +15,7 @@ namespace facebook::react {
         const jni::global_ref<jobject>& fabricUIManager =
                 contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
 
-        static auto measure = facebook::jni::findClassStatic(
+        static const auto measure = facebook::jni::findClassStatic(
                 "com/facebook/react/fabric/FabricUIManager")
                 ->getMethod<jlong(
                         jint,
