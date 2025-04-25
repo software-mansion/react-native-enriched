@@ -8,6 +8,7 @@ import android.text.StaticLayout
 import android.text.TextWatcher
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
@@ -37,7 +38,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     class EditorTextWatcher : TextWatcher {
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        updateYogaState(s.toString())
+      }
 
       override fun afterTextChanged(s: Editable?) {
         val context = context as ReactContext
@@ -88,5 +91,12 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val widthInSP = PixelUtil.toDIPFromPixel(maxWidth)
 
     return Pair(widthInSP, heightInSP)
+  }
+
+  // Used for triggering layout recalculation
+  private fun updateYogaState(text: String) {
+    val state = Arguments.createMap()
+    state.putString("text", text)
+    stateWrapper?.updateState(state)
   }
 }

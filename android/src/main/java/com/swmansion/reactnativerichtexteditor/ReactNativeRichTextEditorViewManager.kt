@@ -64,12 +64,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
-  @ReactProp(name = "value")
-  override fun setValue(view: ReactNativeRichTextEditorView?, value: String?) {
-    // Our component is not controlled, however we are setting value to explicitly tell Yoga to recalculate layout
-    // See https://github.com/facebook/react-native/issues/17968
-  }
-
   override fun setPadding(
     view: ReactNativeRichTextEditorView?,
     left: Int,
