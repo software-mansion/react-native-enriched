@@ -5,67 +5,93 @@
 #import <ReactNativeRichTextEditor/Props.h>
 #import <ReactNativeRichTextEditor/RCTComponentViewHelpers.h>
 
+#import "UIView+React.h"
+#import "StringUtils.h"
 #import "RCTFabricComponentsPlugins.h"
 
 using namespace facebook::react;
 
-@interface ReactNativeRichTextEditorView () <RCTReactNativeRichTextEditorViewViewProtocol>
+@interface ReactNativeRichTextEditorView () <RCTReactNativeRichTextEditorViewViewProtocol, UITextViewDelegate>
 
 @end
 
 @implementation ReactNativeRichTextEditorView {
-    UIView * _view;
+  UITextView *textView;
 }
 
-+ (ComponentDescriptorProvider)componentDescriptorProvider
-{
-    return concreteComponentDescriptorProvider<ReactNativeRichTextEditorViewComponentDescriptor>();
+// MARK: - ComponentDescriptorProvider
+
++ (ComponentDescriptorProvider)componentDescriptorProvider {
+  return concreteComponentDescriptorProvider<ReactNativeRichTextEditorViewComponentDescriptor>();
 }
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
+// MARK: - Init
+
+- (instancetype)initWithFrame:(CGRect)frame {
   if (self = [super initWithFrame:frame]) {
     static const auto defaultProps = std::make_shared<const ReactNativeRichTextEditorViewProps>();
     _props = defaultProps;
-
-    _view = [[UIView alloc] init];
-
-    self.contentView = _view;
+    [self setDefaults];
+    [self setupTextView];
+    self.contentView = textView;
   }
-
+  
   return self;
 }
 
-- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
-{
-    const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
-    const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
+- (void)setDefaults {}
 
-    if (oldViewProps.color != newViewProps.color) {
-        NSString * colorToConvert = [[NSString alloc] initWithUTF8String: newViewProps.color.c_str()];
-        [_view setBackgroundColor:[self hexStringToColor:colorToConvert]];
-    }
-
-    [super updateProps:props oldProps:oldProps];
+- (void)setupTextView {
+  textView = [[UITextView alloc] init];
+  textView.backgroundColor = UIColor.clearColor;
+  textView.delegate = self;
 }
 
-Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void)
-{
-    return ReactNativeRichTextEditorView.class;
+// MARK: - Props
+
+- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
+  const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
+  const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
+  
+  if(newViewProps.defaultValue != oldViewProps.defaultValue) {
+    textView.text = [NSString fromCppString:newViewProps.defaultValue];
+  }
+  
+  [super updateProps:props oldProps:oldProps];
 }
 
-- hexStringToColor:(NSString *)stringToConvert
-{
-    NSString *noHashString = [stringToConvert stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    NSScanner *stringScanner = [NSScanner scannerWithString:noHashString];
+// MARK: - Native commands
 
-    unsigned hex;
-    if (![stringScanner scanHexInt:&hex]) return nil;
-    int r = (hex >> 16) & 0xFF;
-    int g = (hex >> 8) & 0xFF;
-    int b = (hex) & 0xFF;
+- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
+  if([commandName isEqualToString:@"focus"]) {
+    [self focus];
+  } else if([commandName isEqualToString:@"blur"]) {
+    [self blur];
+  }
+}
 
-    return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
+- (void)blur {
+  [textView reactBlur];
+}
+
+- (void)focus {
+  [textView reactFocus];
+}
+
+// MARK: - UITextView delegate methods
+
+-(bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+  NSMutableString *newText = [[NSMutableString alloc] initWithString:textView.textStorage.string];
+  [newText replaceCharactersInRange:range withString:text];
+  
+  static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter)
+    .onChangeText({ .value = [newText toCppString]});
+  
+  return true;
 }
 
 @end
+
+Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
+  return ReactNativeRichTextEditorView.class;
+}
