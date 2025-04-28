@@ -9,6 +9,7 @@ export interface OnChangeTextEvent {
 }
 
 export interface NativeProps extends ViewProps {
+  value: string;
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
 }
@@ -25,5 +26,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
 });
 
 export default codegenNativeComponent<NativeProps>(
-  'ReactNativeRichTextEditorView'
+  'ReactNativeRichTextEditorView',
+  {
+    interfaceOnly: true,
+  }
 ) as HostComponent<NativeProps>;
