@@ -12,6 +12,7 @@ import {
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import type { OnChangeTextEvent } from '../../src/ReactNativeRichTextEditorViewNativeComponent';
+import { Toolbar } from './components/Toolbar';
 
 const DEFAULT_VALUE = 'This is fully native Rich Text Editor component';
 
@@ -38,12 +39,15 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>SWM Rich Text Editor</Text>
-      <RichTextInput
-        ref={ref}
-        style={styles.input}
-        defaultValue={defaultValue}
-        onChangeText={handleChangeText}
-      />
+      <View style={styles.editor}>
+        <RichTextInput
+          ref={ref}
+          style={styles.input}
+          defaultValue={defaultValue}
+          onChangeText={handleChangeText}
+        />
+        <Toolbar />
+      </View>
       <TextInput multiline defaultValue={defaultValue} style={styles.input} />
       <Button title="Focus" onPress={handleFocus} />
       <Button title="Blur" onPress={handleBlur} />
@@ -58,6 +62,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+  },
+  editor: {
+    width: '100%',
   },
   label: {
     fontSize: 24,

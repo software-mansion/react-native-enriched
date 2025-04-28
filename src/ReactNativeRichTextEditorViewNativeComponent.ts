@@ -40,4 +40,4 @@ export default codegenNativeComponent<NativeProps>(
   {
     interfaceOnly: true,
   }
-);
+) as HostComponent<NativeProps>;
