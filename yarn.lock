@@ -2807,6 +2807,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/cli-tools@npm:^15.1.2":
+  version: 15.1.3
+  resolution: "@react-native-community/cli-tools@npm:15.1.3"
+  dependencies:
+    appdirsjs: ^1.2.4
+    chalk: ^4.1.2
+    execa: ^5.0.0
+    find-up: ^5.0.0
+    mime: ^2.4.1
+    open: ^6.2.0
+    ora: ^5.4.1
+    prompts: ^2.4.2
+    semver: ^7.5.2
+    shell-quote: ^1.7.3
+    sudo-prompt: ^9.0.0
+  checksum: f62997b7ed16df5beffc699c7556eebe0b27a63ac0b10dcf8af3e2875231183752e4a1a7e55e9d60f0b9cbfd7c3a2dd264eccc0e3430b81660538e27d5deffc8
+  languageName: node
+  linkType: hard
+
 "@react-native-community/cli-types@npm:15.0.1":
   version: 15.0.1
   resolution: "@react-native-community/cli-types@npm:15.0.1"
@@ -2873,6 +2892,34 @@ __metadata:
   bin:
     rnc-cli: build/bin.js
   checksum: bd4d4142c95339393f35509038042fa854b4dd2d7dd458fcb2226d2e63d947cff561f20ce47253249bde310db35c071f836195377761dd7a8e64cb1ce1e35217
+  languageName: node
+  linkType: hard
+
+"@react-native-vector-icons/common@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@react-native-vector-icons/common@npm:11.0.0"
+  dependencies:
+    "@react-native-community/cli-tools": ^15.1.2
+    picocolors: ^1.1.1
+    plist: ^3.1.0
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  bin:
+    rnvi-update-plist: lib/commonjs/scripts/updatePlist.js
+  checksum: 55145d053ac3bb7cb236387f80343831d512e70b5f351604c6a3c83b1388ff154360c68a0ec0fd510a57cd4fd96a54f16787ef5948f5ca3b4c008de77645a758
+  languageName: node
+  linkType: hard
+
+"@react-native-vector-icons/fontawesome@npm:^4.7.0":
+  version: 4.7.0
+  resolution: "@react-native-vector-icons/fontawesome@npm:4.7.0"
+  dependencies:
+    "@react-native-vector-icons/common": ^11.0.0
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 84cb29dc8d16b13d22c96e5023bc0bbb36f63e3f1c39d2f9de2dd0e91f267a92a47f61e967a5549468d597e24c40d567485263b5abda7381e5298bb00b090e84
   languageName: node
   linkType: hard
 
@@ -3382,6 +3429,8 @@ __metadata:
     "@react-native-community/cli": 18.0.0
     "@react-native-community/cli-platform-android": 18.0.0
     "@react-native-community/cli-platform-ios": 18.0.0
+    "@react-native-vector-icons/common": ^11.0.0
+    "@react-native-vector-icons/fontawesome": ^4.7.0
     "@react-native/babel-preset": 0.79.1
     "@react-native/metro-config": 0.79.1
     "@react-native/typescript-config": 0.79.1
@@ -3805,6 +3854,13 @@ __metadata:
   version: 9.3.1
   resolution: "@vscode/sudo-prompt@npm:9.3.1"
   checksum: 07a6ce9ef2e4e2b369288b78344f7ef3db977d5f1576b944075c22aacb9cf830acfd5f773d1b0497610bec4f811d44793142234114e57763abc78ea2cef8940a
+  languageName: node
+  linkType: hard
+
+"@xmldom/xmldom@npm:^0.8.8":
+  version: 0.8.10
+  resolution: "@xmldom/xmldom@npm:0.8.10"
+  checksum: 4c136aec31fb3b49aaa53b6fcbfe524d02a1dc0d8e17ee35bd3bf35e9ce1344560481cd1efd086ad1a4821541482528672306d5e37cdbd187f33d7fadd3e2cf0
   languageName: node
   linkType: hard
 
@@ -10959,6 +11015,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"plist@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "plist@npm:3.1.0"
+  dependencies:
+    "@xmldom/xmldom": ^0.8.8
+    base64-js: ^1.5.1
+    xmlbuilder: ^15.1.1
+  checksum: c8ea013da8646d4c50dff82f9be39488054621cc229957621bb00add42b5d4ce3657cf58d4b10c50f7dea1a81118f825838f838baeb4e6f17fab453ecf91d424
+  languageName: node
+  linkType: hard
+
 "possible-typed-array-names@npm:^1.0.0":
   version: 1.1.0
   resolution: "possible-typed-array-names@npm:1.1.0"
@@ -13493,6 +13560,13 @@ __metadata:
   version: 5.1.0
   resolution: "xdg-basedir@npm:5.1.0"
   checksum: b60e8a2c663ccb1dac77c2d913f3b96de48dafbfa083657171d3d50e10820b8a04bb4edfe9f00808c8c20e5f5355e1927bea9029f03136e29265cb98291e1fea
+  languageName: node
+  linkType: hard
+
+"xmlbuilder@npm:^15.1.1":
+  version: 15.1.1
+  resolution: "xmlbuilder@npm:15.1.1"
+  checksum: 14f7302402e28d1f32823583d121594a9dca36408d40320b33f598bd589ca5163a352d076489c9c64d2dc1da19a790926a07bf4191275330d4de2b0d85bb1843
   languageName: node
   linkType: hard
 
