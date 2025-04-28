@@ -7,7 +7,9 @@ import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
@@ -60,6 +62,36 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
+  @ReactProp(name = ViewProps.COLOR, customType = "Color")
+  override fun setColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setColor(color)
+  }
+
+  @ReactProp(name = "fontSize", defaultFloat = ViewDefaults.FONT_SIZE_SP)
+  override fun setFontSize(view: ReactNativeRichTextEditorView?, size: Float) {
+    view?.setFontSize(size)
+  }
+
+  @ReactProp(name = "fontFamily")
+  override fun setFontFamily(view: ReactNativeRichTextEditorView?, family: String?) {
+    view?.setFontFamily(family)
+  }
+
+  @ReactProp(name = "fontWeight")
+  override fun setFontWeight(view: ReactNativeRichTextEditorView?, weight: String?) {
+    view?.setFontWeight(weight)
+  }
+
+  @ReactProp(name = "fontStyle")
+  override fun setFontStyle(view: ReactNativeRichTextEditorView?, style: String?) {
+    view?.setFontStyle(style)
+  }
+
+  override fun onAfterUpdateTransaction(view: ReactNativeRichTextEditorView) {
+    super.onAfterUpdateTransaction(view)
+    view.updateTypeface()
+  }
+
   override fun setPadding(
     view: ReactNativeRichTextEditorView?,
     left: Int,
@@ -70,6 +102,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     super.setPadding(view, left, top, right, bottom)
 
     view?.setPadding(left, top, right, bottom)
+  }
+
+  override fun focus(view: ReactNativeRichTextEditorView?) {
+    view?.requestFocus()
+  }
+
+  override fun blur(view: ReactNativeRichTextEditorView?) {
+    view?.clearFocus()
   }
 
   override fun measure(
@@ -90,14 +130,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     }
 
     return YogaMeasureOutput.make(0, 0)
-  }
-
-  override fun focus(view: ReactNativeRichTextEditorView?) {
-    view?.requestFocus()
-  }
-
-  override fun blur(view: ReactNativeRichTextEditorView?) {
-    view?.clearFocus()
   }
 
   companion object {

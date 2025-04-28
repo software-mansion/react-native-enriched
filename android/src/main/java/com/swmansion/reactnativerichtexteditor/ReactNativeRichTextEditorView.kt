@@ -7,16 +7,29 @@ import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import kotlin.math.ceil
 
 
 class ReactNativeRichTextEditorView : AppCompatEditText {
   private var stateWrapper: StateWrapper? = null
+
+  private var typefaceDirty = false
+  private var fontSize: Float? = null
+  private var fontFamily: String? = null
+  private var fontStyle: Int = ReactConstants.UNSET
+  private var fontWeight: Int = ReactConstants.UNSET
+  private var forceHeightRecalculationCounter: Int = 0
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -39,7 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
       override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        updateYogaState(s.toString())
+        updateYogaState()
       }
 
       override fun afterTextChanged(s: Editable?) {
@@ -49,10 +62,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
         dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, id, s.toString()))
       }
     }
-
-    // TODO: allow customizing font (color, size, family, weight, line height)
-
-    // TODO: add borders support
 
     this.isSingleLine = false
     this.setPadding(0, 0, 0, 0)
@@ -67,8 +76,52 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   fun setDefaultValue(value: String?) {
-    if (value != null) {
-      setText(value)
+    if (value == null) return
+
+    setText(value)
+  }
+
+  fun setColor(colorInt: Int?) {
+    if (colorInt == null) {
+      this.setTextColor(Color.BLACK)
+      return
+    }
+
+    this.setTextColor(colorInt)
+  }
+
+  fun setFontSize(size: Float) {
+    if (size == 0f) return
+
+    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    fontSize = sizeInt
+    setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
+
+    updateYogaState()
+  }
+
+  fun setFontFamily(family: String?) {
+    if (family != this.fontFamily) {
+      this.fontFamily = family
+      typefaceDirty = true
+    }
+  }
+
+  fun setFontWeight(weight: String?) {
+    val fontWeight = parseFontWeight(weight)
+
+    if (fontWeight != this.fontStyle) {
+      this.fontWeight = fontWeight
+      typefaceDirty = true
+    }
+  }
+
+  fun setFontStyle(style: String?) {
+    val fontStyle = parseFontStyle(style)
+
+    if (fontStyle != this.fontStyle) {
+      this.fontStyle = fontStyle
+      typefaceDirty = true
     }
   }
 
@@ -89,10 +142,30 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     return Pair(widthInSP, heightInSP)
   }
 
+  fun updateTypeface() {
+    if (!typefaceDirty) return
+    typefaceDirty = false
+
+    val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
+    typeface = newTypeface
+    paint.typeface = newTypeface
+
+    updateYogaState()
+  }
+
   // Used for triggering layout recalculation
-  private fun updateYogaState(text: String) {
+  private fun updateYogaState() {
+    val counter = forceHeightRecalculationCounter
+    forceHeightRecalculationCounter++
     val state = Arguments.createMap()
-    state.putString("text", text)
+
+    state.putInt("forceHeightRecalculationCounter", counter)
     stateWrapper?.updateState(state)
+  }
+
+  override fun onDetachedFromWindow() {
+    forceHeightRecalculationCounter = 0
+
+    super.onDetachedFromWindow()
   }
 }

@@ -33,14 +33,14 @@ public:
             const std::shared_ptr<RichTextEditorMeasurementManager>&
             measurementsManager);
 
-    void updateYogaPropsIfNeeded(const std::string text);
+    void updateYogaPropsIfNeeded(int nativeEventCounter);
 
     Size measureContent(
             const LayoutContext& layoutContext,
             const LayoutConstraints& layoutConstraints) const override;
 
 private:
-    std::string text_;
+    int forceHeightRecalculationCounter_;
     std::shared_ptr<RichTextEditorMeasurementManager> measurementsManager_;
 };
 } // namespace facebook::react

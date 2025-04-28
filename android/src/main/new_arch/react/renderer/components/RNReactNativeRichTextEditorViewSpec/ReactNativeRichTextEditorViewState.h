@@ -7,19 +7,19 @@ namespace facebook::react {
     class ReactNativeRichTextEditorViewState {
     public:
         ReactNativeRichTextEditorViewState()
-                : text_("") {}
+                : forceHeightRecalculationCounter_(0) {}
 
         // Used by Kotlin to set current text value
         ReactNativeRichTextEditorViewState(ReactNativeRichTextEditorViewState const &previousState, folly::dynamic data)
-                : text_(data["text"].getString()){};
+                : forceHeightRecalculationCounter_((int)data["forceHeightRecalculationCounter"].getInt()){};
         folly::dynamic getDynamic() const {
             return {};
         };
 
-        std::string getText() const;
+        int getForceHeightRecalculationCounter() const;
 
     private:
-        const std::string text_{};
+        const int forceHeightRecalculationCounter_{};
     };
 
 } // namespace facebook::react
