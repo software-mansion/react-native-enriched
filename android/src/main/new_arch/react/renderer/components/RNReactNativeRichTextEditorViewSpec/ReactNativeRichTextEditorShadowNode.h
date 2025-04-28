@@ -31,9 +31,9 @@ public:
             const std::shared_ptr<RichTextEditorMeasurementManager>&
             measurementsManager);
 
-        Size measureContent(
-                const LayoutContext& layoutContext,
-                const LayoutConstraints& layoutConstraints) const override;
+    Size measureContent(
+            const LayoutContext& layoutContext,
+            const LayoutConstraints& layoutConstraints) const override;
 
 private:
     std::shared_ptr<RichTextEditorMeasurementManager> measurementsManager_;

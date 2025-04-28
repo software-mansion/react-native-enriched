@@ -39,10 +39,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     return view
   }
 
-  override fun updateExtraData(root: ReactNativeRichTextEditorView, extraData: Any?) {
-    super.updateExtraData(root, extraData)
-  }
-
   override fun updateState(
     view: ReactNativeRichTextEditorView,
     props: ReactStylesDiffMap?,

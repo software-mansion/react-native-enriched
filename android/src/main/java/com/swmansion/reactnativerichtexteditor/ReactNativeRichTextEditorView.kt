@@ -59,10 +59,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     addTextChangedListener(EditorTextWatcher())
   }
 
-  override fun onAttachedToWindow() {
-    super.onAttachedToWindow()
-  }
-
   fun setStateWrapper(stateWrapper: StateWrapper?) {
     this.stateWrapper = stateWrapper
   }
