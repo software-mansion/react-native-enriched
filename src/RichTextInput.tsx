@@ -3,7 +3,6 @@ import {
   type RefObject,
   useImperativeHandle,
   useRef,
-  useState,
 } from 'react';
 import ReactNativeRichTextEditorView, {
   Commands,
@@ -44,7 +43,6 @@ export const RichTextInput = ({
   style,
   onChangeText,
 }: RichTextInputProps) => {
-  const [value, setValue] = useState('');
   const nativeRef = useRef<ComponentType | null>(null);
 
   useImperativeHandle(ref, () => ({
@@ -56,18 +54,12 @@ export const RichTextInput = ({
     },
   }));
 
-  const onChangeTextInternal = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
-    setValue(e.nativeEvent.value);
-    onChangeText?.(e);
-  };
-
   return (
     <ReactNativeRichTextEditorView
-      value={value}
       ref={nativeRef}
       defaultValue={defaultValue}
       style={style}
-      onChangeText={onChangeTextInternal}
+      onChangeText={onChangeText}
     />
   );
 };

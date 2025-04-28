@@ -12,7 +12,6 @@ export interface OnChangeTextEvent {
 }
 
 export interface NativeProps extends ViewProps {
-  value: string;
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
 
