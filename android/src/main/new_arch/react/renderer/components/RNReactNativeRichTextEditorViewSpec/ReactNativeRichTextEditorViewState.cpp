@@ -2,8 +2,8 @@
 
 namespace facebook::react {
 
-    int ReactNativeRichTextEditorViewState::getNativeEventCounter() const {
-        return nativeEventCounter_;
+    int ReactNativeRichTextEditorViewState::getForceHeightRecalculationCounter() const {
+        return forceHeightRecalculationCounter_;
     }
 
 }

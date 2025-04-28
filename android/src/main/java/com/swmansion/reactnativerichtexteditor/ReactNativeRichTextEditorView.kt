@@ -29,7 +29,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
-  private var nativeEventCounter: Int = 0
+  private var forceHeightRecalculationCounter: Int = 0
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -159,16 +159,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   // Used for triggering layout recalculation
   private fun updateYogaState() {
-    val counter = nativeEventCounter
-    nativeEventCounter++
+    val counter = forceHeightRecalculationCounter
+    forceHeightRecalculationCounter++
     val state = Arguments.createMap()
 
-    state.putInt("nativeEventCounter", counter)
+    state.putInt("forceHeightRecalculationCounter", counter)
     stateWrapper?.updateState(state)
   }
 
   override fun onDetachedFromWindow() {
-    nativeEventCounter = 0
+    forceHeightRecalculationCounter = 0
 
     super.onDetachedFromWindow()
   }

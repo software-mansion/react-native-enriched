@@ -40,7 +40,7 @@ public:
                 const LayoutConstraints& layoutConstraints) const override;
 
 private:
-    int eventCounter_;
+    int forceHeightRecalculationCounter_;
     std::shared_ptr<RichTextEditorMeasurementManager> measurementsManager_;
 };
 } // namespace facebook::react
