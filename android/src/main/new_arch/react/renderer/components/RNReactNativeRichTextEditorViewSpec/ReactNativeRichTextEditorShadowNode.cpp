@@ -11,12 +11,16 @@ extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTex
         measurementsManager_ = measurementsManager;
     }
 
-    void ReactNativeRichTextEditorShadowNode::updateYogaPropsIfNeeded(const int forceHeightRecalculationCounter) {
-        if (forceHeightRecalculationCounter_ != forceHeightRecalculationCounter) {
-            forceHeightRecalculationCounter_ = forceHeightRecalculationCounter;
+    // Mark layout as dirty after state has been updated
+    // Once layout is marked as dirty, `measureContent` will be called in order to recalculate layout
+    void ReactNativeRichTextEditorShadowNode::dirtyLayoutIfNeeded() {
+        const auto state = this->getStateData();
+        const auto counter = state.getForceHeightRecalculationCounter();
+
+        if (forceHeightRecalculationCounter_ != counter) {
+            forceHeightRecalculationCounter_ = counter;
 
             dirtyLayout();
-            updateYogaProps();
         }
     }
 

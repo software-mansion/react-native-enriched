@@ -21,6 +21,14 @@ class ReactNativeRichTextEditorShadowNode final : public ConcreteViewShadowNode<
 public:
     using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
+    // This constructor is called when we "update" shadow node, e.g. after updating shadow node's state
+    ReactNativeRichTextEditorShadowNode(
+            ShadowNode const &sourceShadowNode,
+            ShadowNodeFragment const &fragment)
+        : ConcreteViewShadowNode(sourceShadowNode, fragment) {
+            dirtyLayoutIfNeeded();
+    }
+
     static ShadowNodeTraits BaseTraits() {
         auto traits = ConcreteViewShadowNode::BaseTraits();
         traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
@@ -33,7 +41,7 @@ public:
             const std::shared_ptr<RichTextEditorMeasurementManager>&
             measurementsManager);
 
-    void updateYogaPropsIfNeeded(int nativeEventCounter);
+    void dirtyLayoutIfNeeded();
 
     Size measureContent(
             const LayoutContext& layoutContext,
