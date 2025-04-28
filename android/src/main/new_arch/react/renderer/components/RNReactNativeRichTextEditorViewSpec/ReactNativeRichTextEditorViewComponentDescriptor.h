@@ -12,10 +12,10 @@ class ReactNativeRichTextEditorViewComponentDescriptor final
 public:
     ReactNativeRichTextEditorViewComponentDescriptor(
             const ComponentDescriptorParameters& parameters)
-            : ConcreteComponentDescriptor(parameters),
-              measurementsManager_(
-                      std::make_shared<RichTextEditorMeasurementManager>(
-                              contextContainer_)) {}
+        : ConcreteComponentDescriptor(parameters),
+            measurementsManager_(
+                std::make_shared<RichTextEditorMeasurementManager>(
+                        contextContainer_)) {}
 
     void adopt(ShadowNode& shadowNode) const override {
         ConcreteComponentDescriptor::adopt(shadowNode);

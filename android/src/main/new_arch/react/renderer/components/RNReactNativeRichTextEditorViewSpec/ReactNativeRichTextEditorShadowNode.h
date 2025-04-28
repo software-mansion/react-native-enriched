@@ -35,9 +35,9 @@ public:
 
     void updateYogaPropsIfNeeded(const std::string text);
 
-        Size measureContent(
-                const LayoutContext& layoutContext,
-                const LayoutConstraints& layoutConstraints) const override;
+    Size measureContent(
+            const LayoutContext& layoutContext,
+            const LayoutConstraints& layoutConstraints) const override;
 
 private:
     std::string text_;
