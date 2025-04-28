@@ -1,6 +1,7 @@
-#import <React/RCTViewManager.h>
+#import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
-#import "RCTBridge.h"
+#import <React/RCTViewManager.h>
+#import "ReactNativeRichTextEditorView.h"
 
 @interface ReactNativeRichTextEditorViewManager : RCTViewManager
 @end
@@ -9,11 +10,11 @@
 
 RCT_EXPORT_MODULE(ReactNativeRichTextEditorView)
 
+RCT_EXPORT_VIEW_PROPERTY(defaultValue, NSString)
+
 - (UIView *)view
 {
-  return [[UIView alloc] init];
+  return [[ReactNativeRichTextEditorView alloc] init];
 }
-
-RCT_EXPORT_VIEW_PROPERTY(color, NSString)
 
 @end
