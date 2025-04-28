@@ -153,7 +153,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     updateYogaState()
   }
 
-  // Used for triggering layout recalculation
+  // Update shadow node's state in order to recalculate layout
   private fun updateYogaState() {
     val counter = forceHeightRecalculationCounter
     forceHeightRecalculationCounter++

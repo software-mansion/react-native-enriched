@@ -21,6 +21,7 @@ class ReactNativeRichTextEditorShadowNode final : public ConcreteViewShadowNode<
 public:
     using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
+    // This constructor is called when we "update" shadow node, e.g. after updating shadow node's state
     ReactNativeRichTextEditorShadowNode(
             ShadowNode const &sourceShadowNode,
             ShadowNodeFragment const &fragment)

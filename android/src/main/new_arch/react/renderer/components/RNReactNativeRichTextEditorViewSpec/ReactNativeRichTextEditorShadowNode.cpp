@@ -11,6 +11,8 @@ extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTex
         measurementsManager_ = measurementsManager;
     }
 
+    // Mark layout as dirty after state has been updated
+    // Once layout is marked as dirty, `measureContent` will be called in order to recalculate layout
     void ReactNativeRichTextEditorShadowNode::dirtyLayoutIfNeeded() {
         const auto state = this->getStateData();
         const auto counter = state.getForceHeightRecalculationCounter();
