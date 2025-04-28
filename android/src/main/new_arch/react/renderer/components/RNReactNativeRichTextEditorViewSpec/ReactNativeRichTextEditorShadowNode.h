@@ -35,9 +35,9 @@ public:
 
     void updateYogaPropsIfNeeded(int nativeEventCounter);
 
-        Size measureContent(
-                const LayoutContext& layoutContext,
-                const LayoutConstraints& layoutConstraints) const override;
+    Size measureContent(
+            const LayoutContext& layoutContext,
+            const LayoutConstraints& layoutConstraints) const override;
 
 private:
     int forceHeightRecalculationCounter_;
