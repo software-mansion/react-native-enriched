@@ -11,9 +11,9 @@ extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTex
         measurementsManager_ = measurementsManager;
     }
 
-    void ReactNativeRichTextEditorShadowNode::updateYogaPropsIfNeeded(const std::string text) {
-        if (text_ != text) {
-            text_ = text;
+    void ReactNativeRichTextEditorShadowNode::updateYogaPropsIfNeeded(const int nativeEventCounter) {
+        if (eventCounter_ != nativeEventCounter) {
+            eventCounter_ = nativeEventCounter;
 
             dirtyLayout();
             updateYogaProps();

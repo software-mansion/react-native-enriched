@@ -29,6 +29,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+  private var nativeEventCounter: Int = 0
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -51,7 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
       override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        updateYogaState(s.toString())
+        updateYogaState()
       }
 
       override fun afterTextChanged(s: Editable?) {
@@ -61,8 +62,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
         dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, id, s.toString()))
       }
     }
-
-    // TODO: add borders support
 
     this.isSingleLine = false
     this.setPadding(0, 0, 0, 0)
@@ -95,13 +94,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     this.setTextColor(colorInt)
   }
 
-  // TODO: setting font should recalculate layout (for auto growing input)
   fun setFontSize(size: Float) {
     if (size == 0f) return
 
     val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
+
+    updateYogaState()
   }
 
   fun setFontFamily(family: String?) {
@@ -153,12 +153,23 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
     paint.typeface = newTypeface
+
+    updateYogaState()
   }
 
   // Used for triggering layout recalculation
-  private fun updateYogaState(text: String) {
+  private fun updateYogaState() {
+    val counter = nativeEventCounter
+    nativeEventCounter++
     val state = Arguments.createMap()
-    state.putString("text", text)
+
+    state.putInt("nativeEventCounter", counter)
     stateWrapper?.updateState(state)
+  }
+
+  override fun onDetachedFromWindow() {
+    nativeEventCounter = 0
+
+    super.onDetachedFromWindow()
   }
 }

@@ -1,9 +1,6 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ReactStylesDiffMap
@@ -69,12 +66,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
-  // TODO: fixme
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
   override fun setColor(view: ReactNativeRichTextEditorView?, color: Int?) {
-
-    Log.d("ReactNativeRichTextEditorViewManager", "setColor: $color")
-
     view?.setColor(color)
   }
 
@@ -98,12 +91,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setFontStyle(style)
   }
 
-  @ReactProp(name = "value")
-  override fun setValue(view: ReactNativeRichTextEditorView?, value: String?) {
-    // Our component is not controlled, however we are setting value to explicitly tell Yoga to recalculate layout
-    // See https://github.com/facebook/react-native/issues/17968
-  }
-
   override fun onAfterUpdateTransaction(view: ReactNativeRichTextEditorView) {
     super.onAfterUpdateTransaction(view)
     view.updateTypeface()
@@ -119,6 +106,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     super.setPadding(view, left, top, right, bottom)
 
     view?.setPadding(left, top, right, bottom)
+  }
+
+  override fun focus(view: ReactNativeRichTextEditorView?) {
+    view?.requestFocus()
+  }
+
+  override fun blur(view: ReactNativeRichTextEditorView?) {
+    view?.clearFocus()
   }
 
   override fun measure(
@@ -139,14 +134,6 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     }
 
     return YogaMeasureOutput.make(0, 0)
-  }
-
-  override fun focus(view: ReactNativeRichTextEditorView?) {
-    view?.requestFocus()
-  }
-
-  override fun blur(view: ReactNativeRichTextEditorView?) {
-    view?.clearFocus()
   }
 
   companion object {
