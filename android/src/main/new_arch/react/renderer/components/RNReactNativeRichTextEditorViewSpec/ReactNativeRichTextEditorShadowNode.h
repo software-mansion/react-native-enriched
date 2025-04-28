@@ -21,6 +21,13 @@ class ReactNativeRichTextEditorShadowNode final : public ConcreteViewShadowNode<
 public:
     using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
+    ReactNativeRichTextEditorShadowNode(
+            ShadowNode const &sourceShadowNode,
+            ShadowNodeFragment const &fragment)
+        : ConcreteViewShadowNode(sourceShadowNode, fragment) {
+            dirtyLayoutIfNeeded();
+    }
+
     static ShadowNodeTraits BaseTraits() {
         auto traits = ConcreteViewShadowNode::BaseTraits();
         traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
@@ -33,11 +40,11 @@ public:
             const std::shared_ptr<RichTextEditorMeasurementManager>&
             measurementsManager);
 
-    void updateYogaPropsIfNeeded(int nativeEventCounter);
+    void dirtyLayoutIfNeeded();
 
-        Size measureContent(
-                const LayoutContext& layoutContext,
-                const LayoutConstraints& layoutConstraints) const override;
+    Size measureContent(
+            const LayoutContext& layoutContext,
+            const LayoutConstraints& layoutConstraints) const override;
 
 private:
     int forceHeightRecalculationCounter_;

@@ -11,12 +11,14 @@ extern const char ReactNativeRichTextEditorComponentName[] = "ReactNativeRichTex
         measurementsManager_ = measurementsManager;
     }
 
-    void ReactNativeRichTextEditorShadowNode::updateYogaPropsIfNeeded(const int forceHeightRecalculationCounter) {
-        if (forceHeightRecalculationCounter_ != forceHeightRecalculationCounter) {
-            forceHeightRecalculationCounter_ = forceHeightRecalculationCounter;
+    void ReactNativeRichTextEditorShadowNode::dirtyLayoutIfNeeded() {
+        const auto state = this->getStateData();
+        const auto counter = state.getForceHeightRecalculationCounter();
+
+        if (forceHeightRecalculationCounter_ != counter) {
+            forceHeightRecalculationCounter_ = counter;
 
             dirtyLayout();
-            updateYogaProps();
         }
     }
 

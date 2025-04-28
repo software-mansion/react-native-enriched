@@ -24,13 +24,6 @@ public:
         // `ReactNativeRichTextEditorShadowNode` uses
         // `RichTextEditorMeasurementManager` to provide measurements to Yoga.
         editorShadowNode.setMeasurementsManager(measurementsManager_);
-
-        const auto state = editorShadowNode.getStateData();
-        const auto counter = state.getForceHeightRecalculationCounter();
-
-        // If shadow node associated with text is different than text from the state
-        // It means that state has been updated on the native side and we have to recalculate layout
-        editorShadowNode.updateYogaPropsIfNeeded(counter);
     }
 
 private:
