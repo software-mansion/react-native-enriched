@@ -18,7 +18,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
-import com.swmansion.reactnativerichtexteditor.utils.EditorSpanSpate
+import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
 
@@ -26,7 +26,7 @@ import kotlin.math.ceil
 class ReactNativeRichTextEditorView : AppCompatEditText {
   private var stateWrapper: StateWrapper? = null
   val selection: EditorSelection? = EditorSelection(this)
-  val spanState: EditorSpanSpate? = EditorSpanSpate(this)
+  val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
 
   private var typefaceDirty = false
@@ -179,7 +179,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     return true
   }
 
-  fun verifyAndSetStyle(name: String) {
+  fun verifyAndToggleStyle(name: String) {
     val isValid = verifyStyle(name)
     if (!isValid) return
 

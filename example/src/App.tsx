@@ -7,21 +7,35 @@ import {
 } from 'react-native';
 import {
   RichTextInput,
+  type OnChangeTextEvent,
+  type OnChangeStyleEvent,
   type RichTextInputInstance,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
-import type { OnChangeTextEvent } from '../../src/ReactNativeRichTextEditorViewNativeComponent';
 import { Toolbar } from './components/Toolbar';
 
+type StylesState = OnChangeStyleEvent;
+
 const DEFAULT_VALUE = 'This is fully native Rich Text Editor component';
+const DEFAULT_STYLE: StylesState = {
+  isBold: false,
+  isItalic: false,
+  isUnderline: false,
+  isStrikeThrough: false,
+};
 
 export default function App() {
   const [defaultValue, setDefaultValue] = useState(DEFAULT_VALUE);
+  const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const ref = useRef<RichTextInputInstance>(null);
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
+  };
+
+  const handleChangeStyle = (e: NativeSyntheticEvent<OnChangeStyleEvent>) => {
+    setStylesState(e.nativeEvent);
   };
 
   const handleFocus = () => {
@@ -45,8 +59,9 @@ export default function App() {
           style={styles.input}
           defaultValue={defaultValue}
           onChangeText={handleChangeText}
+          onChangeStyle={handleChangeStyle}
         />
-        <Toolbar editorRef={ref} />
+        <Toolbar stylesState={stylesState} editorRef={ref} />
       </View>
       <TextInput multiline defaultValue={defaultValue} style={styles.input} />
       <Button title="Focus" onPress={handleFocus} />

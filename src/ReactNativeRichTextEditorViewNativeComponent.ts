@@ -11,9 +11,17 @@ export interface OnChangeTextEvent {
   value: string;
 }
 
+export interface OnChangeStyleEvent {
+  isBold: boolean;
+  isItalic: boolean;
+  isUnderline: boolean;
+  isStrikeThrough: boolean;
+}
+
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
+  onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

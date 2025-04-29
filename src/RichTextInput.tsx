@@ -7,6 +7,7 @@ import {
 import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
+  type OnChangeStyleEvent,
   type OnChangeTextEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
@@ -32,6 +33,7 @@ export interface RichTextInputProps {
   defaultValue?: string;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
+  onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -49,6 +51,7 @@ export const RichTextInput = ({
   defaultValue,
   style,
   onChangeText,
+  onChangeStyle,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -79,6 +82,7 @@ export const RichTextInput = ({
       defaultValue={defaultValue}
       style={style}
       onChangeText={onChangeText}
+      onChangeStyle={onChangeStyle}
     />
   );
 };

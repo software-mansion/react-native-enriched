@@ -96,7 +96,7 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
         s.removeSpan(span)
       }
 
-      this.setSpan(s, config.clazz, start, end)
+      setSpan(s, config.clazz, start, end)
     }
   }
 
@@ -120,6 +120,7 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
     }
 
     val spannable = editorView.text as Spannable
-    this.setAndMergeSpans(spannable, type, start, end)
+    setAndMergeSpans(spannable, type, start, end)
+    editorView.selection.validateStyles()
   }
 }
