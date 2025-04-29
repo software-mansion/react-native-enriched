@@ -56,11 +56,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   private fun prepareComponent() {
     this.isSingleLine = false
+    this.isHorizontalScrollBarEnabled = false
+    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+
     this.setPadding(0, 0, 0, 0)
     this.setBackgroundColor(Color.TRANSPARENT)
-    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
-    this.isHorizontalScrollBarEnabled = false
-    addTextChangedListener(EditorTextWatcher((this)))
+
+    addTextChangedListener(EditorTextWatcher(this))
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
