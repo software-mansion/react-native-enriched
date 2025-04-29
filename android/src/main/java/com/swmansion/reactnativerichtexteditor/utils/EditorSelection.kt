@@ -49,4 +49,50 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
 
     return styleStart
   }
+
+  fun getParagraphBounds(spannable: Spannable, index: Int): Pair<Int, Int> {
+    return getParagraphBounds(spannable, index, index)
+  }
+
+  fun getParagraphBounds(spannable: Spannable, start: Int, end: Int): Pair<Int, Int> {
+    var startPosition = start.coerceAtLeast(0).coerceAtMost(spannable.length)
+    var endPosition = end.coerceAtLeast(0).coerceAtMost(spannable.length)
+
+    // Find the start of the paragraph
+    while (startPosition > 0 && spannable[startPosition - 1] != '\n') {
+      startPosition--
+    }
+
+    // Find the end of the paragraph
+    while (endPosition < spannable.length && spannable[endPosition] != '\n') {
+      endPosition++
+    }
+
+    return Pair(startPosition, endPosition)
+  }
+
+  fun getParagraphSelection(): Pair<Int, Int> {
+    val (currentStart, currentEnd) = getInlineSelection()
+    val spannable = editorView.text as Spannable
+    return getParagraphBounds(spannable, currentStart, currentEnd)
+  }
+
+  private fun <T>getParagraphStyleStart(type: Class<T>): Int? {
+    val (start, end) = getParagraphSelection()
+    val spannable = editorView.text as Spannable
+    val spans = spannable.getSpans(start, end, type)
+    var styleStart: Int? = null
+
+    for (span in spans) {
+      val spanStart = spannable.getSpanStart(span)
+      val spanEnd = spannable.getSpanEnd(span)
+
+      if (start >= spanStart && end <= spanEnd) {
+        styleStart = spanStart
+        break
+      }
+    }
+
+    return styleStart
+  }
 }

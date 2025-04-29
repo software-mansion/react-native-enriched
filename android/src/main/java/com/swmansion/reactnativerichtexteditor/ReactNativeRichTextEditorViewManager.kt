@@ -132,6 +132,18 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.STRIKETHROUGH)
   }
 
+  override fun toggleH1(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H1)
+  }
+
+  override fun toggleH2(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H2)
+  }
+
+  override fun toggleH3(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H3)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

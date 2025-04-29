@@ -17,6 +17,12 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var strikethroughStart: Int? = null
     private set
+  var h1Start: Int? = null
+    private set
+  var h2Start: Int? = null
+    private set
+  var h3Start: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -38,12 +44,30 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setH1Start(start: Int?) {
+    this.h1Start = start
+    emitStyleChangeEvent()
+  }
+
+  fun setH2Start(start: Int?) {
+    this.h2Start = start
+    emitStyleChangeEvent()
+  }
+
+  fun setH3Start(start: Int?) {
+    this.h3Start = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
       EditorSpans.ITALIC -> italicStart
       EditorSpans.UNDERLINE -> underlineStart
       EditorSpans.STRIKETHROUGH -> strikethroughStart
+      EditorSpans.H1 -> h1Start
+      EditorSpans.H2 -> h2Start
+      EditorSpans.H3 -> h3Start
       else -> null
     }
 
@@ -56,6 +80,9 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.ITALIC -> setItalicStart(start)
       EditorSpans.UNDERLINE -> setUnderlineStart(start)
       EditorSpans.STRIKETHROUGH -> setStrikethroughStart(start)
+      EditorSpans.H1 -> setH1Start(start)
+      EditorSpans.H2 -> setH2Start(start)
+      EditorSpans.H3 -> setH3Start(start)
     }
   }
 
@@ -66,6 +93,9 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isItalic", italicStart != null)
     payload.putBoolean("isUnderline", underlineStart != null)
     payload.putBoolean("isStrikeThrough", strikethroughStart != null)
+    payload.putBoolean("isH1", h1Start != null)
+    payload.putBoolean("isH2", h2Start != null)
+    payload.putBoolean("isH3", h3Start != null)
 
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)

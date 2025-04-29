@@ -23,6 +23,9 @@ const DEFAULT_STYLE: StylesState = {
   isItalic: false,
   isUnderline: false,
   isStrikeThrough: false,
+  isH1: false,
+  isH2: false,
+  isH3: false,
 };
 
 export default function App() {

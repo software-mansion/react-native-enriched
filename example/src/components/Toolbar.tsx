@@ -95,6 +95,15 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'strikethrough':
         editorRef.current?.toggleStrikeThrough();
         break;
+      case 'heading-1':
+        editorRef.current?.toggleH1();
+        break;
+      case 'heading-2':
+        editorRef.current?.toggleH2();
+        break;
+      case 'heading-3':
+        editorRef.current?.toggleH3();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -110,6 +119,10 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isUnderline;
       case 'strikethrough':
         return stylesState.isStrikeThrough;
+      case 'heading-1':
+        return stylesState.isH1;
+      case 'heading-2':
+        return stylesState.isH2;
       default:
         return false;
     }

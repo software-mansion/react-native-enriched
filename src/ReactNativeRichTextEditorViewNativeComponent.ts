@@ -16,6 +16,9 @@ export interface OnChangeStyleEvent {
   isItalic: boolean;
   isUnderline: boolean;
   isStrikeThrough: boolean;
+  isH1: boolean;
+  isH2: boolean;
+  isH3: boolean;
 }
 
 export interface NativeProps extends ViewProps {
@@ -44,6 +47,9 @@ interface NativeCommands {
   toggleItalic: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH1: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH2: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH3: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -57,6 +63,9 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleItalic',
     'toggleUnderline',
     'toggleStrikeThrough',
+    'toggleH1',
+    'toggleH2',
+    'toggleH3',
   ],
 });
 
