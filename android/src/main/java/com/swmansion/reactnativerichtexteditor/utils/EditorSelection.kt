@@ -22,7 +22,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       state.setStart(style, getInlineStyleStart(config.clazz))
     }
 
-    for((style, config) in EditorSpans.paragraphSpans) {
+    for ((style, config) in EditorSpans.paragraphSpans) {
       state.setStart(style, getParagraphStyleStart(config.clazz))
     }
   }
