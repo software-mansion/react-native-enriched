@@ -17,6 +17,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var strikethroughStart: Int? = null
     private set
+  var inlineCodeStart: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -38,12 +40,18 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setInlineCodeStart(start: Int?) {
+    this.inlineCodeStart = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
       EditorSpans.ITALIC -> italicStart
       EditorSpans.UNDERLINE -> underlineStart
       EditorSpans.STRIKETHROUGH -> strikethroughStart
+      EditorSpans.INLINE_CODE -> inlineCodeStart
       else -> null
     }
 
@@ -56,6 +64,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.ITALIC -> setItalicStart(start)
       EditorSpans.UNDERLINE -> setUnderlineStart(start)
       EditorSpans.STRIKETHROUGH -> setStrikethroughStart(start)
+      EditorSpans.INLINE_CODE -> setInlineCodeStart(start)
     }
   }
 
@@ -66,6 +75,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isItalic", italicStart != null)
     payload.putBoolean("isUnderline", underlineStart != null)
     payload.putBoolean("isStrikeThrough", strikethroughStart != null)
+    payload.putBoolean("isInlineCode", inlineCodeStart != null)
 
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)

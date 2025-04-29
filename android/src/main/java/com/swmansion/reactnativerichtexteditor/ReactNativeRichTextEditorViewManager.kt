@@ -132,6 +132,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.STRIKETHROUGH)
   }
 
+  override fun toggleInlineCode(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.INLINE_CODE)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

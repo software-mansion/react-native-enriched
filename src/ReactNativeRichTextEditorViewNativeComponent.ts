@@ -16,6 +16,7 @@ export interface OnChangeStyleEvent {
   isItalic: boolean;
   isUnderline: boolean;
   isStrikeThrough: boolean;
+  isInlineCode: boolean;
 }
 
 export interface NativeProps extends ViewProps {
@@ -44,6 +45,7 @@ interface NativeCommands {
   toggleItalic: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleInlineCode: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -57,6 +59,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleItalic',
     'toggleUnderline',
     'toggleStrikeThrough',
+    'toggleInlineCode',
   ],
 });
 

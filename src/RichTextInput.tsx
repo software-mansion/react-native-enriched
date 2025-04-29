@@ -26,6 +26,7 @@ export interface RichTextInputInstance {
   toggleItalic: () => void;
   toggleUnderline: () => void;
   toggleStrikeThrough: () => void;
+  toggleInlineCode: () => void;
 }
 
 export interface RichTextInputProps {
@@ -73,6 +74,9 @@ export const RichTextInput = ({
     },
     toggleStrikeThrough: () => {
       Commands.toggleStrikeThrough(nullthrows(nativeRef.current));
+    },
+    toggleInlineCode: () => {
+      Commands.toggleInlineCode(nullthrows(nativeRef.current));
     },
   }));
 

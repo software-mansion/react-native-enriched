@@ -154,6 +154,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.ITALIC -> inlineStyles?.toggleStyle(EditorSpans.ITALIC)
       EditorSpans.UNDERLINE -> inlineStyles?.toggleStyle(EditorSpans.UNDERLINE)
       EditorSpans.STRIKETHROUGH -> inlineStyles?.toggleStyle(EditorSpans.STRIKETHROUGH)
+      EditorSpans.INLINE_CODE -> inlineStyles?.toggleStyle(EditorSpans.INLINE_CODE)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
