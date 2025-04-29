@@ -46,7 +46,7 @@ export default function App() {
           defaultValue={defaultValue}
           onChangeText={handleChangeText}
         />
-        <Toolbar />
+        <Toolbar editorRef={ref} />
       </View>
       <TextInput multiline defaultValue={defaultValue} style={styles.input} />
       <Button title="Focus" onPress={handleFocus} />

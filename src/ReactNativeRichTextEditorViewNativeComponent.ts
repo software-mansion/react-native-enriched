@@ -27,12 +27,29 @@ export interface NativeProps extends ViewProps {
 type ComponentType = HostComponent<NativeProps>;
 
 interface NativeCommands {
+  // General commands
   focus: (viewRef: React.ElementRef<ComponentType>) => void;
   blur: (viewRef: React.ElementRef<ComponentType>) => void;
+
+  // Text formatting commands
+  toggleBold: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleItalic: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-  supportedCommands: ['focus', 'blur'],
+  supportedCommands: [
+    // General commands
+    'focus',
+    'blur',
+
+    // Text formatting commands
+    'toggleBold',
+    'toggleItalic',
+    'toggleUnderline',
+    'toggleStrikeThrough',
+  ],
 });
 
 export default codegenNativeComponent<NativeProps>(

@@ -16,8 +16,15 @@ import type {
 } from 'react-native';
 
 export interface RichTextInputInstance {
+  // General commands
   focus: () => void;
   blur: () => void;
+
+  // Text formatting commands
+  toggleBold: () => void;
+  toggleItalic: () => void;
+  toggleUnderline: () => void;
+  toggleStrikeThrough: () => void;
 }
 
 export interface RichTextInputProps {
@@ -51,6 +58,18 @@ export const RichTextInput = ({
     },
     blur: () => {
       Commands.blur(nullthrows(nativeRef.current));
+    },
+    toggleBold: () => {
+      Commands.toggleBold(nullthrows(nativeRef.current));
+    },
+    toggleItalic: () => {
+      Commands.toggleItalic(nullthrows(nativeRef.current));
+    },
+    toggleUnderline: () => {
+      Commands.toggleUnderline(nullthrows(nativeRef.current));
+    },
+    toggleStrikeThrough: () => {
+      Commands.toggleStrikeThrough(nullthrows(nativeRef.current));
     },
   }));
 
