@@ -21,6 +21,7 @@ import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
+import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
 
@@ -64,6 +65,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     this.setPadding(0, 0, 0, 0)
     this.setBackgroundColor(Color.TRANSPARENT)
 
+    addSpanWatcher(EditorSpanWatcher(this))
     addTextChangedListener(EditorTextWatcher(this))
   }
 
@@ -80,6 +82,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (value == null) return
 
     setText(value)
+    // Assign SpanWatcher one more time as our previous spannable has been replaced
+    addSpanWatcher(EditorSpanWatcher(this))
   }
 
   fun setColor(colorInt: Int?) {
@@ -188,6 +192,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
 
     return true
+  }
+
+  private fun addSpanWatcher(watcher: EditorSpanWatcher) {
+    val spannable = text as Spannable
+    spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
   }
 
   fun verifyAndToggleStyle(name: String) {
