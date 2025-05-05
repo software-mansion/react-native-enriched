@@ -25,5 +25,6 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
 });
 
 export default codegenNativeComponent<NativeProps>(
-  'ReactNativeRichTextEditorView'
+  'ReactNativeRichTextEditorView',
+  { interfaceOnly: true }
 ) as HostComponent<NativeProps>;
