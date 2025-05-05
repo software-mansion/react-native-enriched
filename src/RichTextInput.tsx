@@ -29,6 +29,8 @@ export interface RichTextInputInstance {
   toggleH1: () => void;
   toggleH2: () => void;
   toggleH3: () => void;
+  toggleOrderedList: () => void;
+  toggleUnorderedList: () => void;
 }
 
 export interface RichTextInputProps {
@@ -85,6 +87,12 @@ export const RichTextInput = ({
     },
     toggleH3: () => {
       Commands.toggleH3(nullthrows(nativeRef.current));
+    },
+    toggleOrderedList: () => {
+      Commands.toggleOrderedList(nullthrows(nativeRef.current));
+    },
+    toggleUnorderedList: () => {
+      Commands.toggleUnorderedList(nullthrows(nativeRef.current));
     },
   }));
 

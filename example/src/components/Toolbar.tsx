@@ -104,6 +104,12 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'heading-3':
         editorRef.current?.toggleH3();
         break;
+      case 'unordered-list':
+        editorRef.current?.toggleUnorderedList();
+        break;
+      case 'ordered-list':
+        editorRef.current?.toggleOrderedList();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -123,6 +129,10 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isH1;
       case 'heading-2':
         return stylesState.isH2;
+      case 'unordered-list':
+        return stylesState.isUnorderedList;
+      case 'ordered-list':
+        return stylesState.isOrderedList;
       default:
         return false;
     }

@@ -17,6 +17,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
+import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -30,6 +31,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
+  val listStyles: ListStyles? = ListStyles(this)
 
   private var typefaceDirty = false
   private var fontSize: Float? = null
@@ -161,6 +163,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.H1 -> paragraphStyles?.toggleStyle(EditorSpans.H1)
       EditorSpans.H2 -> paragraphStyles?.toggleStyle(EditorSpans.H2)
       EditorSpans.H3 -> paragraphStyles?.toggleStyle(EditorSpans.H3)
+      EditorSpans.ORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.ORDERED_LIST)
+      EditorSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.UNORDERED_LIST)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
