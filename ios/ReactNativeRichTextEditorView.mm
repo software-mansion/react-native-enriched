@@ -61,12 +61,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
+  BOOL heightUpdateNeeded = false;
   
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
     _textView.text = [NSString fromCppString:newViewProps.defaultValue];
+    heightUpdateNeeded = true;
   }
   
   [super updateProps:props oldProps:oldProps];
+  if(heightUpdateNeeded) {
+    [self tryUpdatingHeight];
+  }
 }
 
 + (BOOL)shouldBeRecycled {
@@ -108,6 +113,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)tryUpdatingHeight {
+  if(_state == nullptr) {
+    return;
+  }
   _componentViewHeightUpdateCounter++;
   auto selfRef = wrapManagedObjectWeakly(self);
   _state->updateState(ReactNativeRichTextEditorViewState(_componentViewHeightUpdateCounter, selfRef));
