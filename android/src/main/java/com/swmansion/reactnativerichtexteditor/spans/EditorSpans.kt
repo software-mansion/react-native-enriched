@@ -21,6 +21,8 @@ object EditorSpans {
   const val H1 = "h1"
   const val H2 = "h2"
   const val H3 = "h3"
+  const val BLOCK_QUOTE = "block_quote"
+  const val CODE_BLOCK = "code_block"
 
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
@@ -33,22 +35,38 @@ object EditorSpans {
     H1 to ParagraphSpanConfig(EditorH1Span::class.java, false),
     H2 to ParagraphSpanConfig(EditorH2Span::class.java, false),
     H3 to ParagraphSpanConfig(EditorH3Span::class.java, false),
+    BLOCK_QUOTE to ParagraphSpanConfig(EditorBlockQuoteSpan::class.java, true),
+    CODE_BLOCK to ParagraphSpanConfig(EditorCodeBlockSpan::class.java, true),
   )
 
   // TODO: provider proper config once other styles are implemented
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
-    BOLD to StylesMergingConfig(),
-    ITALIC to StylesMergingConfig(),
-    UNDERLINE to StylesMergingConfig(),
-    STRIKETHROUGH to StylesMergingConfig(),
+    BOLD to StylesMergingConfig(
+      blockingStyles = arrayOf(CODE_BLOCK)
+    ),
+    ITALIC to StylesMergingConfig(
+      blockingStyles = arrayOf(CODE_BLOCK)
+    ),
+    UNDERLINE to StylesMergingConfig(
+      blockingStyles = arrayOf(CODE_BLOCK)
+    ),
+    STRIKETHROUGH to StylesMergingConfig(
+      blockingStyles = arrayOf(CODE_BLOCK)
+    ),
     H1 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H2, H3),
+      conflictingStyles = arrayOf(H2, H3, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H2 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H3),
+      conflictingStyles = arrayOf(H1, H3, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H3 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2),
+      conflictingStyles = arrayOf(H1, H2, BLOCK_QUOTE, CODE_BLOCK),
+    ),
+    BLOCK_QUOTE to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK),
+    ),
+    CODE_BLOCK to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, BLOCK_QUOTE),
     ),
   )
 }

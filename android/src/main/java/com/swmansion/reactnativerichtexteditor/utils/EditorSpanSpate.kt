@@ -23,6 +23,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var h3Start: Int? = null
     private set
+  var codeBlockStart: Int? = null
+    private set
+  var blockQuoteStart: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -59,6 +63,16 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setCodeBlockStart(start: Int?) {
+    this.codeBlockStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setBlockQuoteStart(start: Int?) {
+    this.blockQuoteStart = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
@@ -68,6 +82,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H1 -> h1Start
       EditorSpans.H2 -> h2Start
       EditorSpans.H3 -> h3Start
+      EditorSpans.CODE_BLOCK -> codeBlockStart
+      EditorSpans.BLOCK_QUOTE -> blockQuoteStart
       else -> null
     }
 
@@ -83,6 +99,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H1 -> setH1Start(start)
       EditorSpans.H2 -> setH2Start(start)
       EditorSpans.H3 -> setH3Start(start)
+      EditorSpans.CODE_BLOCK -> setCodeBlockStart(start)
+      EditorSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
     }
   }
 
@@ -96,6 +114,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isH1", h1Start != null)
     payload.putBoolean("isH2", h2Start != null)
     payload.putBoolean("isH3", h3Start != null)
+    payload.putBoolean("isCodeBlock", codeBlockStart != null)
+    payload.putBoolean("isBlockQuote", blockQuoteStart != null)
 
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)

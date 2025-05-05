@@ -104,6 +104,12 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'heading-3':
         editorRef.current?.toggleH3();
         break;
+      case 'code-block':
+        editorRef?.current?.toggleCodeBlock();
+        break;
+      case 'quote':
+        editorRef?.current?.toggleBlockQuote();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -123,6 +129,10 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isH1;
       case 'heading-2':
         return stylesState.isH2;
+      case 'code-block':
+        return stylesState.isCodeBlock;
+      case 'quote':
+        return stylesState.isBlockQuote;
       default:
         return false;
     }
