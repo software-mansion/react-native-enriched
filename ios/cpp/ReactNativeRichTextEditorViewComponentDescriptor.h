@@ -4,9 +4,6 @@
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 #include <ReactNativeRichTextEditor/ReactNativeRichTextEditorViewShadowNode.h>
 
-// to be deleted
-#include <iostream>
-
 namespace facebook::react {
 class ReactNativeRichTextEditorViewComponentDescriptor final : public ConcreteComponentDescriptor<ReactNativeRichTextEditorViewShadowNode> {
   public:
