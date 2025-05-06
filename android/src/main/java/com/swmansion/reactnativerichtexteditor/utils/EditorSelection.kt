@@ -12,6 +12,8 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   var start: Int = 0
   var end: Int = 0
 
+  private var previousLinkDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "url" to "")
+
   fun onSelection(selStart: Int, selEnd: Int) {
     start = selStart
     end = selEnd
@@ -137,6 +139,12 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {
     val text = spannable.substring(start, end)
     val url = span?.getUrl() ?: ""
+
+    // Prevents emitting unnecessary events
+    if (text == previousLinkDetectedEvent["text"] && url == previousLinkDetectedEvent["url"]) return
+
+    previousLinkDetectedEvent.put("text", text)
+    previousLinkDetectedEvent.put("url", url)
 
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
