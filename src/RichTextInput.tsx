@@ -9,6 +9,7 @@ import ReactNativeRichTextEditorView, {
   type NativeProps,
   type OnChangeStyleEvent,
   type OnChangeTextEvent,
+  type OnLinkDetectedEvent,
   type OnPressLinkEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
@@ -41,6 +42,7 @@ export interface RichTextInputProps {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
+  onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -60,6 +62,7 @@ export const RichTextInput = ({
   onChangeText,
   onChangeStyle,
   onPressLink,
+  onLinkDetected,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -107,6 +110,7 @@ export const RichTextInput = ({
       onChangeText={onChangeText}
       onChangeStyle={onChangeStyle}
       onPressLink={onPressLink}
+      onLinkDetected={onLinkDetected}
     />
   );
 };

@@ -1,7 +1,11 @@
 package com.swmansion.reactnativerichtexteditor.utils
 
 import android.text.Spannable
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
+import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
@@ -109,15 +113,34 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, type)
 
+    if (spans.isEmpty()) {
+      emitLinkDetectedEvent(spannable, null, start, end)
+      return null
+    }
+
     for (span in spans) {
       val spanStart = spannable.getSpanStart(span)
       val spanEnd = spannable.getSpanEnd(span)
 
       if (start >= spanStart && end <= spanEnd) {
+        if (span is EditorLinkSpan) {
+          emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
+        }
+
         return spanStart
       }
     }
 
     return null
+  }
+
+  private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {
+    val text = spannable.substring(start, end)
+    val url = span?.getUrl() ?: ""
+
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url))
   }
 }

@@ -123,7 +123,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       return
     }
 
-    previousPayload = payload
+    previousPayload = Arguments.createMap().apply {
+      merge(payload)
+    }
+
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)

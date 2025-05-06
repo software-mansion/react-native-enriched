@@ -27,11 +27,17 @@ export interface OnPressLinkEvent {
   url: string;
 }
 
+export interface OnLinkDetectedEvent {
+  text: string;
+  url: string;
+}
+
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
   onPressLink?: DirectEventHandler<OnPressLinkEvent>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

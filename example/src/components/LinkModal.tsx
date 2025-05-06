@@ -2,15 +2,18 @@ import { type FC, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Icon from '@react-native-vector-icons/fontawesome';
 import { Button } from './Button';
+import type { OnLinkDetectedEvent } from '@swmansion/react-native-rich-text-editor';
 
 interface LinkModalProps {
   isOpen: boolean;
+  defaults: OnLinkDetectedEvent;
   onClose: () => void;
   onSubmit: (text: string, url: string) => void;
 }
 
 export const LinkModal: FC<LinkModalProps> = ({
   isOpen,
+  defaults,
   onClose,
   onSubmit,
 }) => {
@@ -18,7 +21,7 @@ export const LinkModal: FC<LinkModalProps> = ({
   const [url, setUrl] = useState('');
 
   const handleSave = () => {
-    onSubmit(text, url);
+    onSubmit(text || defaults.text, url || defaults.url);
   };
 
   return (
@@ -37,11 +40,13 @@ export const LinkModal: FC<LinkModalProps> = ({
           <View style={styles.content}>
             <TextInput
               placeholder="Text"
+              defaultValue={defaults.text}
               style={styles.input}
               onChangeText={setText}
             />
             <TextInput
               placeholder="Link"
+              defaultValue={defaults.url}
               style={styles.input}
               onChangeText={setUrl}
             />

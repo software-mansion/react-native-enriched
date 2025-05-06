@@ -12,6 +12,7 @@ import {
   type OnChangeStyleEvent,
   type RichTextInputInstance,
   type OnPressLinkEvent,
+  type OnLinkDetectedEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -19,6 +20,8 @@ import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
 
 type StylesState = OnChangeStyleEvent;
+
+type CurrentLinkState = OnLinkDetectedEvent;
 
 const DEFAULT_VALUE = 'This is fully native Rich Text Editor component';
 const DEFAULT_STYLE: StylesState = {
@@ -32,10 +35,16 @@ const DEFAULT_STYLE: StylesState = {
   isH3: false,
   isLink: false,
 };
+const DEFAULT_LINK_STATE = {
+  text: '',
+  url: '',
+};
 
 export default function App() {
-  const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
+  const [currentLink, setCurrentLink] =
+    useState<CurrentLinkState>(DEFAULT_LINK_STATE);
   const ref = useRef<RichTextInputInstance>(null);
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
@@ -48,6 +57,12 @@ export default function App() {
 
   const handleLinkPress = async (e: NativeSyntheticEvent<OnPressLinkEvent>) => {
     await Linking.openURL(e.nativeEvent.url);
+  };
+
+  const handleLinkDetected = async (
+    e: NativeSyntheticEvent<OnLinkDetectedEvent>
+  ) => {
+    setCurrentLink(e.nativeEvent);
   };
 
   const handleFocus = () => {
@@ -83,6 +98,7 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeStyle={handleChangeStyle}
             onPressLink={handleLinkPress}
+            onLinkDetected={handleLinkDetected}
           />
           <Toolbar
             stylesState={stylesState}
@@ -99,6 +115,7 @@ export default function App() {
         <Button title="Blur" onPress={handleBlur} />
       </View>
       <LinkModal
+        defaults={currentLink}
         isOpen={isLinkModalOpen}
         onSubmit={submitLink}
         onClose={closeLinkModal}
