@@ -95,6 +95,9 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'strikethrough':
         editorRef.current?.toggleStrikeThrough();
         break;
+      case 'inline-code':
+        editorRef?.current?.toggleInlineCode();
+        break;
       case 'heading-1':
         editorRef.current?.toggleH1();
         break;
@@ -119,6 +122,8 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isUnderline;
       case 'strikethrough':
         return stylesState.isStrikeThrough;
+      case 'inline-code':
+        return stylesState.isInlineCode;
       case 'heading-1':
         return stylesState.isH1;
       case 'heading-2':
