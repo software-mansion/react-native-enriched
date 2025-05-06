@@ -23,6 +23,7 @@ const DEFAULT_STYLE: StylesState = {
   isItalic: false,
   isUnderline: false,
   isStrikeThrough: false,
+  isInlineCode: false,
 };
 
 export default function App() {

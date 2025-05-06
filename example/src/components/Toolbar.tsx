@@ -95,6 +95,9 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'strikethrough':
         editorRef.current?.toggleStrikeThrough();
         break;
+      case 'inline-code':
+        editorRef?.current?.toggleInlineCode();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -110,6 +113,8 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isUnderline;
       case 'strikethrough':
         return stylesState.isStrikeThrough;
+      case 'inline-code':
+        return stylesState.isInlineCode;
       default:
         return false;
     }
