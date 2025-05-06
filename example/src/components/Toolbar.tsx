@@ -1,105 +1,128 @@
 import { FlatList, type ListRenderItemInfo, StyleSheet } from 'react-native';
 import { ToolbarButton } from './ToolbarButton';
+import type {
+  OnChangeStyleEvent,
+  RichTextInputInstance,
+} from '@swmansion/react-native-rich-text-editor';
+import type { FC } from 'react';
 
-// TODO: provide proper onPress handlers and isActive state
 const STYLE_ITEMS = [
   {
     name: 'bold',
     icon: 'bold',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'italic',
     icon: 'italic',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'underline',
     icon: 'underline',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'strikethrough',
     icon: 'strikethrough',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'inline-code',
     icon: 'code',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'heading-1',
     text: 'H1',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'heading-2',
     text: 'H2',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'heading-3',
     text: 'H3',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'quote',
     icon: 'quote-right',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'code-block',
     icon: 'file-code-o',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'image',
     icon: 'image',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'link',
     icon: 'link',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'mention',
     icon: 'at',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'unordered-list',
     icon: 'list-ul',
-    isActive: false,
-    onPress: () => {},
   },
   {
     name: 'ordered-list',
     icon: 'list-ol',
-    isActive: false,
-    onPress: () => {},
   },
 ] as const;
 
 type Item = (typeof STYLE_ITEMS)[number];
+type StylesState = OnChangeStyleEvent;
 
-export const Toolbar = () => {
+export interface ToolbarProps {
+  stylesState: StylesState;
+  editorRef?: React.RefObject<RichTextInputInstance | null>;
+}
+
+export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
+  const handlePress = (item: Item) => {
+    const currentRef = editorRef?.current;
+    if (!currentRef) return;
+
+    switch (item.name) {
+      case 'bold':
+        editorRef.current?.toggleBold();
+        break;
+      case 'italic':
+        editorRef.current?.toggleItalic();
+        break;
+      case 'underline':
+        editorRef.current?.toggleUnderline();
+        break;
+      case 'strikethrough':
+        editorRef.current?.toggleStrikeThrough();
+        break;
+      default:
+        console.warn('Unsupported action:', item.name);
+    }
+  };
+
+  const isActive = (item: Item) => {
+    switch (item.name) {
+      case 'bold':
+        return stylesState.isBold;
+      case 'italic':
+        return stylesState.isItalic;
+      case 'underline':
+        return stylesState.isUnderline;
+      case 'strikethrough':
+        return stylesState.isStrikeThrough;
+      default:
+        return false;
+    }
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<Item>) => {
-    return <ToolbarButton {...item} />;
+    return (
+      <ToolbarButton
+        {...item}
+        isActive={isActive(item)}
+        onPress={() => handlePress(item)}
+      />
+    );
   };
 
   const keyExtractor = (item: Item) => item.name;

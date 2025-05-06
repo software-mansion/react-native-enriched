@@ -1,4 +1,4 @@
-package com.swmansion.reactnativerichtexteditor
+package com.swmansion.reactnativerichtexteditor.events
 
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
@@ -17,7 +17,7 @@ class OnChangeTextEvent(surfaceId: Int, viewId: Int, private val text: String) :
     return eventData
   }
 
-  public companion object {
-    public const val EVENT_NAME: String = "onChangeText"
+  companion object {
+    const val EVENT_NAME: String = "onChangeText"
   }
 }

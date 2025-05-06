@@ -15,6 +15,9 @@ import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInter
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
+import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
+import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
 class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTextEditorView>(),
@@ -52,7 +55,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
      val map = mutableMapOf<String, Any>()
-     map.put("onChangeText", mapOf("registrationName" to "onChangeText"))
+     map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
+     map.put(OnChangeStyleEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStyleEvent.EVENT_NAME))
 
      return map
    }
@@ -110,6 +114,22 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun blur(view: ReactNativeRichTextEditorView?) {
     view?.clearFocus()
+  }
+
+  override fun toggleBold(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.BOLD)
+  }
+
+  override fun toggleItalic(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.ITALIC)
+  }
+
+  override fun toggleUnderline(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.UNDERLINE)
+  }
+
+  override fun toggleStrikeThrough(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.STRIKETHROUGH)
   }
 
   override fun measure(

@@ -7,6 +7,7 @@ import {
 import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
+  type OnChangeStyleEvent,
   type OnChangeTextEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
@@ -16,8 +17,15 @@ import type {
 } from 'react-native';
 
 export interface RichTextInputInstance {
+  // General commands
   focus: () => void;
   blur: () => void;
+
+  // Text formatting commands
+  toggleBold: () => void;
+  toggleItalic: () => void;
+  toggleUnderline: () => void;
+  toggleStrikeThrough: () => void;
 }
 
 export interface RichTextInputProps {
@@ -25,6 +33,7 @@ export interface RichTextInputProps {
   defaultValue?: string;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
+  onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -42,6 +51,7 @@ export const RichTextInput = ({
   defaultValue,
   style,
   onChangeText,
+  onChangeStyle,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -52,6 +62,18 @@ export const RichTextInput = ({
     blur: () => {
       Commands.blur(nullthrows(nativeRef.current));
     },
+    toggleBold: () => {
+      Commands.toggleBold(nullthrows(nativeRef.current));
+    },
+    toggleItalic: () => {
+      Commands.toggleItalic(nullthrows(nativeRef.current));
+    },
+    toggleUnderline: () => {
+      Commands.toggleUnderline(nullthrows(nativeRef.current));
+    },
+    toggleStrikeThrough: () => {
+      Commands.toggleStrikeThrough(nullthrows(nativeRef.current));
+    },
   }));
 
   return (
@@ -60,6 +82,7 @@ export const RichTextInput = ({
       defaultValue={defaultValue}
       style={style}
       onChangeText={onChangeText}
+      onChangeStyle={onChangeStyle}
     />
   );
 };
