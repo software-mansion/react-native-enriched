@@ -9,6 +9,8 @@ import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
+  private var previousPayload: WritableMap? = null
+
   var boldStart: Int? = null
     private set
   var italicStart: Int? = null
@@ -59,7 +61,6 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     }
   }
 
-  // TODO: avoid emitting event if payload does not change
   private fun emitStyleChangeEvent() {
     val payload: WritableMap = Arguments.createMap()
     payload.putBoolean("isBold", boldStart != null)
@@ -67,6 +68,12 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isUnderline", underlineStart != null)
     payload.putBoolean("isStrikeThrough", strikethroughStart != null)
 
+    // Do not emit event if payload is the same
+    if (previousPayload == payload) {
+      return
+    }
+
+    previousPayload = payload
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
