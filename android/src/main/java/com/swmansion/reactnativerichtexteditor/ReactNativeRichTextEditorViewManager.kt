@@ -17,6 +17,7 @@ import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
+import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
@@ -57,6 +58,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
      val map = mutableMapOf<String, Any>()
      map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
      map.put(OnChangeStyleEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStyleEvent.EVENT_NAME))
+     map.put(OnPressLinkEvent.EVENT_NAME, mapOf("registrationName" to OnPressLinkEvent.EVENT_NAME))
 
      return map
    }
@@ -130,6 +132,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun toggleStrikeThrough(view: ReactNativeRichTextEditorView?) {
     view?.verifyAndToggleStyle(EditorSpans.STRIKETHROUGH)
+  }
+
+  override fun addLink(view: ReactNativeRichTextEditorView?, text: String, url: String) {
+    view?.addLink(text, url)
   }
 
   override fun measure(

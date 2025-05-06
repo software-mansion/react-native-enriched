@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.StaticLayout
+import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -15,8 +16,10 @@ import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
+import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
@@ -28,6 +31,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val selection: EditorSelection? = EditorSelection(this)
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
+  val specialStyles: SpecialStyles? = SpecialStyles(this)
+
+  var linkHandler: LinkHandler? = LinkHandler(this)
 
   private var typefaceDirty = false
   private var fontSize: Float? = null
@@ -58,6 +64,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     this.setBackgroundColor(Color.TRANSPARENT)
     this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     this.isHorizontalScrollBarEnabled = false
+
+    // required to make ClickableSpans really clickable
+    this.movementMethod = LinkMovementMethod.getInstance()
+
     addTextChangedListener(EditorTextWatcher((this)))
   }
 
@@ -184,6 +194,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (!isValid) return
 
     toggleStyle(name)
+  }
+
+  fun addLink(text: String, url: String) {
+    val isValid = verifyStyle(EditorSpans.LINK)
+    if (!isValid) return
+
+    specialStyles?.setLinkSpan(text, url)
   }
 
   // Update shadow node's state in order to recalculate layout

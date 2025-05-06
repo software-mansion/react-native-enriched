@@ -16,11 +16,18 @@ object EditorSpans {
   const val UNDERLINE = "underline"
   const val STRIKETHROUGH = "strikethrough"
 
+  // special styles
+  const val LINK = "link"
+
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
     ITALIC to BaseSpanConfig(EditorItalicSpan::class.java),
     UNDERLINE to BaseSpanConfig(EditorUnderlineSpan::class.java),
     STRIKETHROUGH to BaseSpanConfig(EditorStrikeThroughSpan::class.java),
+  )
+
+  val specialStyles: Map<String, BaseSpanConfig> = mapOf(
+    LINK to BaseSpanConfig(EditorLinkSpan::class.java),
   )
 
   // TODO: provider proper config once other styles are implemented
@@ -29,5 +36,6 @@ object EditorSpans {
     ITALIC to StylesMergingConfig(),
     UNDERLINE to StylesMergingConfig(),
     STRIKETHROUGH to StylesMergingConfig(),
+    LINK to StylesMergingConfig(),
   )
 }

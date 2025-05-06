@@ -75,9 +75,14 @@ type StylesState = OnChangeStyleEvent;
 export interface ToolbarProps {
   stylesState: StylesState;
   editorRef?: React.RefObject<RichTextInputInstance | null>;
+  onOpenLinkModal: () => void;
 }
 
-export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
+export const Toolbar: FC<ToolbarProps> = ({
+  stylesState,
+  editorRef,
+  onOpenLinkModal,
+}) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
     if (!currentRef) return;
@@ -95,6 +100,9 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'strikethrough':
         editorRef.current?.toggleStrikeThrough();
         break;
+      case 'link':
+        onOpenLinkModal();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -110,6 +118,8 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isUnderline;
       case 'strikethrough':
         return stylesState.isStrikeThrough;
+      case 'link':
+        return stylesState.isLink;
       default:
         return false;
     }

@@ -4,16 +4,19 @@ import {
   Text,
   type NativeSyntheticEvent,
   TextInput,
+  Linking,
 } from 'react-native';
 import {
   RichTextInput,
   type OnChangeTextEvent,
   type OnChangeStyleEvent,
   type RichTextInputInstance,
+  type OnPressLinkEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
+import { LinkModal } from './components/LinkModal';
 
 type StylesState = OnChangeStyleEvent;
 
@@ -23,11 +26,12 @@ const DEFAULT_STYLE: StylesState = {
   isItalic: false,
   isUnderline: false,
   isStrikeThrough: false,
+  isLink: false,
 };
 
 export default function App() {
-  const [defaultValue, setDefaultValue] = useState(DEFAULT_VALUE);
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const ref = useRef<RichTextInputInstance>(null);
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
@@ -38,6 +42,10 @@ export default function App() {
     setStylesState(e.nativeEvent);
   };
 
+  const handleLinkPress = async (e: NativeSyntheticEvent<OnPressLinkEvent>) => {
+    await Linking.openURL(e.nativeEvent.url);
+  };
+
   const handleFocus = () => {
     ref.current?.focus();
   };
@@ -46,28 +54,52 @@ export default function App() {
     ref.current?.blur();
   };
 
-  const toggleDefaultValue = () => {
-    setDefaultValue((prev) => (prev === DEFAULT_VALUE ? '' : DEFAULT_VALUE));
+  const openLinkModal = () => {
+    setIsLinkModalOpen(true);
+  };
+
+  const closeLinkModal = () => {
+    setIsLinkModalOpen(false);
+  };
+
+  const submitLink = (text: string, url: string) => {
+    ref.current?.setLink(text, url);
+    closeLinkModal();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>SWM Rich Text Editor</Text>
-      <View style={styles.editor}>
-        <RichTextInput
-          ref={ref}
+    <>
+      <View style={styles.container}>
+        <Text style={styles.label}>SWM Rich Text Editor</Text>
+        <View style={styles.editor}>
+          <RichTextInput
+            ref={ref}
+            style={styles.input}
+            defaultValue={DEFAULT_VALUE}
+            onChangeText={handleChangeText}
+            onChangeStyle={handleChangeStyle}
+            onPressLink={handleLinkPress}
+          />
+          <Toolbar
+            stylesState={stylesState}
+            editorRef={ref}
+            onOpenLinkModal={openLinkModal}
+          />
+        </View>
+        <TextInput
+          multiline
+          defaultValue={DEFAULT_VALUE}
           style={styles.input}
-          defaultValue={defaultValue}
-          onChangeText={handleChangeText}
-          onChangeStyle={handleChangeStyle}
         />
-        <Toolbar stylesState={stylesState} editorRef={ref} />
+        <Button title="Focus" onPress={handleFocus} />
+        <Button title="Blur" onPress={handleBlur} />
       </View>
-      <TextInput multiline defaultValue={defaultValue} style={styles.input} />
-      <Button title="Focus" onPress={handleFocus} />
-      <Button title="Blur" onPress={handleBlur} />
-      <Button title="Toggle Default Value" onPress={toggleDefaultValue} />
-    </View>
+      <LinkModal
+        isOpen={isLinkModalOpen}
+        onSubmit={submitLink}
+        onClose={closeLinkModal}
+      />
+    </>
   );
 }
 

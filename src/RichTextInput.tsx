@@ -9,6 +9,7 @@ import ReactNativeRichTextEditorView, {
   type NativeProps,
   type OnChangeStyleEvent,
   type OnChangeTextEvent,
+  type OnPressLinkEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   NativeMethods,
@@ -26,6 +27,7 @@ export interface RichTextInputInstance {
   toggleItalic: () => void;
   toggleUnderline: () => void;
   toggleStrikeThrough: () => void;
+  setLink: (text: string, url: string) => void;
 }
 
 export interface RichTextInputProps {
@@ -34,6 +36,7 @@ export interface RichTextInputProps {
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
+  onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -52,6 +55,7 @@ export const RichTextInput = ({
   style,
   onChangeText,
   onChangeStyle,
+  onPressLink,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -74,6 +78,9 @@ export const RichTextInput = ({
     toggleStrikeThrough: () => {
       Commands.toggleStrikeThrough(nullthrows(nativeRef.current));
     },
+    setLink: (text: string, url: string) => {
+      Commands.addLink(nullthrows(nativeRef.current), text, url);
+    },
   }));
 
   return (
@@ -83,6 +90,7 @@ export const RichTextInput = ({
       style={style}
       onChangeText={onChangeText}
       onChangeStyle={onChangeStyle}
+      onPressLink={onPressLink}
     />
   );
 };

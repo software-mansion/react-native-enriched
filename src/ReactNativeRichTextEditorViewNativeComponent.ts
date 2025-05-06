@@ -16,12 +16,18 @@ export interface OnChangeStyleEvent {
   isItalic: boolean;
   isUnderline: boolean;
   isStrikeThrough: boolean;
+  isLink: boolean;
+}
+
+export interface OnPressLinkEvent {
+  url: string;
 }
 
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
+  onPressLink?: DirectEventHandler<OnPressLinkEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -44,6 +50,11 @@ interface NativeCommands {
   toggleItalic: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
+  addLink: (
+    viewRef: React.ElementRef<ComponentType>,
+    text: string,
+    url: string
+  ) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -57,6 +68,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleItalic',
     'toggleUnderline',
     'toggleStrikeThrough',
+    'addLink',
   ],
 });
 
