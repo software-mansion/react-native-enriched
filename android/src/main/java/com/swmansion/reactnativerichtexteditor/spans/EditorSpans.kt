@@ -16,6 +16,7 @@ object EditorSpans {
   const val ITALIC = "italic"
   const val UNDERLINE = "underline"
   const val STRIKETHROUGH = "strikethrough"
+  const val INLINE_CODE = "inline_code"
 
   // paragraph styles
   const val H1 = "h1"
@@ -29,6 +30,7 @@ object EditorSpans {
     ITALIC to BaseSpanConfig(EditorItalicSpan::class.java),
     UNDERLINE to BaseSpanConfig(EditorUnderlineSpan::class.java),
     STRIKETHROUGH to BaseSpanConfig(EditorStrikeThroughSpan::class.java),
+    INLINE_CODE to BaseSpanConfig(EditorInlineCodeSpan::class.java),
   )
 
   val paragraphSpans: Map<String, ParagraphSpanConfig> = mapOf(
@@ -39,7 +41,7 @@ object EditorSpans {
     CODE_BLOCK to ParagraphSpanConfig(EditorCodeBlockSpan::class.java, true),
   )
 
-  // TODO: provider proper config once other styles are implemented
+  // TODO: provide proper config once other styles are implemented
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
     BOLD to StylesMergingConfig(
       blockingStyles = arrayOf(CODE_BLOCK)
@@ -53,6 +55,7 @@ object EditorSpans {
     STRIKETHROUGH to StylesMergingConfig(
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
+    INLINE_CODE to StylesMergingConfig(),
     H1 to StylesMergingConfig(
       conflictingStyles = arrayOf(H2, H3, BLOCK_QUOTE, CODE_BLOCK),
     ),
