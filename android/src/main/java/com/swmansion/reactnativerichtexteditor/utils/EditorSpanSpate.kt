@@ -9,6 +9,8 @@ import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
+  private var previousPayload: WritableMap? = null
+
   var boldStart: Int? = null
     private set
   var italicStart: Int? = null
@@ -16,6 +18,14 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
   var underlineStart: Int? = null
     private set
   var strikethroughStart: Int? = null
+    private set
+  var inlineCodeStart: Int? = null
+    private set
+  var h1Start: Int? = null
+    private set
+  var h2Start: Int? = null
+    private set
+  var h3Start: Int? = null
     private set
   var linkStart: Int? = null
     private set
@@ -40,6 +50,26 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setInlineCodeStart(start: Int?) {
+    this.inlineCodeStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setH1Start(start: Int?) {
+    this.h1Start = start
+    emitStyleChangeEvent()
+  }
+
+  fun setH2Start(start: Int?) {
+    this.h2Start = start
+    emitStyleChangeEvent()
+  }
+
+  fun setH3Start(start: Int?) {
+    this.h3Start = start
+    emitStyleChangeEvent()
+  }
+
   fun setLinkStart(start: Int?) {
     this.linkStart = start
     emitStyleChangeEvent()
@@ -51,6 +81,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.ITALIC -> italicStart
       EditorSpans.UNDERLINE -> underlineStart
       EditorSpans.STRIKETHROUGH -> strikethroughStart
+      EditorSpans.INLINE_CODE -> inlineCodeStart
+      EditorSpans.H1 -> h1Start
+      EditorSpans.H2 -> h2Start
+      EditorSpans.H3 -> h3Start
       EditorSpans.LINK -> linkStart
       else -> null
     }
@@ -64,19 +98,32 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.ITALIC -> setItalicStart(start)
       EditorSpans.UNDERLINE -> setUnderlineStart(start)
       EditorSpans.STRIKETHROUGH -> setStrikethroughStart(start)
+      EditorSpans.INLINE_CODE -> setInlineCodeStart(start)
+      EditorSpans.H1 -> setH1Start(start)
+      EditorSpans.H2 -> setH2Start(start)
+      EditorSpans.H3 -> setH3Start(start)
       EditorSpans.LINK -> setLinkStart(start)
     }
   }
 
-  // TODO: avoid emitting event if payload does not change
   private fun emitStyleChangeEvent() {
     val payload: WritableMap = Arguments.createMap()
     payload.putBoolean("isBold", boldStart != null)
     payload.putBoolean("isItalic", italicStart != null)
     payload.putBoolean("isUnderline", underlineStart != null)
     payload.putBoolean("isStrikeThrough", strikethroughStart != null)
+    payload.putBoolean("isInlineCode", inlineCodeStart != null)
+    payload.putBoolean("isH1", h1Start != null)
+    payload.putBoolean("isH2", h2Start != null)
+    payload.putBoolean("isH3", h3Start != null)
     payload.putBoolean("isLink", linkStart != null)
 
+    // Do not emit event if payload is the same
+    if (previousPayload == payload) {
+      return
+    }
+
+    previousPayload = payload
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)

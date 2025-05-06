@@ -26,6 +26,10 @@ const DEFAULT_STYLE: StylesState = {
   isItalic: false,
   isUnderline: false,
   isStrikeThrough: false,
+  isInlineCode: false,
+  isH1: false,
+  isH2: false,
+  isH3: false,
   isLink: false,
 };
 

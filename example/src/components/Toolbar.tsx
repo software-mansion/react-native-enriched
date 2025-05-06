@@ -100,6 +100,18 @@ export const Toolbar: FC<ToolbarProps> = ({
       case 'strikethrough':
         editorRef.current?.toggleStrikeThrough();
         break;
+      case 'inline-code':
+        editorRef?.current?.toggleInlineCode();
+        break;
+      case 'heading-1':
+        editorRef.current?.toggleH1();
+        break;
+      case 'heading-2':
+        editorRef.current?.toggleH2();
+        break;
+      case 'heading-3':
+        editorRef.current?.toggleH3();
+        break;
       case 'link':
         onOpenLinkModal();
         break;
@@ -118,6 +130,12 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isUnderline;
       case 'strikethrough':
         return stylesState.isStrikeThrough;
+      case 'inline-code':
+        return stylesState.isInlineCode;
+      case 'heading-1':
+        return stylesState.isH1;
+      case 'heading-2':
+        return stylesState.isH2;
       case 'link':
         return stylesState.isLink;
       default:

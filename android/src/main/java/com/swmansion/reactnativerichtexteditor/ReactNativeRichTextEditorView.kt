@@ -19,6 +19,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
+import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -31,6 +32,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val selection: EditorSelection? = EditorSelection(this)
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
+  val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val specialStyles: SpecialStyles? = SpecialStyles(this)
 
   var linkHandler: LinkHandler? = LinkHandler(this)
@@ -60,15 +62,15 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   private fun prepareComponent() {
     this.isSingleLine = false
-    this.setPadding(0, 0, 0, 0)
-    this.setBackgroundColor(Color.TRANSPARENT)
-    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     this.isHorizontalScrollBarEnabled = false
-
+    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     // required to make ClickableSpans really clickable
     this.movementMethod = LinkMovementMethod.getInstance()
 
-    addTextChangedListener(EditorTextWatcher((this)))
+    this.setPadding(0, 0, 0, 0)
+    this.setBackgroundColor(Color.TRANSPARENT)
+
+    addTextChangedListener(EditorTextWatcher(this))
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
@@ -164,6 +166,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.ITALIC -> inlineStyles?.toggleStyle(EditorSpans.ITALIC)
       EditorSpans.UNDERLINE -> inlineStyles?.toggleStyle(EditorSpans.UNDERLINE)
       EditorSpans.STRIKETHROUGH -> inlineStyles?.toggleStyle(EditorSpans.STRIKETHROUGH)
+      EditorSpans.INLINE_CODE -> inlineStyles?.toggleStyle(EditorSpans.INLINE_CODE)
+      EditorSpans.H1 -> paragraphStyles?.toggleStyle(EditorSpans.H1)
+      EditorSpans.H2 -> paragraphStyles?.toggleStyle(EditorSpans.H2)
+      EditorSpans.H3 -> paragraphStyles?.toggleStyle(EditorSpans.H3)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
