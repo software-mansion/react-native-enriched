@@ -216,8 +216,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val isValid = verifyStyle(EditorSpans.IMAGE)
     if (!isValid) return
 
-    val uri = Uri.fromFile(File(src))
-    specialStyles?.setImageSpan(EditorImageSpan(context, uri))
+    specialStyles?.setImageSpan(src)
   }
 
   // Update shadow node's state in order to recalculate layout
