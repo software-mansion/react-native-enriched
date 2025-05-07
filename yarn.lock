@@ -3438,6 +3438,7 @@ __metadata:
     react: 19.0.0
     react-native: 0.79.1
     react-native-builder-bob: ^0.40.6
+    react-native-image-picker: ^8.2.1
   languageName: unknown
   linkType: soft
 
@@ -11330,6 +11331,16 @@ __metadata:
   bin:
     bob: bin/bob
   checksum: 908cb25a13c73b8182382ca6f00d24b432fc9a8fe2b21a6d74c8d0c615f9412d6f16799ca87516e745bf3306c126aaeb4ac45f5230e6af0004e8216e2990137b
+  languageName: node
+  linkType: hard
+
+"react-native-image-picker@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "react-native-image-picker@npm:8.2.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: fc85bc278c0ba5ccef8cbacfce3001e994b34b0895be34e0c884021d2215802c2e553c5e97ff7f21a30e502be60000f90cf9555e9c2a19c71fdc76120d30e158
   languageName: node
   linkType: hard
 

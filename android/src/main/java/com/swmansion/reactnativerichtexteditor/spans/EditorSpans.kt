@@ -25,6 +25,7 @@ object EditorSpans {
 
   // special styles
   const val LINK = "link"
+  const val IMAGE = "image"
 
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
@@ -42,6 +43,7 @@ object EditorSpans {
 
   val specialStyles: Map<String, BaseSpanConfig> = mapOf(
     LINK to BaseSpanConfig(EditorLinkSpan::class.java),
+    IMAGE to BaseSpanConfig(EditorImageSpan::class.java),
   )
 
   // TODO: provide proper config once other styles are implemented
@@ -61,5 +63,6 @@ object EditorSpans {
       conflictingStyles = arrayOf(H1, H2),
     ),
     LINK to StylesMergingConfig(),
+    IMAGE to StylesMergingConfig(),
   )
 }

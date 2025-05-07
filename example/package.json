@@ -13,7 +13,8 @@
     "@react-native-vector-icons/common": "^11.0.0",
     "@react-native-vector-icons/fontawesome": "^4.7.0",
     "react": "19.0.0",
-    "react-native": "0.79.1"
+    "react-native": "0.79.1",
+    "react-native-image-picker": "^8.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

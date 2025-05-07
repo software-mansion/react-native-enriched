@@ -21,6 +21,7 @@ export interface OnChangeStyleEvent {
   isH2: boolean;
   isH3: boolean;
   isLink: boolean;
+  isImage: boolean;
 }
 
 export interface OnPressLinkEvent {
@@ -69,6 +70,7 @@ interface NativeCommands {
     text: string,
     url: string
   ) => void;
+  addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -87,6 +89,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleH2',
     'toggleH3',
     'addLink',
+    'addImage',
   ],
 });
 

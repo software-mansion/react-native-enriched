@@ -156,6 +156,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.addLink(text, url)
   }
 
+  override fun addImage(view: ReactNativeRichTextEditorView?, src: String) {
+    view?.addImage(src)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

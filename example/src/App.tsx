@@ -18,6 +18,7 @@ import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 type StylesState = OnChangeStyleEvent;
 
@@ -34,6 +35,7 @@ const DEFAULT_STYLE: StylesState = {
   isH2: false,
   isH3: false,
   isLink: false,
+  isImage: false,
 };
 const DEFAULT_LINK_STATE = {
   text: '',
@@ -86,6 +88,18 @@ export default function App() {
     closeLinkModal();
   };
 
+  const selectImage = async () => {
+    const response = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 1,
+    });
+
+    const imageUri = response.assets?.[0]?.originalPath;
+    if (!imageUri) return;
+
+    ref.current?.setImage(imageUri);
+  };
+
   return (
     <>
       <View style={styles.container}>
@@ -104,6 +118,7 @@ export default function App() {
             stylesState={stylesState}
             editorRef={ref}
             onOpenLinkModal={openLinkModal}
+            onSelectImage={selectImage}
           />
         </View>
         <TextInput
