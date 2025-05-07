@@ -26,14 +26,13 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -48,5 +47,22 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>CascadiaCode-Italic-VariableFont_wght.ttf</string>
+		<string>CascadiaCode-VariableFont_wght.ttf</string>
+		<string>CascadiaCode-Bold.ttf</string>
+		<string>CascadiaCode-BoldItalic.ttf</string>
+		<string>CascadiaCode-ExtraLight.ttf</string>
+		<string>CascadiaCode-ExtraLightItalic.ttf</string>
+		<string>CascadiaCode-Italic.ttf</string>
+		<string>CascadiaCode-Light.ttf</string>
+		<string>CascadiaCode-LightItalic.ttf</string>
+		<string>CascadiaCode-Medium.ttf</string>
+		<string>CascadiaCode-MediumItalic.ttf</string>
+		<string>CascadiaCode-Regular.ttf</string>
+		<string>CascadiaCode-SemiBold.ttf</string>
+		<string>CascadiaCode-SemiBoldItalic.ttf</string>
+	</array>
 </dict>
 </plist>
