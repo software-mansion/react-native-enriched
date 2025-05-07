@@ -1,10 +1,10 @@
 import { type FC } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import Icon from '@react-native-vector-icons/fontawesome';
+import { Icon, type IconName } from './Icon';
 
 interface ToolbarButtonIconProps {
   text?: never;
-  icon: string;
+  icon: IconName;
   isActive: boolean;
   onPress: () => void;
 }
@@ -32,7 +32,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = ({
       onPress={onPress}
     >
       {icon ? (
-        <Icon name={icon as any} size={20} color="white" />
+        <Icon name={icon} size={20} color="white" />
       ) : (
         <Text style={styles.text}>{text}</Text>
       )}
