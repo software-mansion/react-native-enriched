@@ -1,11 +1,14 @@
 package com.swmansion.reactnativerichtexteditor.styles
 
+import android.net.Uri
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
+import java.io.File
 
 class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
   fun setLinkSpan(text: String, url: String) {
@@ -73,5 +76,26 @@ class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
       val span = EditorLinkSpan(word, linkHandler)
       spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
+  }
+
+  fun setImageSpan(src: String) {
+    if (editorView.selection == null) return
+
+    val spannable = editorView.text as SpannableStringBuilder
+    var (start, end) = editorView.selection.getInlineSelection()
+    val spans = spannable.getSpans(start, end, EditorImageSpan::class.java)
+
+    for (s in spans) {
+      spannable.removeSpan(s)
+    }
+
+    if (start == end) {
+      spannable.insert(start, "\uFFFC")
+      end++
+    }
+
+    val uri = Uri.fromFile(File(src))
+    val span = EditorImageSpan(editorView.context, uri)
+    spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 }

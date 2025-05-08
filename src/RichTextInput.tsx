@@ -37,6 +37,7 @@ export interface RichTextInputInstance {
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
   setLink: (text: string, url: string) => void;
+  setImage: (src: string) => void;
 }
 
 export interface RichTextInputProps {
@@ -115,6 +116,9 @@ export const RichTextInput = ({
     },
     setLink: (text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), text, url);
+    },
+    setImage: (uri: string) => {
+      Commands.addImage(nullthrows(nativeRef.current), uri);
     },
   }));
 

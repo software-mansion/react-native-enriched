@@ -76,12 +76,14 @@ export interface ToolbarProps {
   stylesState: StylesState;
   editorRef?: React.RefObject<RichTextInputInstance | null>;
   onOpenLinkModal: () => void;
+  onSelectImage: () => void;
 }
 
 export const Toolbar: FC<ToolbarProps> = ({
   stylesState,
   editorRef,
   onOpenLinkModal,
+  onSelectImage,
 }) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
@@ -127,6 +129,9 @@ export const Toolbar: FC<ToolbarProps> = ({
       case 'link':
         onOpenLinkModal();
         break;
+      case 'image':
+        onSelectImage();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -158,6 +163,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isOrderedList;
       case 'link':
         return stylesState.isLink;
+      case 'image':
+        return stylesState.isImage;
       default:
         return false;
     }

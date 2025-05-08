@@ -17,6 +17,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
+import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
@@ -222,6 +223,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (!isValid) return
 
     specialStyles?.setLinkSpan(text, url)
+  }
+
+  fun addImage(src: String) {
+    val isValid = verifyStyle(EditorSpans.IMAGE)
+    if (!isValid) return
+
+    specialStyles?.setImageSpan(src)
   }
 
   // Update shadow node's state in order to recalculate layout
