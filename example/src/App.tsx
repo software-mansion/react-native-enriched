@@ -61,7 +61,9 @@ export default function App() {
   };
 
   const handleLinkPress = async (e: NativeSyntheticEvent<OnPressLinkEvent>) => {
-    await Linking.openURL(e.nativeEvent.url);
+    const url = e.nativeEvent.url;
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+    await Linking.openURL(formattedUrl);
   };
 
   const handleLinkDetected = async (
