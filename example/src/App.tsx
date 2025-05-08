@@ -24,6 +24,9 @@ const DEFAULT_STYLE: StylesState = {
   isUnderline: false,
   isStrikeThrough: false,
   isInlineCode: false,
+  isH1: false,
+  isH2: false,
+  isH3: false,
 };
 
 export default function App() {

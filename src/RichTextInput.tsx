@@ -27,6 +27,9 @@ export interface RichTextInputInstance {
   toggleUnderline: () => void;
   toggleStrikeThrough: () => void;
   toggleInlineCode: () => void;
+  toggleH1: () => void;
+  toggleH2: () => void;
+  toggleH3: () => void;
 }
 
 export interface RichTextInputProps {
@@ -77,6 +80,15 @@ export const RichTextInput = ({
     },
     toggleInlineCode: () => {
       Commands.toggleInlineCode(nullthrows(nativeRef.current));
+    },
+    toggleH1: () => {
+      Commands.toggleH1(nullthrows(nativeRef.current));
+    },
+    toggleH2: () => {
+      Commands.toggleH2(nullthrows(nativeRef.current));
+    },
+    toggleH3: () => {
+      Commands.toggleH3(nullthrows(nativeRef.current));
     },
   }));
 
