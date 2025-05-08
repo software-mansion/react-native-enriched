@@ -35,6 +35,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var unorderedListStart: Int? = null
     private set
+  var linkStart: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -96,6 +98,11 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setLinkStart(start: Int?) {
+    this.linkStart = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
@@ -110,6 +117,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.BLOCK_QUOTE -> blockQuoteStart
       EditorSpans.ORDERED_LIST -> orderedListStart
       EditorSpans.UNORDERED_LIST -> unorderedListStart
+      EditorSpans.LINK -> linkStart
       else -> null
     }
 
@@ -130,6 +138,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
       EditorSpans.ORDERED_LIST -> setOrderedListStart(start)
       EditorSpans.UNORDERED_LIST -> setUnorderedListStart(start)
+      EditorSpans.LINK -> setLinkStart(start)
     }
   }
 
@@ -147,13 +156,17 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isBlockQuote", blockQuoteStart != null)
     payload.putBoolean("isOrderedList", orderedListStart != null)
     payload.putBoolean("isUnorderedList", unorderedListStart != null)
+    payload.putBoolean("isLink", linkStart != null)
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {
       return
     }
 
-    previousPayload = payload
+    previousPayload = Arguments.createMap().apply {
+      merge(payload)
+    }
+
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)

@@ -24,12 +24,24 @@ export interface OnChangeStyleEvent {
   isBlockQuote: boolean;
   isOrderedList: boolean;
   isUnorderedList: boolean;
+  isLink: boolean;
+}
+
+export interface OnPressLinkEvent {
+  url: string;
+}
+
+export interface OnLinkDetectedEvent {
+  text: string;
+  url: string;
 }
 
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
+  onPressLink?: DirectEventHandler<OnPressLinkEvent>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -60,6 +72,11 @@ interface NativeCommands {
   toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  addLink: (
+    viewRef: React.ElementRef<ComponentType>,
+    text: string,
+    url: string
+  ) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -81,6 +98,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleBlockQuote',
     'toggleOrderedList',
     'toggleUnorderedList',
+    'addLink',
   ],
 });
 

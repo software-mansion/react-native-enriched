@@ -30,6 +30,9 @@ object EditorSpans {
   const val UNORDERED_LIST = "unordered_list"
   const val ORDERED_LIST = "ordered_list"
 
+  // special styles
+  const val LINK = "link"
+
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
     ITALIC to BaseSpanConfig(EditorItalicSpan::class.java),
@@ -49,6 +52,10 @@ object EditorSpans {
   val listSpans: Map<String, ListSpanConfig> = mapOf(
     UNORDERED_LIST to ListSpanConfig(EditorUnorderedListSpan::class.java, "- "),
     ORDERED_LIST to ListSpanConfig(EditorOrderedListSpan::class.java, "1. "),
+  )
+
+  val specialStyles: Map<String, BaseSpanConfig> = mapOf(
+    LINK to BaseSpanConfig(EditorLinkSpan::class.java),
   )
 
   // TODO: provide proper config once other styles are implemented
@@ -87,5 +94,6 @@ object EditorSpans {
     ORDERED_LIST to StylesMergingConfig(
       conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST),
     ),
+    LINK to StylesMergingConfig(),
   )
 }
