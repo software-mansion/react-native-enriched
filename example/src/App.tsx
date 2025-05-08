@@ -27,6 +27,8 @@ const DEFAULT_STYLE: StylesState = {
   isH1: false,
   isH2: false,
   isH3: false,
+  isBlockQuote: false,
+  isCodeBlock: false,
 };
 
 export default function App() {

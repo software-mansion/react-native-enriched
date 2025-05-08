@@ -30,6 +30,8 @@ export interface RichTextInputInstance {
   toggleH1: () => void;
   toggleH2: () => void;
   toggleH3: () => void;
+  toggleCodeBlock: () => void;
+  toggleBlockQuote: () => void;
 }
 
 export interface RichTextInputProps {
@@ -89,6 +91,12 @@ export const RichTextInput = ({
     },
     toggleH3: () => {
       Commands.toggleH3(nullthrows(nativeRef.current));
+    },
+    toggleCodeBlock: () => {
+      Commands.toggleCodeBlock(nullthrows(nativeRef.current));
+    },
+    toggleBlockQuote: () => {
+      Commands.toggleBlockQuote(nullthrows(nativeRef.current));
     },
   }));
 

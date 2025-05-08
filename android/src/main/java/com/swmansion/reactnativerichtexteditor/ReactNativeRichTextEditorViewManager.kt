@@ -148,6 +148,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.H3)
   }
 
+  override fun toggleCodeBlock(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.CODE_BLOCK)
+  }
+
+  override fun toggleBlockQuote(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.BLOCK_QUOTE)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,
