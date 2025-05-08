@@ -152,6 +152,22 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.H3)
   }
 
+  override fun toggleCodeBlock(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.CODE_BLOCK)
+  }
+
+  override fun toggleBlockQuote(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.BLOCK_QUOTE)
+  }
+
+  override fun toggleOrderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.ORDERED_LIST)
+  }
+
+  override fun toggleUnorderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.UNORDERED_LIST)
+  }
+
   override fun addLink(view: ReactNativeRichTextEditorView?, text: String, url: String) {
     view?.addLink(text, url)
   }
