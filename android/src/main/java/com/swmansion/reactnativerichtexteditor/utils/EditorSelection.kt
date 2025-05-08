@@ -32,6 +32,10 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       state.setStart(style, getParagraphStyleStart(config.clazz))
     }
 
+    for ((style, config) in EditorSpans.listSpans) {
+      state.setStart(style, getListStyleStart(config.clazz))
+    }
+
     for ((style, config) in EditorSpans.specialStyles) {
       state.setStart(style, getSpecialStyleStart(config.clazz))
     }
@@ -110,45 +114,74 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     return styleStart
   }
 
-  private fun <T>getSpecialStyleStart(type: Class<T>): Int? {
-    val (start, end) = getInlineSelection()
+  private fun <T>getListStyleStart(type: Class<T>): Int? {
+    val (start, end) = getParagraphSelection()
     val spannable = editorView.text as Spannable
-    val spans = spannable.getSpans(start, end, type)
+    var styleStart: Int? = null
 
-    if (spans.isEmpty()) {
-      emitLinkDetectedEvent(spannable, null, start, end)
+    var paragraphStart = start
+    val paragraphs = spannable.substring(start, end).split("\n")
+    pi@ for (paragraph in paragraphs) {
+      val paragraphEnd = paragraphStart + paragraph.length
+      val spans = spannable.getSpans(paragraphStart, paragraphEnd, type)
+
+      for (span in spans) {
+        val spanStart = spannable.getSpanStart(span)
+        val spanEnd = spannable.getSpanEnd(span)
+
+        if (spanStart == paragraphStart && spanEnd == paragraphEnd) {
+          styleStart = spanStart
+          paragraphStart = paragraphEnd + 1
+          continue@pi
+        }
+      }
+
+      styleStart = null
+      break
+    }
+
+    return styleStart
+  }
+
+  private fun <T>getSpecialStyleStart(type: Class<T>): Int? {
+      val (start, end) = getInlineSelection()
+      val spannable = editorView.text as Spannable
+      val spans = spannable.getSpans(start, end, type)
+
+      if (spans.isEmpty()) {
+        emitLinkDetectedEvent(spannable, null, start, end)
+        return null
+      }
+
+      for (span in spans) {
+        val spanStart = spannable.getSpanStart(span)
+        val spanEnd = spannable.getSpanEnd(span)
+
+        if (start >= spanStart && end <= spanEnd) {
+          if (span is EditorLinkSpan) {
+            emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
+          }
+
+          return spanStart
+        }
+      }
+
       return null
     }
 
-    for (span in spans) {
-      val spanStart = spannable.getSpanStart(span)
-      val spanEnd = spannable.getSpanEnd(span)
+    private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {
+      val text = spannable.substring(start, end)
+      val url = span?.getUrl() ?: ""
 
-      if (start >= spanStart && end <= spanEnd) {
-        if (span is EditorLinkSpan) {
-          emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
-        }
+      // Prevents emitting unnecessary events
+      if (text == previousLinkDetectedEvent["text"] && url == previousLinkDetectedEvent["url"]) return
 
-        return spanStart
-      }
+      previousLinkDetectedEvent.put("text", text)
+      previousLinkDetectedEvent.put("url", url)
+
+      val context = editorView.context as ReactContext
+      val surfaceId = UIManagerHelper.getSurfaceId(context)
+      val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+      dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url))
     }
-
-    return null
-  }
-
-  private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {
-    val text = spannable.substring(start, end)
-    val url = span?.getUrl() ?: ""
-
-    // Prevents emitting unnecessary events
-    if (text == previousLinkDetectedEvent["text"] && url == previousLinkDetectedEvent["url"]) return
-
-    previousLinkDetectedEvent.put("text", text)
-    previousLinkDetectedEvent.put("url", url)
-
-    val context = editorView.context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url))
-  }
 }

@@ -27,6 +27,14 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var h3Start: Int? = null
     private set
+  var codeBlockStart: Int? = null
+    private set
+  var blockQuoteStart: Int? = null
+    private set
+  var orderedListStart: Int? = null
+    private set
+  var unorderedListStart: Int? = null
+    private set
   var linkStart: Int? = null
     private set
 
@@ -70,6 +78,26 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setCodeBlockStart(start: Int?) {
+    this.codeBlockStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setBlockQuoteStart(start: Int?) {
+    this.blockQuoteStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setOrderedListStart(start: Int?) {
+    this.orderedListStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setUnorderedListStart(start: Int?) {
+    this.unorderedListStart = start
+    emitStyleChangeEvent()
+  }
+
   fun setLinkStart(start: Int?) {
     this.linkStart = start
     emitStyleChangeEvent()
@@ -85,6 +113,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H1 -> h1Start
       EditorSpans.H2 -> h2Start
       EditorSpans.H3 -> h3Start
+      EditorSpans.CODE_BLOCK -> codeBlockStart
+      EditorSpans.BLOCK_QUOTE -> blockQuoteStart
+      EditorSpans.ORDERED_LIST -> orderedListStart
+      EditorSpans.UNORDERED_LIST -> unorderedListStart
       EditorSpans.LINK -> linkStart
       else -> null
     }
@@ -102,6 +134,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H1 -> setH1Start(start)
       EditorSpans.H2 -> setH2Start(start)
       EditorSpans.H3 -> setH3Start(start)
+      EditorSpans.CODE_BLOCK -> setCodeBlockStart(start)
+      EditorSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
+      EditorSpans.ORDERED_LIST -> setOrderedListStart(start)
+      EditorSpans.UNORDERED_LIST -> setUnorderedListStart(start)
       EditorSpans.LINK -> setLinkStart(start)
     }
   }
@@ -116,6 +152,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isH1", h1Start != null)
     payload.putBoolean("isH2", h2Start != null)
     payload.putBoolean("isH3", h3Start != null)
+    payload.putBoolean("isCodeBlock", codeBlockStart != null)
+    payload.putBoolean("isBlockQuote", blockQuoteStart != null)
+    payload.putBoolean("isOrderedList", orderedListStart != null)
+    payload.putBoolean("isUnorderedList", unorderedListStart != null)
     payload.putBoolean("isLink", linkStart != null)
 
     // Do not emit event if payload is the same

@@ -112,6 +112,18 @@ export const Toolbar: FC<ToolbarProps> = ({
       case 'heading-3':
         editorRef.current?.toggleH3();
         break;
+      case 'code-block':
+        editorRef?.current?.toggleCodeBlock();
+        break;
+      case 'quote':
+        editorRef?.current?.toggleBlockQuote();
+        break;
+      case 'unordered-list':
+        editorRef.current?.toggleUnorderedList();
+        break;
+      case 'ordered-list':
+        editorRef.current?.toggleOrderedList();
+        break;
       case 'link':
         onOpenLinkModal();
         break;
@@ -136,6 +148,14 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isH1;
       case 'heading-2':
         return stylesState.isH2;
+      case 'code-block':
+        return stylesState.isCodeBlock;
+      case 'quote':
+        return stylesState.isBlockQuote;
+      case 'unordered-list':
+        return stylesState.isUnorderedList;
+      case 'ordered-list':
+        return stylesState.isOrderedList;
       case 'link':
         return stylesState.isLink;
       default:

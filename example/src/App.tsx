@@ -33,8 +33,13 @@ const DEFAULT_STYLE: StylesState = {
   isH1: false,
   isH2: false,
   isH3: false,
+  isBlockQuote: false,
+  isCodeBlock: false,
+  isOrderedList: false,
+  isUnorderedList: false,
   isLink: false,
 };
+
 const DEFAULT_LINK_STATE = {
   text: '',
   url: '',
