@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/fontawesome';
+import { Icon } from './Icon';
 import type { MentionData, MentionItem } from '../useMention';
 
 interface MentionPopupProps {

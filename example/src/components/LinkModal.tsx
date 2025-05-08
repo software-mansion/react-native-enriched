@@ -1,8 +1,8 @@
 import { type FC, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import Icon from '@react-native-vector-icons/fontawesome';
 import { Button } from './Button';
 import type { OnLinkDetectedEvent } from '@swmansion/react-native-rich-text-editor';
+import { Icon } from './Icon';
 
 interface LinkModalProps {
   isOpen: boolean;

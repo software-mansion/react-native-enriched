@@ -34,6 +34,10 @@ export interface RichTextInputInstance {
   toggleH1: () => void;
   toggleH2: () => void;
   toggleH3: () => void;
+  toggleCodeBlock: () => void;
+  toggleBlockQuote: () => void;
+  toggleOrderedList: () => void;
+  toggleUnorderedList: () => void;
   setLink: (text: string, url: string) => void;
   setImage: (src: string) => void;
   startMention: () => void;
@@ -113,6 +117,18 @@ export const RichTextInput = ({
     },
     toggleH3: () => {
       Commands.toggleH3(nullthrows(nativeRef.current));
+    },
+    toggleCodeBlock: () => {
+      Commands.toggleCodeBlock(nullthrows(nativeRef.current));
+    },
+    toggleBlockQuote: () => {
+      Commands.toggleBlockQuote(nullthrows(nativeRef.current));
+    },
+    toggleOrderedList: () => {
+      Commands.toggleOrderedList(nullthrows(nativeRef.current));
+    },
+    toggleUnorderedList: () => {
+      Commands.toggleUnorderedList(nullthrows(nativeRef.current));
     },
     setLink: (text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), text, url);

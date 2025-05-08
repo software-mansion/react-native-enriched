@@ -38,10 +38,15 @@ const DEFAULT_STYLE: StylesState = {
   isH1: false,
   isH2: false,
   isH3: false,
+  isBlockQuote: false,
+  isCodeBlock: false,
+  isOrderedList: false,
+  isUnorderedList: false,
   isLink: false,
   isImage: false,
   isMention: false,
 };
+
 const DEFAULT_LINK_STATE = {
   text: '',
   url: '',
@@ -67,7 +72,9 @@ export default function App() {
   };
 
   const handleLinkPress = async (e: NativeSyntheticEvent<OnPressLinkEvent>) => {
-    await Linking.openURL(e.nativeEvent.url);
+    const url = e.nativeEvent.url;
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+    await Linking.openURL(formattedUrl);
   };
 
   const handleLinkDetected = async (

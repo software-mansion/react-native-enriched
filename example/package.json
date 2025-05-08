@@ -10,8 +10,6 @@
     "build:ios": "react-native build-ios --scheme ReactNativeRichTextEditorExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\""
   },
   "dependencies": {
-    "@react-native-vector-icons/common": "^11.0.0",
-    "@react-native-vector-icons/fontawesome": "^4.7.0",
     "react": "19.0.0",
     "react-native": "0.79.1",
     "react-native-image-picker": "^8.2.1"

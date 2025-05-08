@@ -17,13 +17,16 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
+import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
+import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
+import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
 
@@ -34,9 +37,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
+  val listStyles: ListStyles? = ListStyles(this)
   val specialStyles: SpecialStyles? = SpecialStyles(this)
 
-  val linkHandler: LinkHandler? = LinkHandler(this)
+  var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 
   private var typefaceDirty = false
@@ -72,6 +76,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     this.setPadding(0, 0, 0, 0)
     this.setBackgroundColor(Color.TRANSPARENT)
 
+    addSpanWatcher(EditorSpanWatcher(this))
     addTextChangedListener(EditorTextWatcher(this))
   }
 
@@ -88,6 +93,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (value == null) return
 
     setText(value)
+    // Assign SpanWatcher one more time as our previous spannable has been replaced
+    addSpanWatcher(EditorSpanWatcher(this))
   }
 
   fun setColor(colorInt: Int?) {
@@ -172,6 +179,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.H1 -> paragraphStyles?.toggleStyle(EditorSpans.H1)
       EditorSpans.H2 -> paragraphStyles?.toggleStyle(EditorSpans.H2)
       EditorSpans.H3 -> paragraphStyles?.toggleStyle(EditorSpans.H3)
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.toggleStyle(EditorSpans.CODE_BLOCK)
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EditorSpans.BLOCK_QUOTE)
+      EditorSpans.ORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.ORDERED_LIST)
+      EditorSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.UNORDERED_LIST)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
@@ -195,6 +206,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
 
     return true
+  }
+
+  private fun addSpanWatcher(watcher: EditorSpanWatcher) {
+    val spannable = text as Spannable
+    spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
   }
 
   fun verifyAndToggleStyle(name: String) {
