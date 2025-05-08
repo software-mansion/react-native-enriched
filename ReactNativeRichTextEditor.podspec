@@ -23,4 +23,10 @@ if respond_to?(:install_modules_dependencies, true)
 else
   s.dependency "React-Core"
 end
+
+s.subspec "cpp" do |ss|
+  ss.source_files = ["ios/**/*.{cpp,h}"]
+  ss.header_dir = "ReactNativeRichTextEditor"
+  ss.pod_target_xcconfig = {"HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/cpp\"" }
+end
 end
