@@ -31,6 +31,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var imageStart: Int? = null
     private set
+  var mentionStart: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -82,6 +84,11 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setMentionStart(start: Int?) {
+    this.mentionStart = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
@@ -94,6 +101,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H3 -> h3Start
       EditorSpans.LINK -> linkStart
       EditorSpans.IMAGE -> imageStart
+      EditorSpans.MENTION -> mentionStart
       else -> null
     }
 
@@ -112,6 +120,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H3 -> setH3Start(start)
       EditorSpans.LINK -> setLinkStart(start)
       EditorSpans.IMAGE -> setImageStart(start)
+      EditorSpans.MENTION -> setMentionStart(start)
     }
   }
 
@@ -127,6 +136,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isH3", h3Start != null)
     payload.putBoolean("isLink", linkStart != null)
     payload.putBoolean("isImage", imageStart != null)
+    payload.putBoolean("isMention", mentionStart != null)
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {

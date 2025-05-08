@@ -5,7 +5,7 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 
 class LinkHandler(private val editorView: ReactNativeRichTextEditorView) {
-  fun onClick(url: String) {
+  fun onPress(url: String) {
     val formattedUrl = if (!url.startsWith("https://") && !url.startsWith("http://")) "https://$url" else url
 
     val context = editorView.context as ReactContext

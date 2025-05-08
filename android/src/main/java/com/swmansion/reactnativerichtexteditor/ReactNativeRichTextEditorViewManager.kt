@@ -18,7 +18,9 @@ import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
 import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
+import com.swmansion.reactnativerichtexteditor.events.OnMentionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
+import com.swmansion.reactnativerichtexteditor.events.OnPressMentionEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
@@ -61,6 +63,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
      map.put(OnChangeStyleEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStyleEvent.EVENT_NAME))
      map.put(OnPressLinkEvent.EVENT_NAME, mapOf("registrationName" to OnPressLinkEvent.EVENT_NAME))
      map.put(OnLinkDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnLinkDetectedEvent.EVENT_NAME))
+     map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
+     map.put(OnPressMentionEvent.EVENT_NAME, mapOf("registrationName" to OnPressMentionEvent.EVENT_NAME))
 
      return map
    }
@@ -158,6 +162,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun addImage(view: ReactNativeRichTextEditorView?, src: String) {
     view?.addImage(src)
+  }
+
+  override fun startMention(view: ReactNativeRichTextEditorView?) {
+    view?.startMention()
+  }
+
+  override fun addMention(view: ReactNativeRichTextEditorView?, text: String, value: String) {
+    view?.addMention(text, value)
   }
 
   override fun measure(

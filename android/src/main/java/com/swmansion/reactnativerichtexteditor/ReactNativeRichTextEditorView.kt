@@ -2,7 +2,6 @@ package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
 import android.graphics.Color
-import android.net.Uri
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.method.LinkMovementMethod
@@ -18,7 +17,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
-import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
+import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
@@ -26,7 +25,6 @@ import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
-import java.io.File
 import kotlin.math.ceil
 
 
@@ -38,7 +36,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val specialStyles: SpecialStyles? = SpecialStyles(this)
 
-  var linkHandler: LinkHandler? = LinkHandler(this)
+  val linkHandler: LinkHandler? = LinkHandler(this)
+  val mentionHandler: MentionHandler? = MentionHandler(this)
 
   private var typefaceDirty = false
   private var fontSize: Float? = null
@@ -217,6 +216,20 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (!isValid) return
 
     specialStyles?.setImageSpan(src)
+  }
+
+  fun startMention() {
+    val isValid = verifyStyle(EditorSpans.MENTION)
+    if (!isValid) return
+
+    specialStyles?.startMention()
+  }
+
+  fun addMention(text: String, value: String) {
+    val isValid = verifyStyle(EditorSpans.MENTION)
+    if (!isValid) return
+
+    specialStyles?.setMentionSpan(text, value)
   }
 
   // Update shadow node's state in order to recalculate layout

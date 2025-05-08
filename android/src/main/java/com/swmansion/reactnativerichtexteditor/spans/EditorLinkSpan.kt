@@ -9,8 +9,8 @@ import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
 
 
 class EditorLinkSpan(private val url: String, private val linkHandler: LinkHandler) : ClickableSpan(), EditorSpan {
-  override fun onClick(widget: View) {
-    linkHandler.onClick(url)
+  override fun onClick(view: View) {
+    linkHandler.onPress(url)
   }
 
   override fun updateDrawState(textPaint: TextPaint) {

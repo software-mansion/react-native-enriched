@@ -120,6 +120,9 @@ export const Toolbar: FC<ToolbarProps> = ({
       case 'image':
         onSelectImage();
         break;
+      case 'mention':
+        editorRef.current?.startMention();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -145,6 +148,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isLink;
       case 'image':
         return stylesState.isImage;
+      case 'mention':
+        return stylesState.isMention;
       default:
         return false;
     }

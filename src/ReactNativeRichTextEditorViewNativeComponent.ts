@@ -22,6 +22,7 @@ export interface OnChangeStyleEvent {
   isH3: boolean;
   isLink: boolean;
   isImage: boolean;
+  isMention: boolean;
 }
 
 export interface OnPressLinkEvent {
@@ -33,12 +34,23 @@ export interface OnLinkDetectedEvent {
   url: string;
 }
 
+export interface OnMentionEvent {
+  text: string | null;
+}
+
+export interface OnPressMentionEvent {
+  text: string;
+  value: string;
+}
+
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
   onPressLink?: DirectEventHandler<OnPressLinkEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
+  onMention?: DirectEventHandler<OnMentionEvent>;
+  onPressMention?: DirectEventHandler<OnPressMentionEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -71,6 +83,12 @@ interface NativeCommands {
     url: string
   ) => void;
   addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
+  startMention: (viewRef: React.ElementRef<ComponentType>) => void;
+  addMention: (
+    viewRef: React.ElementRef<ComponentType>,
+    text: string,
+    value: string
+  ) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -90,6 +108,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleH3',
     'addLink',
     'addImage',
+    'startMention',
+    'addMention',
   ],
 });
 

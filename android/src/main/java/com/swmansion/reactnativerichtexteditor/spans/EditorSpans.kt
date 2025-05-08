@@ -26,6 +26,7 @@ object EditorSpans {
   // special styles
   const val LINK = "link"
   const val IMAGE = "image"
+  const val MENTION = "mention"
 
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
@@ -44,6 +45,7 @@ object EditorSpans {
   val specialStyles: Map<String, BaseSpanConfig> = mapOf(
     LINK to BaseSpanConfig(EditorLinkSpan::class.java),
     IMAGE to BaseSpanConfig(EditorImageSpan::class.java),
+    MENTION to BaseSpanConfig(EditorMentionSpan::class.java),
   )
 
   // TODO: provide proper config once other styles are implemented
@@ -64,5 +66,6 @@ object EditorSpans {
     ),
     LINK to StylesMergingConfig(),
     IMAGE to StylesMergingConfig(),
+    MENTION to StylesMergingConfig(),
   )
 }

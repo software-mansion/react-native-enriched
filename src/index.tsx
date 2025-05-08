@@ -4,4 +4,5 @@ export type {
   OnChangeStyleEvent,
   OnPressLinkEvent,
   OnLinkDetectedEvent,
+  OnPressMentionEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
