@@ -29,6 +29,8 @@ const DEFAULT_STYLE: StylesState = {
   isH3: false,
   isBlockQuote: false,
   isCodeBlock: false,
+  isOrderedList: false,
+  isUnorderedList: false,
 };
 
 export default function App() {

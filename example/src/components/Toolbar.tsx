@@ -113,6 +113,12 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'quote':
         editorRef?.current?.toggleBlockQuote();
         break;
+      case 'unordered-list':
+        editorRef.current?.toggleUnorderedList();
+        break;
+      case 'ordered-list':
+        editorRef.current?.toggleOrderedList();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -138,6 +144,10 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isCodeBlock;
       case 'quote':
         return stylesState.isBlockQuote;
+      case 'unordered-list':
+        return stylesState.isUnorderedList;
+      case 'ordered-list':
+        return stylesState.isOrderedList;
       default:
         return false;
     }

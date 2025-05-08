@@ -2,6 +2,7 @@ package com.swmansion.reactnativerichtexteditor.spans
 
 data class BaseSpanConfig(val clazz: Class<*>)
 data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
+data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
 
 data class StylesMergingConfig(
   // styles that should be removed when we apply specific style
@@ -25,6 +26,10 @@ object EditorSpans {
   const val BLOCK_QUOTE = "block_quote"
   const val CODE_BLOCK = "code_block"
 
+  // list styles
+  const val UNORDERED_LIST = "unordered_list"
+  const val ORDERED_LIST = "ordered_list"
+
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
     BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
     ITALIC to BaseSpanConfig(EditorItalicSpan::class.java),
@@ -39,6 +44,11 @@ object EditorSpans {
     H3 to ParagraphSpanConfig(EditorH3Span::class.java, false),
     BLOCK_QUOTE to ParagraphSpanConfig(EditorBlockQuoteSpan::class.java, true),
     CODE_BLOCK to ParagraphSpanConfig(EditorCodeBlockSpan::class.java, true),
+  )
+
+  val listSpans: Map<String, ListSpanConfig> = mapOf(
+    UNORDERED_LIST to ListSpanConfig(EditorUnorderedListSpan::class.java, "- "),
+    ORDERED_LIST to ListSpanConfig(EditorOrderedListSpan::class.java, "1. "),
   )
 
   // TODO: provide proper config once other styles are implemented
@@ -70,6 +80,12 @@ object EditorSpans {
     ),
     CODE_BLOCK to StylesMergingConfig(
       conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, BLOCK_QUOTE),
+    ),
+    UNORDERED_LIST to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST),
+    ),
+    ORDERED_LIST to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST),
     ),
   )
 }

@@ -31,6 +31,10 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     private set
   var blockQuoteStart: Int? = null
     private set
+  var orderedListStart: Int? = null
+    private set
+  var unorderedListStart: Int? = null
+    private set
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -82,6 +86,16 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     emitStyleChangeEvent()
   }
 
+  fun setOrderedListStart(start: Int?) {
+    this.orderedListStart = start
+    emitStyleChangeEvent()
+  }
+
+  fun setUnorderedListStart(start: Int?) {
+    this.unorderedListStart = start
+    emitStyleChangeEvent()
+  }
+
   fun getStart(name: String): Int? {
     val start = when (name) {
       EditorSpans.BOLD -> boldStart
@@ -94,6 +108,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H3 -> h3Start
       EditorSpans.CODE_BLOCK -> codeBlockStart
       EditorSpans.BLOCK_QUOTE -> blockQuoteStart
+      EditorSpans.ORDERED_LIST -> orderedListStart
+      EditorSpans.UNORDERED_LIST -> unorderedListStart
       else -> null
     }
 
@@ -112,6 +128,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
       EditorSpans.H3 -> setH3Start(start)
       EditorSpans.CODE_BLOCK -> setCodeBlockStart(start)
       EditorSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
+      EditorSpans.ORDERED_LIST -> setOrderedListStart(start)
+      EditorSpans.UNORDERED_LIST -> setUnorderedListStart(start)
     }
   }
 
@@ -127,6 +145,8 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     payload.putBoolean("isH3", h3Start != null)
     payload.putBoolean("isCodeBlock", codeBlockStart != null)
     payload.putBoolean("isBlockQuote", blockQuoteStart != null)
+    payload.putBoolean("isOrderedList", orderedListStart != null)
+    payload.putBoolean("isUnorderedList", unorderedListStart != null)
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {

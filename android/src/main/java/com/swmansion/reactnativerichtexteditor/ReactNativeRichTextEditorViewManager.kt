@@ -156,6 +156,14 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.BLOCK_QUOTE)
   }
 
+  override fun toggleOrderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.ORDERED_LIST)
+  }
+
+  override fun toggleUnorderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.UNORDERED_LIST)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

@@ -22,6 +22,8 @@ export interface OnChangeStyleEvent {
   isH3: boolean;
   isCodeBlock: boolean;
   isBlockQuote: boolean;
+  isOrderedList: boolean;
+  isUnorderedList: boolean;
 }
 
 export interface NativeProps extends ViewProps {
@@ -56,6 +58,8 @@ interface NativeCommands {
   toggleH3: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleCodeBlock: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -75,6 +79,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleH3',
     'toggleCodeBlock',
     'toggleBlockQuote',
+    'toggleOrderedList',
+    'toggleUnorderedList',
   ],
 });
 
