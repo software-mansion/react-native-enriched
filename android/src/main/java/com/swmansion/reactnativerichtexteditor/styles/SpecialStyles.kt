@@ -12,6 +12,8 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
 import java.io.File
 
 class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
+  private var mentionStart: Int? = null
+
   fun setLinkSpan(text: String, url: String) {
     val linkHandler = editorView.linkHandler ?: return
     val selection = editorView.selection ?: return
@@ -96,6 +98,7 @@ class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
       mentionHandler.onMention(word.replace("@", ""))
     } else if (word.startsWith("@")) {
       // Mention started
+      mentionStart = start
       mentionHandler.onMention("")
     } else {
       // Mention ended
@@ -149,11 +152,12 @@ class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
       spannable.removeSpan(span)
     }
 
-    var start = selectionStart
-    val end = start + text.length
-    spannable.insert(start, text)
+    var start = mentionStart ?: return
+    spannable.replace(start + 1, selectionEnd, text)
 
     val span = EditorMentionSpan(value, text, mentionHandler)
-    spannable.setSpan(span, start - 1, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    // start + text + 1 (because we need to account for the "@" character)
+    val spanEnd = start + text.length + 1
+    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 }
