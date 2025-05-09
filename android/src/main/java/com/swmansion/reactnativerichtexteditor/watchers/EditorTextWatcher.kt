@@ -5,6 +5,7 @@ import android.text.TextWatcher
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
 
 class EditorTextWatcher(private val editorView: ReactNativeRichTextEditorView) : TextWatcher {
@@ -39,6 +40,11 @@ class EditorTextWatcher(private val editorView: ReactNativeRichTextEditorView) :
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, editorView.id, s.toString()))
+    dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, editorView.id, s))
+
+    // For empty text we have to manually emit HTML event from TextWatcher instead of SpanWatcher
+    if (s.isEmpty()) {
+      dispatcher?.dispatchEvent(OnChangeHtmlEvent(surfaceId, editorView.id, ""))
+    }
   }
 }

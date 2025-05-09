@@ -15,6 +15,7 @@ import {
   type OnLinkDetectedEvent,
   type OnMentionChangeEvent,
   type OnPressMentionEvent,
+  type OnChangeHtmlEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -65,6 +66,10 @@ export default function App() {
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
+  };
+
+  const handleChangeHtml = (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => {
+    console.log('HTML changed:', e?.nativeEvent.value);
   };
 
   const handleChangeStyle = (e: NativeSyntheticEvent<OnChangeStyleEvent>) => {
@@ -156,6 +161,7 @@ export default function App() {
             style={styles.input}
             defaultValue={DEFAULT_VALUE}
             onChangeText={handleChangeText}
+            onChangeHtml={handleChangeHtml}
             onChangeStyle={handleChangeStyle}
             onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
