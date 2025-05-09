@@ -17,12 +17,32 @@ export interface OnChangeStyleEvent {
   isUnderline: boolean;
   isStrikeThrough: boolean;
   isInlineCode: boolean;
+  isH1: boolean;
+  isH2: boolean;
+  isH3: boolean;
+  isCodeBlock: boolean;
+  isBlockQuote: boolean;
+  isOrderedList: boolean;
+  isUnorderedList: boolean;
+  isLink: boolean;
+  isImage: boolean;
+}
+
+export interface OnPressLinkEvent {
+  url: string;
+}
+
+export interface OnLinkDetectedEvent {
+  text: string;
+  url: string;
 }
 
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
+  onPressLink?: DirectEventHandler<OnPressLinkEvent>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -46,6 +66,19 @@ interface NativeCommands {
   toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleInlineCode: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH1: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH2: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH3: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleCodeBlock: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  addLink: (
+    viewRef: React.ElementRef<ComponentType>,
+    text: string,
+    url: string
+  ) => void;
+  addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -60,6 +93,15 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleUnderline',
     'toggleStrikeThrough',
     'toggleInlineCode',
+    'toggleH1',
+    'toggleH2',
+    'toggleH3',
+    'toggleCodeBlock',
+    'toggleBlockQuote',
+    'toggleOrderedList',
+    'toggleUnorderedList',
+    'addLink',
+    'addImage',
   ],
 });
 

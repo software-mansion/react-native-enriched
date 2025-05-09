@@ -28,6 +28,8 @@
 		D8B2038262614F14AE6245F0 /* CascadiaCode-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */; };
 		DCB0457B1CAE40B29979CDB9 /* CascadiaCode-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */; };
 		F83E68A3773947EA87D1FD9C /* CascadiaCode-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */; };
+		95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */; };
+		76440F80827A49FFA3B1BED5 /* FontAwesome.json in Resources */ = {isa = PBXBuildFile; fileRef = C667157990F34428AEE8CC93 /* FontAwesome.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +59,8 @@
 		D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Light.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Light.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */ = {isa = PBXFileReference; name = "FontAwesome.ttf"; path = "../assets/icons/FontAwesome.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C667157990F34428AEE8CC93 /* FontAwesome.json */ = {isa = PBXFileReference; name = "FontAwesome.json"; path = "../assets/icons/FontAwesome.json"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,8 @@
 				4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */,
 				674C8E7598D647768ECEC0E1 /* OFL.txt */,
 				8A425B9B75B9488EA0FDF624 /* README.txt */,
+        D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */,
+				C667157990F34428AEE8CC93 /* FontAwesome.json */,
 			);
 			name = Resources;
 			path = "";
@@ -234,6 +240,8 @@
 				D8B2038262614F14AE6245F0 /* CascadiaCode-SemiBoldItalic.ttf in Resources */,
 				21F123CC4B834D2999D0E0AD /* OFL.txt in Resources */,
 				88B97641EDA042B383FCFCAB /* README.txt in Resources */,
+        95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */,
+				76440F80827A49FFA3B1BED5 /* FontAwesome.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

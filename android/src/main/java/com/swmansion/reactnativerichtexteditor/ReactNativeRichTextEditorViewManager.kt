@@ -17,6 +17,8 @@ import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
+import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
+import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
@@ -57,6 +59,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
      val map = mutableMapOf<String, Any>()
      map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
      map.put(OnChangeStyleEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStyleEvent.EVENT_NAME))
+     map.put(OnPressLinkEvent.EVENT_NAME, mapOf("registrationName" to OnPressLinkEvent.EVENT_NAME))
+     map.put(OnLinkDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnLinkDetectedEvent.EVENT_NAME))
 
      return map
    }
@@ -134,6 +138,42 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun toggleInlineCode(view: ReactNativeRichTextEditorView?) {
     view?.verifyAndToggleStyle(EditorSpans.INLINE_CODE)
+  }
+
+  override fun toggleH1(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H1)
+  }
+
+  override fun toggleH2(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H2)
+  }
+
+  override fun toggleH3(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.H3)
+  }
+
+  override fun toggleCodeBlock(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.CODE_BLOCK)
+  }
+
+  override fun toggleBlockQuote(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.BLOCK_QUOTE)
+  }
+
+  override fun toggleOrderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.ORDERED_LIST)
+  }
+
+  override fun toggleUnorderedList(view: ReactNativeRichTextEditorView?) {
+    view?.verifyAndToggleStyle(EditorSpans.UNORDERED_LIST)
+  }
+
+  override fun addLink(view: ReactNativeRichTextEditorView?, text: String, url: String) {
+    view?.addLink(text, url)
+  }
+
+  override fun addImage(view: ReactNativeRichTextEditorView?, src: String) {
+    view?.addImage(src)
   }
 
   override fun measure(

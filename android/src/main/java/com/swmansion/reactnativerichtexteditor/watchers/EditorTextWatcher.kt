@@ -30,6 +30,9 @@ class EditorTextWatcher(private val editorView: ReactNativeRichTextEditorView) :
 
   private fun applyStyles(s: Editable) {
     editorView.inlineStyles?.afterTextChanged(s, endCursorPosition)
+    editorView.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    editorView.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    editorView.specialStyles?.afterTextChanged(s, endCursorPosition)
   }
 
   private fun emitEvent(s: Editable) {

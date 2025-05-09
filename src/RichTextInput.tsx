@@ -9,6 +9,8 @@ import ReactNativeRichTextEditorView, {
   type NativeProps,
   type OnChangeStyleEvent,
   type OnChangeTextEvent,
+  type OnLinkDetectedEvent,
+  type OnPressLinkEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   NativeMethods,
@@ -27,6 +29,15 @@ export interface RichTextInputInstance {
   toggleUnderline: () => void;
   toggleStrikeThrough: () => void;
   toggleInlineCode: () => void;
+  toggleH1: () => void;
+  toggleH2: () => void;
+  toggleH3: () => void;
+  toggleCodeBlock: () => void;
+  toggleBlockQuote: () => void;
+  toggleOrderedList: () => void;
+  toggleUnorderedList: () => void;
+  setLink: (text: string, url: string) => void;
+  setImage: (src: string) => void;
 }
 
 export interface RichTextInputProps {
@@ -35,6 +46,8 @@ export interface RichTextInputProps {
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
+  onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
+  onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -53,6 +66,8 @@ export const RichTextInput = ({
   style,
   onChangeText,
   onChangeStyle,
+  onPressLink,
+  onLinkDetected,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -78,6 +93,33 @@ export const RichTextInput = ({
     toggleInlineCode: () => {
       Commands.toggleInlineCode(nullthrows(nativeRef.current));
     },
+    toggleH1: () => {
+      Commands.toggleH1(nullthrows(nativeRef.current));
+    },
+    toggleH2: () => {
+      Commands.toggleH2(nullthrows(nativeRef.current));
+    },
+    toggleH3: () => {
+      Commands.toggleH3(nullthrows(nativeRef.current));
+    },
+    toggleCodeBlock: () => {
+      Commands.toggleCodeBlock(nullthrows(nativeRef.current));
+    },
+    toggleBlockQuote: () => {
+      Commands.toggleBlockQuote(nullthrows(nativeRef.current));
+    },
+    toggleOrderedList: () => {
+      Commands.toggleOrderedList(nullthrows(nativeRef.current));
+    },
+    toggleUnorderedList: () => {
+      Commands.toggleUnorderedList(nullthrows(nativeRef.current));
+    },
+    setLink: (text: string, url: string) => {
+      Commands.addLink(nullthrows(nativeRef.current), text, url);
+    },
+    setImage: (uri: string) => {
+      Commands.addImage(nullthrows(nativeRef.current), uri);
+    },
   }));
 
   return (
@@ -87,6 +129,8 @@ export const RichTextInput = ({
       style={style}
       onChangeText={onChangeText}
       onChangeStyle={onChangeStyle}
+      onPressLink={onPressLink}
+      onLinkDetected={onLinkDetected}
     />
   );
 };

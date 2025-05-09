@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.StaticLayout
+import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -15,10 +16,16 @@ import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.reactnativerichtexteditor.events.LinkHandler
+import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
+import com.swmansion.reactnativerichtexteditor.styles.ListStyles
+import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
+import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
+import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
 
@@ -28,6 +35,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val selection: EditorSelection? = EditorSelection(this)
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
+  val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
+  val listStyles: ListStyles? = ListStyles(this)
+  val specialStyles: SpecialStyles? = SpecialStyles(this)
+
+  var linkHandler: LinkHandler? = LinkHandler(this)
 
   private var typefaceDirty = false
   private var fontSize: Float? = null
@@ -54,11 +66,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   private fun prepareComponent() {
     this.isSingleLine = false
+    this.isHorizontalScrollBarEnabled = false
+    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+    // required to make ClickableSpans really clickable
+    this.movementMethod = LinkMovementMethod.getInstance()
+
     this.setPadding(0, 0, 0, 0)
     this.setBackgroundColor(Color.TRANSPARENT)
-    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
-    this.isHorizontalScrollBarEnabled = false
-    addTextChangedListener(EditorTextWatcher((this)))
+
+    addSpanWatcher(EditorSpanWatcher(this))
+    addTextChangedListener(EditorTextWatcher(this))
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
@@ -74,6 +91,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (value == null) return
 
     setText(value)
+    // Assign SpanWatcher one more time as our previous spannable has been replaced
+    addSpanWatcher(EditorSpanWatcher(this))
   }
 
   fun setColor(colorInt: Int?) {
@@ -155,6 +174,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.UNDERLINE -> inlineStyles?.toggleStyle(EditorSpans.UNDERLINE)
       EditorSpans.STRIKETHROUGH -> inlineStyles?.toggleStyle(EditorSpans.STRIKETHROUGH)
       EditorSpans.INLINE_CODE -> inlineStyles?.toggleStyle(EditorSpans.INLINE_CODE)
+      EditorSpans.H1 -> paragraphStyles?.toggleStyle(EditorSpans.H1)
+      EditorSpans.H2 -> paragraphStyles?.toggleStyle(EditorSpans.H2)
+      EditorSpans.H3 -> paragraphStyles?.toggleStyle(EditorSpans.H3)
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.toggleStyle(EditorSpans.CODE_BLOCK)
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EditorSpans.BLOCK_QUOTE)
+      EditorSpans.ORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.ORDERED_LIST)
+      EditorSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.UNORDERED_LIST)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
@@ -180,11 +206,30 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     return true
   }
 
+  private fun addSpanWatcher(watcher: EditorSpanWatcher) {
+    val spannable = text as Spannable
+    spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+  }
+
   fun verifyAndToggleStyle(name: String) {
     val isValid = verifyStyle(name)
     if (!isValid) return
 
     toggleStyle(name)
+  }
+
+  fun addLink(text: String, url: String) {
+    val isValid = verifyStyle(EditorSpans.LINK)
+    if (!isValid) return
+
+    specialStyles?.setLinkSpan(text, url)
+  }
+
+  fun addImage(src: String) {
+    val isValid = verifyStyle(EditorSpans.IMAGE)
+    if (!isValid) return
+
+    specialStyles?.setImageSpan(src)
   }
 
   // Update shadow node's state in order to recalculate layout

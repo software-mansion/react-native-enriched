@@ -75,9 +75,16 @@ type StylesState = OnChangeStyleEvent;
 export interface ToolbarProps {
   stylesState: StylesState;
   editorRef?: React.RefObject<RichTextInputInstance | null>;
+  onOpenLinkModal: () => void;
+  onSelectImage: () => void;
 }
 
-export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
+export const Toolbar: FC<ToolbarProps> = ({
+  stylesState,
+  editorRef,
+  onOpenLinkModal,
+  onSelectImage,
+}) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
     if (!currentRef) return;
@@ -98,6 +105,33 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
       case 'inline-code':
         editorRef?.current?.toggleInlineCode();
         break;
+      case 'heading-1':
+        editorRef.current?.toggleH1();
+        break;
+      case 'heading-2':
+        editorRef.current?.toggleH2();
+        break;
+      case 'heading-3':
+        editorRef.current?.toggleH3();
+        break;
+      case 'code-block':
+        editorRef?.current?.toggleCodeBlock();
+        break;
+      case 'quote':
+        editorRef?.current?.toggleBlockQuote();
+        break;
+      case 'unordered-list':
+        editorRef.current?.toggleUnorderedList();
+        break;
+      case 'ordered-list':
+        editorRef.current?.toggleOrderedList();
+        break;
+      case 'link':
+        onOpenLinkModal();
+        break;
+      case 'image':
+        onSelectImage();
+        break;
       default:
         console.warn('Unsupported action:', item.name);
     }
@@ -115,6 +149,22 @@ export const Toolbar: FC<ToolbarProps> = ({ stylesState, editorRef }) => {
         return stylesState.isStrikeThrough;
       case 'inline-code':
         return stylesState.isInlineCode;
+      case 'heading-1':
+        return stylesState.isH1;
+      case 'heading-2':
+        return stylesState.isH2;
+      case 'code-block':
+        return stylesState.isCodeBlock;
+      case 'quote':
+        return stylesState.isBlockQuote;
+      case 'unordered-list':
+        return stylesState.isUnorderedList;
+      case 'ordered-list':
+        return stylesState.isOrderedList;
+      case 'link':
+        return stylesState.isLink;
+      case 'image':
+        return stylesState.isImage;
       default:
         return false;
     }
