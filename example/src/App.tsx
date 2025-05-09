@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
     maxHeight: 120,
     backgroundColor: 'gainsboro',
     fontSize: 18,
+    fontFamily: 'CascadiaCode-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
   },

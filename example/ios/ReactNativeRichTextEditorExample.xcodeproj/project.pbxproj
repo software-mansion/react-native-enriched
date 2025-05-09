@@ -8,12 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-ReactNativeRichTextEditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-ReactNativeRichTextEditorExample.a */; };
+		0CD8BA6AD7814F8DB7A821F7 /* CascadiaCode-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7DDEBA1C438F415493ECFAB7 /* CascadiaCode-ExtraLightItalic.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		21F123CC4B834D2999D0E0AD /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 674C8E7598D647768ECEC0E1 /* OFL.txt */; };
+		271147C3BA434F6A84F4483F /* CascadiaCode-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6352E13F84F841D5A2BA25B4 /* CascadiaCode-Italic.ttf */; };
+		56EDC86733EA478B9DA01878 /* CascadiaCode-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */; };
+		5B86D220CCF04C2A850EB7E8 /* CascadiaCode-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */; };
+		71808E445FEA4FCF902169F4 /* CascadiaCode-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */; };
+		71AA7E56B3D7424AB82C5D46 /* CascadiaCode-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 79452663257A4B73B2308643 /* CascadiaCode-Bold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		76D07A8A0593C01D41F81A54 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */; };
 		76440F80827A49FFA3B1BED5 /* FontAwesome.json in Resources */ = {isa = PBXBuildFile; fileRef = C667157990F34428AEE8CC93 /* FontAwesome.json */; };
+		76D07A8A0593C01D41F81A54 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		7DE7F1D88B514FDB8C66ED56 /* CascadiaCode-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E36300E55D4493B9BE898E6 /* CascadiaCode-Regular.ttf */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8378C8E95A614114A21F3687 /* CascadiaCode-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D1BB596339A4F8E8CBC2087 /* CascadiaCode-BoldItalic.ttf */; };
+		88B97641EDA042B383FCFCAB /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8A425B9B75B9488EA0FDF624 /* README.txt */; };
+		902D54BCFDB74DA0A807C1F4 /* CascadiaCode-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7FD036FA17B24AAFA7082B2A /* CascadiaCode-LightItalic.ttf */; };
+		907A3D37EC6F4B9DA1B70348 /* CascadiaCode-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4A13A7631B3C499C989AC38A /* CascadiaCode-ExtraLight.ttf */; };
+		95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */; };
+		970142F6180042E5964006A6 /* CascadiaCode-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */; };
+		D8B2038262614F14AE6245F0 /* CascadiaCode-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */; };
+		DCB0457B1CAE40B29979CDB9 /* CascadiaCode-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */; };
+		F83E68A3773947EA87D1FD9C /* CascadiaCode-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,14 +37,30 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactNativeRichTextEditorExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactNativeRichTextEditorExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ReactNativeRichTextEditorExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Italic-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; sourceTree = "<group>"; };
+		3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-SemiBold.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBold.ttf"; sourceTree = "<group>"; };
+		4A13A7631B3C499C989AC38A /* CascadiaCode-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-ExtraLight.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-ExtraLight.ttf"; sourceTree = "<group>"; };
+		4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-SemiBoldItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
+		4E36300E55D4493B9BE898E6 /* CascadiaCode-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Regular.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Regular.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.release.xcconfig"; sourceTree = "<group>"; };
+		5D1BB596339A4F8E8CBC2087 /* CascadiaCode-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-BoldItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-BoldItalic.ttf"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-ReactNativeRichTextEditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeRichTextEditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6352E13F84F841D5A2BA25B4 /* CascadiaCode-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Italic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Italic.ttf"; sourceTree = "<group>"; };
+		674C8E7598D647768ECEC0E1 /* OFL.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = OFL.txt; path = ../assets/fonts/Cascadia_Code/OFL.txt; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ReactNativeRichTextEditorExample/AppDelegate.swift; sourceTree = "<group>"; };
+		78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-MediumItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-MediumItalic.ttf"; sourceTree = "<group>"; };
+		79452663257A4B73B2308643 /* CascadiaCode-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Bold.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Bold.ttf"; sourceTree = "<group>"; };
+		7DDEBA1C438F415493ECFAB7 /* CascadiaCode-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-ExtraLightItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
+		7FD036FA17B24AAFA7082B2A /* CascadiaCode-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-LightItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-LightItalic.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ReactNativeRichTextEditorExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Medium.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Medium.ttf"; sourceTree = "<group>"; };
+		8A425B9B75B9488EA0FDF624 /* README.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = README.txt; path = ../assets/fonts/Cascadia_Code/README.txt; sourceTree = "<group>"; };
+		C667157990F34428AEE8CC93 /* FontAwesome.json */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.json; path = ../assets/icons/FontAwesome.json; sourceTree = "<group>"; };
+		D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = ../assets/icons/FontAwesome.ttf; sourceTree = "<group>"; };
+		D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-VariableFont_wght.ttf"; sourceTree = "<group>"; };
+		DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Light.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Light.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */ = {isa = PBXFileReference; name = "FontAwesome.ttf"; path = "../assets/icons/FontAwesome.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		C667157990F34428AEE8CC93 /* FontAwesome.json */ = {isa = PBXFileReference; name = "FontAwesome.json"; path = "../assets/icons/FontAwesome.json"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,7 +111,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
-				6C81FEF95A55438D92C4D9DA /* Resources */,
+				E4E5B0CDA0C9475CBC2552DE /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -103,15 +135,31 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		6C81FEF95A55438D92C4D9DA /* Resources */ = {
-			isa = "PBXGroup";
+		E4E5B0CDA0C9475CBC2552DE /* Resources */ = {
+			isa = PBXGroup;
 			children = (
+				3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */,
+				D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */,
+				79452663257A4B73B2308643 /* CascadiaCode-Bold.ttf */,
+				5D1BB596339A4F8E8CBC2087 /* CascadiaCode-BoldItalic.ttf */,
+				4A13A7631B3C499C989AC38A /* CascadiaCode-ExtraLight.ttf */,
+				7DDEBA1C438F415493ECFAB7 /* CascadiaCode-ExtraLightItalic.ttf */,
+				6352E13F84F841D5A2BA25B4 /* CascadiaCode-Italic.ttf */,
+				DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */,
+				7FD036FA17B24AAFA7082B2A /* CascadiaCode-LightItalic.ttf */,
+				87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */,
+				78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */,
+				4E36300E55D4493B9BE898E6 /* CascadiaCode-Regular.ttf */,
+				3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */,
+				4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */,
+				674C8E7598D647768ECEC0E1 /* OFL.txt */,
+				8A425B9B75B9488EA0FDF624 /* README.txt */,
 				D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */,
 				C667157990F34428AEE8CC93 /* FontAwesome.json */,
 			);
 			name = Resources;
-			sourceTree = "<group>";
 			path = "";
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -176,6 +224,22 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				76D07A8A0593C01D41F81A54 /* PrivacyInfo.xcprivacy in Resources */,
+				71808E445FEA4FCF902169F4 /* CascadiaCode-Italic-VariableFont_wght.ttf in Resources */,
+				DCB0457B1CAE40B29979CDB9 /* CascadiaCode-VariableFont_wght.ttf in Resources */,
+				71AA7E56B3D7424AB82C5D46 /* CascadiaCode-Bold.ttf in Resources */,
+				8378C8E95A614114A21F3687 /* CascadiaCode-BoldItalic.ttf in Resources */,
+				907A3D37EC6F4B9DA1B70348 /* CascadiaCode-ExtraLight.ttf in Resources */,
+				0CD8BA6AD7814F8DB7A821F7 /* CascadiaCode-ExtraLightItalic.ttf in Resources */,
+				271147C3BA434F6A84F4483F /* CascadiaCode-Italic.ttf in Resources */,
+				970142F6180042E5964006A6 /* CascadiaCode-Light.ttf in Resources */,
+				902D54BCFDB74DA0A807C1F4 /* CascadiaCode-LightItalic.ttf in Resources */,
+				56EDC86733EA478B9DA01878 /* CascadiaCode-Medium.ttf in Resources */,
+				5B86D220CCF04C2A850EB7E8 /* CascadiaCode-MediumItalic.ttf in Resources */,
+				7DE7F1D88B514FDB8C66ED56 /* CascadiaCode-Regular.ttf in Resources */,
+				F83E68A3773947EA87D1FD9C /* CascadiaCode-SemiBold.ttf in Resources */,
+				D8B2038262614F14AE6245F0 /* CascadiaCode-SemiBoldItalic.ttf in Resources */,
+				21F123CC4B834D2999D0E0AD /* OFL.txt in Resources */,
+				88B97641EDA042B383FCFCAB /* README.txt in Resources */,
 				95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */,
 				76440F80827A49FFA3B1BED5 /* FontAwesome.json in Resources */,
 			);

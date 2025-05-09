@@ -2,6 +2,69 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "assets/fonts/Cascadia_Code/CascadiaCode-Italic-VariableFont_wght.ttf",
+      "sha1": "a084a4c3d908e5b3de7d900e73c2d7c02737be88"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/CascadiaCode-VariableFont_wght.ttf",
+      "sha1": "1dc1608cfa7312a8eae8c363b8bc39c1e02d3619"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/OFL.txt",
+      "sha1": "992a2afbe533663a9f32a8a42483d8122e9c400e"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/README.txt",
+      "sha1": "02eb79f739f1445a0cd07ef121c593ac32eac482"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-Bold.ttf",
+      "sha1": "a599fdda1f4c9743aef922779c3346cba87edf74"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-BoldItalic.ttf",
+      "sha1": "4ac8eea03998356047474dde55e850cd55c6ea0b"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-ExtraLight.ttf",
+      "sha1": "047f8bd456c6104f343b68c1785d286e1f578644"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-ExtraLightItalic.ttf",
+      "sha1": "0f167b48f8815660d8564241eb117b6e98932c36"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-Italic.ttf",
+      "sha1": "bee1f999bb794e6ec779690f17d5354b803f7541"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-Light.ttf",
+      "sha1": "894c589913ec1f0f89910ec1a625c09c798d78d4"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-LightItalic.ttf",
+      "sha1": "ae7809b93824955fedd9d6c67ca84f4ec5b0313b"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-Medium.ttf",
+      "sha1": "e5559ffbaa12516fe750025cdd97fc22c338f585"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-MediumItalic.ttf",
+      "sha1": "7d0f21268ce304cfa15743554df9c8efbf30741f"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-Regular.ttf",
+      "sha1": "f6aa39dc45a17b3cb2066e58dbca40b763d9ce63"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBold.ttf",
+      "sha1": "92d9bdcba261f8a7e6139709ba45bdfcbea7afca"
+    },
+    {
+      "path": "assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBoldItalic.ttf",
+      "sha1": "9e4969123917b46ada13a4b38171c0f8ee9d0924"
+    },
       "path": "assets/icons/FontAwesome.json",
       "sha1": "65c34e3f33cb539a501615b68f1f306588e63692"
     },
