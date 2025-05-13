@@ -53,6 +53,8 @@ export interface OnPressMentionEvent {
 
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
+  placeholder?: string;
+  placeholderTextColor?: ColorValue;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;

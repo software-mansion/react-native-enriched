@@ -161,6 +161,8 @@ export default function App() {
           <RichTextInput
             ref={ref}
             style={styles.editorInput}
+            placeholder="Type something here..."
+            placeholderTextColor="blue"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}

@@ -76,6 +76,16 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
+  @ReactProp(name = "placeholder")
+  override fun setPlaceholder(view: ReactNativeRichTextEditorView?, value: String?) {
+    view?.setPlaceholder(value)
+  }
+
+  @ReactProp(name = "placeholderTextColor", customType = "Color")
+  override fun setPlaceholderTextColor(view: ReactNativeRichTextEditorView?, value: Int?) {
+    view?.setPlaceholderTextColor(value)
+  }
+
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
   override fun setColor(view: ReactNativeRichTextEditorView?, color: Int?) {
     view?.setColor(color)
