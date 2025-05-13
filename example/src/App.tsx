@@ -13,7 +13,7 @@ import {
   type RichTextInputInstance,
   type OnPressLinkEvent,
   type OnLinkDetectedEvent,
-  type OnMentionChangeEvent,
+  type OnChangeMentionEvent,
   type OnPressMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
@@ -131,8 +131,8 @@ export default function App() {
     ref.current?.setImage(imageUri);
   };
 
-  const handleMentionChange = (
-    e: NativeSyntheticEvent<OnMentionChangeEvent>
+  const handleChangeMention = (
+    e: NativeSyntheticEvent<OnChangeMentionEvent>
   ) => {
     if (!isMentionPopupOpen) {
       openMentionPopup();
@@ -167,9 +167,9 @@ export default function App() {
             onChangeState={handleChangeState}
             onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
-            onMentionStart={openMentionPopup}
-            onMentionChange={handleMentionChange}
-            onMentionEnd={closeMentionPopup}
+            onStartMention={openMentionPopup}
+            onChangeMention={handleChangeMention}
+            onEndMention={closeMentionPopup}
             onPressMention={handleMentionPress}
           />
           <Toolbar

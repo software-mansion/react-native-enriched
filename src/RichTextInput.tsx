@@ -45,7 +45,7 @@ export interface RichTextInputInstance {
   setMention: (text: string, value: string) => void;
 }
 
-export interface OnMentionChangeEvent {
+export interface OnChangeMentionEvent {
   text: string;
 }
 
@@ -58,9 +58,9 @@ export interface RichTextInputProps {
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
-  onMentionStart?: () => void;
-  onMentionChange?: (e: NativeSyntheticEvent<OnMentionChangeEvent>) => void;
-  onMentionEnd?: () => void;
+  onStartMention?: () => void;
+  onChangeMention?: (e: NativeSyntheticEvent<OnChangeMentionEvent>) => void;
+  onEndMention?: () => void;
   onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
 }
 
@@ -83,9 +83,9 @@ export const RichTextInput = ({
   onChangeState,
   onPressLink,
   onLinkDetected,
-  onMentionStart,
-  onMentionChange,
-  onMentionEnd,
+  onStartMention,
+  onChangeMention,
+  onEndMention,
   onPressMention,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -152,13 +152,13 @@ export const RichTextInput = ({
 
     switch (mentionText) {
       case '':
-        onMentionStart?.();
+        onStartMention?.();
         break;
       case null:
-        onMentionEnd?.();
+        onEndMention?.();
         break;
       default:
-        onMentionChange?.(e as NativeSyntheticEvent<OnMentionChangeEvent>);
+        onChangeMention?.(e as NativeSyntheticEvent<OnChangeMentionEvent>);
         break;
     }
   };
