@@ -119,7 +119,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   }
 
   override fun focus(view: ReactNativeRichTextEditorView?) {
-    view?.requestFocus()
+    view?.requestFocusProgrammatically()
   }
 
   override fun blur(view: ReactNativeRichTextEditorView?) {

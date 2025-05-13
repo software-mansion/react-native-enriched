@@ -52,6 +52,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var fontWeight: Int = ReactConstants.UNSET
   private var forceHeightRecalculationCounter: Int = 0
 
+  private var inputMethodManager: InputMethodManager? = null
+
   constructor(context: Context) : super(context) {
     prepareComponent()
   }
@@ -66,6 +68,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     defStyleAttr
   ) {
     prepareComponent()
+  }
+
+  init {
+      inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
   }
 
   private fun prepareComponent() {
@@ -89,9 +95,12 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   override fun clearFocus() {
     super.clearFocus()
+    inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
+  }
 
-    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
+  fun requestFocusProgrammatically() {
+    requestFocus()
+    inputMethodManager?.showSoftInput(this, 0)
   }
 
   fun setStateWrapper(stateWrapper: StateWrapper?) {
