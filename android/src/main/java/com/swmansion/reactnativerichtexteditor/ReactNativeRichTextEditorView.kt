@@ -39,6 +39,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val specialStyles: SpecialStyles? = SpecialStyles(this)
+  var isSettingDefaultValue: Boolean = false
 
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
@@ -91,6 +92,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   fun setDefaultValue(value: String?) {
     if (value == null) return
+    isSettingDefaultValue = true
 
     val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
     if (isHtml) {
@@ -102,6 +104,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
+
+    isSettingDefaultValue = false
   }
 
   fun setColor(colorInt: Int?) {
