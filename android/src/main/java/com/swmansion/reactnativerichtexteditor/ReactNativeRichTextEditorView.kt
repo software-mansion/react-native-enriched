@@ -45,7 +45,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 
+  private var autoFocus = false
   private var typefaceDirty = false
+  private var didAttachToWindow = false
   private var fontSize: Float? = null
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
@@ -123,6 +125,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     addSpanWatcher(EditorSpanWatcher(this))
 
     isSettingDefaultValue = false
+  }
+
+  fun setAutoFocus(autoFocus: Boolean) {
+    this.autoFocus = autoFocus
   }
 
   fun setColor(colorInt: Int?) {
@@ -284,6 +290,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     state.putInt("forceHeightRecalculationCounter", counter)
     stateWrapper?.updateState(state)
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+
+    if (autoFocus && !didAttachToWindow) {
+      requestFocusProgrammatically()
+    }
+
+    didAttachToWindow = true
   }
 
   override fun onDetachedFromWindow() {

@@ -159,6 +159,7 @@ export default function App() {
         <Text style={styles.label}>SWM Rich Text Editor</Text>
         <View style={styles.editor}>
           <RichTextInput
+            autoFocus
             ref={ref}
             style={styles.editorInput}
             defaultValue={defaultValue}

@@ -76,6 +76,11 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setDefaultValue(value)
   }
 
+  @ReactProp(name = "autoFocus", defaultBoolean = false)
+  override fun setAutoFocus(view: ReactNativeRichTextEditorView?, autoFocus: Boolean) {
+    view?.setAutoFocus(autoFocus)
+  }
+
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
   override fun setColor(view: ReactNativeRichTextEditorView?, color: Int?) {
     view?.setColor(color)

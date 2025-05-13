@@ -51,6 +51,7 @@ export interface OnMentionChangeEvent {
 
 export interface RichTextInputProps {
   ref?: RefObject<RichTextInputInstance | null>;
+  autoFocus?: boolean;
   defaultValue?: string;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -76,6 +77,7 @@ type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const RichTextInput = ({
   ref,
+  autoFocus,
   defaultValue,
   style,
   onChangeText,
@@ -166,6 +168,7 @@ export const RichTextInput = ({
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
+      autoFocus={autoFocus}
       defaultValue={defaultValue}
       style={style}
       onChangeText={onChangeText}
