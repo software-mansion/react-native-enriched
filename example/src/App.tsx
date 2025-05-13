@@ -3,8 +3,8 @@ import {
   StyleSheet,
   Text,
   type NativeSyntheticEvent,
-  TextInput,
   Linking,
+  Alert,
 } from 'react-native';
 import {
   RichTextInput,
@@ -13,12 +13,16 @@ import {
   type RichTextInputInstance,
   type OnPressLinkEvent,
   type OnLinkDetectedEvent,
+  type OnMentionChangeEvent,
+  type OnPressMentionEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { MentionPopup } from './components/MentionPopup';
+import { type MentionItem, useMention } from './useMention';
 
 type StylesState = OnChangeStyleEvent;
 
@@ -40,6 +44,7 @@ const DEFAULT_STYLE: StylesState = {
   isUnorderedList: false,
   isLink: false,
   isImage: false,
+  isMention: false,
 };
 
 const DEFAULT_LINK_STATE = {
@@ -48,11 +53,15 @@ const DEFAULT_LINK_STATE = {
 };
 
 export default function App() {
+  const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
+
   const ref = useRef<RichTextInputInstance>(null);
+
+  const { mentionData, onMentionChange } = useMention();
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
@@ -90,6 +99,14 @@ export default function App() {
     setIsLinkModalOpen(false);
   };
 
+  const openMentionPopup = () => {
+    setIsMentionPopupOpen(true);
+  };
+
+  const closeMentionPopup = () => {
+    setIsMentionPopupOpen(false);
+  };
+
   const submitLink = (text: string, url: string) => {
     ref.current?.setLink(text, url);
     closeLinkModal();
@@ -107,6 +124,28 @@ export default function App() {
     ref.current?.setImage(imageUri);
   };
 
+  const handleMentionChange = (
+    e: NativeSyntheticEvent<OnMentionChangeEvent>
+  ) => {
+    if (!isMentionPopupOpen) {
+      openMentionPopup();
+    }
+
+    onMentionChange(e.nativeEvent.text);
+  };
+
+  const handleMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention(item.name, item.id);
+    closeMentionPopup();
+  };
+
+  const handleMentionPress = (e: NativeSyntheticEvent<OnPressMentionEvent>) => {
+    Alert.alert(
+      'Mention Pressed',
+      `Text: ${e.nativeEvent.text}\nValue: ${e.nativeEvent.value}`
+    );
+  };
+
   return (
     <>
       <View style={styles.container}>
@@ -120,6 +159,10 @@ export default function App() {
             onChangeStyle={handleChangeStyle}
             onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
+            onMentionStart={openMentionPopup}
+            onMentionChange={handleMentionChange}
+            onMentionEnd={closeMentionPopup}
+            onPressMention={handleMentionPress}
           />
           <Toolbar
             stylesState={stylesState}
@@ -128,11 +171,6 @@ export default function App() {
             onSelectImage={selectImage}
           />
         </View>
-        <TextInput
-          multiline
-          defaultValue={DEFAULT_VALUE}
-          style={styles.input}
-        />
         <Button title="Focus" onPress={handleFocus} />
         <Button title="Blur" onPress={handleBlur} />
       </View>
@@ -141,6 +179,11 @@ export default function App() {
         isOpen={isLinkModalOpen}
         onSubmit={submitLink}
         onClose={closeLinkModal}
+      />
+      <MentionPopup
+        data={mentionData}
+        isOpen={isMentionPopupOpen}
+        onItemPress={handleMentionSelected}
       />
     </>
   );

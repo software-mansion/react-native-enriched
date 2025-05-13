@@ -10,7 +10,9 @@ import ReactNativeRichTextEditorView, {
   type OnChangeStyleEvent,
   type OnChangeTextEvent,
   type OnLinkDetectedEvent,
+  type OnMentionEvent,
   type OnPressLinkEvent,
+  type OnPressMentionEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   NativeMethods,
@@ -38,6 +40,12 @@ export interface RichTextInputInstance {
   toggleUnorderedList: () => void;
   setLink: (text: string, url: string) => void;
   setImage: (src: string) => void;
+  startMention: () => void;
+  setMention: (text: string, value: string) => void;
+}
+
+export interface OnMentionChangeEvent {
+  text: string;
 }
 
 export interface RichTextInputProps {
@@ -48,6 +56,10 @@ export interface RichTextInputProps {
   onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
+  onMentionStart?: () => void;
+  onMentionChange?: (e: NativeSyntheticEvent<OnMentionChangeEvent>) => void;
+  onMentionEnd?: () => void;
+  onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -68,6 +80,10 @@ export const RichTextInput = ({
   onChangeStyle,
   onPressLink,
   onLinkDetected,
+  onMentionStart,
+  onMentionChange,
+  onMentionEnd,
+  onPressMention,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
@@ -120,7 +136,29 @@ export const RichTextInput = ({
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
     },
+    setMention: (text: string, value: string) => {
+      Commands.addMention(nullthrows(nativeRef.current), text, value);
+    },
+    startMention: () => {
+      Commands.startMention(nullthrows(nativeRef.current));
+    },
   }));
+
+  const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
+    const mentionText = e.nativeEvent.text;
+
+    switch (mentionText) {
+      case '':
+        onMentionStart?.();
+        break;
+      case null:
+        onMentionEnd?.();
+        break;
+      default:
+        onMentionChange?.(e as NativeSyntheticEvent<OnMentionChangeEvent>);
+        break;
+    }
+  };
 
   return (
     <ReactNativeRichTextEditorView
@@ -131,6 +169,8 @@ export const RichTextInput = ({
       onChangeStyle={onChangeStyle}
       onPressLink={onPressLink}
       onLinkDetected={onLinkDetected}
+      onMention={handleMentionEvent}
+      onPressMention={onPressMention}
     />
   );
 };

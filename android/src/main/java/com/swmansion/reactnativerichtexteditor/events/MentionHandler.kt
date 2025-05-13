@@ -1,0 +1,27 @@
+package com.swmansion.reactnativerichtexteditor.events
+
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+
+class MentionHandler(private val editorView: ReactNativeRichTextEditorView) {
+  private var previousText: String? = null
+
+  fun onPress(text: String, value: String) {
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    dispatcher?.dispatchEvent(OnPressMentionEvent(surfaceId, editorView.id, text, value))
+  }
+
+  fun onMention(text: String?) {
+    // Do not emit events too often
+    if (previousText == text) return
+
+    previousText = text
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, editorView.id, text))
+  }
+}
