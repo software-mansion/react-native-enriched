@@ -103,6 +103,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun requestFocusProgrammatically() {
     requestFocus()
     inputMethodManager?.showSoftInput(this, 0)
+    setSelection(text?.length ?: 0)
   }
 
   fun setStateWrapper(stateWrapper: StateWrapper?) {
