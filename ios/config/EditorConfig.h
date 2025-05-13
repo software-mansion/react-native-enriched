@@ -11,4 +11,5 @@
 - (NSString *)primaryFontFamily;
 - (void)setPrimaryFontFamily:(NSString *)newValue;
 - (UIFont *)primaryFont;
+- (UIFont *)monospacedFont;
 @end

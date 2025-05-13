@@ -7,12 +7,15 @@
   NSString *_primaryFontWeight;
   NSString *_primaryFontFamily;
   UIFont *_primaryFont;
-  BOOL fontNeedsRecreation;
+  UIFont *_monospacedFont;
+  BOOL _primaryFontNeedsRecreation;
+  BOOL _monospacedFontNeedsRecreation;
 }
 
 - (instancetype) init {
   self = [super init];
-  fontNeedsRecreation = YES;
+  _primaryFontNeedsRecreation = YES;
+  _monospacedFontNeedsRecreation = YES;
   return self;
 }
 
@@ -33,7 +36,8 @@
 - (void)setPrimaryFontSize:(NSNumber *)newValue {
   if(![_primaryFontSize isEqualToNumber:newValue]) {
     _primaryFontSize = newValue;
-    fontNeedsRecreation = YES;
+    _primaryFontNeedsRecreation = YES;
+    _monospacedFontNeedsRecreation = YES;
   }
 }
 
@@ -44,7 +48,8 @@
 - (void)setPrimaryFontWeight:(NSString *)newValue {
   if(![_primaryFontWeight isEqualToString:newValue]) {
     _primaryFontWeight = newValue;
-    fontNeedsRecreation = YES;
+    _primaryFontNeedsRecreation = YES;
+    _monospacedFontNeedsRecreation = YES;
   }
 }
 
@@ -55,13 +60,13 @@
 - (void)setPrimaryFontFamily:(NSString *)newValue {
   if(![_primaryFontFamily isEqualToString:newValue]) {
     _primaryFontFamily = newValue;
-    fontNeedsRecreation = YES;
+    _primaryFontNeedsRecreation = YES;
   }
 }
 
 - (UIFont *)primaryFont {
-  if(fontNeedsRecreation) {
-    fontNeedsRecreation = NO;
+  if(_primaryFontNeedsRecreation) {
+    _primaryFontNeedsRecreation = NO;
     _primaryFont = [RCTFont updateFont:nullptr
       withFamily:[self primaryFontFamily]
       size:[self primaryFontSize]
@@ -71,6 +76,14 @@
       scaleMultiplier: 1];
   }
   return _primaryFont;
+}
+
+- (UIFont *)monospacedFont {
+  if(_monospacedFontNeedsRecreation) {
+    _monospacedFontNeedsRecreation = NO;
+    _monospacedFont = [UIFont monospacedSystemFontOfSize: [[self primaryFontSize] floatValue]  weight: [[self primaryFontWeight] floatValue]];
+  }
+  return _monospacedFont;
 }
 
 @end

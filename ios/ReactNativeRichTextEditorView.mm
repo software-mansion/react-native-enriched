@@ -9,7 +9,7 @@
 #import "StringUtils.h"
 #import "CoreText/CoreText.h"
 #import <React/RCTConvert.h>
-#import "EditorConfig.h"
+#import "StyleHeaders.h"
 
 using namespace facebook::react;
 
@@ -18,11 +18,10 @@ using namespace facebook::react;
 @end
 
 @implementation ReactNativeRichTextEditorView {
-  UITextView *_textView;
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
-  EditorConfig *_config;
   NSMutableDictionary<NSAttributedStringKey, id> *_defaultTypingAttributes;
+  NSMutableSet<NSNumber *> *_activeStyles;
 }
 
 // MARK: - Component utils
@@ -47,23 +46,26 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
-    self.contentView = _textView;
+    self.contentView = textView;
   }
-  
   return self;
 }
 
 - (void)setDefaults {
   _componentViewHeightUpdateCounter = 0;
-  
+  currentRange = NSMakeRange(0, 0);
+  stylesDict = @{
+    [NSNumber numberWithInteger:Bold] : [[BoldStyle alloc] initWithEditor: self]
+  };
+  _activeStyles = [[NSMutableSet alloc] init];
 }
 
 - (void)setupTextView {
-  _textView = [[UITextView alloc] init];
-  _textView.backgroundColor = UIColor.clearColor;
-  _textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
-  _textView.textContainer.lineFragmentPadding = 0;
-  _textView.delegate = self;
+  textView = [[UITextView alloc] init];
+  textView.backgroundColor = UIColor.clearColor;
+  textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
+  textView.textContainer.lineFragmentPadding = 0;
+  textView.delegate = self;
 }
 
 // MARK: - Props
@@ -75,41 +77,41 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   // initial config
   // TODO: handle reacting to config props when styles are relatively working
-  if(_config == nullptr) {
-    EditorConfig *config = [[EditorConfig alloc] init];
+  if(config == nullptr) {
+    EditorConfig *newConfig = [[EditorConfig alloc] init];
   
     if(newViewProps.color) {
       int32_t colorInt = (*(newViewProps.color)).getColor();
       NSNumber* nsColor = [[NSNumber alloc] initWithInt:colorInt];
       UIColor *color = [RCTConvert UIColor: nsColor];
-      [config setPrimaryColor:color];
+      [newConfig setPrimaryColor:color];
     }
     
     if(newViewProps.fontSize) {
       NSNumber* fontSize = [[NSNumber alloc] initWithFloat: newViewProps.fontSize];
-      [config setPrimaryFontSize: fontSize];
+      [newConfig setPrimaryFontSize: fontSize];
     }
     
     if(!newViewProps.fontWeight.empty()) {
-      [config setPrimaryFontWeight: [NSString fromCppString:newViewProps.fontWeight]];
+      [newConfig setPrimaryFontWeight: [NSString fromCppString:newViewProps.fontWeight]];
     }
     
     if(!newViewProps.fontFamily.empty()) {
-      [config setPrimaryFontFamily: [NSString fromCppString:newViewProps.fontFamily]];
+      [newConfig setPrimaryFontFamily: [NSString fromCppString:newViewProps.fontFamily]];
     }
     
     // set the config
-    _config = config;
+    config = newConfig;
     // fill the typing attributes
     _defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-    _defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
-    _defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
-    _textView.typingAttributes = _defaultTypingAttributes;
+    _defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
+    _defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
+    textView.typingAttributes = _defaultTypingAttributes;
   }
   
   // default value
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
-    _textView.text = [NSString fromCppString:newViewProps.defaultValue];
+    textView.text = [NSString fromCppString:newViewProps.defaultValue];
     heightUpdateNeeded = true;
   }
   
@@ -124,7 +126,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (CGSize)measureSize:(CGFloat)maxWidth {
   // copy the the whole attributed string
-  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc] initWithAttributedString:_textView.textStorage];
+  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc] initWithAttributedString:textView.textStorage];
   
   // edge case: empty input should still be of a height of a single line, so we add a mock "I" character
   if([currentStr length] == 0 ) {
@@ -173,6 +175,47 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _state->updateState(ReactNativeRichTextEditorViewState(_componentViewHeightUpdateCounter, selfRef));
 }
 
+// MARK: - Active styles
+
+- (void)tryUpdatingActiveStyles {
+  // style updates are emitted only if something differs from the previously active styles
+  BOOL updateNeeded = NO;
+
+  for (NSNumber* type in stylesDict) {
+    id<BaseStyleProtocol> style = stylesDict[type];
+    BOOL wasActive = [_activeStyles containsObject: type];
+    BOOL isActive = [style detectStyle:currentRange];
+    if(wasActive != isActive) {
+      updateNeeded = YES;
+      if(isActive) {
+        [_activeStyles addObject:type];
+      } else {
+        [_activeStyles removeObject:type];
+      }
+    }
+  }
+    
+  if(updateNeeded) {
+    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeStyle({
+      .isBold = [_activeStyles containsObject: [NSNumber numberWithInt:[BoldStyle getStyleType]]],
+      .isItalic = NO, //[_activeStyles containsObject: [NSNumber numberWithInt:[ItalicStyler getStyleType]]],
+      .isUnderline = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[UnderlineStyle getStyleType]]],
+      .isStrikeThrough = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[StrikethroughStyle getStyleType]]],
+      .isInlineCode = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[InlineCodeStyle getStyleType]]],
+      .isLink = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[LinkStyle getStyleType]]],
+      //.isMention = [_activeStyles containsObject: [NSNumber numberWithInt:[MentionStyle getStyleType]]],
+      .isH1 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H1Style getStyleType]]],
+      .isH2 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H2Style getStyleType]]],
+      .isH3 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H3Style getStyleType]]],
+      .isCodeBlock = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[CodeBlockStyle getStyleType]]],
+      .isBlockQuote = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[BlockQuoteStyle getStyleType]]],
+      .isUnorderedList = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[UnorderedListStyle getStyleType]]],
+      .isOrderedList = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[OrderedListStyle getStyleType]]],
+      .isImage = NO // [_activeStyles containsObject: [NSNumber numberWithInt:[ImageStyle getStyleType]]],
+    });
+  }
+}
+
 // MARK: - Native commands
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
@@ -180,20 +223,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self focus];
   } else if([commandName isEqualToString:@"blur"]) {
     [self blur];
+  } else if([commandName isEqualToString:@"toggleBold"]) {
+    [self toggleRegularStyle: [BoldStyle getStyleType]];
   }
 }
 
 - (void)blur {
-  [_textView reactBlur];
+  [textView reactBlur];
 }
 
 - (void)focus {
-  [_textView reactFocus];
+  [textView reactFocus];
+}
+
+- (void)toggleRegularStyle:(StyleType)type {
+  id<BaseStyleProtocol> styleClass = stylesDict[[NSNumber numberWithInt:type]];
+  [styleClass applyStyle:currentRange];
+  [self tryUpdatingActiveStyles];
 }
 
 // MARK: - UITextView delegate methods
 
--(bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+- (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   NSMutableString *newText = [[NSMutableString alloc] initWithString:textView.textStorage.string];
   [newText replaceCharactersInRange:range withString:text];
   
@@ -203,8 +254,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   return true;
 }
 
+- (void)textViewDidChangeSelection:(UITextView *)textView {
+  // update current range
+  currentRange = textView.selectedRange;
+  // update active styles
+  [self tryUpdatingActiveStyles];
+}
+
 - (void)textViewDidChange:(UITextView *)textView {
+  BOOL needsActiveStylesUpdate = NO;
+
+  // revert typing attributes to the defaults if field is empty
+  if(textView.textStorage.string.length == 0) {
+    textView.typingAttributes = _defaultTypingAttributes;
+    needsActiveStylesUpdate = YES;
+  }
+  
+  // update height on each character change
   [self tryUpdatingHeight];
+  // update active styles if needed
+  if(needsActiveStylesUpdate) {
+    [self tryUpdatingActiveStyles];
+  }
 }
 
 @end
