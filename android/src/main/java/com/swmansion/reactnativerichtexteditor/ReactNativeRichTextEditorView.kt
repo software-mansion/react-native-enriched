@@ -92,8 +92,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun setDefaultValue(value: String?) {
     if (value == null) return
 
-    // As for now every HTML returned from editor is wrapped in <p> tag
-    val isHtml = value.startsWith("<p>") && value.endsWith("</p>")
+    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
     if (isHtml) {
       val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
       setText(parsed)

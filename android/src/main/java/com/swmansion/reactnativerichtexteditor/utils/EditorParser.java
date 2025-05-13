@@ -204,7 +204,8 @@ public class EditorParser {
   public static String toHtml(Spanned text, int option) {
     StringBuilder out = new StringBuilder();
     withinHtml(out, text, option);
-    return out.toString();
+    String outString = out.toString();
+    return "<html>" + outString + "</html>";
   }
   /**
    * Returns an HTML escaped representation of the given plain text.
