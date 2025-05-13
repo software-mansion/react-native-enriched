@@ -10,13 +10,13 @@ import {
 import {
   RichTextInput,
   type OnChangeTextEvent,
-  type OnChangeStyleEvent,
   type RichTextInputInstance,
   type OnPressLinkEvent,
   type OnLinkDetectedEvent,
   type OnMentionChangeEvent,
   type OnPressMentionEvent,
   type OnChangeHtmlEvent,
+  type OnChangeStateEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -26,7 +26,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { MentionPopup } from './components/MentionPopup';
 import { type MentionItem, useMention } from './useMention';
 
-type StylesState = OnChangeStyleEvent;
+type StylesState = OnChangeStateEvent;
 
 type CurrentLinkState = OnLinkDetectedEvent;
 
@@ -74,7 +74,7 @@ export default function App() {
     console.log('HTML changed:', e?.nativeEvent.value);
   };
 
-  const handleChangeStyle = (e: NativeSyntheticEvent<OnChangeStyleEvent>) => {
+  const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
     setStylesState(e.nativeEvent);
   };
 
@@ -164,7 +164,7 @@ export default function App() {
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
-            onChangeStyle={handleChangeStyle}
+            onChangeState={handleChangeState}
             onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
             onMentionStart={openMentionPopup}
