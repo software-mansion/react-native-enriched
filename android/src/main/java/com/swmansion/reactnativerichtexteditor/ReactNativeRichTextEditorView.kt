@@ -22,7 +22,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
-import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
+import com.swmansion.reactnativerichtexteditor.styles.ParametrizedStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -38,7 +38,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
-  val specialStyles: SpecialStyles? = SpecialStyles(this)
+  val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingDefaultValue: Boolean = false
 
   var linkHandler: LinkHandler? = LinkHandler(this)
@@ -235,28 +235,28 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val isValid = verifyStyle(EditorSpans.LINK)
     if (!isValid) return
 
-    specialStyles?.setLinkSpan(text, url)
+    parametrizedStyles?.setLinkSpan(text, url)
   }
 
   fun addImage(src: String) {
     val isValid = verifyStyle(EditorSpans.IMAGE)
     if (!isValid) return
 
-    specialStyles?.setImageSpan(src)
+    parametrizedStyles?.setImageSpan(src)
   }
 
   fun startMention() {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    specialStyles?.startMention()
+    parametrizedStyles?.startMention()
   }
 
   fun addMention(text: String, value: String) {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    specialStyles?.setMentionSpan(text, value)
+    parametrizedStyles?.setMentionSpan(text, value)
   }
 
   // Update shadow node's state in order to recalculate layout

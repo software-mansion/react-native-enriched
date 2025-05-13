@@ -11,7 +11,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
 import java.io.File
 
-class SpecialStyles(private val editorView: ReactNativeRichTextEditorView) {
+class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
   private var mentionStart: Int? = null
 
   fun setLinkSpan(text: String, url: String) {
