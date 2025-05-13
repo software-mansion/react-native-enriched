@@ -8,6 +8,7 @@ import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.common.ReactConstants
@@ -84,6 +85,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
     super.onSelectionChanged(selStart, selEnd)
     selection?.onSelection(selStart, selEnd)
+  }
+
+  override fun clearFocus() {
+    super.clearFocus()
+
+    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
   }
 
   fun setStateWrapper(stateWrapper: StateWrapper?) {
