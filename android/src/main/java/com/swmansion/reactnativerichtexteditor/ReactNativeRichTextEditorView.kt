@@ -17,13 +17,13 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
-import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
+import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
 import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
@@ -92,7 +92,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun setDefaultValue(value: String?) {
     if (value == null) return
 
-    setText(value)
+    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
+    if (isHtml) {
+      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
+      setText(parsed)
+    } else {
+      setText(value)
+    }
+
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
   }

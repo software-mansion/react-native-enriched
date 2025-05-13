@@ -5,6 +5,7 @@ import {
   type NativeSyntheticEvent,
   Linking,
   Alert,
+  TextInput,
 } from 'react-native';
 import {
   RichTextInput,
@@ -15,6 +16,7 @@ import {
   type OnLinkDetectedEvent,
   type OnMentionChangeEvent,
   type OnPressMentionEvent,
+  type OnChangeHtmlEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -28,7 +30,6 @@ type StylesState = OnChangeStyleEvent;
 
 type CurrentLinkState = OnLinkDetectedEvent;
 
-const DEFAULT_VALUE = 'This is fully native Rich Text Editor component';
 const DEFAULT_STYLE: StylesState = {
   isBold: false,
   isItalic: false,
@@ -55,7 +56,9 @@ const DEFAULT_LINK_STATE = {
 export default function App() {
   const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
+  const [defaultValue, setDefaultValue] = useState('');
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
@@ -65,6 +68,10 @@ export default function App() {
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
+  };
+
+  const handleChangeHtml = (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => {
+    console.log('HTML changed:', e?.nativeEvent.value);
   };
 
   const handleChangeStyle = (e: NativeSyntheticEvent<OnChangeStyleEvent>) => {
@@ -153,9 +160,10 @@ export default function App() {
         <View style={styles.editor}>
           <RichTextInput
             ref={ref}
-            style={styles.input}
-            defaultValue={DEFAULT_VALUE}
+            style={styles.editorInput}
+            defaultValue={defaultValue}
             onChangeText={handleChangeText}
+            onChangeHtml={handleChangeHtml}
             onChangeStyle={handleChangeStyle}
             onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
@@ -171,6 +179,11 @@ export default function App() {
             onSelectImage={selectImage}
           />
         </View>
+        <TextInput
+          placeholder="Default value"
+          style={styles.defaultInput}
+          onChangeText={setDefaultValue}
+        />
         <Button title="Focus" onPress={handleFocus} />
         <Button title="Blur" onPress={handleBlur} />
       </View>
@@ -205,7 +218,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgb(0, 26, 114)',
   },
-  input: {
+  editorInput: {
     marginTop: 24,
     width: '100%',
     maxHeight: 120,
@@ -214,5 +227,11 @@ const styles = StyleSheet.create({
     fontFamily: 'CascadiaCode-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+  },
+  defaultInput: {
+    marginTop: 24,
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: 'grey',
   },
 });

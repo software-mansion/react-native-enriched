@@ -7,6 +7,7 @@ import {
 import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
+  type OnChangeHtmlEvent,
   type OnChangeStyleEvent,
   type OnChangeTextEvent,
   type OnLinkDetectedEvent,
@@ -53,6 +54,7 @@ export interface RichTextInputProps {
   defaultValue?: string;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
+  onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
@@ -77,6 +79,7 @@ export const RichTextInput = ({
   defaultValue,
   style,
   onChangeText,
+  onChangeHtml,
   onChangeStyle,
   onPressLink,
   onLinkDetected,
@@ -166,6 +169,7 @@ export const RichTextInput = ({
       defaultValue={defaultValue}
       style={style}
       onChangeText={onChangeText}
+      onChangeHtml={onChangeHtml}
       onChangeStyle={onChangeStyle}
       onPressLink={onPressLink}
       onLinkDetected={onLinkDetected}

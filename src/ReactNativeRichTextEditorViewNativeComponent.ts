@@ -11,6 +11,10 @@ export interface OnChangeTextEvent {
   value: string;
 }
 
+export interface OnChangeHtmlEvent {
+  value: string;
+}
+
 export interface OnChangeStyleEvent {
   isBold: boolean;
   isItalic: boolean;
@@ -50,6 +54,7 @@ export interface OnPressMentionEvent {
 export interface NativeProps extends ViewProps {
   defaultValue?: string;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
+  onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
   onPressLink?: DirectEventHandler<OnPressLinkEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;

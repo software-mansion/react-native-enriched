@@ -3,19 +3,27 @@ package com.swmansion.reactnativerichtexteditor.watchers
 import android.text.SpanWatcher
 import android.text.Spannable
 import android.text.style.ParagraphStyle
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorHeadingSpan
+import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 
 class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) : SpanWatcher {
+  private var previousHtml: String? = null
+
   override fun onSpanAdded(text: Spannable, what: Any, start: Int, end: Int) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
+    emitEvent(text)
   }
 
   override fun onSpanRemoved(text: Spannable, what: Any, start: Int, end: Int) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
+    emitEvent(text)
   }
 
   override fun onSpanChanged(text: Spannable, what: Any, ostart: Int, oend: Int, nstart: Int, nend: Int) {
@@ -38,5 +46,16 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
       val finalEnd = text.length
       text.setSpan(EmptySpan(), finalStart, finalEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
+  }
+
+  private fun emitEvent(s: Spannable) {
+    val html = EditorParser.toHtml(s, EditorParser.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+    if (html == previousHtml) return;
+
+    previousHtml = html
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    dispatcher?.dispatchEvent(OnChangeHtmlEvent(surfaceId, editorView.id, html))
   }
 }
