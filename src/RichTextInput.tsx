@@ -16,6 +16,7 @@ import ReactNativeRichTextEditorView, {
   type OnPressMentionEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
+  ColorValue,
   NativeMethods,
   NativeSyntheticEvent,
   ViewStyle,
@@ -52,6 +53,8 @@ export interface OnChangeMentionEvent {
 export interface RichTextInputProps {
   ref?: RefObject<RichTextInputInstance | null>;
   defaultValue?: string;
+  placeholder?: string;
+  placeholderTextColor?: ColorValue;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
@@ -77,6 +80,8 @@ type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 export const RichTextInput = ({
   ref,
   defaultValue,
+  placeholder,
+  placeholderTextColor,
   style,
   onChangeText,
   onChangeHtml,
@@ -167,6 +172,8 @@ export const RichTextInput = ({
     <ReactNativeRichTextEditorView
       ref={nativeRef}
       defaultValue={defaultValue}
+      placeholder={placeholder}
+      placeholderTextColor={placeholderTextColor}
       style={style}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}

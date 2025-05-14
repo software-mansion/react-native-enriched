@@ -68,14 +68,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   private fun prepareComponent() {
-    this.isSingleLine = false
-    this.isHorizontalScrollBarEnabled = false
-    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+    isSingleLine = false
+    isHorizontalScrollBarEnabled = false
+    gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     // required to make ClickableSpans really clickable
-    this.movementMethod = LinkMovementMethod.getInstance()
+    movementMethod = LinkMovementMethod.getInstance()
 
-    this.setPadding(0, 0, 0, 0)
-    this.setBackgroundColor(Color.TRANSPARENT)
+    setPadding(0, 0, 0, 0)
+    setBackgroundColor(Color.TRANSPARENT)
 
     addSpanWatcher(EditorSpanWatcher(this))
     addTextChangedListener(EditorTextWatcher(this))
@@ -86,8 +86,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     selection?.onSelection(selStart, selEnd)
   }
 
-  fun setStateWrapper(stateWrapper: StateWrapper?) {
-    this.stateWrapper = stateWrapper
+  fun setStateWrapper(sw: StateWrapper?) {
+    stateWrapper = sw
   }
 
   fun setDefaultValue(value: String?) {
@@ -108,13 +108,25 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     isSettingDefaultValue = false
   }
 
+  fun setPlaceholder(placeholder: String?) {
+    if (placeholder == null) return
+
+    hint = placeholder
+  }
+
+  fun setPlaceholderTextColor(colorInt: Int?) {
+    if (colorInt == null) return
+
+    setHintTextColor(colorInt)
+  }
+
   fun setColor(colorInt: Int?) {
     if (colorInt == null) {
-      this.setTextColor(Color.BLACK)
+      setTextColor(Color.BLACK)
       return
     }
 
-    this.setTextColor(colorInt)
+    setTextColor(colorInt)
   }
 
   fun setFontSize(size: Float) {
@@ -128,8 +140,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   fun setFontFamily(family: String?) {
-    if (family != this.fontFamily) {
-      this.fontFamily = family
+    if (family != fontFamily) {
+      fontFamily = family
       typefaceDirty = true
     }
   }
@@ -137,7 +149,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun setFontWeight(weight: String?) {
     val fontWeight = parseFontWeight(weight)
 
-    if (fontWeight != this.fontStyle) {
+    if (fontWeight != fontStyle) {
       this.fontWeight = fontWeight
       typefaceDirty = true
     }
@@ -154,7 +166,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   fun measureSize(maxWidth: Float): Pair<Float, Float> {
     val paint = this.paint
-    val spannable = this.text as Spannable
+    val spannable = text as Spannable
     val spannableLength = spannable.length
 
     val staticLayout = StaticLayout.Builder
