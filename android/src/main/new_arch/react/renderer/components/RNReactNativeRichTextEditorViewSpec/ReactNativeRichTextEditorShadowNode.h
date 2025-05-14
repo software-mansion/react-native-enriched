@@ -3,9 +3,9 @@
 #include "RichTextEditorMeasurementManager.h"
 #include "ReactNativeRichTextEditorViewState.h"
 
-#include <react/renderer/components/rncore/EventEmitters.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/RNReactNativeRichTextEditorViewSpec/Props.h>
+#include <react/renderer/components/RNReactNativeRichTextEditorViewSpec/EventEmitters.h>
 
 namespace facebook::react {
 
