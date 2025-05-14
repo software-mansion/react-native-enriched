@@ -8,6 +8,7 @@ import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.common.ReactConstants
@@ -44,12 +45,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 
+  private var autoFocus = false
   private var typefaceDirty = false
+  private var didAttachToWindow = false
   private var fontSize: Float? = null
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
   private var forceHeightRecalculationCounter: Int = 0
+
+  private var inputMethodManager: InputMethodManager? = null
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -65,6 +70,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     defStyleAttr
   ) {
     prepareComponent()
+  }
+
+  init {
+      inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
   }
 
   private fun prepareComponent() {
@@ -90,6 +99,17 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     stateWrapper = sw
   }
 
+  override fun clearFocus() {
+    super.clearFocus()
+    inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
+  }
+
+  fun requestFocusProgrammatically() {
+    requestFocus()
+    inputMethodManager?.showSoftInput(this, 0)
+    setSelection(text?.length ?: 0)
+  }
+
   fun setDefaultValue(value: String?) {
     if (value == null) return
     isSettingDefaultValue = true
@@ -106,6 +126,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     addSpanWatcher(EditorSpanWatcher(this))
 
     isSettingDefaultValue = false
+  }
+
+  fun setAutoFocus(autoFocus: Boolean) {
+    this.autoFocus = autoFocus
   }
 
   fun setPlaceholder(placeholder: String?) {
@@ -279,6 +303,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     state.putInt("forceHeightRecalculationCounter", counter)
     stateWrapper?.updateState(state)
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+
+    if (autoFocus && !didAttachToWindow) {
+      requestFocusProgrammatically()
+    }
+
+    didAttachToWindow = true
   }
 
   override fun onDetachedFromWindow() {

@@ -52,6 +52,7 @@ export interface OnPressMentionEvent {
 }
 
 export interface NativeProps extends ViewProps {
+  autoFocus?: boolean;
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;

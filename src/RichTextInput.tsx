@@ -52,6 +52,7 @@ export interface OnChangeMentionEvent {
 
 export interface RichTextInputProps {
   ref?: RefObject<RichTextInputInstance | null>;
+  autoFocus?: boolean;
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
@@ -79,6 +80,7 @@ type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const RichTextInput = ({
   ref,
+  autoFocus,
   defaultValue,
   placeholder,
   placeholderTextColor,
@@ -171,6 +173,7 @@ export const RichTextInput = ({
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
+      autoFocus={autoFocus}
       defaultValue={defaultValue}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
