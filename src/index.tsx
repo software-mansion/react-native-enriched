@@ -2,7 +2,7 @@ export * from './RichTextInput';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
-  OnChangeStyleEvent,
+  OnChangeStateEvent,
   OnPressLinkEvent,
   OnLinkDetectedEvent,
   OnPressMentionEvent,

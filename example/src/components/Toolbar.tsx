@@ -1,7 +1,7 @@
 import { FlatList, type ListRenderItemInfo, StyleSheet } from 'react-native';
 import { ToolbarButton } from './ToolbarButton';
 import type {
-  OnChangeStyleEvent,
+  OnChangeStateEvent,
   RichTextInputInstance,
 } from '@swmansion/react-native-rich-text-editor';
 import type { FC } from 'react';
@@ -70,7 +70,7 @@ const STYLE_ITEMS = [
 ] as const;
 
 type Item = (typeof STYLE_ITEMS)[number];
-type StylesState = OnChangeStyleEvent;
+type StylesState = OnChangeStateEvent;
 
 export interface ToolbarProps {
   stylesState: StylesState;

@@ -15,7 +15,7 @@ export interface OnChangeHtmlEvent {
   value: string;
 }
 
-export interface OnChangeStyleEvent {
+export interface OnChangeStateEvent {
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;
@@ -54,9 +54,11 @@ export interface OnPressMentionEvent {
 export interface NativeProps extends ViewProps {
   autoFocus?: boolean;
   defaultValue?: string;
+  placeholder?: string;
+  placeholderTextColor?: ColorValue;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
-  onChangeStyle?: DirectEventHandler<OnChangeStyleEvent>;
+  onChangeState?: DirectEventHandler<OnChangeStateEvent>;
   onPressLink?: DirectEventHandler<OnPressLinkEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
   onMention?: DirectEventHandler<OnMentionEvent>;

@@ -23,7 +23,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
-import com.swmansion.reactnativerichtexteditor.styles.SpecialStyles
+import com.swmansion.reactnativerichtexteditor.styles.ParametrizedStyles
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -39,7 +39,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
-  val specialStyles: SpecialStyles? = SpecialStyles(this)
+  val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingDefaultValue: Boolean = false
 
   var linkHandler: LinkHandler? = LinkHandler(this)
@@ -77,14 +77,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   private fun prepareComponent() {
-    this.isSingleLine = false
-    this.isHorizontalScrollBarEnabled = false
-    this.gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+    isSingleLine = false
+    isHorizontalScrollBarEnabled = false
+    gravity = android.view.Gravity.CENTER or android.view.Gravity.START
     // required to make ClickableSpans really clickable
-    this.movementMethod = LinkMovementMethod.getInstance()
+    movementMethod = LinkMovementMethod.getInstance()
 
-    this.setPadding(0, 0, 0, 0)
-    this.setBackgroundColor(Color.TRANSPARENT)
+    setPadding(0, 0, 0, 0)
+    setBackgroundColor(Color.TRANSPARENT)
 
     addSpanWatcher(EditorSpanWatcher(this))
     addTextChangedListener(EditorTextWatcher(this))
@@ -93,6 +93,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
     super.onSelectionChanged(selStart, selEnd)
     selection?.onSelection(selStart, selEnd)
+  }
+
+  fun setStateWrapper(sw: StateWrapper?) {
+    stateWrapper = sw
   }
 
   override fun clearFocus() {
@@ -104,10 +108,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     requestFocus()
     inputMethodManager?.showSoftInput(this, 0)
     setSelection(text?.length ?: 0)
-  }
-
-  fun setStateWrapper(stateWrapper: StateWrapper?) {
-    this.stateWrapper = stateWrapper
   }
 
   fun setDefaultValue(value: String?) {
@@ -132,13 +132,25 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     this.autoFocus = autoFocus
   }
 
+  fun setPlaceholder(placeholder: String?) {
+    if (placeholder == null) return
+
+    hint = placeholder
+  }
+
+  fun setPlaceholderTextColor(colorInt: Int?) {
+    if (colorInt == null) return
+
+    setHintTextColor(colorInt)
+  }
+
   fun setColor(colorInt: Int?) {
     if (colorInt == null) {
-      this.setTextColor(Color.BLACK)
+      setTextColor(Color.BLACK)
       return
     }
 
-    this.setTextColor(colorInt)
+    setTextColor(colorInt)
   }
 
   fun setFontSize(size: Float) {
@@ -152,8 +164,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   fun setFontFamily(family: String?) {
-    if (family != this.fontFamily) {
-      this.fontFamily = family
+    if (family != fontFamily) {
+      fontFamily = family
       typefaceDirty = true
     }
   }
@@ -161,7 +173,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun setFontWeight(weight: String?) {
     val fontWeight = parseFontWeight(weight)
 
-    if (fontWeight != this.fontStyle) {
+    if (fontWeight != fontStyle) {
       this.fontWeight = fontWeight
       typefaceDirty = true
     }
@@ -178,7 +190,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   fun measureSize(maxWidth: Float): Pair<Float, Float> {
     val paint = this.paint
-    val spannable = this.text as Spannable
+    val spannable = text as Spannable
     val spannableLength = spannable.length
 
     val staticLayout = StaticLayout.Builder
@@ -259,28 +271,28 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val isValid = verifyStyle(EditorSpans.LINK)
     if (!isValid) return
 
-    specialStyles?.setLinkSpan(text, url)
+    parametrizedStyles?.setLinkSpan(text, url)
   }
 
   fun addImage(src: String) {
     val isValid = verifyStyle(EditorSpans.IMAGE)
     if (!isValid) return
 
-    specialStyles?.setImageSpan(src)
+    parametrizedStyles?.setImageSpan(src)
   }
 
   fun startMention() {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    specialStyles?.startMention()
+    parametrizedStyles?.startMention()
   }
 
   fun addMention(text: String, value: String) {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    specialStyles?.setMentionSpan(text, value)
+    parametrizedStyles?.setMentionSpan(text, value)
   }
 
   // Update shadow node's state in order to recalculate layout

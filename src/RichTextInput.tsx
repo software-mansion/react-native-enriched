@@ -8,7 +8,7 @@ import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
   type OnChangeHtmlEvent,
-  type OnChangeStyleEvent,
+  type OnChangeStateEvent,
   type OnChangeTextEvent,
   type OnLinkDetectedEvent,
   type OnMentionEvent,
@@ -16,6 +16,7 @@ import ReactNativeRichTextEditorView, {
   type OnPressMentionEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
+  ColorValue,
   NativeMethods,
   NativeSyntheticEvent,
   ViewStyle,
@@ -45,7 +46,7 @@ export interface RichTextInputInstance {
   setMention: (text: string, value: string) => void;
 }
 
-export interface OnMentionChangeEvent {
+export interface OnChangeMentionEvent {
   text: string;
 }
 
@@ -53,15 +54,17 @@ export interface RichTextInputProps {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
   defaultValue?: string;
+  placeholder?: string;
+  placeholderTextColor?: ColorValue;
   style?: ViewStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
-  onChangeStyle?: (e: NativeSyntheticEvent<OnChangeStyleEvent>) => void;
+  onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
-  onMentionStart?: () => void;
-  onMentionChange?: (e: NativeSyntheticEvent<OnMentionChangeEvent>) => void;
-  onMentionEnd?: () => void;
+  onStartMention?: () => void;
+  onChangeMention?: (e: NativeSyntheticEvent<OnChangeMentionEvent>) => void;
+  onEndMention?: () => void;
   onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
 }
 
@@ -79,15 +82,17 @@ export const RichTextInput = ({
   ref,
   autoFocus,
   defaultValue,
+  placeholder,
+  placeholderTextColor,
   style,
   onChangeText,
   onChangeHtml,
-  onChangeStyle,
+  onChangeState,
   onPressLink,
   onLinkDetected,
-  onMentionStart,
-  onMentionChange,
-  onMentionEnd,
+  onStartMention,
+  onChangeMention,
+  onEndMention,
   onPressMention,
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -154,13 +159,13 @@ export const RichTextInput = ({
 
     switch (mentionText) {
       case '':
-        onMentionStart?.();
+        onStartMention?.();
         break;
       case null:
-        onMentionEnd?.();
+        onEndMention?.();
         break;
       default:
-        onMentionChange?.(e as NativeSyntheticEvent<OnMentionChangeEvent>);
+        onChangeMention?.(e as NativeSyntheticEvent<OnChangeMentionEvent>);
         break;
     }
   };
@@ -170,10 +175,12 @@ export const RichTextInput = ({
       ref={nativeRef}
       autoFocus={autoFocus}
       defaultValue={defaultValue}
+      placeholder={placeholder}
+      placeholderTextColor={placeholderTextColor}
       style={style}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
-      onChangeStyle={onChangeStyle}
+      onChangeState={onChangeState}
       onPressLink={onPressLink}
       onLinkDetected={onLinkDetected}
       onMention={handleMentionEvent}

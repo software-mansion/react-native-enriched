@@ -5,7 +5,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
-import com.swmansion.reactnativerichtexteditor.events.OnChangeStyleEvent
+import com.swmansion.reactnativerichtexteditor.events.OnChangeStateEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 
 class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
@@ -44,77 +44,77 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setItalicStart(start: Int?) {
     this.italicStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setUnderlineStart(start: Int?) {
     this.underlineStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setStrikethroughStart(start: Int?) {
     this.strikethroughStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setInlineCodeStart(start: Int?) {
     this.inlineCodeStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setH1Start(start: Int?) {
     this.h1Start = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setH2Start(start: Int?) {
     this.h2Start = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setH3Start(start: Int?) {
     this.h3Start = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setCodeBlockStart(start: Int?) {
     this.codeBlockStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setBlockQuoteStart(start: Int?) {
     this.blockQuoteStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setOrderedListStart(start: Int?) {
     this.orderedListStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setUnorderedListStart(start: Int?) {
     this.unorderedListStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setLinkStart(start: Int?) {
     this.linkStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setImageStart(start: Int?) {
     this.imageStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun setMentionStart(start: Int?) {
     this.mentionStart = start
-    emitStyleChangeEvent()
+    emitStateChangeEvent()
   }
 
   fun getStart(name: String): Int? {
@@ -160,7 +160,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     }
   }
 
-  private fun emitStyleChangeEvent() {
+  private fun emitStateChangeEvent() {
     val payload: WritableMap = Arguments.createMap()
     payload.putBoolean("isBold", boldStart != null)
     payload.putBoolean("isItalic", italicStart != null)
@@ -190,7 +190,7 @@ class EditorSpanState(private val editorView: ReactNativeRichTextEditorView) {
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnChangeStyleEvent(surfaceId, editorView.id, payload))
+    dispatcher?.dispatchEvent(OnChangeStateEvent(surfaceId, editorView.id, payload))
   }
 
   companion object {
