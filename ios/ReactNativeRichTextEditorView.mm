@@ -196,7 +196,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
     
   if(updateNeeded) {
-    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeStyle({
+    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeState({
       .isBold = [_activeStyles containsObject: [NSNumber numberWithInt:[BoldStyle getStyleType]]],
       .isItalic = NO, //[_activeStyles containsObject: [NSNumber numberWithInt:[ItalicStyler getStyleType]]],
       .isUnderline = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[UnderlineStyle getStyleType]]],

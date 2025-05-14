@@ -44,7 +44,7 @@ Size ReactNativeRichTextEditorViewShadowNode::measureContent(const LayoutContext
     
     if(typedComponentObject != nullptr) {
       CGSize estimatedSize = [typedComponentObject measureSize:layoutConstraints.maximumSize.width];
-      return Size(estimatedSize.width, estimatedSize.height);
+      return {estimatedSize.width, estimatedSize.height};
     }
   }
   
