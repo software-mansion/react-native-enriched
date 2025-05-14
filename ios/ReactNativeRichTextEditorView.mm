@@ -55,7 +55,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _componentViewHeightUpdateCounter = 0;
   currentRange = NSMakeRange(0, 0);
   stylesDict = @{
-    [NSNumber numberWithInteger:Bold] : [[BoldStyle alloc] initWithEditor: self]
+    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
+    @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
+    @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithEditor:self],
+    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self]
   };
   _activeStyles = [[NSMutableSet alloc] init];
 }
@@ -82,13 +85,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
     if(newViewProps.color) {
       int32_t colorInt = (*(newViewProps.color)).getColor();
-      NSNumber* nsColor = [[NSNumber alloc] initWithInt:colorInt];
+      NSNumber* nsColor = @(colorInt);
       UIColor *color = [RCTConvert UIColor: nsColor];
       [newConfig setPrimaryColor:color];
     }
     
     if(newViewProps.fontSize) {
-      NSNumber* fontSize = [[NSNumber alloc] initWithFloat: newViewProps.fontSize];
+      NSNumber* fontSize = @(newViewProps.fontSize);
       [newConfig setPrimaryFontSize: fontSize];
     }
     
@@ -106,6 +109,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     _defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
     _defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
     _defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
+    _defaultTypingAttributes[NSUnderlineColorAttributeName] = [newConfig primaryColor];
+    _defaultTypingAttributes[NSStrikethroughColorAttributeName] = [newConfig primaryColor];
     textView.typingAttributes = _defaultTypingAttributes;
   }
   
@@ -197,21 +202,21 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     
   if(updateNeeded) {
     static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeState({
-      .isBold = [_activeStyles containsObject: [NSNumber numberWithInt:[BoldStyle getStyleType]]],
-      .isItalic = NO, //[_activeStyles containsObject: [NSNumber numberWithInt:[ItalicStyler getStyleType]]],
-      .isUnderline = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[UnderlineStyle getStyleType]]],
-      .isStrikeThrough = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[StrikethroughStyle getStyleType]]],
-      .isInlineCode = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[InlineCodeStyle getStyleType]]],
-      .isLink = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[LinkStyle getStyleType]]],
-      //.isMention = [_activeStyles containsObject: [NSNumber numberWithInt:[MentionStyle getStyleType]]],
-      .isH1 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H1Style getStyleType]]],
-      .isH2 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H2Style getStyleType]]],
-      .isH3 = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[H3Style getStyleType]]],
-      .isCodeBlock = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[CodeBlockStyle getStyleType]]],
-      .isBlockQuote = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[BlockQuoteStyle getStyleType]]],
-      .isUnorderedList = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[UnorderedListStyle getStyleType]]],
-      .isOrderedList = NO, // [_activeStyles containsObject: [NSNumber numberWithInt:[OrderedListStyle getStyleType]]],
-      .isImage = NO // [_activeStyles containsObject: [NSNumber numberWithInt:[ImageStyle getStyleType]]],
+      .isBold = [_activeStyles containsObject: @([BoldStyle getStyleType])],
+      .isItalic = [_activeStyles containsObject: @([ItalicStyle getStyleType])],
+      .isUnderline = [_activeStyles containsObject: @([UnderlineStyle getStyleType])],
+      .isStrikeThrough = [_activeStyles containsObject: @([StrikethroughStyle getStyleType])],
+      .isInlineCode = NO, // [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
+      .isLink = NO, // [_activeStyles containsObject: @([LinkStyle getStyleType])],
+      //.isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
+      .isH1 = NO, // [_activeStyles containsObject: @([H1Style getStyleType])],
+      .isH2 = NO, // [_activeStyles containsObject: @([H2Style getStyleType])],
+      .isH3 = NO, // [_activeStyles containsObject: @([H3Style getStyleType])],
+      .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
+      .isBlockQuote = NO, // [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
+      .isUnorderedList = NO, // [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
+      .isOrderedList = NO, // [_activeStyles containsObject: @([OrderedListStyle getStyleType]]],
+      .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]]],
     });
   }
 }
@@ -225,6 +230,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self blur];
   } else if([commandName isEqualToString:@"toggleBold"]) {
     [self toggleRegularStyle: [BoldStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleItalic"]) {
+    [self toggleRegularStyle: [ItalicStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleUnderline"]) {
+    [self toggleRegularStyle: [UnderlineStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleStrikeThrough"]) {
+    [self toggleRegularStyle: [StrikethroughStyle getStyleType]];
   }
 }
 
@@ -237,7 +248,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)toggleRegularStyle:(StyleType)type {
-  id<BaseStyleProtocol> styleClass = stylesDict[[NSNumber numberWithInt:type]];
+  id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
   [styleClass applyStyle:currentRange];
   [self tryUpdatingActiveStyles];
 }
