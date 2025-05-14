@@ -3,8 +3,8 @@ package com.swmansion.reactnativerichtexteditor.events
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-class OnChangeStyleEvent(surfaceId: Int, viewId: Int, private val state: WritableMap) :
-  Event<OnChangeStyleEvent>(surfaceId, viewId) {
+class OnChangeStateEvent(surfaceId: Int, viewId: Int, private val state: WritableMap) :
+  Event<OnChangeStateEvent>(surfaceId, viewId) {
 
   override fun getEventName(): String {
     return EVENT_NAME
@@ -15,6 +15,6 @@ class OnChangeStyleEvent(surfaceId: Int, viewId: Int, private val state: Writabl
   }
 
   companion object {
-    const val EVENT_NAME: String = "onChangeStyle"
+    const val EVENT_NAME: String = "onChangeState"
   }
 }

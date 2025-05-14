@@ -30,7 +30,7 @@ object EditorSpans {
   const val UNORDERED_LIST = "unordered_list"
   const val ORDERED_LIST = "ordered_list"
 
-  // special styles
+  // parametrized styles
   const val LINK = "link"
   const val IMAGE = "image"
   const val MENTION = "mention"
@@ -56,13 +56,12 @@ object EditorSpans {
     ORDERED_LIST to ListSpanConfig(EditorOrderedListSpan::class.java, "1. "),
   )
 
-  val specialStyles: Map<String, BaseSpanConfig> = mapOf(
+  val parametrizedStyles: Map<String, BaseSpanConfig> = mapOf(
     LINK to BaseSpanConfig(EditorLinkSpan::class.java),
     IMAGE to BaseSpanConfig(EditorImageSpan::class.java),
     MENTION to BaseSpanConfig(EditorMentionSpan::class.java),
   )
 
-  // TODO: provide proper config once other styles are implemented
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
     BOLD to StylesMergingConfig(
       blockingStyles = arrayOf(CODE_BLOCK)

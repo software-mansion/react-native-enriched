@@ -36,8 +36,8 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       state.setStart(style, getListStyleStart(config.clazz))
     }
 
-    for ((style, config) in EditorSpans.specialStyles) {
-      state.setStart(style, getSpecialStyleStart(config.clazz))
+    for ((style, config) in EditorSpans.parametrizedStyles) {
+      state.setStart(style, getParametrizedStyleStart(config.clazz))
     }
   }
 
@@ -143,7 +143,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     return styleStart
   }
 
-  private fun <T>getSpecialStyleStart(type: Class<T>): Int? {
+  private fun <T>getParametrizedStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, type)
