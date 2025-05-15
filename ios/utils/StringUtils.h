@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #include "string"
+#pragma once
 
 @interface NSString (StringUtils)
 

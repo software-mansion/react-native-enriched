@@ -1,3 +1,4 @@
+#pragma once
 #import "BaseStyleProtocol.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>

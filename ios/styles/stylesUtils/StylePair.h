@@ -1,3 +1,4 @@
+#pragma once
 #import <UIkit/UIKit.h>
 
 @interface StylePair : NSObject

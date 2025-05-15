@@ -1,3 +1,4 @@
+#pragma once
 #import "StyleTypeEnum.h"
 #import "StylePair.h"
 
