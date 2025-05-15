@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <EditorConfig.h>
+#pragma once
 
 @interface UIFont (FontUtils)
 

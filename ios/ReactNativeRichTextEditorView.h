@@ -1,3 +1,4 @@
+#pragma once
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
 #import "EditorConfig.h"

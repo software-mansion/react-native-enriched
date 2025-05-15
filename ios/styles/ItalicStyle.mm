@@ -3,11 +3,11 @@
 #import "FontUtils.h"
 #import "OccurenceUtils.h"
 
-@implementation BoldStyle {
+@implementation ItalicStyle {
   ReactNativeRichTextEditorView *_editor;
 }
 
-+ (StyleType)getStyleType { return Bold; }
++ (StyleType)getStyleType { return Italic; }
 
 - (instancetype)initWithEditor:(id)editor {
   self = [super init];
@@ -30,7 +30,7 @@
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
-        UIFont *newFont = [font setBold];
+        UIFont *newFont = [font setItalic];
         [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
@@ -42,7 +42,7 @@
   UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [currentFontAttr setBold];
+    newTypingAttrs[NSFontAttributeName] = [currentFontAttr setItalic];
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -53,7 +53,7 @@
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
-        UIFont *newFont = [font removeBold];
+        UIFont *newFont = [font removeItalic];
         [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
@@ -65,14 +65,14 @@
   UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [currentFontAttr removeBold];
+    newTypingAttrs[NSFontAttributeName] = [currentFontAttr removeItalic];
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   UIFont *font = (UIFont *)value;
-  return font != nullptr && [font isBold];
+  return font != nullptr && [font isItalic];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -87,7 +87,7 @@
     if(currentFontAttr == nullptr) {
       return false;
     }
-    return [currentFontAttr isBold];
+    return [currentFontAttr isItalic];
   }
 }
 
