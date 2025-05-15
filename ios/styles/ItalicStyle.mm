@@ -1,6 +1,7 @@
 #import "StyleHeaders.h"
 #import "ReactNativeRichTextEditorView.h"
 #import "FontUtils.h"
+#import "OccurenceUtils.h"
 
 @implementation ItalicStyle {
   ReactNativeRichTextEditorView *_editor;
@@ -25,13 +26,15 @@
 
 - (void)addAttributes:(NSRange)range {
   [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    UIFont *font = (UIFont *)value;
-    if(font != nullptr) {
-      UIFont *newFont = [font setItalic];
-      [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
+    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      UIFont *font = (UIFont *)value;
+      if(font != nullptr) {
+        UIFont *newFont = [font setItalic];
+        [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+      }
     }
-  }];
+  ];
   [_editor->textView.textStorage endEditing];
 }
 
@@ -46,13 +49,15 @@
 
 - (void)removeAttributes:(NSRange)range {
   [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    UIFont *font = (UIFont *)value;
-    if(font != nullptr) {
-      UIFont *newFont = [font removeItalic];
-      [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
+    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      UIFont *font = (UIFont *)value;
+      if(font != nullptr) {
+        UIFont *newFont = [font removeItalic];
+        [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+      }
     }
-  }];
+  ];
   [_editor->textView.textStorage endEditing];
 }
 
@@ -65,16 +70,18 @@
   }
 }
 
+- (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
+  UIFont *font = (UIFont *)value;
+  return font != nullptr && [font isItalic];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    __block NSInteger totalLength = 0;
-    [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr && [font isItalic]) {
-        totalLength += range.length;
+    return [OccurenceUtils detect:NSFontAttributeName withEditor:_editor inRange:range
+      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
       }
-    }];
-    return totalLength == range.length;
+    ];
   } else {
     UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
     if(currentFontAttr == nullptr) {
@@ -85,29 +92,19 @@
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  __block BOOL found = NO;
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    UIFont *font = (UIFont *)value;
-    if(font != nullptr && [font isItalic]) {
-      found = YES;
-      *stop = YES;
+  return [OccurenceUtils any:NSFontAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return found;
+  ];
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  __block NSMutableArray<StylePair *> *occurences = [[NSMutableArray<StylePair *> alloc] init];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    UIFont *font = (UIFont *)value;
-    if(font != nullptr && [font isItalic]) {
-      StylePair *pair = [[StylePair alloc] init];
-      pair.rangeValue = [NSValue valueWithRange:range];
-      pair.styleValue = value;
-      [occurences addObject:pair];
+  return [OccurenceUtils all:NSFontAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return occurences;
+  ];
 }
 
 @end

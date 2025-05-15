@@ -1,5 +1,6 @@
 #import "StyleHeaders.h"
 #import "ReactNativeRichTextEditorView.h"
+#import "OccurenceUtils.h"
 
 @implementation StrikethroughStyle {
   ReactNativeRichTextEditorView *_editor;
@@ -42,17 +43,18 @@
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
+- (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
+  NSNumber *strikethroughStyle = (NSNumber *)value;
+  return strikethroughStyle != nullptr && [strikethroughStyle intValue] != NSUnderlineStyleNone;
+}
+
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    __block NSInteger totalLength = 0;
-    [_editor->textView.textStorage enumerateAttribute:NSStrikethroughStyleAttributeName
-      inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      NSNumber *strikethroughStyle = (NSNumber *)value;
-      if(strikethroughStyle != nullptr && [strikethroughStyle intValue] != NSUnderlineStyleNone) {
-        totalLength += range.length;
+    return [OccurenceUtils detect:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
       }
-    }];
-    return totalLength == range.length;
+    ];
   } else {
     NSNumber *currenStrikethroughAttr = (NSNumber *)_editor->textView.typingAttributes[NSStrikethroughStyleAttributeName];
     return currenStrikethroughAttr != nullptr;
@@ -60,31 +62,19 @@
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  __block BOOL found = NO;
-  [_editor->textView.textStorage enumerateAttribute:NSStrikethroughStyleAttributeName
-    inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    NSNumber *strikethroughStyle = (NSNumber *)value;
-    if(strikethroughStyle != nullptr && [strikethroughStyle intValue] != NSUnderlineStyleNone) {
-      found = YES;
-      *stop = YES;
+  return [OccurenceUtils any:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return found;
+  ];
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  __block NSMutableArray<StylePair *> *occurences = [[NSMutableArray<StylePair *> alloc] init];
-  [_editor->textView.textStorage enumerateAttribute:NSStrikethroughStyleAttributeName
-    inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    NSNumber *strikethroughStyle = (NSNumber *)value;
-    if(strikethroughStyle != nullptr && [strikethroughStyle intValue] != NSUnderlineStyleNone) {
-      StylePair *pair = [[StylePair alloc] init];
-      pair.rangeValue = [NSValue valueWithRange:range];
-      pair.styleValue = value;
-      [occurences addObject:pair];
+  return [OccurenceUtils all:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return occurences;
+  ];
 }
 
 @end

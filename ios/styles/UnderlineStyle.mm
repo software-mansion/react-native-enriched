@@ -1,5 +1,6 @@
 #import "StyleHeaders.h"
 #import "ReactNativeRichTextEditorView.h"
+#import "OccurenceUtils.h"
 
 @implementation UnderlineStyle {
   ReactNativeRichTextEditorView *_editor;
@@ -42,17 +43,18 @@
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
+- (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
+  NSNumber *underlineStyle = (NSNumber *)value;
+  return underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone;
+}
+
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    __block NSInteger totalLength = 0;
-    [_editor->textView.textStorage enumerateAttribute:NSUnderlineStyleAttributeName
-      inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      NSNumber *underlineStyle = (NSNumber *)value;
-      if(underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone) {
-        totalLength += range.length;
+    return [OccurenceUtils detect:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
       }
-    }];
-    return totalLength == range.length;
+    ];
   } else {
     NSNumber *currentUnderlineAttr = (NSNumber *)_editor->textView.typingAttributes[NSUnderlineStyleAttributeName];
     return currentUnderlineAttr != nullptr;
@@ -60,31 +62,19 @@
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  __block BOOL found = NO;
-  [_editor->textView.textStorage enumerateAttribute:NSUnderlineStyleAttributeName
-    inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    NSNumber *underlineStyle = (NSNumber *)value;
-    if(underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone) {
-      found = YES;
-      *stop = YES;
+  return [OccurenceUtils any:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return found;
+  ];
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  __block NSMutableArray<StylePair *> *occurences = [[NSMutableArray<StylePair *> alloc] init];
-  [_editor->textView.textStorage enumerateAttribute:NSUnderlineStyleAttributeName
-    inRange:range options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    NSNumber *underlineStyle = (NSNumber *)value;
-    if(underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone) {
-      StylePair *pair = [[StylePair alloc] init];
-      pair.rangeValue = [NSValue valueWithRange:range];
-      pair.styleValue = value;
-      [occurences addObject:pair];
+  return [OccurenceUtils all:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+    withCondition:^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
     }
-  }];
-  return occurences;
+  ];
 }
 
 @end
