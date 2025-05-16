@@ -19,6 +19,7 @@ import type {
   ColorValue,
   NativeMethods,
   NativeSyntheticEvent,
+  TextStyle,
   ViewStyle,
 } from 'react-native';
 
@@ -56,7 +57,7 @@ export interface RichTextInputProps {
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
-  style?: ViewStyle;
+  style?: ViewStyle | TextStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
