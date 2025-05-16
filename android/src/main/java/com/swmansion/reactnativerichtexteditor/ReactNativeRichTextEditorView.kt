@@ -107,7 +107,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   fun requestFocusProgrammatically() {
     requestFocus()
     inputMethodManager?.showSoftInput(this, 0)
-    setSelection(text?.length ?: 0)
+    setSelection(selection?.start ?: text?.length ?: 0)
   }
 
   fun setDefaultValue(value: String?) {

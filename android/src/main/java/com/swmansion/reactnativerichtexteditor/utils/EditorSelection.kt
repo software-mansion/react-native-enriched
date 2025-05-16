@@ -15,10 +15,21 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   private var previousLinkDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "url" to "")
 
   fun onSelection(selStart: Int, selEnd: Int) {
-    start = selStart
-    end = selEnd
+    var shouldValidateStyles = false
 
-    this.validateStyles()
+    if (selStart != -1) {
+      start = selStart
+      shouldValidateStyles = true
+    }
+
+    if (selEnd != -1) {
+      end = selEnd
+      shouldValidateStyles = true
+    }
+
+    if (shouldValidateStyles) {
+      validateStyles()
+    }
   }
 
   fun validateStyles() {

@@ -17,13 +17,18 @@ import ReactNativeRichTextEditorView, {
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
+  HostInstance,
+  MeasureInWindowOnSuccessCallback,
+  MeasureLayoutOnSuccessCallback,
+  MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
   TextStyle,
+  ViewProps,
   ViewStyle,
 } from 'react-native';
 
-export interface RichTextInputInstance {
+export interface RichTextInputInstance extends NativeMethods {
   // General commands
   focus: () => void;
   blur: () => void;
@@ -51,7 +56,7 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
-export interface RichTextInputProps {
+export interface RichTextInputProps extends ViewProps {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
   defaultValue?: string;
@@ -95,10 +100,31 @@ export const RichTextInput = ({
   onChangeMention,
   onEndMention,
   onPressMention,
+  ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
   useImperativeHandle(ref, () => ({
+    measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
+      nullthrows(nativeRef.current).measureInWindow(callback);
+    },
+    measure: (callback: MeasureOnSuccessCallback) => {
+      nullthrows(nativeRef.current).measure(callback);
+    },
+    measureLayout: (
+      relativeToNativeComponentRef: HostInstance | number,
+      onSuccess: MeasureLayoutOnSuccessCallback,
+      onFail?: () => void
+    ) => {
+      nullthrows(nativeRef.current).measureLayout(
+        relativeToNativeComponentRef,
+        onSuccess,
+        onFail
+      );
+    },
+    setNativeProps: (nativeProps: object) => {
+      nullthrows(nativeRef.current).setNativeProps(nativeProps);
+    },
     focus: () => {
       Commands.focus(nullthrows(nativeRef.current));
     },
@@ -186,6 +212,7 @@ export const RichTextInput = ({
       onLinkDetected={onLinkDetected}
       onMention={handleMentionEvent}
       onPressMention={onPressMention}
+      {...rest}
     />
   );
 };
