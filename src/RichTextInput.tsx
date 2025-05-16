@@ -23,6 +23,7 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  TextStyle,
   ViewProps,
   ViewStyle,
 } from 'react-native';
@@ -61,7 +62,7 @@ export interface RichTextInputProps extends ViewProps {
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
-  style?: ViewStyle;
+  style?: ViewStyle | TextStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
