@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ReactNativeRichTextEditorView : RCTViewComponentView {
   @public UITextView *textView;
   @public EditorConfig *config;
-  @public NSRange currentRange;
+  @public NSRange currentSelection;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
   @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;

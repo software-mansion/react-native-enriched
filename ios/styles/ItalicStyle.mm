@@ -16,9 +16,9 @@
 }
 
 - (void)applyStyle:(NSRange)range {
-  BOOL isStylePresent = [self detectStyle: _editor->currentRange];
-  if(_editor->currentRange.length >= 1) {
-    isStylePresent ? [self removeAttributes:_editor->currentRange] : [self addAttributes:_editor->currentRange];
+  BOOL isStylePresent = [self detectStyle: _editor->currentSelection];
+  if(_editor->currentSelection.length >= 1) {
+    isStylePresent ? [self removeAttributes:_editor->currentSelection] : [self addAttributes:_editor->currentSelection];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
