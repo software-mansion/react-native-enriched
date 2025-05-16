@@ -1,6 +1,7 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ReactStylesDiffMap
@@ -89,6 +90,20 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   @ReactProp(name = "autoFocus", defaultBoolean = false)
   override fun setAutoFocus(view: ReactNativeRichTextEditorView?, autoFocus: Boolean) {
     view?.setAutoFocus(autoFocus)
+  }
+
+  @ReactProp(name = "mentionIndicators")
+  override fun setMentionIndicators(view: ReactNativeRichTextEditorView?, indicators: ReadableArray?) {
+    if (indicators == null) return
+
+    val indicatorsList = mutableListOf<String>()
+    for (i in 0 until indicators.size()) {
+      val stringValue = indicators.getString(i) ?: continue
+      indicatorsList.add(stringValue)
+    }
+
+    val indicatorsArray = indicatorsList.toTypedArray()
+    view?.parametrizedStyles?.mentionIndicators = indicatorsArray
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
@@ -197,12 +212,12 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.addImage(src)
   }
 
-  override fun startMention(view: ReactNativeRichTextEditorView?) {
-    view?.startMention()
+  override fun startMention(view: ReactNativeRichTextEditorView?, indicator: String) {
+    view?.startMention(indicator)
   }
 
-  override fun addMention(view: ReactNativeRichTextEditorView?, text: String, value: String) {
-    view?.addMention(text, value)
+  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, value: String) {
+    view?.addMention(indicator, text, value)
   }
 
   override fun measure(
