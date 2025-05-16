@@ -6,7 +6,7 @@
 #import <ReactNativeRichTextEditor/RCTComponentViewHelpers.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import "UIView+React.h"
-#import "StringUtils.h"
+#import "StringExtension.h"
 #import "CoreText/CoreText.h"
 #import <React/RCTConvert.h>
 #import "StyleHeaders.h"

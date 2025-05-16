@@ -1,6 +1,6 @@
-#include "StringUtils.h"
+#import "StringExtension.h"
 
-@implementation NSString (Utils)
+@implementation NSString (StringExtension)
 
 - (std::string)toCppString {
   return std::string([self UTF8String]);
@@ -12,7 +12,7 @@
 
 @end
 
-@implementation NSMutableString (Utils)
+@implementation NSMutableString (StringExtension)
 
 - (std::string)toCppString {
   return std::string([self UTF8String]);

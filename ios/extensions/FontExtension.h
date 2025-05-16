@@ -2,7 +2,7 @@
 #import <EditorConfig.h>
 #pragma once
 
-@interface UIFont (FontUtils)
+@interface UIFont (FontExtension)
 
 - (BOOL)isBold;
 - (UIFont *)setBold;

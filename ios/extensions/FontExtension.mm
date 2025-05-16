@@ -1,7 +1,7 @@
-#import "FontUtils.h"
+#import "FontExtension.h"
 #import <React/RCTLog.h>
 
-@implementation UIFont (FontUtils)
+@implementation UIFont (FontExtension)
 
 - (BOOL)isBold {
   return (self.fontDescriptor.symbolicTraits & UIFontDescriptorTraitBold) == UIFontDescriptorTraitBold;

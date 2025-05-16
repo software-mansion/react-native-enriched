@@ -1,6 +1,6 @@
 #import "StyleHeaders.h"
 #import "ReactNativeRichTextEditorView.h"
-#import "FontUtils.h"
+#import "FontExtension.h"
 #import "OccurenceUtils.h"
 
 @implementation ItalicStyle {
