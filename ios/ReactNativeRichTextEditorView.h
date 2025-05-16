@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
   @public EditorConfig *config;
   @public NSRange currentRange;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
+  @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
+  @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 @end

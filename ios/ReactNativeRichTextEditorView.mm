@@ -53,14 +53,34 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (void)setDefaults {
   _componentViewHeightUpdateCounter = 0;
+  
+  _activeStyles = [[NSMutableSet alloc] init];
+  
   currentRange = NSMakeRange(0, 0);
+  
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
     @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
     @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithEditor:self],
-    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self]
+    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self],
+    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self]
   };
-  _activeStyles = [[NSMutableSet alloc] init];
+  
+  conflictingStyles = @{
+    @([BoldStyle getStyleType]) : @[],
+    @([ItalicStyle getStyleType]) : @[],
+    @([UnderlineStyle getStyleType]) : @[],
+    @([StrikethroughStyle getStyleType]) : @[],
+    @([InlineCodeStyle getStyleType]) : @[]
+  };
+  
+  blockingStyles = @{
+    @([BoldStyle getStyleType]) : @[],
+    @([ItalicStyle getStyleType]) : @[],
+    @([UnderlineStyle getStyleType]) : @[],
+    @([StrikethroughStyle getStyleType]) : @[],
+    @([InlineCodeStyle getStyleType]) : @[]
+  };
 }
 
 - (void)setupTextView {
@@ -206,7 +226,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       .isItalic = [_activeStyles containsObject: @([ItalicStyle getStyleType])],
       .isUnderline = [_activeStyles containsObject: @([UnderlineStyle getStyleType])],
       .isStrikeThrough = [_activeStyles containsObject: @([StrikethroughStyle getStyleType])],
-      .isInlineCode = NO, // [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
+      .isInlineCode = [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
       .isLink = NO, // [_activeStyles containsObject: @([LinkStyle getStyleType])],
       //.isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
       .isH1 = NO, // [_activeStyles containsObject: @([H1Style getStyleType])],
@@ -236,6 +256,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self toggleRegularStyle: [UnderlineStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleStrikeThrough"]) {
     [self toggleRegularStyle: [StrikethroughStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleInlineCode"]) {
+    [self toggleRegularStyle: [InlineCodeStyle getStyleType]];
   }
 }
 
@@ -247,10 +269,57 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [textView reactFocus];
 }
 
+// MARK: - Styles manipulation
+
 - (void)toggleRegularStyle:(StyleType)type {
   id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
+  
+  // handle blocking styles: if any is present we do not apply the toggled style
+  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: blockingStyles[@(type)]];
+  if(blocking.count != 0) {
+    return;
+  }
+  
+  // handle conflicting styles: all of their occurences have to be removed
+  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: conflictingStyles[@(type)]];
+  if(conflicting.count != 0) {
+    for(NSNumber *style in conflicting) {
+      id<BaseStyleProtocol> styleClass = stylesDict[style];
+      
+      if(currentRange.length >= 1) {
+        // for ranges, we need to remove each occurence
+        NSArray<StylePair *> *allOccurences = [styleClass findAllOccurences:currentRange];
+        
+        for(StylePair* pair in allOccurences) {
+          [styleClass removeAttributes: [pair.rangeValue rangeValue]];
+        }
+      } else {
+        // with in-place selection, we just remove the adequate typing attributes
+        [styleClass removeTypingAttributes];
+      }
+    }
+  }
+  
   [styleClass applyStyle:currentRange];
   [self tryUpdatingActiveStyles];
+}
+
+- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types {
+  NSMutableArray<NSNumber *> *resultArray = [[NSMutableArray<NSNumber *> alloc] init];
+  for(NSNumber *type in types) {
+    id<BaseStyleProtocol> styleClass = stylesDict[type];
+    
+    if(currentRange.length >= 1) {
+      if([styleClass anyOccurence:currentRange]) {
+        [resultArray addObject:type];
+      }
+    } else {
+      if([styleClass detectStyle:currentRange]) {
+        [resultArray addObject:type];
+      }
+    }
+  }
+  return resultArray;
 }
 
 // MARK: - UITextView delegate methods

@@ -10,6 +10,8 @@
   UIFont *_monospacedFont;
   BOOL _primaryFontNeedsRecreation;
   BOOL _monospacedFontNeedsRecreation;
+  UIColor *_inlineCodeFgColor;
+  UIColor *_inlineCodeBgColor;
 }
 
 - (instancetype) init {
@@ -84,6 +86,26 @@
     _monospacedFont = [UIFont monospacedSystemFontOfSize: [[self primaryFontSize] floatValue]  weight: [[self primaryFontWeight] floatValue]];
   }
   return _monospacedFont;
+}
+
+- (UIColor *)inlineCodeFgColor {
+  return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor systemOrangeColor];
+}
+
+- (void)setInlineCodeFgColor:(UIColor *)newValue {
+  if(![newValue isEqual:_inlineCodeFgColor]) {
+    _inlineCodeFgColor = newValue;
+  }
+}
+
+- (UIColor *)inlineCodeBgColor {
+  return _inlineCodeBgColor != nullptr ? _inlineCodeBgColor : [[UIColor systemGrayColor] colorWithAlphaComponent:0.3];
+}
+
+- (void)setInlineCodeBgColor:(UIColor *)newValue {
+  if(![newValue isEqual:_inlineCodeBgColor]) {
+    _inlineCodeBgColor = newValue;
+  }
 }
 
 @end
