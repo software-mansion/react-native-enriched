@@ -89,7 +89,7 @@
 }
 
 - (UIColor *)inlineCodeFgColor {
-  return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor systemOrangeColor];
+  return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor orangeColor];
 }
 
 - (void)setInlineCodeFgColor:(UIColor *)newValue {
@@ -99,7 +99,7 @@
 }
 
 - (UIColor *)inlineCodeBgColor {
-  return _inlineCodeBgColor != nullptr ? _inlineCodeBgColor : [[UIColor systemGrayColor] colorWithAlphaComponent:0.3];
+  return _inlineCodeBgColor != nullptr ? _inlineCodeBgColor : [[UIColor systemGrayColor] colorWithAlphaComponent:0.6];
 }
 
 - (void)setInlineCodeBgColor:(UIColor *)newValue {
