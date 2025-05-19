@@ -13,6 +13,7 @@ import java.io.File
 
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
   private var mentionStart: Int? = null
+  var mentionIndicators: Array<String> = emptyArray<String>()
 
   fun setLinkSpan(text: String, url: String) {
     val linkHandler = editorView.linkHandler ?: return
@@ -87,22 +88,27 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     val spannable = editorView.text as Spannable
     val (word, start, end) = result
 
-    val mentionPattern = Regex("^@\\w+")
+    val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
+    val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
+    val mentionRegex= Regex("^($indicatorsPattern)\\w*")
+
     val spans = spannable.getSpans(start, end, EditorMentionSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    if (mentionPattern.matches(word)) {
-      // Mention updated
-      mentionHandler.onMention(word.replace("@", ""))
-    } else if (word.startsWith("@")) {
-      // Mention started
-      mentionStart = start
-      mentionHandler.onMention("")
+    if (mentionRegex.matches(word)) {
+      val indicator = mentionIndicatorRegex.find(word)?.value ?: ""
+      val text = word.replaceFirst(indicator, "")
+
+      // Means we are starting mention
+      if (text.isEmpty()) {
+        mentionStart = start
+      }
+
+      mentionHandler.onMention(indicator, word.replaceFirst(indicator, ""))
     } else {
-      // Mention ended
-      mentionHandler.onMention(null)
+      mentionHandler.endMention()
     }
   }
 
@@ -127,20 +133,20 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
-  fun startMention() {
+  fun startMention(indicator: String) {
     val selection = editorView.selection ?: return
 
     val spannable = editorView.text as SpannableStringBuilder
     var (start, end) = selection.getInlineSelection()
 
     if (start == end) {
-      spannable.insert(start, "@")
+      spannable.insert(start, indicator)
     } else {
-      spannable.replace(start, end, "@")
+      spannable.replace(start, end, indicator)
     }
   }
 
-  fun setMentionSpan(text: String, value: String) {
+  fun setMentionSpan(indicator: String, text: String, value: String) {
     val mentionHandler = editorView.mentionHandler ?: return
     val selection = editorView.selection ?: return
 
@@ -153,11 +159,10 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     var start = mentionStart ?: return
-    spannable.replace(start + 1, selectionEnd, text)
+    spannable.replace(start + indicator.length, selectionEnd, text)
 
     val span = EditorMentionSpan(value, text, mentionHandler)
-    // start + text + 1 (because we need to account for the "@" character)
-    val spanEnd = start + text.length + 1
+    val spanEnd = start + text.length + indicator.length
     spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 }

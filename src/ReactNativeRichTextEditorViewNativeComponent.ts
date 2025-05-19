@@ -43,6 +43,7 @@ export interface OnLinkDetectedEvent {
 }
 
 export interface OnMentionEvent {
+  indicator: string;
   text: string | null;
 }
 
@@ -56,6 +57,7 @@ export interface NativeProps extends ViewProps {
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
+  mentionIndicators: string[];
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
@@ -99,9 +101,13 @@ interface NativeCommands {
     url: string
   ) => void;
   addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
-  startMention: (viewRef: React.ElementRef<ComponentType>) => void;
+  startMention: (
+    viewRef: React.ElementRef<ComponentType>,
+    indicator: string
+  ) => void;
   addMention: (
     viewRef: React.ElementRef<ComponentType>,
+    indicator: string,
     text: string,
     value: string
   ) => void;

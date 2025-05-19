@@ -131,18 +131,16 @@ export default function App() {
     ref.current?.setImage(imageUri);
   };
 
-  const handleChangeMention = (
-    e: NativeSyntheticEvent<OnChangeMentionEvent>
-  ) => {
+  const handleChangeMention = ({ text }: OnChangeMentionEvent) => {
     if (!isMentionPopupOpen) {
       openMentionPopup();
     }
 
-    onMentionChange(e.nativeEvent.text);
+    onMentionChange(text);
   };
 
   const handleMentionSelected = (item: MentionItem) => {
-    ref.current?.setMention(item.name, item.id);
+    ref.current?.setMention('@', item.name, item.id);
     closeMentionPopup();
   };
 
@@ -161,6 +159,7 @@ export default function App() {
           <RichTextInput
             autoFocus
             ref={ref}
+            mentionIndicators={['@', '#']}
             style={styles.editorInput}
             placeholder="Type something here..."
             placeholderTextColor="blue"
