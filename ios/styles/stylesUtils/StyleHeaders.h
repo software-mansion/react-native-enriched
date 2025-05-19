@@ -12,3 +12,6 @@
 
 @interface StrikethroughStyle : NSObject <BaseStyleProtocol>
 @end
+
+@interface InlineCodeStyle : NSObject <BaseStyleProtocol>
+@end

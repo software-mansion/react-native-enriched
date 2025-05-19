@@ -13,4 +13,8 @@
 - (void)setPrimaryFontFamily:(NSString *)newValue;
 - (UIFont *)primaryFont;
 - (UIFont *)monospacedFont;
+- (UIColor *)inlineCodeFgColor;
+- (void)setInlineCodeFgColor:(UIColor *)newValue;
+- (UIColor *)inlineCodeBgColor;
+- (void)setInlineCodeBgColor:(UIColor *)newValue;
 @end
