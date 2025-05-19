@@ -1,5 +1,4 @@
 #pragma once
-#import <UIKit/UIKit.h>
 #import "StylePair.h"
 #import "ReactNativeRichTextEditorView.h"
 

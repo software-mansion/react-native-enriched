@@ -2,7 +2,7 @@
 #include "string"
 #pragma once
 
-@interface NSString (StringUtils)
+@interface NSString (StringExtension)
 
 - (std::string)toCppString;
 
@@ -10,7 +10,7 @@
 
 @end
 
-@interface NSMutableString (StringUtils)
+@interface NSMutableString (StringExtension)
 
 - (std::string)toCppString;
 

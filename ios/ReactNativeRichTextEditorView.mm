@@ -6,7 +6,7 @@
 #import <ReactNativeRichTextEditor/RCTComponentViewHelpers.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import "UIView+React.h"
-#import "StringUtils.h"
+#import "StringExtension.h"
 #import "CoreText/CoreText.h"
 #import <React/RCTConvert.h>
 #import "StyleHeaders.h"
@@ -56,7 +56,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   _activeStyles = [[NSMutableSet alloc] init];
   
-  currentRange = NSMakeRange(0, 0);
+  currentSelection = NSMakeRange(0, 0);
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -209,7 +209,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
     BOOL wasActive = [_activeStyles containsObject: type];
-    BOOL isActive = [style detectStyle:currentRange];
+    BOOL isActive = [style detectStyle:currentSelection];
     if(wasActive != isActive) {
       updateNeeded = YES;
       if(isActive) {
@@ -286,9 +286,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     for(NSNumber *style in conflicting) {
       id<BaseStyleProtocol> styleClass = stylesDict[style];
       
-      if(currentRange.length >= 1) {
+      if(currentSelection.length >= 1) {
         // for ranges, we need to remove each occurence
-        NSArray<StylePair *> *allOccurences = [styleClass findAllOccurences:currentRange];
+        NSArray<StylePair *> *allOccurences = [styleClass findAllOccurences:currentSelection];
         
         for(StylePair* pair in allOccurences) {
           [styleClass removeAttributes: [pair.rangeValue rangeValue]];
@@ -300,7 +300,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
   }
   
-  [styleClass applyStyle:currentRange];
+  [styleClass applyStyle:currentSelection];
   [self tryUpdatingActiveStyles];
 }
 
@@ -309,12 +309,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   for(NSNumber *type in types) {
     id<BaseStyleProtocol> styleClass = stylesDict[type];
     
-    if(currentRange.length >= 1) {
-      if([styleClass anyOccurence:currentRange]) {
+    if(currentSelection.length >= 1) {
+      if([styleClass anyOccurence:currentSelection]) {
         [resultArray addObject:type];
       }
     } else {
-      if([styleClass detectStyle:currentRange]) {
+      if([styleClass detectStyle:currentSelection]) {
         [resultArray addObject:type];
       }
     }
@@ -335,8 +335,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
-  // update current range
-  currentRange = textView.selectedRange;
+  // update current selection
+  currentSelection = textView.selectedRange;
   // update active styles
   [self tryUpdatingActiveStyles];
 }
