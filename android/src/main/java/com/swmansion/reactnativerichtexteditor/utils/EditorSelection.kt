@@ -158,8 +158,9 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val (start, end) = getInlineSelection()
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, type)
+    val isLinkType = type == EditorLinkSpan::class.java
 
-    if (type == EditorLinkSpan::class.java && spans.isEmpty()) {
+    if (isLinkType && spans.isEmpty()) {
       emitLinkDetectedEvent(spannable, null, start, end)
       return null
     }
@@ -169,7 +170,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       val spanEnd = spannable.getSpanEnd(span)
 
       if (start >= spanStart && end <= spanEnd) {
-        if (span is EditorLinkSpan && type == EditorLinkSpan::class.java) {
+        if (isLinkType && span is EditorLinkSpan) {
           emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
         }
 
