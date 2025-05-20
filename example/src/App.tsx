@@ -163,6 +163,8 @@ export default function App() {
             style={styles.editorInput}
             placeholder="Type something here..."
             placeholderTextColor="blue"
+            selectionColor="red"
+            cursorColor="yellow"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
