@@ -92,6 +92,11 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setAutoFocus(autoFocus)
   }
 
+  @ReactProp(name = "editable", defaultBoolean = true)
+  override fun setEditable(view: ReactNativeRichTextEditorView?, editable: Boolean) {
+    view?.isEnabled = editable
+  }
+
   @ReactProp(name = "mentionIndicators")
   override fun setMentionIndicators(view: ReactNativeRichTextEditorView?, indicators: ReadableArray?) {
     if (indicators == null) return

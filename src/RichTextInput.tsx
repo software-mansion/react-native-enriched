@@ -60,6 +60,7 @@ export interface OnChangeMentionEvent {
 export interface RichTextInputProps extends ViewProps {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
+  editable?: boolean;
   mentionIndicators?: string[];
   defaultValue?: string;
   placeholder?: string;
@@ -95,6 +96,7 @@ type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 export const RichTextInput = ({
   ref,
   autoFocus,
+  editable = true,
   mentionIndicators = ['@'],
   defaultValue,
   placeholder,
@@ -224,6 +226,7 @@ export const RichTextInput = ({
     <ReactNativeRichTextEditorView
       ref={nativeRef}
       mentionIndicators={mentionIndicators}
+      editable={editable}
       autoFocus={autoFocus}
       defaultValue={defaultValue}
       placeholder={placeholder}
