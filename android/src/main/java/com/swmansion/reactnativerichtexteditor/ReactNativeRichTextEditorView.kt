@@ -222,6 +222,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
   }
 
+  // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
+  // After the text changes inside an EditText, TextView checks if a layout() has been requested.
+  // If it has, it will not scroll the text to the end of the new text inserted, but wait for the
+  // next layout() to be called. However, we do not perform a layout() after a requestLayout(), so
+  // we need to override isLayoutRequested to force EditText to scroll to the end of the new text
+  // immediately.
+  override fun isLayoutRequested(): Boolean {
+    return false
+  }
+
   fun measureSize(maxWidth: Float): Pair<Float, Float> {
     val paint = this.paint
     val spannable = text as Spannable

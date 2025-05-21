@@ -6,6 +6,7 @@ import {
   Linking,
   Alert,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import {
   RichTextInput,
@@ -52,6 +53,8 @@ const DEFAULT_LINK_STATE = {
   text: '',
   url: '',
 };
+
+const DEBUG_SCROLLABLE = false;
 
 export default function App() {
   const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
@@ -153,7 +156,10 @@ export default function App() {
 
   return (
     <>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <Text style={styles.label}>SWM Rich Text Editor</Text>
         <View style={styles.editor}>
           <RichTextInput
@@ -188,7 +194,8 @@ export default function App() {
         />
         <Button title="Focus" onPress={handleFocus} />
         <Button title="Blur" onPress={handleBlur} />
-      </View>
+        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+      </ScrollView>
       <LinkModal
         defaults={currentLink}
         isOpen={isLinkModalOpen}
@@ -207,9 +214,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  content: {
+    flexGrow: 1,
     padding: 16,
+    alignItems: 'center',
   },
   editor: {
     width: '100%',
@@ -233,7 +242,14 @@ const styles = StyleSheet.create({
   defaultInput: {
     marginTop: 24,
     width: '100%',
+    height: 40,
     borderBottomWidth: 1,
     borderBottomColor: 'grey',
+  },
+  scrollPlaceholder: {
+    marginTop: 24,
+    width: '100%',
+    height: 1000,
+    backgroundColor: 'rgb(0, 26, 114)',
   },
 });
