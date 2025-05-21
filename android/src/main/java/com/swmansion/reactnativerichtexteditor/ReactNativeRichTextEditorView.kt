@@ -125,6 +125,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
 
+    // Scroll to the last line of text
+    setSelection(text?.length ?: 0)
+
     isSettingDefaultValue = false
   }
 
