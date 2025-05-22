@@ -1,7 +1,10 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
 import android.graphics.Color
+import android.os.Build
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.method.LinkMovementMethod
@@ -176,6 +179,27 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (colorInt == null) return
 
     setHintTextColor(colorInt)
+  }
+
+  fun setSelectionColor(colorInt: Int?) {
+    if (colorInt == null) return
+
+    highlightColor = colorInt
+  }
+
+  fun setCursorColor(colorInt: Int?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      val cursorDrawable = textCursorDrawable
+      if (cursorDrawable == null) return
+
+      if (colorInt != null) {
+        cursorDrawable.colorFilter = BlendModeColorFilter(colorInt, BlendMode.SRC_IN)
+      } else {
+        cursorDrawable.clearColorFilter()
+      }
+
+      textCursorDrawable = cursorDrawable
+    }
   }
 
   fun setColor(colorInt: Int?) {
