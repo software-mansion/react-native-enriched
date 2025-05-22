@@ -53,12 +53,17 @@ export interface OnPressMentionEvent {
 }
 
 export interface NativeProps extends ViewProps {
+  // base props
   autoFocus?: boolean;
   editable?: boolean;
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
   mentionIndicators: string[];
+  cursorColor?: ColorValue;
+  selectionColor?: ColorValue;
+
+  // event callbacks
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;

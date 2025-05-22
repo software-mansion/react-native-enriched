@@ -57,7 +57,7 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
-export interface RichTextInputProps extends ViewProps {
+export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
   editable?: boolean;
@@ -65,6 +65,8 @@ export interface RichTextInputProps extends ViewProps {
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
+  cursorColor?: ColorValue;
+  selectionColor?: ColorValue;
   style?: ViewStyle | TextStyle;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
@@ -101,6 +103,8 @@ export const RichTextInput = ({
   defaultValue,
   placeholder,
   placeholderTextColor,
+  cursorColor,
+  selectionColor,
   style,
   onChangeText,
   onChangeHtml,
@@ -231,6 +235,8 @@ export const RichTextInput = ({
       defaultValue={defaultValue}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
+      cursorColor={cursorColor}
+      selectionColor={selectionColor}
       style={style}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
