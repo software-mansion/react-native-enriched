@@ -22,6 +22,7 @@ using namespace facebook::react;
   int _componentViewHeightUpdateCounter;
   NSMutableDictionary<NSAttributedStringKey, id> *_defaultTypingAttributes;
   NSMutableSet<NSNumber *> *_activeStyles;
+  NSString *_recentlyActiveLinkUrl;
 }
 
 // MARK: - Component utils
@@ -63,7 +64,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
     @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithEditor:self],
     @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self],
-    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self]
+    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self],
+    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithEditor:self]
   };
   
   conflictingStyles = @{
@@ -71,7 +73,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[]
+    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType])],
+    @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])]
   };
   
   blockingStyles = @{
@@ -79,7 +82,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[]
+    @([InlineCodeStyle getStyleType]) : @[],
+    @([LinkStyle getStyleType]): @[]
   };
 }
 
@@ -205,6 +209,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)tryUpdatingActiveStyles {
   // style updates are emitted only if something differs from the previously active styles
   BOOL updateNeeded = NO;
+  // data for onLinkDetected event
+  LinkData *detectedLinkData;
 
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
@@ -218,6 +224,24 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         [_activeStyles removeObject:type];
       }
     }
+    
+    // onLinkDetected event
+    if(isActive && [type intValue] == [LinkStyle getStyleType]) {
+      // get the link data
+      LinkData *candidateLinkData;
+      LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+      if(linkStyleClass != nullptr) {
+        candidateLinkData = [linkStyleClass getCurrentLinkDataIn:currentSelection];
+      }
+      
+      if(wasActive == NO) {
+        // we changed selection from non-link to a link
+        detectedLinkData = candidateLinkData;
+      } else if(_recentlyActiveLinkUrl != candidateLinkData.url) {
+        // we changed selection from one link to the other
+        detectedLinkData = candidateLinkData;
+      }
+    }
   }
     
   if(updateNeeded) {
@@ -227,7 +251,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       .isUnderline = [_activeStyles containsObject: @([UnderlineStyle getStyleType])],
       .isStrikeThrough = [_activeStyles containsObject: @([StrikethroughStyle getStyleType])],
       .isInlineCode = [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
-      .isLink = NO, // [_activeStyles containsObject: @([LinkStyle getStyleType])],
+      .isLink = [_activeStyles containsObject: @([LinkStyle getStyleType])],
       //.isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
       .isH1 = NO, // [_activeStyles containsObject: @([H1Style getStyleType])],
       .isH2 = NO, // [_activeStyles containsObject: @([H2Style getStyleType])],
@@ -238,6 +262,16 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       .isOrderedList = NO, // [_activeStyles containsObject: @([OrderedListStyle getStyleType]]],
       .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]]],
     });
+  }
+  
+  if(detectedLinkData != nullptr) {
+    // emit onLinkeDetected event
+    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onLinkDetected({
+      .text = [detectedLinkData.text toCppString],
+      .url = [detectedLinkData.url toCppString]
+    });
+    // set the recentlyActiveUrl for future use
+    _recentlyActiveLinkUrl = detectedLinkData.url;
   }
 }
 
@@ -258,6 +292,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self toggleRegularStyle: [StrikethroughStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleInlineCode"]) {
     [self toggleRegularStyle: [InlineCodeStyle getStyleType]];
+  } else if([commandName isEqualToString:@"addLink"]) {
+    NSString *text = (NSString *)args[0];
+    NSString *url = (NSString *)args[1];
+    [self addLink:text url:url];
   }
 }
 
@@ -274,10 +312,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)toggleRegularStyle:(StyleType)type {
   id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
   
+  if([self handleStyleBlocksAndConflicts:type]) {
+    [styleClass applyStyle:currentSelection];
+    [self tryUpdatingActiveStyles];
+  }
+}
+
+- (void)addLink:(NSString *)text url:(NSString *)url {
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  if(linkStyleClass == nullptr) { return; }
+  
+  if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType]]) {
+    [linkStyleClass addLink:text url:url manual:YES];
+    [self tryUpdatingActiveStyles];
+  }
+}
+
+// returns false when style shouldn't be applied and true when it can be
+- (BOOL)handleStyleBlocksAndConflicts:(StyleType)type {
   // handle blocking styles: if any is present we do not apply the toggled style
   NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: blockingStyles[@(type)]];
   if(blocking.count != 0) {
-    return;
+    return NO;
   }
   
   // handle conflicting styles: all of their occurences have to be removed
@@ -299,9 +355,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       }
     }
   }
-  
-  [styleClass applyStyle:currentSelection];
-  [self tryUpdatingActiveStyles];
+  return YES;
 }
 
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types {
@@ -337,6 +391,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)textViewDidChangeSelection:(UITextView *)textView {
   // update current selection
   currentSelection = textView.selectedRange;
+  
+  // link typing attributes fix
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  if(linkStyleClass != nullptr) {
+    [linkStyleClass manageLinkTypingAttributes];
+  }
+  
   // update active styles
   [self tryUpdatingActiveStyles];
 }
@@ -356,6 +417,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(needsActiveStylesUpdate) {
     [self tryUpdatingActiveStyles];
   }
+}
+
+- (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction {
+  if(URL.absoluteURL != nullptr) {
+    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onPressLink({ .url = [URL.absoluteString toCppString]});
+  }
+  return false;
 }
 
 @end
