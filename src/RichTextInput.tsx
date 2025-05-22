@@ -32,6 +32,7 @@ export interface RichTextInputInstance extends NativeMethods {
   // General commands
   focus: () => void;
   blur: () => void;
+  setValue: (value: string) => void;
 
   // Text formatting commands
   toggleBold: () => void;
@@ -145,6 +146,9 @@ export const RichTextInput = ({
     },
     blur: () => {
       Commands.blur(nullthrows(nativeRef.current));
+    },
+    setValue: (value: string) => {
+      Commands.setValue(nullthrows(nativeRef.current), value);
     },
     toggleBold: () => {
       Commands.toggleBold(nullthrows(nativeRef.current));
