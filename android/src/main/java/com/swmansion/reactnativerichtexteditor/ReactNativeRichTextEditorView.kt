@@ -40,7 +40,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
-  var isSettingDefaultValue: Boolean = false
+  var isSettingValue: Boolean = false
 
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
@@ -110,9 +110,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  fun setDefaultValue(value: String?) {
+  fun setValue(value: String?) {
     if (value == null) return
-    isSettingDefaultValue = true
+    isSettingValue = true
 
     val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
     if (isHtml) {
@@ -125,7 +125,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
 
-    isSettingDefaultValue = false
+    isSettingValue = false
   }
 
   fun setAutoFocus(autoFocus: Boolean) {

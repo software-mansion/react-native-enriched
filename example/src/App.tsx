@@ -98,6 +98,10 @@ export default function App() {
     ref.current?.blur();
   };
 
+  const handleSetValue = () => {
+    ref.current?.setValue('<html><b>Hello</b> <i>world</i></html>');
+  };
+
   const openLinkModal = () => {
     setIsLinkModalOpen(true);
   };
@@ -188,6 +192,7 @@ export default function App() {
         />
         <Button title="Focus" onPress={handleFocus} />
         <Button title="Blur" onPress={handleBlur} />
+        <Button title="Set value" onPress={handleSetValue} />
       </View>
       <LinkModal
         defaults={currentLink}

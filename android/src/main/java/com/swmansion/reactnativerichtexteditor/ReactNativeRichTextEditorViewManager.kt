@@ -74,7 +74,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: ReactNativeRichTextEditorView?, value: String?) {
-    view?.setDefaultValue(value)
+    view?.setValue(value)
   }
 
   @ReactProp(name = "placeholder")
@@ -154,6 +154,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun blur(view: ReactNativeRichTextEditorView?) {
     view?.clearFocus()
+  }
+
+  override fun setValue(view: ReactNativeRichTextEditorView?, text: String) {
+    view?.setValue(text)
   }
 
   override fun toggleBold(view: ReactNativeRichTextEditorView?) {
