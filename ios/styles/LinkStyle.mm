@@ -143,6 +143,30 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
   return data;
 }
 
+// returns full range of a link at some location, useful for removing links
+- (NSRange)getFullLinkRangeAt:(NSUInteger)location {
+  NSRange linkRange = NSMakeRange(0, 0);
+  NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
+  
+  // get the previous index if possible when at the very end of input
+  NSUInteger searchLocation = location;
+  if(searchLocation == _editor->textView.textStorage.length) {
+    if(searchLocation == 0) {
+      return linkRange;
+    } else {
+      searchLocation = searchLocation - 1;
+    }
+  }
+  
+  [_editor->textView.textStorage
+   attribute:NSLinkAttributeName
+   atIndex:searchLocation
+   longestEffectiveRange: &linkRange
+   inRange:editorRange
+  ];
+  return linkRange;
+}
+
 - (void)manageLinkTypingAttributes {
   // manual link can be extended via typing attributes only if it's done from the inside
   // adding text before or after shouldn't be considered a link
@@ -211,30 +235,6 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
     }
   ];
   return isSigleLink;
-}
-
-// returns full range of a link at some location, useful for removing links
-- (NSRange)getFullLinkRangeAt:(NSUInteger)location {
-  NSRange linkRange = NSMakeRange(0, 0);
-  NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
-  
-  // get the previous index if possible when at the very end of input
-  NSUInteger searchLocation = location;
-  if(searchLocation == _editor->textView.textStorage.length) {
-    if(searchLocation == 0) {
-      return linkRange;
-    } else {
-      searchLocation = searchLocation - 1;
-    }
-  }
-  
-  [_editor->textView.textStorage
-   attribute:NSLinkAttributeName
-   atIndex:searchLocation
-   longestEffectiveRange: &linkRange
-   inRange:editorRange
-  ];
-  return linkRange;
 }
 
 @end

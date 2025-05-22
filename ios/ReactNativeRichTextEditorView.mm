@@ -22,7 +22,8 @@ using namespace facebook::react;
   int _componentViewHeightUpdateCounter;
   NSMutableDictionary<NSAttributedStringKey, id> *_defaultTypingAttributes;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSString *_recentlyActiveLinkUrl;
+  LinkData *_recentlyActiveLinkData;
+  NSRange _recentlyActiveLinkRange;
 }
 
 // MARK: - Component utils
@@ -54,10 +55,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (void)setDefaults {
   _componentViewHeightUpdateCounter = 0;
-  
   _activeStyles = [[NSMutableSet alloc] init];
-  
+  _recentlyActiveLinkRange = NSMakeRange(0, 0);
   currentSelection = NSMakeRange(0, 0);
+  
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -209,8 +210,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)tryUpdatingActiveStyles {
   // style updates are emitted only if something differs from the previously active styles
   BOOL updateNeeded = NO;
+  
   // data for onLinkDetected event
   LinkData *detectedLinkData;
+  NSRange detectedLinkRange = NSMakeRange(0, 0);
 
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
@@ -229,17 +232,25 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     if(isActive && [type intValue] == [LinkStyle getStyleType]) {
       // get the link data
       LinkData *candidateLinkData;
+      NSRange candidateLinkRange = NSMakeRange(0, 0);
       LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
       if(linkStyleClass != nullptr) {
         candidateLinkData = [linkStyleClass getCurrentLinkDataIn:currentSelection];
+        candidateLinkRange = [linkStyleClass getFullLinkRangeAt:currentSelection.location];
       }
       
       if(wasActive == NO) {
         // we changed selection from non-link to a link
         detectedLinkData = candidateLinkData;
-      } else if(_recentlyActiveLinkUrl != candidateLinkData.url) {
-        // we changed selection from one link to the other
+        detectedLinkRange = candidateLinkRange;
+      } else if(
+        _recentlyActiveLinkData.url != candidateLinkData.url ||
+        _recentlyActiveLinkData.text != candidateLinkData.text ||
+        !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)
+      ) {
+        // we changed selection from one link to the other or modified current link's text
         detectedLinkData = candidateLinkData;
+        detectedLinkRange = candidateLinkRange;
       }
     }
   }
@@ -271,7 +282,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       .url = [detectedLinkData.url toCppString]
     });
     // set the recentlyActiveUrl for future use
-    _recentlyActiveLinkUrl = detectedLinkData.url;
+    _recentlyActiveLinkData = detectedLinkData;
+    _recentlyActiveLinkRange = detectedLinkRange;
   }
 }
 

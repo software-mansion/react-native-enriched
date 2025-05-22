@@ -20,5 +20,6 @@
 @interface LinkStyle : NSObject <BaseStyleProtocol>
 - (void)addLink:(NSString*)text url:(NSString*)url manual:(BOOL)manual;
 - (LinkData *)getCurrentLinkDataIn:(NSRange)range;
+- (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)manageLinkTypingAttributes;
 @end
