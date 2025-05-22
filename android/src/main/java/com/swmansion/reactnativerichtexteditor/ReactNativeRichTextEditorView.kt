@@ -148,7 +148,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (value == null) return
     isSettingValue = true
 
-    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
+    val isHtmlTagRecognized = value.startsWith("<html>") && value.endsWith("</html>")
+    val isPTagRecognized = value.startsWith("<p>") && value.endsWith("</p>")
+    val isHtml = isHtmlTagRecognized || isPTagRecognized
     if (isHtml) {
       val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
       setText(parsed)
