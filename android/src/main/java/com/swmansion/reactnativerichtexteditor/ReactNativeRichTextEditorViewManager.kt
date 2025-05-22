@@ -83,13 +83,28 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   }
 
   @ReactProp(name = "placeholderTextColor", customType = "Color")
-  override fun setPlaceholderTextColor(view: ReactNativeRichTextEditorView?, value: Int?) {
-    view?.setPlaceholderTextColor(value)
+  override fun setPlaceholderTextColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setPlaceholderTextColor(color)
+  }
+
+  @ReactProp(name = "cursorColor", customType = "Color")
+  override fun setCursorColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setCursorColor(color)
+  }
+
+  @ReactProp(name = "selectionColor", customType = "Color")
+  override fun setSelectionColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setSelectionColor(color)
   }
 
   @ReactProp(name = "autoFocus", defaultBoolean = false)
   override fun setAutoFocus(view: ReactNativeRichTextEditorView?, autoFocus: Boolean) {
     view?.setAutoFocus(autoFocus)
+  }
+
+  @ReactProp(name = "editable", defaultBoolean = true)
+  override fun setEditable(view: ReactNativeRichTextEditorView?, editable: Boolean) {
+    view?.isEnabled = editable
   }
 
   @ReactProp(name = "mentionIndicators")
