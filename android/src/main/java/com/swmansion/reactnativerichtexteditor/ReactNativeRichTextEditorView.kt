@@ -26,8 +26,8 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
-import com.swmansion.reactnativerichtexteditor.events.OnBlurEvent
-import com.swmansion.reactnativerichtexteditor.events.OnFocusEvent
+import com.swmansion.reactnativerichtexteditor.events.OnInputBlurEvent
+import com.swmansion.reactnativerichtexteditor.events.OnInputFocusEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
@@ -146,9 +146,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
 
     if (focused) {
-      dispatcher?.dispatchEvent(OnFocusEvent(surfaceId, id))
+      dispatcher?.dispatchEvent(OnInputFocusEvent(surfaceId, id))
     } else {
-      dispatcher?.dispatchEvent(OnBlurEvent(surfaceId, id))
+      dispatcher?.dispatchEvent(OnInputBlurEvent(surfaceId, id))
     }
   }
 

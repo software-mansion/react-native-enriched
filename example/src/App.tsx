@@ -193,8 +193,8 @@ export default function App() {
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
             onPressMention={handleMentionPress}
-            onFocus={handleFocusEvent}
-            onBlur={handleBlurEvent}
+            onInputFocus={handleFocusEvent}
+            onInputBlur={handleBlurEvent}
           />
           <Toolbar
             stylesState={stylesState}
@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 16,
+    paddingTop: 100,
     alignItems: 'center',
   },
   editor: {
