@@ -377,13 +377,7 @@ public class EditorParser {
         String tagType = isList ? "li" : "p";
         out.append("<");
 
-        if (isUlListItem) {
-          out.append("li");
-        } else if (isOlListItem) {
-          out.append("li index=").append(index);
-        } else {
-          out.append("p");
-        }
+        out.append(tagType);
 
         out.append(">");
         withinParagraph(out, text, i, next);
@@ -571,6 +565,9 @@ class HtmlToSpannedConverter implements ContentHandler {
    */
   private static final Map<String, Integer> sColorMap;
 
+  private static Integer currentOrderedListItemIndex = 0;
+  private static Boolean isInOrderedList = false;
+
   static {
     sColorMap = new HashMap<>();
     sColorMap.put("darkgray", 0xFFA9A9A9);
@@ -666,6 +663,11 @@ class HtmlToSpannedConverter implements ContentHandler {
       startBlockElement(mSpannableStringBuilder, attributes, getMarginParagraph());
       startCssStyle(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("ul")) {
+      isInOrderedList = false;
+      startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
+    } else if (tag.equalsIgnoreCase("ol")) {
+      isInOrderedList = true;
+      currentOrderedListItemIndex = 0;
       startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
     } else if (tag.equalsIgnoreCase("li")) {
       startLi(mSpannableStringBuilder, attributes);
@@ -844,17 +846,9 @@ class HtmlToSpannedConverter implements ContentHandler {
   private void startLi(Editable text, Attributes attributes) {
     startBlockElement(text, attributes, getMarginListItem());
 
-    // assumption, ordered list includes index as their index attribute
-    // unordered lists does not define index
-    String value = attributes.getValue("", "index");
-
-    if (value != null) {
-      try {
-        int index = Integer.parseInt(value);
-        start(text, new List("ol", index));
-      } catch (NumberFormatException e) {
-        start(text, new List("ul", 0));
-      }
+    if (isInOrderedList) {
+      currentOrderedListItemIndex++;
+      start(text, new List("ol", currentOrderedListItemIndex));
     } else {
       start(text, new List("ul", 0));
     }
