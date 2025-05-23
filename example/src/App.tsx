@@ -158,6 +158,14 @@ export default function App() {
     );
   };
 
+  const handleFocusEvent = () => {
+    console.log('Input focused');
+  };
+
+  const handleBlurEvent = () => {
+    console.log('Input blurred');
+  };
+
   return (
     <>
       <ScrollView
@@ -185,6 +193,8 @@ export default function App() {
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
             onPressMention={handleMentionPress}
+            onFocus={handleFocusEvent}
+            onBlur={handleBlurEvent}
           />
           <Toolbar
             stylesState={stylesState}
