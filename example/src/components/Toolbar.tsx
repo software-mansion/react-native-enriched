@@ -133,7 +133,7 @@ export const Toolbar: FC<ToolbarProps> = ({
         onSelectImage();
         break;
       case 'mention':
-        editorRef.current?.startMention();
+        editorRef.current?.startMention('@');
         break;
     }
   };

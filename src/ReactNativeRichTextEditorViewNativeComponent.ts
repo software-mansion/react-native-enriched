@@ -43,6 +43,7 @@ export interface OnLinkDetectedEvent {
 }
 
 export interface OnMentionEvent {
+  indicator: string;
   text: string | null;
 }
 
@@ -52,10 +53,19 @@ export interface OnPressMentionEvent {
 }
 
 export interface NativeProps extends ViewProps {
+  // base props
   autoFocus?: boolean;
+  editable?: boolean;
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
+  mentionIndicators: string[];
+  cursorColor?: ColorValue;
+  selectionColor?: ColorValue;
+
+  // event callbacks
+  onFocus?: DirectEventHandler<null>;
+  onBlur?: DirectEventHandler<null>;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
@@ -79,6 +89,7 @@ interface NativeCommands {
   // General commands
   focus: (viewRef: React.ElementRef<ComponentType>) => void;
   blur: (viewRef: React.ElementRef<ComponentType>) => void;
+  setValue: (viewRef: React.ElementRef<ComponentType>, text: string) => void;
 
   // Text formatting commands
   toggleBold: (viewRef: React.ElementRef<ComponentType>) => void;
@@ -99,9 +110,13 @@ interface NativeCommands {
     url: string
   ) => void;
   addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
-  startMention: (viewRef: React.ElementRef<ComponentType>) => void;
+  startMention: (
+    viewRef: React.ElementRef<ComponentType>,
+    indicator: string
+  ) => void;
   addMention: (
     viewRef: React.ElementRef<ComponentType>,
+    indicator: string,
     text: string,
     value: string
   ) => void;
@@ -112,6 +127,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     // General commands
     'focus',
     'blur',
+    'setValue',
 
     // Text formatting commands
     'toggleBold',

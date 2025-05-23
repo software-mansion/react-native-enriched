@@ -6,6 +6,7 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 
 class MentionHandler(private val editorView: ReactNativeRichTextEditorView) {
   private var previousText: String? = null
+  private var previousIndicator: String? = null
 
   fun onPress(text: String, value: String) {
     val context = editorView.context as ReactContext
@@ -14,7 +15,20 @@ class MentionHandler(private val editorView: ReactNativeRichTextEditorView) {
     dispatcher?.dispatchEvent(OnPressMentionEvent(surfaceId, editorView.id, text, value))
   }
 
-  fun onMention(text: String?) {
+  fun endMention() {
+    val indicator = previousIndicator
+    if (indicator == null) return
+
+    emitEvent(indicator, null)
+    previousIndicator = null
+  }
+
+  fun onMention(indicator: String, text: String?) {
+    emitEvent(indicator, text)
+    previousIndicator = indicator
+  }
+
+  private fun emitEvent(indicator: String, text: String?) {
     // Do not emit events too often
     if (previousText == text) return
 
@@ -22,6 +36,6 @@ class MentionHandler(private val editorView: ReactNativeRichTextEditorView) {
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, editorView.id, text))
+    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, editorView.id, indicator, text))
   }
 }

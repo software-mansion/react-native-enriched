@@ -377,13 +377,7 @@ public class EditorParser {
         String tagType = isList ? "li" : "p";
         out.append("<");
 
-        if (isUlListItem) {
-          out.append("li");
-        } else if (isOlListItem) {
-          out.append("li index=").append(index);
-        } else {
-          out.append("p");
-        }
+        out.append(tagType);
 
         out.append(">");
         withinParagraph(out, text, i, next);
@@ -459,7 +453,7 @@ public class EditorParser {
           out.append("<h3>");
         }
         if (style[j] instanceof EditorStrikeThroughSpan) {
-          out.append("<span style=\"text-decoration:line-through;\">");
+          out.append("<s>");
         }
         if (style[j] instanceof EditorLinkSpan) {
           out.append("<a href=\"");
@@ -490,7 +484,7 @@ public class EditorParser {
           out.append("</mention>");
         }
         if (style[j] instanceof EditorStrikeThroughSpan) {
-          out.append("</span>");
+          out.append("</s>");
         }
         if (style[j] instanceof EditorUnderlineSpan) {
           out.append("</u>");
@@ -570,6 +564,9 @@ class HtmlToSpannedConverter implements ContentHandler {
    * Name-value mapping of HTML/CSS colors which have different values in {@link Color}.
    */
   private static final Map<String, Integer> sColorMap;
+
+  private static Integer currentOrderedListItemIndex = 0;
+  private static Boolean isInOrderedList = false;
 
   static {
     sColorMap = new HashMap<>();
@@ -666,6 +663,11 @@ class HtmlToSpannedConverter implements ContentHandler {
       startBlockElement(mSpannableStringBuilder, attributes, getMarginParagraph());
       startCssStyle(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("ul")) {
+      isInOrderedList = false;
+      startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
+    } else if (tag.equalsIgnoreCase("ol")) {
+      isInOrderedList = true;
+      currentOrderedListItemIndex = 0;
       startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
     } else if (tag.equalsIgnoreCase("li")) {
       startLi(mSpannableStringBuilder, attributes);
@@ -844,17 +846,9 @@ class HtmlToSpannedConverter implements ContentHandler {
   private void startLi(Editable text, Attributes attributes) {
     startBlockElement(text, attributes, getMarginListItem());
 
-    // assumption, ordered list includes index as their index attribute
-    // unordered lists does not define index
-    String value = attributes.getValue("", "index");
-
-    if (value != null) {
-      try {
-        int index = Integer.parseInt(value);
-        start(text, new List("ol", index));
-      } catch (NumberFormatException e) {
-        start(text, new List("ul", 0));
-      }
+    if (isInOrderedList) {
+      currentOrderedListItemIndex++;
+      start(text, new List("ol", currentOrderedListItemIndex));
     } else {
       start(text, new List("ul", 0));
     }

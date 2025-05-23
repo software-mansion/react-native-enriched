@@ -6,6 +6,7 @@ import {
   Linking,
   Alert,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import {
   RichTextInput,
@@ -53,6 +54,8 @@ const DEFAULT_LINK_STATE = {
   url: '',
 };
 
+const DEBUG_SCROLLABLE = false;
+
 export default function App() {
   const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -98,6 +101,10 @@ export default function App() {
     ref.current?.blur();
   };
 
+  const handleSetValue = () => {
+    ref.current?.setValue('<html><b>Hello</b> <i>world</i></html>');
+  };
+
   const openLinkModal = () => {
     setIsLinkModalOpen(true);
   };
@@ -131,18 +138,16 @@ export default function App() {
     ref.current?.setImage(imageUri);
   };
 
-  const handleChangeMention = (
-    e: NativeSyntheticEvent<OnChangeMentionEvent>
-  ) => {
+  const handleChangeMention = ({ text }: OnChangeMentionEvent) => {
     if (!isMentionPopupOpen) {
       openMentionPopup();
     }
 
-    onMentionChange(e.nativeEvent.text);
+    onMentionChange(text);
   };
 
   const handleMentionSelected = (item: MentionItem) => {
-    ref.current?.setMention(item.name, item.id);
+    ref.current?.setMention('@', item.name, item.id);
     closeMentionPopup();
   };
 
@@ -153,17 +158,31 @@ export default function App() {
     );
   };
 
+  const handleFocusEvent = () => {
+    console.log('Input focused');
+  };
+
+  const handleBlurEvent = () => {
+    console.log('Input blurred');
+  };
+
   return (
     <>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <Text style={styles.label}>SWM Rich Text Editor</Text>
         <View style={styles.editor}>
           <RichTextInput
             autoFocus
             ref={ref}
+            mentionIndicators={['@', '#']}
             style={styles.editorInput}
             placeholder="Type something here..."
             placeholderTextColor="blue"
+            selectionColor="red"
+            cursorColor="yellow"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
@@ -174,6 +193,8 @@ export default function App() {
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
             onPressMention={handleMentionPress}
+            onFocus={handleFocusEvent}
+            onBlur={handleBlurEvent}
           />
           <Toolbar
             stylesState={stylesState}
@@ -189,7 +210,9 @@ export default function App() {
         />
         <Button title="Focus" onPress={handleFocus} />
         <Button title="Blur" onPress={handleBlur} />
-      </View>
+        <Button title="Set value" onPress={handleSetValue} />
+        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+      </ScrollView>
       <LinkModal
         defaults={currentLink}
         isOpen={isLinkModalOpen}
@@ -208,9 +231,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  content: {
+    flexGrow: 1,
     padding: 16,
+    alignItems: 'center',
   },
   editor: {
     width: '100%',
@@ -234,7 +259,14 @@ const styles = StyleSheet.create({
   defaultInput: {
     marginTop: 24,
     width: '100%',
+    height: 40,
     borderBottomWidth: 1,
     borderBottomColor: 'grey',
+  },
+  scrollPlaceholder: {
+    marginTop: 24,
+    width: '100%',
+    height: 1000,
+    backgroundColor: 'rgb(0, 26, 114)',
   },
 });

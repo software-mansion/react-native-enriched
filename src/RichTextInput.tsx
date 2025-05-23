@@ -32,6 +32,7 @@ export interface RichTextInputInstance extends NativeMethods {
   // General commands
   focus: () => void;
   blur: () => void;
+  setValue: (value: string) => void;
 
   // Text formatting commands
   toggleBold: () => void;
@@ -48,29 +49,36 @@ export interface RichTextInputInstance extends NativeMethods {
   toggleUnorderedList: () => void;
   setLink: (text: string, url: string) => void;
   setImage: (src: string) => void;
-  startMention: () => void;
-  setMention: (text: string, value: string) => void;
+  startMention: (indicator: string) => void;
+  setMention: (indicator: string, text: string, value: string) => void;
 }
 
 export interface OnChangeMentionEvent {
+  indicator: string;
   text: string;
 }
 
-export interface RichTextInputProps extends ViewProps {
+export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
+  editable?: boolean;
+  mentionIndicators?: string[];
   defaultValue?: string;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
+  cursorColor?: ColorValue;
+  selectionColor?: ColorValue;
   style?: ViewStyle | TextStyle;
+  onFocus?: () => void;
+  onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
   onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
-  onStartMention?: () => void;
-  onChangeMention?: (e: NativeSyntheticEvent<OnChangeMentionEvent>) => void;
-  onEndMention?: () => void;
+  onStartMention?: (indicator: string) => void;
+  onChangeMention?: (e: OnChangeMentionEvent) => void;
+  onEndMention?: (indicator: string) => void;
   onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
 }
 
@@ -82,15 +90,27 @@ const nullthrows = <T,>(value: T | null | undefined): T => {
   return value;
 };
 
+const warnAboutMissconfiguredMentions = (indicator: string) => {
+  console.warn(
+    `Looks like you are trying to set a "${indicator}" but it's not in the mentionIndicators prop`
+  );
+};
+
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const RichTextInput = ({
   ref,
   autoFocus,
+  editable = true,
+  mentionIndicators = ['@'],
   defaultValue,
   placeholder,
   placeholderTextColor,
+  cursorColor,
+  selectionColor,
   style,
+  onFocus,
+  onBlur,
   onChangeText,
   onChangeHtml,
   onChangeState,
@@ -130,6 +150,9 @@ export const RichTextInput = ({
     },
     blur: () => {
       Commands.blur(nullthrows(nativeRef.current));
+    },
+    setValue: (value: string) => {
+      Commands.setValue(nullthrows(nativeRef.current), value);
     },
     toggleBold: () => {
       Commands.toggleBold(nullthrows(nativeRef.current));
@@ -173,26 +196,40 @@ export const RichTextInput = ({
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
     },
-    setMention: (text: string, value: string) => {
-      Commands.addMention(nullthrows(nativeRef.current), text, value);
+    setMention: (indicator: string, text: string, value: string) => {
+      if (!mentionIndicators?.includes(indicator)) {
+        warnAboutMissconfiguredMentions(indicator);
+      }
+
+      Commands.addMention(
+        nullthrows(nativeRef.current),
+        indicator,
+        text,
+        value
+      );
     },
-    startMention: () => {
-      Commands.startMention(nullthrows(nativeRef.current));
+    startMention: (indicator: string) => {
+      if (!mentionIndicators?.includes(indicator)) {
+        warnAboutMissconfiguredMentions(indicator);
+      }
+
+      Commands.startMention(nullthrows(nativeRef.current), indicator);
     },
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
     const mentionText = e.nativeEvent.text;
+    const mentionIndicator = e.nativeEvent.indicator;
 
     switch (mentionText) {
       case '':
-        onStartMention?.();
+        onStartMention?.(mentionIndicator);
         break;
       case null:
-        onEndMention?.();
+        onEndMention?.(mentionIndicator);
         break;
       default:
-        onChangeMention?.(e as NativeSyntheticEvent<OnChangeMentionEvent>);
+        onChangeMention?.({ indicator: mentionIndicator, text: mentionText });
         break;
     }
   };
@@ -200,11 +237,17 @@ export const RichTextInput = ({
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
+      mentionIndicators={mentionIndicators}
+      editable={editable}
       autoFocus={autoFocus}
       defaultValue={defaultValue}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
+      cursorColor={cursorColor}
+      selectionColor={selectionColor}
       style={style}
+      onFocus={onFocus}
+      onBlur={onBlur}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}

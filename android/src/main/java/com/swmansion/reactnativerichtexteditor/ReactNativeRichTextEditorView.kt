@@ -1,24 +1,33 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
 import android.graphics.Color
+import android.graphics.Rect
+import android.os.Build
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
+import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
+import com.swmansion.reactnativerichtexteditor.events.OnBlurEvent
+import com.swmansion.reactnativerichtexteditor.events.OnFocusEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
@@ -40,7 +49,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
-  var isSettingDefaultValue: Boolean = false
+  var isSettingValue: Boolean = false
 
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
@@ -48,6 +57,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
+  private var detectScrollMovement = false
   private var fontSize: Float? = null
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
@@ -79,7 +89,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private fun prepareComponent() {
     isSingleLine = false
     isHorizontalScrollBarEnabled = false
-    gravity = android.view.Gravity.CENTER or android.view.Gravity.START
+    isVerticalScrollBarEnabled = true
+    gravity = android.view.Gravity.TOP or android.view.Gravity.START
+    inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+
     // required to make ClickableSpans really clickable
     movementMethod = LinkMovementMethod.getInstance()
 
@@ -90,18 +103,57 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     addTextChangedListener(EditorTextWatcher(this))
   }
 
+  // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
+  override fun onTouchEvent(ev: MotionEvent): Boolean {
+    when (ev.action) {
+      MotionEvent.ACTION_DOWN -> {
+        detectScrollMovement = true
+        // Disallow parent views to intercept touch events, until we can detect if we should be
+        // capturing these touches or not.
+        this.parent.requestDisallowInterceptTouchEvent(true)
+      }
+
+      MotionEvent.ACTION_MOVE ->
+        if (detectScrollMovement) {
+          if (!canScrollVertically(-1) &&
+            !canScrollVertically(1) &&
+            !canScrollHorizontally(-1) &&
+            !canScrollHorizontally(1)) {
+            // We cannot scroll, let parent views take care of these touches.
+            this.parent.requestDisallowInterceptTouchEvent(false)
+          }
+          detectScrollMovement = false
+        }
+    }
+
+    return super.onTouchEvent(ev)
+  }
+
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
     super.onSelectionChanged(selStart, selEnd)
     selection?.onSelection(selStart, selEnd)
   }
 
-  fun setStateWrapper(sw: StateWrapper?) {
-    stateWrapper = sw
-  }
-
   override fun clearFocus() {
     super.clearFocus()
     inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
+  }
+
+  override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+    super.onFocusChanged(focused, direction, previouslyFocusedRect)
+    val context = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+
+    if (focused) {
+      dispatcher?.dispatchEvent(OnFocusEvent(surfaceId, id))
+    } else {
+      dispatcher?.dispatchEvent(OnBlurEvent(surfaceId, id))
+    }
+  }
+
+  fun setStateWrapper(sw: StateWrapper?) {
+    stateWrapper = sw
   }
 
   fun requestFocusProgrammatically() {
@@ -110,11 +162,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  fun setDefaultValue(value: String?) {
+  fun setValue(value: String?) {
     if (value == null) return
-    isSettingDefaultValue = true
+    isSettingValue = true
 
-    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
+    val isHtmlTagRecognized = value.startsWith("<html>") && value.endsWith("</html>")
+    val isPTagRecognized = value.startsWith("<p>") && value.endsWith("</p>")
+    val isHtml = isHtmlTagRecognized || isPTagRecognized
     if (isHtml) {
       val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
       setText(parsed)
@@ -125,7 +179,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
 
-    isSettingDefaultValue = false
+    // Scroll to the last line of text
+    setSelection(text?.length ?: 0)
+
+    isSettingValue = false
   }
 
   fun setAutoFocus(autoFocus: Boolean) {
@@ -142,6 +199,27 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     if (colorInt == null) return
 
     setHintTextColor(colorInt)
+  }
+
+  fun setSelectionColor(colorInt: Int?) {
+    if (colorInt == null) return
+
+    highlightColor = colorInt
+  }
+
+  fun setCursorColor(colorInt: Int?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      val cursorDrawable = textCursorDrawable
+      if (cursorDrawable == null) return
+
+      if (colorInt != null) {
+        cursorDrawable.colorFilter = BlendModeColorFilter(colorInt, BlendMode.SRC_IN)
+      } else {
+        cursorDrawable.clearColorFilter()
+      }
+
+      textCursorDrawable = cursorDrawable
+    }
   }
 
   fun setColor(colorInt: Int?) {
@@ -186,6 +264,16 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       this.fontStyle = fontStyle
       typefaceDirty = true
     }
+  }
+
+  // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
+  // After the text changes inside an EditText, TextView checks if a layout() has been requested.
+  // If it has, it will not scroll the text to the end of the new text inserted, but wait for the
+  // next layout() to be called. However, we do not perform a layout() after a requestLayout(), so
+  // we need to override isLayoutRequested to force EditText to scroll to the end of the new text
+  // immediately.
+  override fun isLayoutRequested(): Boolean {
+    return false
   }
 
   fun measureSize(maxWidth: Float): Pair<Float, Float> {
@@ -281,18 +369,18 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     parametrizedStyles?.setImageSpan(src)
   }
 
-  fun startMention() {
+  fun startMention(indicator: String) {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    parametrizedStyles?.startMention()
+    parametrizedStyles?.startMention(indicator)
   }
 
-  fun addMention(text: String, value: String) {
+  fun addMention(indicator: String, text: String, value: String) {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    parametrizedStyles?.setMentionSpan(text, value)
+    parametrizedStyles?.setMentionSpan(indicator, text, value)
   }
 
   // Update shadow node's state in order to recalculate layout

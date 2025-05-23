@@ -1,6 +1,7 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ReactStylesDiffMap
@@ -15,9 +16,11 @@ import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerInter
 import com.facebook.react.viewmanagers.ReactNativeRichTextEditorViewManagerDelegate
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.reactnativerichtexteditor.events.OnBlurEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeStateEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
+import com.swmansion.reactnativerichtexteditor.events.OnFocusEvent
 import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
 import com.swmansion.reactnativerichtexteditor.events.OnMentionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
@@ -60,6 +63,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
      val map = mutableMapOf<String, Any>()
+     map.put(OnFocusEvent.EVENT_NAME, mapOf("registrationName" to OnFocusEvent.EVENT_NAME))
+     map.put(OnBlurEvent.EVENT_NAME, mapOf("registrationName" to OnBlurEvent.EVENT_NAME))
      map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
      map.put(OnChangeHtmlEvent.EVENT_NAME, mapOf("registrationName" to OnChangeHtmlEvent.EVENT_NAME))
      map.put(OnChangeStateEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStateEvent.EVENT_NAME))
@@ -73,7 +78,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: ReactNativeRichTextEditorView?, value: String?) {
-    view?.setDefaultValue(value)
+    view?.setValue(value)
   }
 
   @ReactProp(name = "placeholder")
@@ -82,13 +87,42 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
   }
 
   @ReactProp(name = "placeholderTextColor", customType = "Color")
-  override fun setPlaceholderTextColor(view: ReactNativeRichTextEditorView?, value: Int?) {
-    view?.setPlaceholderTextColor(value)
+  override fun setPlaceholderTextColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setPlaceholderTextColor(color)
+  }
+
+  @ReactProp(name = "cursorColor", customType = "Color")
+  override fun setCursorColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setCursorColor(color)
+  }
+
+  @ReactProp(name = "selectionColor", customType = "Color")
+  override fun setSelectionColor(view: ReactNativeRichTextEditorView?, color: Int?) {
+    view?.setSelectionColor(color)
   }
 
   @ReactProp(name = "autoFocus", defaultBoolean = false)
   override fun setAutoFocus(view: ReactNativeRichTextEditorView?, autoFocus: Boolean) {
     view?.setAutoFocus(autoFocus)
+  }
+
+  @ReactProp(name = "editable", defaultBoolean = true)
+  override fun setEditable(view: ReactNativeRichTextEditorView?, editable: Boolean) {
+    view?.isEnabled = editable
+  }
+
+  @ReactProp(name = "mentionIndicators")
+  override fun setMentionIndicators(view: ReactNativeRichTextEditorView?, indicators: ReadableArray?) {
+    if (indicators == null) return
+
+    val indicatorsList = mutableListOf<String>()
+    for (i in 0 until indicators.size()) {
+      val stringValue = indicators.getString(i) ?: continue
+      indicatorsList.add(stringValue)
+    }
+
+    val indicatorsArray = indicatorsList.toTypedArray()
+    view?.parametrizedStyles?.mentionIndicators = indicatorsArray
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
@@ -139,6 +173,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   override fun blur(view: ReactNativeRichTextEditorView?) {
     view?.clearFocus()
+  }
+
+  override fun setValue(view: ReactNativeRichTextEditorView?, text: String) {
+    view?.setValue(text)
   }
 
   override fun toggleBold(view: ReactNativeRichTextEditorView?) {
@@ -197,12 +235,12 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.addImage(src)
   }
 
-  override fun startMention(view: ReactNativeRichTextEditorView?) {
-    view?.startMention()
+  override fun startMention(view: ReactNativeRichTextEditorView?, indicator: String) {
+    view?.startMention(indicator)
   }
 
-  override fun addMention(view: ReactNativeRichTextEditorView?, text: String, value: String) {
-    view?.addMention(text, value)
+  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, value: String) {
+    view?.addMention(indicator, text, value)
   }
 
   override fun measure(
