@@ -459,7 +459,7 @@ public class EditorParser {
           out.append("<h3>");
         }
         if (style[j] instanceof EditorStrikeThroughSpan) {
-          out.append("<span style=\"text-decoration:line-through;\">");
+          out.append("<s>");
         }
         if (style[j] instanceof EditorLinkSpan) {
           out.append("<a href=\"");
@@ -490,7 +490,7 @@ public class EditorParser {
           out.append("</mention>");
         }
         if (style[j] instanceof EditorStrikeThroughSpan) {
-          out.append("</span>");
+          out.append("</s>");
         }
         if (style[j] instanceof EditorUnderlineSpan) {
           out.append("</u>");
