@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.Color
+import android.graphics.Rect
 import android.os.Build
 import android.text.Spannable
 import android.text.StaticLayout
@@ -15,14 +16,18 @@ import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
+import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
+import com.swmansion.reactnativerichtexteditor.events.OnBlurEvent
+import com.swmansion.reactnativerichtexteditor.events.OnFocusEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
@@ -129,13 +134,26 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     selection?.onSelection(selStart, selEnd)
   }
 
-  fun setStateWrapper(sw: StateWrapper?) {
-    stateWrapper = sw
-  }
-
   override fun clearFocus() {
     super.clearFocus()
     inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
+  }
+
+  override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+    super.onFocusChanged(focused, direction, previouslyFocusedRect)
+    val context = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+
+    if (focused) {
+      dispatcher?.dispatchEvent(OnFocusEvent(surfaceId, id))
+    } else {
+      dispatcher?.dispatchEvent(OnBlurEvent(surfaceId, id))
+    }
+  }
+
+  fun setStateWrapper(sw: StateWrapper?) {
+    stateWrapper = sw
   }
 
   fun requestFocusProgrammatically() {
