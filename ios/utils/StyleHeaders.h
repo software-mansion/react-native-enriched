@@ -18,8 +18,9 @@
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>
-- (void)addLink:(NSString*)text url:(NSString*)url manual:(BOOL)manual;
+- (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual;
 - (LinkData *)getCurrentLinkDataIn:(NSRange)range;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)manageLinkTypingAttributes;
+- (BOOL)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 @end

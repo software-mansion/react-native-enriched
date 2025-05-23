@@ -60,9 +60,9 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
     BOOL onlyLinks = [OccurenceUtils detect:NSLinkAttributeName withEditor:_editor inRange:range
-      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-        return [self styleCondition:value :range];
-      }
+                              withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
     ];
     return onlyLinks ? [self isSingleLinkIn:range] : NO;
   } else {
@@ -73,41 +73,46 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
 
 - (BOOL)anyOccurence:(NSRange)range {
   return [OccurenceUtils any:NSLinkAttributeName withEditor:_editor inRange:range
-    withCondition:^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
+               withCondition:^BOOL(id  _Nullable value, NSRange range) {
+    return [self styleCondition:value :range];
+  }
   ];
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
   return [OccurenceUtils all:NSLinkAttributeName withEditor:_editor inRange:range
-    withCondition:^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
+               withCondition:^BOOL(id  _Nullable value, NSRange range) {
+    return [self styleCondition:value :range];
+  }
   ];
 }
 
 // MARK: - Public non-standard methods
 
-- (void)addLink:(NSString*)text url:(NSString*)url manual:(BOOL)manual {
-  NSString *currentText = [_editor->textView.text substringWithRange:_editor->currentSelection];
+- (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual {
+  NSString *currentText = [_editor->textView.text substringWithRange:range];
   
   NSMutableDictionary<NSAttributedStringKey, id> *newAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-  newAttrs[NSLinkAttributeName] = url;
+  newAttrs[NSLinkAttributeName] = [url copy];
   if(manual) {
-    // manual link has some mock value
-    newAttrs[ManualLinkAttributeName] = @(YES);
+    newAttrs[ManualLinkAttributeName] = [url copy];
   }
   
-  if(_editor->currentSelection.length == 0) {
+  if(range.length == 0) {
     // insert link
-    [TextInsertionUtils insertText:text inView:_editor->textView at:_editor->currentSelection.location additionalAttributes:newAttrs];
+    [TextInsertionUtils insertText:text inView:_editor->textView at:range.location additionalAttributes:newAttrs];
   } else if([currentText isEqualToString:text]) {
     // apply link attributes and change selection
-    [_editor->textView.textStorage addAttributes:newAttrs range:_editor->currentSelection];
+    [_editor->textView.textStorage addAttributes:newAttrs range:range];
+    // TextInsertionUtils take care of the selection but here we have to manually set it behind the link
+    // ONLY with manual links, automatic ones don't need the selection fix
+    if(manual) {
+      [_editor->textView reactFocus];
+      _editor->textView.selectedRange = NSMakeRange(range.location + text.length, 0);
+    }
   } else {
     // replace text with link
-    [TextInsertionUtils replaceText:text inView:_editor->textView at:_editor->currentSelection additionalAttributes:newAttrs];
+    [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:newAttrs];
   }
 }
 
@@ -127,10 +132,10 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
   }
   
   NSString *url = [_editor->textView.textStorage
-    attribute:NSLinkAttributeName
-    atIndex:searchLocation
-    longestEffectiveRange: &linkRange
-    inRange:editorRange
+                   attribute:NSLinkAttributeName
+                   atIndex:searchLocation
+                   longestEffectiveRange: &linkRange
+                   inRange:editorRange
   ];
   
   if(url == nullptr || linkRange.length == 0) {
@@ -174,47 +179,147 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
   if(_editor->currentSelection.length > 0) {
     return;
   }
-
+  
   __block BOOL linkBefore = NO;
   if(_editor->currentSelection.location >= 1) {
     NSRange rangeBefore = NSMakeRange(_editor->currentSelection.location - 1, 1);
     [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:rangeBefore options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        NSString *linkValue = (NSString *)value;
-        if(linkValue != nullptr) {
-          linkBefore = YES;
-          *stop = YES;
-        }
+                                           usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      NSString *linkValue = (NSString *)value;
+      if(linkValue != nullptr) {
+        linkBefore = YES;
+        *stop = YES;
       }
+    }
     ];
   }
-
+  
   if(!linkBefore) {
-      NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-      [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
-      _editor->textView.typingAttributes = newTypingAttrs;
-      return;
+    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+    [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
+    _editor->textView.typingAttributes = newTypingAttrs;
+    return;
   }
-
+  
   __block BOOL linkAfter = NO;
   if(_editor->currentSelection.location < _editor->textView.textStorage.length) {
     NSRange rangeAfter = NSMakeRange(_editor->currentSelection.location, 1);
     [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:rangeAfter options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        NSString *linkValue = (NSString *)value;
-        if(linkValue != nullptr) {
-          linkAfter = YES;
-          *stop = YES;
-        }
+                                           usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      NSString *linkValue = (NSString *)value;
+      if(linkValue != nullptr) {
+        linkAfter = YES;
+        *stop = YES;
       }
+    }
     ];
   }
-
+  
   if(!linkAfter) {
-      NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-      [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
-      _editor->textView.typingAttributes = newTypingAttrs;
+    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+    [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
+    _editor->textView.typingAttributes = newTypingAttrs;
   }
+}
+
+// handles automatic links, returns true if there were some changes and we possibly might need new style recalculations
+- (BOOL)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
+  InlineCodeStyle *inlineCodeStyle = [_editor->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
+  //MentionStyle *mentionStyle = [[_editor->stylesDict objectForKey:@([MentionStyle getStyleType])];
+  
+  if (inlineCodeStyle == nullptr /*|| mentionStyle == nullptr*/) {
+    return NO;
+  }
+  
+  // firstly, we look for manual links within the word
+  __block NSString *manualLinkMinValue = @"";
+  __block NSString *manualLinkMaxValue = @"";
+  __block NSInteger manualLinkMinIdx = -1;
+  __block NSInteger manualLinkMaxIdx = -1;
+  
+  [_editor->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
+    usingBlock:^(id value, NSRange range, BOOL *stop) {
+      NSString *urlValue = (NSString *)value;
+      if (urlValue != nullptr) {
+        NSInteger linkMin = range.location;
+        NSInteger linkMax = range.location + range.length - 1;
+        if (manualLinkMinIdx == -1 || linkMin < manualLinkMinIdx) {
+          manualLinkMinIdx = linkMin;
+          manualLinkMinValue = value;
+        }
+        if (manualLinkMaxIdx == -1 || linkMax > manualLinkMaxIdx) {
+          manualLinkMaxIdx = linkMax;
+          manualLinkMaxValue = value;
+        }
+      }
+  }];
+  
+  BOOL manualLinkPresent = manualLinkMinIdx != -1 && manualLinkMaxIdx != -1;
+  if (manualLinkPresent) {
+    // this is a heuristic for refreshing manual links:
+    // since links cannot be extended from the sides, but can be from the inside,
+    // we update the attribute between the bounds of the already existing one
+    // we do that only if the bounds are the same one link though
+    if ([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
+      NSRange newManualAttributeRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
+      [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newManualAttributeRange];
+      // manual link was extended so for the safety we check style updates
+      return YES;
+    }
+    // manual link not extended, automatic link doesn't get recognized in there, no changes here
+    return NO;
+  }
+  
+  BOOL anyAutomaticLinksFound = [self anyOccurence:wordRange];
+  
+//  // we don't recognize links along mentions
+//  if ([mentionStyle anyOccurence:wordRange) {
+//    return NO;
+//  }
+  
+  // we don't recognize links among inline code
+  if ([inlineCodeStyle anyOccurence:wordRange]) {
+    return NO;
+  }
+  
+  NSRegularExpression *fullRegex = [NSRegularExpression regularExpressionWithPattern:@"http(s)?:\\/\\/www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+      options:0
+      error:nullptr
+  ];
+  NSRegularExpression *wwwRegex = [NSRegularExpression regularExpressionWithPattern:@"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+      options:0
+      error:nullptr
+  ];
+  NSRegularExpression *bareRegex = [NSRegularExpression regularExpressionWithPattern:@"[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+      options:0
+      error:nullptr
+  ];
+  
+  NSString *regexPassedUrl = nullptr;
+  
+  if ([fullRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
+    [self addLink:word url:word range:wordRange manual:NO];
+    regexPassedUrl = word;
+  } else if ([wwwRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
+    NSString *httpWord = [NSString stringWithFormat:@"http://%@", word];
+    [self addLink:word url:httpWord range:wordRange manual:NO];
+    regexPassedUrl = httpWord;
+  } else if ([bareRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
+    NSString *httpWwwWord = [NSString stringWithFormat:@"http://www.%@", word];
+    [self addLink:word url:httpWwwWord range:wordRange manual:NO];
+    regexPassedUrl = httpWwwWord;
+  } else if (anyAutomaticLinksFound) {
+    // there was some automatic link yet it didn't pass any regex - needs to be removed
+    [self removeAttributes:wordRange];
+    return YES;
+  }
+  
+  if(regexPassedUrl != nullptr) {
+    [_editor emitOnLinkDetectedEvent:word url:regexPassedUrl];
+    return YES;
+  }
+  
+  return NO;
 }
 
 // MARK: - Private non-standard methods
@@ -224,15 +329,15 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
   __block NSString *linkUrl;
   __block BOOL isSigleLink = YES;
   [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:range options:0 usingBlock:
-    ^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      NSString *linkValue = (NSString *)value;
-      if(linkValue != nullptr && linkUrl == nullptr) {
-        linkUrl = linkValue;
-      } else if(linkValue != nullptr && linkValue != linkUrl) {
-        isSigleLink = NO;
-        *stop = YES;
-      }
+     ^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+    NSString *linkValue = (NSString *)value;
+    if(linkValue != nullptr && linkUrl == nullptr) {
+      linkUrl = linkValue;
+    } else if(linkValue != nullptr && linkValue != linkUrl) {
+      isSigleLink = NO;
+      *stop = YES;
     }
+  }
   ];
   return isSigleLink;
 }

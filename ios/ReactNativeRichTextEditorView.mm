@@ -10,6 +10,7 @@
 #import "CoreText/CoreText.h"
 #import <React/RCTConvert.h>
 #import "StyleHeaders.h"
+#import "WordsUtils.h"
 
 using namespace facebook::react;
 
@@ -22,6 +23,7 @@ using namespace facebook::react;
   int _componentViewHeightUpdateCounter;
   NSMutableDictionary<NSAttributedStringKey, id> *_defaultTypingAttributes;
   NSMutableSet<NSNumber *> *_activeStyles;
+  NSArray<NSDictionary *> *_modifiedWords;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
 }
@@ -59,7 +61,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   currentSelection = NSMakeRange(0, 0);
   
-  
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
     @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
@@ -94,6 +95,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
+  textView.autocorrectionType = UITextAutocorrectionTypeNo;
 }
 
 // MARK: - Props
@@ -277,10 +279,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if(detectedLinkData != nullptr) {
     // emit onLinkeDetected event
-    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onLinkDetected({
-      .text = [detectedLinkData.text toCppString],
-      .url = [detectedLinkData.url toCppString]
-    });
+    [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url];
     // set the recentlyActiveUrl for future use
     _recentlyActiveLinkData = detectedLinkData;
     _recentlyActiveLinkRange = detectedLinkRange;
@@ -319,6 +318,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [textView reactFocus];
 }
 
+- (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url {
+  static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onLinkDetected({
+    .text = [text toCppString],
+    .url = [url toCppString]
+  });
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -335,7 +341,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(linkStyleClass == nullptr) { return; }
   
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType]]) {
-    [linkStyleClass addLink:text url:url manual:YES];
+    [linkStyleClass addLink:text url:url range:currentSelection manual:YES];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -394,6 +400,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   NSMutableString *newText = [[NSMutableString alloc] initWithString:textView.textStorage.string];
   [newText replaceCharactersInRange:range withString:text];
   
+  _modifiedWords = [WordsUtils getAffectedWordsFromText:newText modificationRange:NSMakeRange(range.location, text.length)];
+  
   static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter)
     .onChangeText({ .value = [newText toCppString]});
   
@@ -418,9 +426,24 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   BOOL needsActiveStylesUpdate = NO;
 
   // revert typing attributes to the defaults if field is empty
-  if(textView.textStorage.string.length == 0) {
+  if(textView.textStorage.length == 0) {
     textView.typingAttributes = _defaultTypingAttributes;
     needsActiveStylesUpdate = YES;
+  }
+  
+  LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
+  
+  for(NSDictionary *wordDict in _modifiedWords) {
+    NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
+    NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+    
+    if(wordText == nullptr || wordRange == nullptr || linkStyle == nullptr) {
+      continue;
+    }
+    
+    BOOL automaticLinkUpdated = [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
+    
+    needsActiveStylesUpdate = needsActiveStylesUpdate || automaticLinkUpdated;
   }
   
   // update height on each character change

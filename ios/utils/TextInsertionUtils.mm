@@ -21,6 +21,9 @@
   
   NSAttributedString *newAttrStr = [[NSAttributedString alloc] initWithString:text attributes:copiedAttrs];
   [textView.textStorage insertAttributedString:newAttrStr atIndex:index];
+  
+  [textView reactFocus];
+  textView.selectedRange = NSMakeRange(index + text.length, 0);
 }
 
 + (void)replaceText:(NSString*)text inView:(UITextView*)textView at:(NSRange)range additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs {
@@ -28,5 +31,8 @@
   if(additionalAttrs != nullptr) {
     [textView.textStorage addAttributes:additionalAttrs range:NSMakeRange(range.location, [text length])];
   }
+  
+  [textView reactFocus];
+  textView.selectedRange = NSMakeRange(range.location + text.length, 0);
 }
 @end
