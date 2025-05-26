@@ -301,11 +301,11 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
     [self addLink:word url:word range:wordRange manual:NO];
     regexPassedUrl = word;
   } else if ([wwwRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
-    NSString *httpWord = [NSString stringWithFormat:@"http://%@", word];
+    NSString *httpWord = [NSString stringWithFormat:@"https://%@", word];
     [self addLink:word url:httpWord range:wordRange manual:NO];
     regexPassedUrl = httpWord;
   } else if ([bareRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
-    NSString *httpWwwWord = [NSString stringWithFormat:@"http://www.%@", word];
+    NSString *httpWwwWord = [NSString stringWithFormat:@"https://www.%@", word];
     [self addLink:word url:httpWwwWord range:wordRange manual:NO];
     regexPassedUrl = httpWwwWord;
   } else if (anyAutomaticLinksFound) {
