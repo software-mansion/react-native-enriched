@@ -18,6 +18,7 @@ import {
   type OnPressMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
+  type OnChangeSelectionEvent,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -166,6 +167,12 @@ export default function App() {
     console.log('Input blurred');
   };
 
+  const handleSelectionChangeEvent = (
+    e: NativeSyntheticEvent<OnChangeSelectionEvent>
+  ) => {
+    console.log('Selection changed:', e.nativeEvent);
+  };
+
   return (
     <>
       <ScrollView
@@ -195,6 +202,7 @@ export default function App() {
             onPressMention={handleMentionPress}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
+            onChangeSelection={handleSelectionChangeEvent}
           />
           <Toolbar
             stylesState={stylesState}
