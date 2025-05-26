@@ -193,8 +193,8 @@ export default function App() {
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
             onPressMention={handleMentionPress}
-            onInputFocus={handleFocusEvent}
-            onInputBlur={handleBlurEvent}
+            onFocus={handleFocusEvent}
+            onBlur={handleBlurEvent}
           />
           <Toolbar
             stylesState={stylesState}

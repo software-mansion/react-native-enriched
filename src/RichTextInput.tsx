@@ -69,8 +69,8 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
   style?: ViewStyle | TextStyle;
-  onInputFocus?: () => void;
-  onInputBlur?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
@@ -109,8 +109,8 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
-  onInputFocus,
-  onInputBlur,
+  onFocus,
+  onBlur,
   onChangeText,
   onChangeHtml,
   onChangeState,
@@ -246,8 +246,8 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
-      onInputFocus={onInputFocus}
-      onInputBlur={onInputBlur}
+      onInputFocus={onFocus}
+      onInputBlur={onBlur}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}
