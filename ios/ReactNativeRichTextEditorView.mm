@@ -1,4 +1,4 @@
-#import "ReactNativeRichTextEditorView.h"
+  #import "ReactNativeRichTextEditorView.h"
 #import "RCTFabricComponentsPlugins.h"
 #import <ReactNativeRichTextEditor/ReactNativeRichTextEditorViewComponentDescriptor.h>
 #import <ReactNativeRichTextEditor/EventEmitters.h>
@@ -26,6 +26,8 @@ using namespace facebook::react;
   NSArray<NSDictionary *> *_modifiedWords;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
+  NSRange _recentlyChangedRange;
+  NSString *_recentlyEmittedString;
 }
 
 // MARK: - Component utils
@@ -59,6 +61,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _componentViewHeightUpdateCounter = 0;
   _activeStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
+  _recentlyChangedRange = NSMakeRange(0, 0);
+  _recentlyEmittedString = @"";
   currentSelection = NSMakeRange(0, 0);
   
   stylesDict = @{
@@ -95,7 +99,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
-  textView.autocorrectionType = UITextAutocorrectionTypeNo;
 }
 
 // MARK: - Props
@@ -395,14 +398,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // MARK: - UITextView delegate methods
 
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-  NSMutableString *newText = [[NSMutableString alloc] initWithString:textView.textStorage.string];
-  [newText replaceCharactersInRange:range withString:text];
-  
-  _modifiedWords = [WordsUtils getAffectedWordsFromText:newText modificationRange:NSMakeRange(range.location, text.length)];
-  
-  static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter)
-    .onChangeText({ .value = [newText toCppString]});
-  
+  _recentlyChangedRange = NSMakeRange(range.location, text.length);
   return true;
 }
 
@@ -421,6 +417,24 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)textViewDidChange:(UITextView *)textView {
+  // fix the marked text issues
+  if(textView.markedTextRange != nullptr) {
+    // when there is some sort of system marking, we don't process modified words
+    // and no text event is emitted
+    _modifiedWords = nullptr;
+  } else {
+    // normally compute modified words
+    _modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:_recentlyChangedRange];
+    
+    // emit the event only when the values differ
+    if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+      _recentlyEmittedString = [textView.textStorage.string copy];
+      static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeText({
+        .value = [textView.textStorage.string toCppString]
+      });
+    }
+  }
+  
   BOOL needsActiveStylesUpdate = NO;
 
   // revert typing attributes to the defaults if field is empty
@@ -431,17 +445,19 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
   
-  for(NSDictionary *wordDict in _modifiedWords) {
-    NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
-    NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
-    
-    if(wordText == nullptr || wordRange == nullptr || linkStyle == nullptr) {
-      continue;
+  if(_modifiedWords != nullptr) {
+    for(NSDictionary *wordDict in _modifiedWords) {
+      NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
+      NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+      
+      if(wordText == nullptr || wordRange == nullptr || linkStyle == nullptr) {
+        continue;
+      }
+      
+      BOOL automaticLinkUpdated = [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
+      
+      needsActiveStylesUpdate = needsActiveStylesUpdate || automaticLinkUpdated;
     }
-    
-    BOOL automaticLinkUpdated = [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
-    
-    needsActiveStylesUpdate = needsActiveStylesUpdate || automaticLinkUpdated;
   }
   
   // update height on each character change
