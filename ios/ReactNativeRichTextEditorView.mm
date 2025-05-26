@@ -403,8 +403,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
-  // update current selection
-  currentSelection = textView.selectedRange;
+  // update current selection and emit event
+  if(!NSEqualRanges(textView.selectedRange, currentSelection)) {
+    currentSelection = textView.selectedRange;
+    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: currentSelection];
+    
+    static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter).onChangeSelection({
+      .start = static_cast<int>(currentSelection.location),
+      .end = static_cast<int>(currentSelection.location + (currentSelection.length == 0 ? 0 : currentSelection.length - 1)),
+      .text = [textAtSelection toCppString]
+    });
+  }
   
   // link typing attributes fix
   LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
