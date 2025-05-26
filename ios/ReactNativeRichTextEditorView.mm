@@ -8,7 +8,7 @@
 #import "UIView+React.h"
 #import "StringExtension.h"
 #import "CoreText/CoreText.h"
-#import <React/RCTConvert.h>
+#import <React/RCTConversions.h>
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 
@@ -111,10 +111,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     EditorConfig *newConfig = [[EditorConfig alloc] init];
   
     if(newViewProps.color) {
-      int32_t colorInt = (*(newViewProps.color)).getColor();
-      NSNumber* nsColor = @(colorInt);
-      UIColor *color = [RCTConvert UIColor: nsColor];
-      [newConfig setPrimaryColor:color];
+      UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
+      [newConfig setPrimaryColor:uiColor];
     }
     
     if(newViewProps.fontSize) {

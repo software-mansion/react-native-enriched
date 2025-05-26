@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 16,
+    paddingTop: 100,
     alignItems: 'center',
   },
   editor: {
