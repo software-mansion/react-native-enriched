@@ -114,6 +114,8 @@ interface NativeCommands {
   toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
   addLink: (
     viewRef: React.ElementRef<ComponentType>,
+    start: Int32,
+    end: Int32,
     text: string,
     url: string
   ) => void;

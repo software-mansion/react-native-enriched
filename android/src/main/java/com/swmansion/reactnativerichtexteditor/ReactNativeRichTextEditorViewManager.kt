@@ -229,8 +229,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.verifyAndToggleStyle(EditorSpans.UNORDERED_LIST)
   }
 
-  override fun addLink(view: ReactNativeRichTextEditorView?, text: String, url: String) {
-    view?.addLink(text, url)
+  override fun addLink(view: ReactNativeRichTextEditorView?, start: Int, end: Int, text: String, url: String) {
+    view?.addLink(start, end, text, url)
   }
 
   override fun addImage(view: ReactNativeRichTextEditorView?, src: String) {

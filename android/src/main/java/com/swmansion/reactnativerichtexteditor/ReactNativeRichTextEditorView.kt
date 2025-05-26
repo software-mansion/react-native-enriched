@@ -355,11 +355,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     toggleStyle(name)
   }
 
-  fun addLink(text: String, url: String) {
+  fun addLink(start: Int, end: Int, text: String, url: String) {
     val isValid = verifyStyle(EditorSpans.LINK)
     if (!isValid) return
 
-    parametrizedStyles?.setLinkSpan(text, url)
+    parametrizedStyles?.setLinkSpan(start, end, text, url)
   }
 
   fun addImage(src: String) {

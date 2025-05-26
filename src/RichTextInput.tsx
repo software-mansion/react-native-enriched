@@ -48,7 +48,7 @@ export interface RichTextInputInstance extends NativeMethods {
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
-  setLink: (text: string, url: string) => void;
+  setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string) => void;
   startMention: (indicator: string) => void;
   setMention: (indicator: string, text: string, value: string) => void;
@@ -193,8 +193,8 @@ export const RichTextInput = ({
     toggleUnorderedList: () => {
       Commands.toggleUnorderedList(nullthrows(nativeRef.current));
     },
-    setLink: (text: string, url: string) => {
-      Commands.addLink(nullthrows(nativeRef.current), text, url);
+    setLink: (start: number, end: number, text: string, url: string) => {
+      Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);
     },
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
