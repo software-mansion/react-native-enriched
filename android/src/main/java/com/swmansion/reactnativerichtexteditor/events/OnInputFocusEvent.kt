@@ -4,8 +4,8 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-class OnBlurEvent(surfaceId: Int, viewId: Int) :
-  Event<OnBlurEvent>(surfaceId, viewId) {
+class OnInputFocusEvent(surfaceId: Int, viewId: Int) :
+  Event<OnInputFocusEvent>(surfaceId, viewId) {
 
   override fun getEventName(): String {
     return EVENT_NAME
@@ -18,6 +18,6 @@ class OnBlurEvent(surfaceId: Int, viewId: Int) :
   }
 
   companion object {
-    const val EVENT_NAME: String = "onBlur"
+    const val EVENT_NAME: String = "onInputFocus"
   }
 }

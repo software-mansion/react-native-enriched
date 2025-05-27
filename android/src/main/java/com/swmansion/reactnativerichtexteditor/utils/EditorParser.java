@@ -341,7 +341,6 @@ public class EditorParser {
         }
         out.append("<br>\n");
       } else {
-        int index = 1;
         boolean isUlListItem = false;
         boolean isOlListItem = false;
         ParagraphStyle[] paragraphStyles = text.getSpans(i, next, ParagraphStyle.class);
@@ -351,7 +350,6 @@ public class EditorParser {
             break;
           } else if (paragraphStyle instanceof EditorOrderedListSpan) {
             isOlListItem = true;
-            index = ((EditorOrderedListSpan) paragraphStyle).getIndex();
             break;
           }
         }

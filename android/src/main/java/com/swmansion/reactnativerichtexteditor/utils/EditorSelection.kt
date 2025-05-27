@@ -19,12 +19,12 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   fun onSelection(selStart: Int, selEnd: Int) {
     var shouldValidateStyles = false
 
-    if (selStart != -1) {
+    if (selStart != -1 && selStart != start) {
       start = selStart
       shouldValidateStyles = true
     }
 
-    if (selEnd != -1) {
+    if (selEnd != -1 && selEnd != end) {
       end = selEnd
       shouldValidateStyles = true
     }

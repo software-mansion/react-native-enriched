@@ -71,8 +71,8 @@ export interface NativeProps extends ViewProps {
   selectionColor?: ColorValue;
 
   // event callbacks
-  onFocus?: DirectEventHandler<null>;
-  onBlur?: DirectEventHandler<null>;
+  onInputFocus?: DirectEventHandler<null>;
+  onInputBlur?: DirectEventHandler<null>;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
