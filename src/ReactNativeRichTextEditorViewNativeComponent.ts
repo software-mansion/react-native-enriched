@@ -3,6 +3,7 @@ import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativ
 import type {
   DirectEventHandler,
   Float,
+  Int32,
 } from 'react-native/Libraries/Types/CodegenTypes';
 import type { ColorValue, HostComponent, ViewProps } from 'react-native';
 import React from 'react';
@@ -52,6 +53,12 @@ export interface OnPressMentionEvent {
   value: string;
 }
 
+export interface OnChangeSelectionEvent {
+  start: Int32;
+  end: Int32;
+  text: string;
+}
+
 export interface NativeProps extends ViewProps {
   // base props
   autoFocus?: boolean;
@@ -73,6 +80,7 @@ export interface NativeProps extends ViewProps {
   onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onPressMention?: DirectEventHandler<OnPressMentionEvent>;
+  onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

@@ -1,9 +1,11 @@
 package com.swmansion.reactnativerichtexteditor.utils
 
+import android.text.Editable
 import android.text.Spannable
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import com.swmansion.reactnativerichtexteditor.events.OnChangeSelectionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
@@ -27,9 +29,10 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       shouldValidateStyles = true
     }
 
-    if (shouldValidateStyles) {
-      validateStyles()
-    }
+    if (!shouldValidateStyles) return
+
+    validateStyles()
+    emitSelectionChangeEvent(editorView.text, start, end)
   }
 
   fun validateStyles() {
@@ -179,6 +182,16 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     }
 
     return null
+  }
+
+  private fun emitSelectionChangeEvent(editable: Editable?, start: Int, end: Int) {
+    if (editable == null) return
+
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    val text = editable.substring(start, end)
+    dispatcher?.dispatchEvent(OnChangeSelectionEvent(surfaceId, editorView.id, text, start ,end))
   }
 
   private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {

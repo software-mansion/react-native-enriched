@@ -8,6 +8,7 @@ import ReactNativeRichTextEditorView, {
   Commands,
   type NativeProps,
   type OnChangeHtmlEvent,
+  type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
   type OnLinkDetectedEvent,
@@ -80,6 +81,7 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
   onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
+  onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -120,6 +122,7 @@ export const RichTextInput = ({
   onChangeMention,
   onEndMention,
   onPressMention,
+  onChangeSelection,
   ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -255,6 +258,7 @@ export const RichTextInput = ({
       onLinkDetected={onLinkDetected}
       onMention={handleMentionEvent}
       onPressMention={onPressMention}
+      onChangeSelection={onChangeSelection}
       {...rest}
     />
   );

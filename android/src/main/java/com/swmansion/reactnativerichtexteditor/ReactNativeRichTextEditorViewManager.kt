@@ -18,6 +18,7 @@ import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.reactnativerichtexteditor.events.OnInputBlurEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
+import com.swmansion.reactnativerichtexteditor.events.OnChangeSelectionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeStateEvent
 import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
 import com.swmansion.reactnativerichtexteditor.events.OnInputFocusEvent
@@ -72,6 +73,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
      map.put(OnLinkDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnLinkDetectedEvent.EVENT_NAME))
      map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
      map.put(OnPressMentionEvent.EVENT_NAME, mapOf("registrationName" to OnPressMentionEvent.EVENT_NAME))
+     map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
 
      return map
    }
