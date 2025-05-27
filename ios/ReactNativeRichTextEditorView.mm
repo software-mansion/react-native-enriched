@@ -105,11 +105,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
-  BOOL heightUpdateNeeded = false;
+  BOOL heightUpdateNeeded = NO;
+  BOOL isFirstMount = NO;
   
   // initial config
   // TODO: handle reacting to config props when styles are relatively working
   if(config == nullptr) {
+    isFirstMount = YES;
     EditorConfig *newConfig = [[EditorConfig alloc] init];
   
     if(newViewProps.color) {
@@ -144,13 +146,18 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // default value
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
     textView.text = [NSString fromCppString:newViewProps.defaultValue];
-    heightUpdateNeeded = true;
+    heightUpdateNeeded = YES;
   }
   
   [super updateProps:props oldProps:oldProps];
   
   if(heightUpdateNeeded) {
     [self tryUpdatingHeight];
+  }
+  
+  // needs to be done at the very end
+  if(isFirstMount && newViewProps.autoFocus) {
+    [textView reactFocus];
   }
 }
 
