@@ -22,5 +22,5 @@
 - (LinkData *)getCurrentLinkDataIn:(NSRange)range;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)manageLinkTypingAttributes;
-- (BOOL)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
+- (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 @end
