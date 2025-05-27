@@ -416,6 +416,32 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 // MARK: - UITextView delegate methods
 
+- (void)textViewDidBeginEditing:(UITextView *)textView {
+  // update current selection as well
+  currentSelection = textView.selectedRange;
+  
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    //send onFocus event
+    emitter->onInputFocus({});
+    
+    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: currentSelection];
+    emitter->onChangeSelection({
+      .start = static_cast<int>(currentSelection.location),
+      .end = static_cast<int>(currentSelection.location + currentSelection.length),
+      .text = [textAtSelection toCppString]
+    });
+  }
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView {
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    //send onBlur event
+    emitter->onInputBlur({});
+  }
+}
+
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
   return true;
