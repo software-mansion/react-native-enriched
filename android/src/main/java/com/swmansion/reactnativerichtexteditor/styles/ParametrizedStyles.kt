@@ -15,27 +15,24 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   private var mentionStart: Int? = null
   var mentionIndicators: Array<String> = emptyArray<String>()
 
-  fun setLinkSpan(text: String, url: String) {
+  fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
     val linkHandler = editorView.linkHandler ?: return
-    val selection = editorView.selection ?: return
 
     val spannable = editorView.text as SpannableStringBuilder
-    var (selectionStart, selectionEnd) = selection.getInlineSelection()
-
-    val spans = spannable.getSpans(selectionStart, selectionEnd, EditorLinkSpan::class.java)
+    val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    if (selectionStart == selectionEnd) {
-      spannable.insert(selectionStart, text)
+    if (start == end) {
+      spannable.insert(start, text)
     } else {
-      spannable.replace(selectionStart, selectionEnd, text)
+      spannable.replace(start, end, text)
     }
 
-    val end = selectionStart + text.length
+    val spanEnd = start + text.length
     val span = EditorLinkSpan(url, linkHandler)
-    spannable.setSpan(span, selectionStart, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {

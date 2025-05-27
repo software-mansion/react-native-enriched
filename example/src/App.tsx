@@ -32,6 +32,12 @@ type StylesState = OnChangeStateEvent;
 
 type CurrentLinkState = OnLinkDetectedEvent;
 
+interface Selection {
+  start: number;
+  end: number;
+  text: string;
+}
+
 const DEFAULT_STYLE: StylesState = {
   isBold: false,
   isItalic: false,
@@ -61,6 +67,7 @@ export default function App() {
   const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
+  const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const [defaultValue, setDefaultValue] = useState('');
   const [currentLink, setCurrentLink] =
@@ -123,7 +130,9 @@ export default function App() {
   };
 
   const submitLink = (text: string, url: string) => {
-    ref.current?.setLink(text, url);
+    if (!selection) return;
+
+    ref.current?.setLink(selection.start, selection.end, text, url);
     closeLinkModal();
   };
 
@@ -170,7 +179,7 @@ export default function App() {
   const handleSelectionChangeEvent = (
     e: NativeSyntheticEvent<OnChangeSelectionEvent>
   ) => {
-    console.log('Selection changed:', e.nativeEvent);
+    setSelection(e.nativeEvent);
   };
 
   return (
