@@ -63,7 +63,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
-  currentSelection = NSMakeRange(0, 0);
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -221,7 +220,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
     BOOL wasActive = [_activeStyles containsObject: type];
-    BOOL isActive = [style detectStyle:currentSelection];
+    BOOL isActive = [style detectStyle:textView.selectedRange];
     if(wasActive != isActive) {
       updateNeeded = YES;
       if(isActive) {
@@ -238,8 +237,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       NSRange candidateLinkRange = NSMakeRange(0, 0);
       LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
       if(linkStyleClass != nullptr) {
-        candidateLinkData = [linkStyleClass getCurrentLinkDataIn:currentSelection];
-        candidateLinkRange = [linkStyleClass getFullLinkRangeAt:currentSelection.location];
+        candidateLinkData = [linkStyleClass getCurrentLinkDataIn:textView.selectedRange];
+        candidateLinkRange = [linkStyleClass getFullLinkRangeAt:textView.selectedRange.location];
       }
       
       if(wasActive == NO) {
@@ -348,8 +347,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)toggleRegularStyle:(StyleType)type {
   id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
   
-  if([self handleStyleBlocksAndConflicts:type range:currentSelection]) {
-    [styleClass applyStyle:currentSelection];
+  if([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
+    [styleClass applyStyle:textView.selectedRange];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -361,7 +360,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // translate the output start-end notation to range
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
-    [linkStyleClass addLink:text url:url range:currentSelection manual:YES];
+    [linkStyleClass addLink:text url:url range:linkRange manual:YES];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -401,12 +400,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   for(NSNumber *type in types) {
     id<BaseStyleProtocol> styleClass = stylesDict[type];
     
-    if(currentSelection.length >= 1) {
-      if([styleClass anyOccurence:currentSelection]) {
+    if(textView.selectedRange.length >= 1) {
+      if([styleClass anyOccurence:textView.selectedRange]) {
         [resultArray addObject:type];
       }
     } else {
-      if([styleClass detectStyle:currentSelection]) {
+      if([styleClass detectStyle:textView.selectedRange]) {
         [resultArray addObject:type];
       }
     }
@@ -417,18 +416,15 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // MARK: - UITextView delegate methods
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
-  // update current selection as well
-  currentSelection = textView.selectedRange;
-  
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
     //send onFocus event
     emitter->onInputFocus({});
     
-    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: currentSelection];
+    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: textView.selectedRange];
     emitter->onChangeSelection({
-      .start = static_cast<int>(currentSelection.location),
-      .end = static_cast<int>(currentSelection.location + currentSelection.length),
+      .start = static_cast<int>(textView.selectedRange.location),
+      .end = static_cast<int>(textView.selectedRange.location + textView.selectedRange.length),
       .text = [textAtSelection toCppString]
     });
   }
@@ -448,21 +444,18 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
-  // update current selection and emit event
-  if(!NSEqualRanges(textView.selectedRange, currentSelection)) {
-    currentSelection = textView.selectedRange;
-    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: currentSelection];
+  // emit the event
+  NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: textView.selectedRange];
     
-    auto emitter = [self getEventEmitter];
-    if(emitter != nullptr) {
-      // iOS range works differently because it specifies location and length
-      // here, start is the location, but end is the first index BEHIND the end. So a 0 length range will have equal start and end
-      emitter->onChangeSelection({
-        .start = static_cast<int>(currentSelection.location),
-        .end = static_cast<int>(currentSelection.location + currentSelection.length),
-        .text = [textAtSelection toCppString]
-      });
-    }
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    // iOS range works differently because it specifies location and length
+    // here, start is the location, but end is the first index BEHIND the end. So a 0 length range will have equal start and end
+    emitter->onChangeSelection({
+      .start = static_cast<int>(textView.selectedRange.location),
+      .end = static_cast<int>(textView.selectedRange.location + textView.selectedRange.length),
+      .text = [textAtSelection toCppString]
+    });
   }
   
   // link typing attributes fix
@@ -497,12 +490,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
   }
   
-  BOOL needsActiveStylesUpdate = NO;
-
   // revert typing attributes to the defaults if field is empty
   if(textView.textStorage.length == 0) {
     textView.typingAttributes = _defaultTypingAttributes;
-    needsActiveStylesUpdate = YES;
   }
   
   LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
@@ -516,18 +506,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         continue;
       }
       
-      BOOL automaticLinkUpdated = [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
-      
-      needsActiveStylesUpdate = needsActiveStylesUpdate || automaticLinkUpdated;
+      [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
     }
   }
   
   // update height on each character change
   [self tryUpdatingHeight];
-  // update active styles if needed
-  if(needsActiveStylesUpdate) {
-    [self tryUpdatingActiveStyles];
-  }
+  // for safety: update active styles as well
+  [self tryUpdatingActiveStyles];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction {
