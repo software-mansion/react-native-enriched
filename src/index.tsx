@@ -3,8 +3,8 @@ export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
-  OnPressLinkEvent,
+  OnPressLink,
+  OnPressMention,
   OnLinkDetectedEvent,
-  OnPressMentionEvent,
   OnChangeSelectionEvent,
 } from './ReactNativeRichTextEditorViewNativeComponent';

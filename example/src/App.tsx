@@ -12,10 +12,10 @@ import {
   RichTextInput,
   type OnChangeTextEvent,
   type RichTextInputInstance,
-  type OnPressLinkEvent,
+  type OnPressMention,
+  type OnPressLink,
   type OnLinkDetectedEvent,
   type OnChangeMentionEvent,
-  type OnPressMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
@@ -89,8 +89,7 @@ export default function App() {
     setStylesState(e.nativeEvent);
   };
 
-  const handleLinkPress = async (e: NativeSyntheticEvent<OnPressLinkEvent>) => {
-    const url = e.nativeEvent.url;
+  const handleLinkPress = async ({ url }: OnPressLink) => {
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
     await Linking.openURL(formattedUrl);
   };
@@ -157,14 +156,14 @@ export default function App() {
   };
 
   const handleMentionSelected = (item: MentionItem) => {
-    ref.current?.setMention('@', item.name, item.id);
+    ref.current?.setMention('@', item.name, { id: item.id, type: 'user' });
     closeMentionPopup();
   };
 
-  const handleMentionPress = (e: NativeSyntheticEvent<OnPressMentionEvent>) => {
+  const handleMentionPress = ({ text, attributes }: OnPressMention) => {
     Alert.alert(
       'Mention Pressed',
-      `Text: ${e.nativeEvent.text}\nValue: ${e.nativeEvent.value}`
+      `Text: ${text}\nAttributes: ${JSON.stringify(attributes)}`
     );
   };
 

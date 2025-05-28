@@ -459,11 +459,20 @@ public class EditorParser {
           out.append("\">");
         }
         if (style[j] instanceof EditorMentionSpan) {
-          out.append("<mention value=\"");
-          out.append(((EditorMentionSpan) style[j]).getValue());
-          out.append("\" text=\"");
+          out.append("<mention text=\"");
           out.append(((EditorMentionSpan) style[j]).getText());
-          out.append("\">");
+          out.append("\"");
+
+          Map<String, String> attributes = ((EditorMentionSpan) style[j]).getAttributes();
+          for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            out.append(" ");
+            out.append(entry.getKey());
+            out.append("=\"");
+            out.append(entry.getValue());
+            out.append("\"");
+          }
+
+          out.append(">");
         }
         if (style[j] instanceof EditorImageSpan) {
           out.append("<img src=\"");
@@ -1059,18 +1068,25 @@ class HtmlToSpannedConverter implements ContentHandler {
   }
 
   private static void startMention(Editable mention, Attributes attributes) {
-    String value = attributes.getValue("", "value");
     String text = attributes.getValue("", "text");
-    start(mention, new Mention(value, text));
+
+    Map<String, String> attributesMap = new HashMap<>();
+    for (int i = 0; i < attributes.getLength(); i++) {
+      if (!"text".equals(attributes.getLocalName(i))) {
+        attributesMap.put(attributes.getLocalName(i), attributes.getValue(i));
+      }
+    }
+
+    start(mention, new Mention(text, attributesMap));
   }
 
   private void endMention(Editable text) {
     Mention m = getLast(text, Mention.class);
 
     if (m == null) return;
-    if (m.mValue == null || m.mText == null) return;
+    if (m.mText == null) return;
 
-    setSpanFromMark(text, m, new EditorMentionSpan(m.mValue, m.mText, this.mMentionHandler));
+    setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mAttributes, this.mMentionHandler));
   }
 
   private int getHtmlColor(String color) {
@@ -1192,11 +1208,11 @@ class HtmlToSpannedConverter implements ContentHandler {
   }
 
   private static class Mention {
-    public String mValue;
+    public Map<String, String> mAttributes;
     public String mText;
 
-    public Mention(String value, String text) {
-      mValue = value;
+    public Mention(String text, Map<String, String> attributes) {
+      mAttributes = attributes;
       mText = text;
     }
   }
