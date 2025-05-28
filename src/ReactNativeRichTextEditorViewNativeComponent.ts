@@ -132,7 +132,6 @@ interface NativeCommands {
   ) => void;
   addMention: (
     viewRef: React.ElementRef<ComponentType>,
-    indicator: string,
     text: string,
     payload: string
   ) => void;

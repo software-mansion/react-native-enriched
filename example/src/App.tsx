@@ -156,7 +156,10 @@ export default function App() {
   };
 
   const handleMentionSelected = (item: MentionItem) => {
-    ref.current?.setMention('@', item.name, { id: item.id, type: 'user' });
+    ref.current?.setMention(`@${item.name}`, {
+      id: item.id,
+      type: 'user',
+    });
     closeMentionPopup();
   };
 
