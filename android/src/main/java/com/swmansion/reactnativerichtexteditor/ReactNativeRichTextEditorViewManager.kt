@@ -27,6 +27,7 @@ import com.swmansion.reactnativerichtexteditor.events.OnMentionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressMentionEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import com.swmansion.reactnativerichtexteditor.utils.jsonStringToStringMap
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
 class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTextEditorView>(),
@@ -241,8 +242,9 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.startMention(indicator)
   }
 
-  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, value: String) {
-    view?.addMention(indicator, text, value)
+  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, payload: String) {
+    val attributes = jsonStringToStringMap(payload)
+    view?.addMention(indicator, text, attributes)
   }
 
   override fun measure(

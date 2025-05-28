@@ -13,8 +13,9 @@ import ReactNativeRichTextEditorView, {
   type OnChangeTextEvent,
   type OnLinkDetectedEvent,
   type OnMentionEvent,
-  type OnPressLinkEvent,
-  type OnPressMentionEvent,
+  type OnPressLink,
+  type OnPressMention,
+  type OnPressMentionEventInternal,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -51,7 +52,11 @@ export interface RichTextInputInstance extends NativeMethods {
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string) => void;
   startMention: (indicator: string) => void;
-  setMention: (indicator: string, text: string, value: string) => void;
+  setMention: (
+    indicator: string,
+    text: string,
+    payload: Record<string, string>
+  ) => void;
 }
 
 export interface OnChangeMentionEvent {
@@ -75,12 +80,12 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  onPressLink?: (e: NativeSyntheticEvent<OnPressLinkEvent>) => void;
+  onPressLink?: (e: OnPressLink) => void;
   onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
-  onPressMention?: (e: NativeSyntheticEvent<OnPressMentionEvent>) => void;
+  onPressMention?: (e: OnPressMention) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
 }
 
@@ -199,16 +204,23 @@ export const RichTextInput = ({
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
     },
-    setMention: (indicator: string, text: string, value: string) => {
+    setMention: (
+      indicator: string,
+      text: string,
+      attributes: Record<string, string>
+    ) => {
       if (!mentionIndicators?.includes(indicator)) {
         warnAboutMissconfiguredMentions(indicator);
       }
+
+      // Codegen does not support objects as Commands parameters, so we stringify attributes
+      const parsedAttributes = JSON.stringify(attributes);
 
       Commands.addMention(
         nullthrows(nativeRef.current),
         indicator,
         text,
-        value
+        parsedAttributes
       );
     },
     startMention: (indicator: string) => {
@@ -237,6 +249,19 @@ export const RichTextInput = ({
     }
   };
 
+  const handleMentionPress = (
+    e: NativeSyntheticEvent<OnPressMentionEventInternal>
+  ) => {
+    const { text, attributes } = e.nativeEvent;
+    const parsedAttributes = JSON.parse(attributes) as Record<string, string>;
+
+    onPressMention?.({ text, attributes: parsedAttributes });
+  };
+
+  const handleLinkPress = (e: NativeSyntheticEvent<OnPressLink>) => {
+    onPressLink?.({ url: e.nativeEvent.url });
+  };
+
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
@@ -254,10 +279,10 @@ export const RichTextInput = ({
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}
-      onPressLink={onPressLink}
       onLinkDetected={onLinkDetected}
+      onPressLink={handleLinkPress}
       onMention={handleMentionEvent}
-      onPressMention={onPressMention}
+      onPressMention={handleMentionPress}
       onChangeSelection={onChangeSelection}
       {...rest}
     />

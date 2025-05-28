@@ -8,10 +8,10 @@ import androidx.core.graphics.toColorInt
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
 
-class EditorMentionSpan(private val value: String, private val text: String, private val mentionHandler: MentionHandler) :
+class EditorMentionSpan(private val text: String, private val attributes: Map<String, String>, private val mentionHandler: MentionHandler) :
   ClickableSpan(), EditorSpan {
   override fun onClick(view: View) {
-    mentionHandler.onPress(text, value)
+    mentionHandler.onPress(text, attributes)
   }
 
   override fun updateDrawState(textPaint: TextPaint) {
@@ -21,8 +21,8 @@ class EditorMentionSpan(private val value: String, private val text: String, pri
     textPaint.bgColor = "#33088F8F".toColorInt()
   }
 
-  fun getValue(): String {
-    return value
+  fun getAttributes(): Map<String, String> {
+    return attributes
   }
 
   fun getText(): String {

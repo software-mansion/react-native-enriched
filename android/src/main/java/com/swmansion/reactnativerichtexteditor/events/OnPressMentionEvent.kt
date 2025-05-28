@@ -3,8 +3,9 @@ package com.swmansion.reactnativerichtexteditor.events
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
+import org.json.JSONObject
 
-class OnPressMentionEvent(surfaceId: Int, viewId: Int, private val text: String, private val value: String) :
+class OnPressMentionEvent(surfaceId: Int, viewId: Int, private val text: String, private val attributes: Map<String, String>) :
   Event<OnPressMentionEvent>(surfaceId, viewId) {
 
   override fun getEventName(): String {
@@ -14,7 +15,7 @@ class OnPressMentionEvent(surfaceId: Int, viewId: Int, private val text: String,
   override fun getEventData(): WritableMap {
     val eventData: WritableMap = Arguments.createMap()
     eventData.putString("text", text)
-    eventData.putString("value", value)
+    eventData.putString("attributes", JSONObject(attributes).toString())
     return eventData
   }
 
