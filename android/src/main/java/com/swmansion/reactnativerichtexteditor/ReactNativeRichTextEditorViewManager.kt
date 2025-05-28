@@ -242,9 +242,9 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.startMention(indicator)
   }
 
-  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, payload: String) {
+  override fun addMention(view: ReactNativeRichTextEditorView?, text: String, payload: String) {
     val attributes = jsonStringToStringMap(payload)
-    view?.addMention(indicator, text, attributes)
+    view?.addMention(text, attributes)
   }
 
   override fun measure(
