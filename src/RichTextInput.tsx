@@ -55,7 +55,7 @@ export interface RichTextInputInstance extends NativeMethods {
   setMention: (
     indicator: string,
     text: string,
-    payload: Record<string, string>
+    payload?: Record<string, string>
   ) => void;
 }
 
@@ -207,14 +207,14 @@ export const RichTextInput = ({
     setMention: (
       indicator: string,
       text: string,
-      attributes: Record<string, string>
+      attributes?: Record<string, string>
     ) => {
       if (!mentionIndicators?.includes(indicator)) {
         warnAboutMissconfiguredMentions(indicator);
       }
 
       // Codegen does not support objects as Commands parameters, so we stringify attributes
-      const parsedAttributes = JSON.stringify(attributes);
+      const parsedAttributes = JSON.stringify(attributes ?? {});
 
       Commands.addMention(
         nullthrows(nativeRef.current),
