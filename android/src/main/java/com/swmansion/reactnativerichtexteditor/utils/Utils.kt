@@ -1,11 +1,12 @@
 package com.swmansion.reactnativerichtexteditor.utils
 
 import android.util.Log
+import org.json.JSONObject
 
 fun jsonStringToStringMap(json: String): Map<String, String> {
   val result = mutableMapOf<String, String>()
   try {
-    val jsonObject = org.json.JSONObject(json)
+    val jsonObject = JSONObject(json)
     for (key in jsonObject.keys()) {
       val value = jsonObject.opt(key)
       if (value is String) {
