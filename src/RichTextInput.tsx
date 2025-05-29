@@ -52,11 +52,7 @@ export interface RichTextInputInstance extends NativeMethods {
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string) => void;
   startMention: (indicator: string) => void;
-  setMention: (
-    indicator: string,
-    text: string,
-    payload?: Record<string, string>
-  ) => void;
+  setMention: (text: string, attributes?: Record<string, string>) => void;
 }
 
 export interface OnChangeMentionEvent {
@@ -204,21 +200,12 @@ export const RichTextInput = ({
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
     },
-    setMention: (
-      indicator: string,
-      text: string,
-      attributes?: Record<string, string>
-    ) => {
-      if (!mentionIndicators?.includes(indicator)) {
-        warnAboutMissconfiguredMentions(indicator);
-      }
-
+    setMention: (text: string, attributes?: Record<string, string>) => {
       // Codegen does not support objects as Commands parameters, so we stringify attributes
       const parsedAttributes = JSON.stringify(attributes ?? {});
 
       Commands.addMention(
         nullthrows(nativeRef.current),
-        indicator,
         text,
         parsedAttributes
       );
