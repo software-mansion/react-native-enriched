@@ -8,7 +8,6 @@ import android.graphics.Rect
 import android.os.Build
 import android.text.Spannable
 import android.text.StaticLayout
-import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -33,6 +32,7 @@ import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParametrizedStyles
+import com.swmansion.reactnativerichtexteditor.utils.EditorMovementMethod
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -94,7 +94,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
 
     // required to make ClickableSpans really clickable
-    movementMethod = LinkMovementMethod.getInstance()
+    movementMethod = EditorMovementMethod()
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
