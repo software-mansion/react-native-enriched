@@ -16,6 +16,7 @@ import ReactNativeRichTextEditorView, {
   type OnPressLink,
   type OnPressMention,
   type OnPressMentionEventInternal,
+  type RichTextStyle,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -70,6 +71,7 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  richTextStyle?: RichTextStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -112,6 +114,7 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
+  richTextStyle,
   onFocus,
   onBlur,
   onChangeText,
@@ -261,6 +264,7 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
+      richTextStyle={richTextStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
       onChangeText={onChangeText}

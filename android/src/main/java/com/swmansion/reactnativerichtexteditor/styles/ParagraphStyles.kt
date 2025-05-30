@@ -9,7 +9,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 // Fixme: after adding/removing the span next line's layout is incorrect until we change selection
 class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    val span = type.getDeclaredConstructor().newInstance()
+    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
     spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 

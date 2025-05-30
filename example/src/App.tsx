@@ -214,6 +214,11 @@ export default function App() {
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
+            richTextStyle={{
+              h1: { fontSize: 32 },
+              h2: { fontSize: 24 },
+              h3: { fontSize: 20 },
+            }}
           />
           <Toolbar
             stylesState={stylesState}

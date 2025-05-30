@@ -8,9 +8,9 @@ import android.net.Uri
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 
-class EditorImageSpan : ImageSpan, EditorSpan {
+class EditorImageSpan : ImageSpan, EditorInlineSpan {
   private val width = 160
   private val height = 160
 

@@ -2,7 +2,9 @@ package com.swmansion.reactnativerichtexteditor.spans
 
 import android.text.style.AbsoluteSizeSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorHeadingSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorH2Span : AbsoluteSizeSpan(64), EditorHeadingSpan, EditorSpan {
+// Heading spans inherit from EditorInlineSpan because they can be nested inside code block and block quote
+class EditorH2Span(richTextStyle: RichTextStyle) : AbsoluteSizeSpan(richTextStyle.h2FontSize), EditorHeadingSpan, EditorInlineSpan {
 }

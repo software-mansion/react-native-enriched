@@ -4,9 +4,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 
-class EditorOrderedListSpan(private var index: Int) : LeadingMarginSpan, EditorSpan {
+class EditorOrderedListSpan(private var index: Int) : LeadingMarginSpan, EditorInlineSpan {
   private val leadWidth = 40
   private val gapWidth = 30
 

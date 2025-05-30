@@ -65,6 +65,18 @@ export interface OnChangeSelectionEvent {
   text: string;
 }
 
+export interface RichTextStyle {
+  h1?: {
+    fontSize?: Float;
+  };
+  h2?: {
+    fontSize?: Float;
+  };
+  h3?: {
+    fontSize?: Float;
+  };
+}
+
 export interface NativeProps extends ViewProps {
   // base props
   autoFocus?: boolean;
@@ -75,6 +87,7 @@ export interface NativeProps extends ViewProps {
   mentionIndicators: string[];
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  richTextStyle?: RichTextStyle;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<null>;

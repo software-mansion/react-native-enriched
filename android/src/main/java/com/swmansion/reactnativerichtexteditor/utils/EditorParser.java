@@ -33,7 +33,8 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorStrikeThroughSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnderlineSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan;
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan;
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan;
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle;
 
 import org.ccil.cowan.tagsoup.HTMLSchema;
 import org.ccil.cowan.tagsoup.Parser;
@@ -134,7 +135,7 @@ public class EditorParser {
    */
   public static final int FROM_HTML_OPTION_USE_CSS_COLORS = 0x00000100;
   /**
-   * Flags for {@link #fromHtml(String, int, ImageGetter, TagHandler, LinkHandler, MentionHandler)}: Separate block-level
+   * Flags for {@link #fromHtml(String, int, RichTextStyle, ImageGetter, TagHandler, LinkHandler, MentionHandler)}: Separate block-level
    * elements with line breaks (single newline character) in between. This inverts the
    * {@link Spanned} to HTML string conversion done with the option
    * {@link #TO_HTML_PARAGRAPH_LINES_INDIVIDUAL}.
@@ -159,7 +160,7 @@ public class EditorParser {
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
   public static Spanned fromHtml(String source, int flags) {
-    return fromHtml(source, flags, null, null, null, null);
+    return fromHtml(source, flags, null, null, null, null, null);
   }
   /**
    * Lazy initialization holder for HTML parser. This class will
@@ -177,7 +178,7 @@ public class EditorParser {
    *
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
-  public static Spanned fromHtml(String source, int flags, ImageGetter imageGetter,
+  public static Spanned fromHtml(String source, int flags, RichTextStyle style, ImageGetter imageGetter,
                                  TagHandler tagHandler, LinkHandler linkHandler,
                                  MentionHandler mentionHandler) {
     Parser parser = new Parser();
@@ -188,7 +189,7 @@ public class EditorParser {
       throw new RuntimeException(e);
     }
     HtmlToSpannedConverter converter =
-      new HtmlToSpannedConverter(source, imageGetter, tagHandler, linkHandler, mentionHandler, parser, flags);
+      new HtmlToSpannedConverter(source, style, imageGetter, tagHandler, linkHandler, mentionHandler, parser, flags);
     return converter.convert();
   }
   /**
@@ -426,8 +427,8 @@ public class EditorParser {
   private static void withinParagraph(StringBuilder out, Spanned text, int start, int end) {
     int next;
     for (int i = start; i < end; i = next) {
-      next = text.nextSpanTransition(i, end, EditorSpan.class);
-      EditorSpan[] style = text.getSpans(i, next, EditorSpan.class);
+      next = text.nextSpanTransition(i, end, EditorInlineSpan.class);
+      EditorInlineSpan[] style = text.getSpans(i, next, EditorInlineSpan.class);
       for (int j = 0; j < style.length; j++) {
         if (style[j] instanceof EditorBoldSpan) {
           out.append("<b>");
@@ -555,6 +556,7 @@ class HtmlToSpannedConverter implements ContentHandler {
   private static final float[] HEADING_SIZES = {
     1.5f, 1.4f, 1.3f, 1.2f, 1.1f, 1f,
   };
+  private final RichTextStyle mStyle;
   private final String mSource;
   private final XMLReader mReader;
   private final SpannableStringBuilder mSpannableStringBuilder;
@@ -617,7 +619,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     return sTextDecorationPattern;
   }
 
-  public HtmlToSpannedConverter(String source, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, LinkHandler linkHandler, MentionHandler mentionHandler, Parser parser, int flags) {
+  public HtmlToSpannedConverter(String source, RichTextStyle style, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, LinkHandler linkHandler, MentionHandler mentionHandler, Parser parser, int flags) {
+    mStyle = style;
     mSource = source;
     mSpannableStringBuilder = new SpannableStringBuilder();
     mImageGetter = imageGetter;
@@ -748,11 +751,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("s")) {
       end(mSpannableStringBuilder, Strikethrough.class, new EditorStrikeThroughSpan());
     } else if (tag.equalsIgnoreCase("h1")) {
-      end(mSpannableStringBuilder, H1.class, new EditorH1Span());
+      end(mSpannableStringBuilder, H1.class, new EditorH1Span(mStyle));
     } else if (tag.equalsIgnoreCase("h2")) {
-      end(mSpannableStringBuilder, H2.class, new EditorH2Span());
+      end(mSpannableStringBuilder, H2.class, new EditorH2Span(mStyle));
     } else if (tag.equalsIgnoreCase("h3")) {
-      end(mSpannableStringBuilder, H3.class, new EditorH3Span());
+      end(mSpannableStringBuilder, H3.class, new EditorH3Span(mStyle));
     } else if (tag.equalsIgnoreCase("code")) {
       end(mSpannableStringBuilder, Code.class, new EditorInlineCodeSpan());
     } else if (tag.equalsIgnoreCase("mention")) {

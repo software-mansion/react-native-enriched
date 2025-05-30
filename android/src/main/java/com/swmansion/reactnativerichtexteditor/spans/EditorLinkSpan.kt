@@ -5,10 +5,10 @@ import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
 import com.swmansion.reactnativerichtexteditor.events.LinkHandler
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 
 
-class EditorLinkSpan(private val url: String, private val linkHandler: LinkHandler) : ClickableSpan(), EditorSpan {
+class EditorLinkSpan(private val url: String, private val linkHandler: LinkHandler) : ClickableSpan(), EditorInlineSpan {
   override fun onClick(view: View) {
     linkHandler.onPress(url)
   }

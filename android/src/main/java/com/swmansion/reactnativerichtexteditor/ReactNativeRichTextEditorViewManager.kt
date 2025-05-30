@@ -27,6 +27,7 @@ import com.swmansion.reactnativerichtexteditor.events.OnMentionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
 import com.swmansion.reactnativerichtexteditor.events.OnPressMentionEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 import com.swmansion.reactnativerichtexteditor.utils.jsonStringToStringMap
 
 @ReactModule(name = ReactNativeRichTextEditorViewManager.NAME)
@@ -126,6 +127,11 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
     val indicatorsArray = indicatorsList.toTypedArray()
     view?.parametrizedStyles?.mentionIndicators = indicatorsArray
+  }
+
+  @ReactProp(name = "richTextStyle")
+  override fun setRichTextStyle(view: ReactNativeRichTextEditorView?, style: ReadableMap?) {
+    view?.richTextStyle = RichTextStyle(style)
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")

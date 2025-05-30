@@ -33,6 +33,7 @@ import com.swmansion.reactnativerichtexteditor.styles.InlineStyles
 import com.swmansion.reactnativerichtexteditor.styles.ListStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParagraphStyles
 import com.swmansion.reactnativerichtexteditor.styles.ParametrizedStyles
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
@@ -51,6 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingValue: Boolean = false
 
+  var richTextStyle: RichTextStyle? = null
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 
@@ -170,7 +172,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val isPTagRecognized = value.startsWith("<p>") && value.endsWith("</p>")
     val isHtml = isHtmlTagRecognized || isPTagRecognized
     if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
+      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, richTextStyle, null, null, linkHandler, mentionHandler)
       setText(parsed)
     } else {
       setText(value)

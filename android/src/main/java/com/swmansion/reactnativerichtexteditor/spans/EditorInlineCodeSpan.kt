@@ -4,9 +4,9 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.BackgroundColorSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 
-class EditorInlineCodeSpan : BackgroundColorSpan(Color.argb(90, 250, 250, 250)), EditorSpan {
+class EditorInlineCodeSpan : BackgroundColorSpan(Color.argb(90, 250, 250, 250)), EditorInlineSpan {
   override fun updateDrawState(textPaint: TextPaint) {
     super.updateDrawState(textPaint)
 
