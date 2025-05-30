@@ -75,6 +75,21 @@ export interface RichTextStyle {
   h3?: {
     fontSize?: Float;
   };
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: Float;
+    gapWidth?: Float;
+  };
+  ol?: {
+    marginLeft?: Float;
+    gapWidth?: Float;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: Float;
+    marginLeft?: Float;
+    gapWidth?: Float;
+  };
 }
 
 export interface NativeProps extends ViewProps {

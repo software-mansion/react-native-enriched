@@ -1,7 +1,6 @@
 package com.swmansion.reactnativerichtexteditor.spans
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.text.Layout
 import android.text.Spanned
@@ -10,17 +9,12 @@ import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-@Suppress("UNUSED_PARAMETER")
 class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
-  private val leadWidth = 26
-  private val bulletRadius = 10
-  private val gapWidth = 30
-  private val wantColor = true
-
   override fun getLeadingMargin(p0: Boolean): Int {
-    return 2 * bulletRadius + gapWidth + leadWidth
+    return richTextStyle.ulBulletSize + richTextStyle.ulGapWidth + richTextStyle.ulMarginLeft
   }
 
+  // TODO: Verify if margin related calculations are correct
   override fun drawLeadingMargin(
     canvas: Canvas,
     paint: Paint,
@@ -39,24 +33,17 @@ class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : Leadin
 
     if (spannedText.getSpanStart(this) == start) {
       val style = paint.style
-      var oldColor = 0
-
-      if (wantColor) {
-        oldColor = paint.color
-        paint.color = Color.BLACK
-      }
-
+      var oldColor = paint.color
+      paint.color = richTextStyle.ulBulletColor
       paint.style = Paint.Style.FILL
 
+      val bulletRadius = richTextStyle.ulBulletSize / 2f
       val yPosition = (top + bottom) / 2f
-      val xPosition = x + dir * bulletRadius + leadWidth
+      val xPosition = x + dir * bulletRadius + richTextStyle.ulMarginLeft
 
-      canvas.drawCircle(xPosition.toFloat(), yPosition, bulletRadius.toFloat(), paint)
+      canvas.drawCircle(xPosition.toFloat(), yPosition, bulletRadius, paint)
 
-      if (wantColor) {
-        paint.color = oldColor
-      }
-
+      paint.color = oldColor
       paint.style = style
     }
   }
