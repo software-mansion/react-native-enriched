@@ -28,6 +28,9 @@ class RichTextStyle {
   var ulBulletSize: Int = defaults.ul.bulletSize.toInt()
   var ulBulletColor: Int = defaults.ul.bulletColor
 
+  var imgWidth: Int = defaults.img.width.toInt()
+  var imgHeight: Int = defaults.img.height.toInt()
+
   constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
     mEditorView = editorView
 
@@ -55,6 +58,10 @@ class RichTextStyle {
     ulGapWidth = parseFloat(ulStyle, "gapWidth", defaults.ul.gapWidth).toInt()
     ulMarginLeft = parseFloat(ulStyle, "marginLeft", defaults.ul.marginLeft).toInt()
     ulBulletSize = parseFloat(ulStyle, "bulletSize", defaults.ul.bulletSize).toInt()
+
+    val imgStyle = style?.getMap("img")
+    imgWidth = parseFloat(imgStyle, "width", defaults.img.width).toInt()
+    imgHeight = parseFloat(imgStyle, "height", defaults.img.height).toInt()
   }
 
   private fun parseFloat(map: ReadableMap?, key: String, defaultValue: Float): Float {
@@ -73,6 +80,7 @@ class RichTextStyle {
     data class BlockQuoteStyle(val color: Int, val stripeWidth: Float, val gapWidth: Float)
     data class OlStyle(val gapWidth: Float, val marginLeft: Float)
     data class UlStyle(val gapWidth: Float, val marginLeft: Float, val bulletSize: Float, val bulletColor: Int)
+    data class ImgStyle(val width: Float, val height: Float)
 
     data class Defaults(
       val h1: HeadingStyle,
@@ -80,7 +88,8 @@ class RichTextStyle {
       val h3: HeadingStyle,
       val blockquote: BlockQuoteStyle,
       val ol: OlStyle,
-      val ul: UlStyle
+      val ul: UlStyle,
+      val img: ImgStyle
     )
 
     val defaults = Defaults(
@@ -89,7 +98,8 @@ class RichTextStyle {
       h3 = HeadingStyle(56f),
       blockquote = BlockQuoteStyle(Color.GRAY, 8f, 24f),
       ol = OlStyle(30f, 40f),
-      ul = UlStyle(30f, 26f, 20f, Color.BLACK)
+      ul = UlStyle(30f, 26f, 20f, Color.BLACK),
+      img = ImgStyle(160f, 160f)
     )
   }
 }
