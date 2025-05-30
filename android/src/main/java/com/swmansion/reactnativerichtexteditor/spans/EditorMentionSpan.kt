@@ -7,8 +7,10 @@ import android.view.View
 import androidx.core.graphics.toColorInt
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorMentionSpan(private val text: String, private val attributes: Map<String, String>, private val mentionHandler: MentionHandler) :
+@Suppress("UNUSED_PARAMETER")
+class EditorMentionSpan(private val text: String, private val attributes: Map<String, String>, private val mentionHandler: MentionHandler, private val richTextStyle: RichTextStyle) :
   ClickableSpan(), EditorInlineSpan {
   override fun onClick(view: View) {
     mentionHandler.onPress(text, attributes)

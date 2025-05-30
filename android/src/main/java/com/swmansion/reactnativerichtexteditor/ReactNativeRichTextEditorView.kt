@@ -52,7 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingValue: Boolean = false
 
-  var richTextStyle: RichTextStyle? = null
+  var richTextStyle: RichTextStyle = RichTextStyle(this, null)
   var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 

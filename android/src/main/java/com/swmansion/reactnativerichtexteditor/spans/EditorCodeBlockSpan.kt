@@ -9,8 +9,10 @@ import android.text.TextPaint
 import android.text.style.CharacterStyle
 import android.text.style.LineBackgroundSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorCodeBlockSpan : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan {
+@Suppress("UNUSED_PARAMETER")
+class EditorCodeBlockSpan(private val richTextStyle: RichTextStyle) : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan {
   private val radius = 8f
   private val typeface = Typeface.MONOSPACE
   private val backgroundColor = Color.argb(90, 250, 250, 250)
@@ -32,10 +34,10 @@ class EditorCodeBlockSpan : CharacterStyle(), LineBackgroundSpan, EditorParagrap
     end: Int,
     lineNum: Int
   ) {
-    val previousColor = p.color;
-    p.color = backgroundColor;
+    val previousColor = p.color
+    p.color = backgroundColor
     val rect = RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
-    canvas.drawRoundRect(rect, radius, radius, p);
+    canvas.drawRoundRect(rect, radius, radius, p)
     p.color = previousColor
   }
 }

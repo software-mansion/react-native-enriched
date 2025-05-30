@@ -9,14 +9,19 @@ import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 class EditorImageSpan : ImageSpan, EditorInlineSpan {
+  private val richTextStyle: RichTextStyle? = null
+
   private val width = 160
   private val height = 160
 
-  constructor(context: Context, uri: Uri) : super(context, uri, DynamicDrawableSpan.ALIGN_BASELINE)
+  @Suppress("UNUSED_PARAMETER")
+  constructor(context: Context, uri: Uri, richTextStyle: RichTextStyle, ) : super(context, uri, ALIGN_BASELINE)
 
-  constructor(drawable: Drawable, source: String) : super(drawable, source, DynamicDrawableSpan.ALIGN_BASELINE)
+  @Suppress("UNUSED_PARAMETER")
+  constructor(drawable: Drawable, source: String, richTextStyle: RichTextStyle) : super(drawable, source, ALIGN_BASELINE)
 
   override fun draw(
     canvas: Canvas, text: CharSequence?, start: Int, end: Int, x: Float,

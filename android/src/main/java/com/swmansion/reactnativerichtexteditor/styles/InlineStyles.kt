@@ -31,7 +31,7 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
       spannable.removeSpan(span)
     }
 
-    val span = type.getDeclaredConstructor().newInstance()
+    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
     spannable.setSpan(span, minimum.coerceAtMost(maximum), maximum.coerceAtLeast(minimum), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 

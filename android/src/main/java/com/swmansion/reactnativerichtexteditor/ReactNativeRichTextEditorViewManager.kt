@@ -131,7 +131,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   @ReactProp(name = "richTextStyle")
   override fun setRichTextStyle(view: ReactNativeRichTextEditorView?, style: ReadableMap?) {
-    view?.richTextStyle = RichTextStyle(style)
+    view?.richTextStyle = RichTextStyle(view, style)
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")

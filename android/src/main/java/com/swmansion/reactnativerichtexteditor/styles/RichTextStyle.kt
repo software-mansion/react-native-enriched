@@ -2,27 +2,32 @@ package com.swmansion.reactnativerichtexteditor.styles
 
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
+import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
+import kotlin.Int
 import kotlin.math.ceil
 
+
 class RichTextStyle {
+  private var mEditorView: ReactNativeRichTextEditorView? = null
+
   var h1FontSize: Int = defaults.h1.fontSize
   var h2FontSize: Int = defaults.h2.fontSize
   var h3FontSize: Int = defaults.h3.fontSize
 
-  constructor(style: ReadableMap?) {
-    if (style == null) return
+  constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
+    mEditorView = editorView
 
-    var h1Style = style.getMap("h1")
+    var h1Style = style?.getMap("h1")
     h1FontSize = getFontSize(h1Style, defaults.h1.fontSize)
 
-    var h2Style = style.getMap("h2")
+    var h2Style = style?.getMap("h2")
     h2FontSize = getFontSize(h2Style, defaults.h2.fontSize)
 
-    var h3Style = style.getMap("h3")
+    var h3Style = style?.getMap("h3")
     h3FontSize = getFontSize(h3Style, defaults.h3.fontSize)
   }
 
-  fun getFontSize(map: ReadableMap?, defaultValue: Int): Int {
+  private fun getFontSize(map: ReadableMap?, defaultValue: Int): Int {
     if (map == null) return defaultValue
 
     if (!map.hasKey("fontSize")) return defaultValue
@@ -34,18 +39,18 @@ class RichTextStyle {
   }
 
   companion object {
-      data class HeadingStyle(val fontSize: Int)
+    data class HeadingStyle(val fontSize: Int)
 
-      data class Defaults(
-        val h1: HeadingStyle,
-        val h2: HeadingStyle,
-        val h3: HeadingStyle
-      )
+    data class Defaults(
+      val h1: HeadingStyle,
+      val h2: HeadingStyle,
+      val h3: HeadingStyle
+    )
 
-      val defaults = Defaults(
-        h1 = HeadingStyle(72),
-        h2 = HeadingStyle(64),
-        h3 = HeadingStyle(56)
-      )
+    val defaults = Defaults(
+      h1 = HeadingStyle(72),
+      h2 = HeadingStyle(64),
+      h3 = HeadingStyle(56)
+    )
   }
 }

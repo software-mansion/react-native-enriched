@@ -7,9 +7,11 @@ import android.text.Layout
 import android.text.Spanned
 import android.text.style.LeadingMarginSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-class EditorUnorderedListSpan : LeadingMarginSpan, EditorInlineSpan {
+@Suppress("UNUSED_PARAMETER")
+class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
   private val leadWidth = 26
   private val bulletRadius = 10
   private val gapWidth = 30

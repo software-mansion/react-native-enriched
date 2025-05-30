@@ -6,9 +6,11 @@ import android.graphics.Paint
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/QuoteSpan.java
-class EditorBlockQuoteSpan : LeadingMarginSpan, EditorParagraphSpan {
+@Suppress("UNUSED_PARAMETER")
+class EditorBlockQuoteSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan {
   private val mColor = Color.CYAN
   private val mStripeWidth = 8
   private val mGapWidth = 24

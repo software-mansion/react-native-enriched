@@ -38,14 +38,14 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
 
   private fun setSpan(spannable: Spannable, name: String, start: Int, end: Int) {
     if (name == EditorSpans.UNORDERED_LIST) {
-      val span = EditorUnorderedListSpan()
+      val span = EditorUnorderedListSpan(editorView.richTextStyle)
       spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       return
     }
 
     if (name == EditorSpans.ORDERED_LIST) {
       val index = getOrderedListIndex(spannable, start)
-      val span = EditorOrderedListSpan(index)
+      val span = EditorOrderedListSpan(index, editorView.richTextStyle)
       spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
