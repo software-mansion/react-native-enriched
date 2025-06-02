@@ -39,7 +39,6 @@ const defaultStyle: Required<RichTextStyle> = {
     height: 80,
   },
   ol: {
-    marginLeft: 16,
     gapWidth: 16,
   },
   ul: {

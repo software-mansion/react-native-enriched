@@ -22,7 +22,6 @@ class RichTextStyle {
   var blockquoteGapWidth: Int
 
   var olGapWidth: Int
-  var olMarginLeft: Int
 
   var ulGapWidth: Int
   var ulMarginLeft: Int
@@ -60,7 +59,6 @@ class RichTextStyle {
       blockquoteStripeWidth = 2
       blockquoteGapWidth = 16
       olGapWidth = 16
-      olMarginLeft = 16
       ulGapWidth = 16
       ulMarginLeft = 16
       ulBulletSize = 8
@@ -97,7 +95,6 @@ class RichTextStyle {
 
     val olStyle = style.getMap("ol")
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
-    olMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
 
     val ulStyle = style.getMap("ul")
     ulBulletColor = parseColor(ulStyle, "bulletColor")

@@ -100,7 +100,6 @@ export interface RichTextStyle {
     height?: number;
   };
   ol?: {
-    marginLeft?: number;
     gapWidth?: number;
   };
   ul?: {

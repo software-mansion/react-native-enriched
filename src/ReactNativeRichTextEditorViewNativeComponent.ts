@@ -103,7 +103,6 @@ export interface RichTextStyle {
     height?: Float;
   };
   ol?: {
-    marginLeft?: Float;
     gapWidth?: Float;
   };
   ul?: {
