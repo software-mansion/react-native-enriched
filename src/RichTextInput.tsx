@@ -30,7 +30,7 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
-import { parseColors } from './colorParser';
+import { normalizeRichTextStyle } from './normalizeRichTextStyle';
 
 export interface RichTextInputInstance extends NativeMethods {
   // General commands
@@ -180,8 +180,9 @@ export const RichTextInput = ({
   ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+
   const normalizedRichTextStyle = useMemo(
-    () => parseColors(richTextStyle),
+    () => normalizeRichTextStyle(richTextStyle),
     [richTextStyle]
   );
 

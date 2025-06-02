@@ -13,113 +13,137 @@ import kotlin.math.ceil
 class RichTextStyle {
   private var context: ReactContext? = null
 
-  var h1FontSize: Int = defaults.h1.fontSize.toInt()
-  var h2FontSize: Int = defaults.h2.fontSize.toInt()
-  var h3FontSize: Int = defaults.h3.fontSize.toInt()
+  var h1FontSize: Int
+  var h2FontSize: Int
+  var h3FontSize: Int
 
-  var blockquoteColor: Int = defaults.blockquote.color
-  var blockquoteStripeWidth: Int = defaults.blockquote.stripeWidth.toInt()
-  var blockquoteGapWidth: Int = defaults.blockquote.gapWidth.toInt()
+  var blockquoteColor: Int
+  var blockquoteStripeWidth: Int
+  var blockquoteGapWidth: Int
 
-  var olGapWidth: Int = defaults.ol.gapWidth.toInt()
-  var olMarginLeft: Int = defaults.ol.marginLeft.toInt()
+  var olGapWidth: Int
+  var olMarginLeft: Int
 
-  var ulGapWidth: Int = defaults.ul.gapWidth.toInt()
-  var ulMarginLeft: Int = defaults.ul.marginLeft.toInt()
-  var ulBulletSize: Int = defaults.ul.bulletSize.toInt()
-  var ulBulletColor: Int = defaults.ul.bulletColor
+  var ulGapWidth: Int
+  var ulMarginLeft: Int
+  var ulBulletSize: Int
+  var ulBulletColor: Int
 
-  var imgWidth: Int = defaults.img.width.toInt()
-  var imgHeight: Int = defaults.img.height.toInt()
+  var imgWidth: Int
+  var imgHeight: Int
 
-  var aColor: Int = defaults.a.color
-  var aUnderline: Boolean = defaults.a.underline
+  var aColor: Int
+  var aUnderline: Boolean
 
-  var codeBlockColor: Int = defaults.codeBlock.color
-  var codeBlockBackgroundColor: Int = defaults.codeBlock.backgroundColor
-  var codeBlockRadius: Float = defaults.codeBlock.radius
+  var codeBlockColor: Int
+  var codeBlockBackgroundColor: Int
+  var codeBlockRadius: Float
 
-  var inlineCodeColor: Int = defaults.inlineCodeStyle.color
-  var inlineCodeBackgroundColor: Int = defaults.inlineCodeStyle.backgroundColor
+  var inlineCodeColor: Int
+  var inlineCodeBackgroundColor: Int
 
-  var mentionColor: Int = defaults.mentionStyle.color
-  var mentionBackgroundColor: Int = defaults.mentionStyle.backgroundColor
-  var mentionUnderline: Boolean = defaults.mentionStyle.underline
+  var mentionColor: Int
+  var mentionBackgroundColor: Int
+  var mentionUnderline: Boolean
 
   constructor(context: ReactContext, style: ReadableMap?) {
     this.context = context
 
-    val h1Style = style?.getMap("h1")
-    h1FontSize = parseFloat(h1Style, "fontSize", defaults.h1.fontSize).toInt()
+    // Default values are ignored as they are specified on the JS side.
+    // They are specified only because they are required by the constructor.
+    // JS passes them as a prop - so they are initialized after the constructor is called.
+    if (style == null) {
+      h1FontSize = 72
+      h2FontSize = 64
+      h3FontSize = 56
+      blockquoteColor = Color.BLACK
+      blockquoteStripeWidth = 2
+      blockquoteGapWidth = 16
+      olGapWidth = 16
+      olMarginLeft = 16
+      ulGapWidth = 16
+      ulMarginLeft = 16
+      ulBulletSize = 8
+      ulBulletColor = Color.BLACK
+      imgWidth = 200
+      imgHeight = 200
+      aColor = Color.BLACK
+      aUnderline = true
+      codeBlockColor = Color.BLACK
+      codeBlockBackgroundColor = Color.BLACK
+      codeBlockRadius = 4f
+      inlineCodeColor = Color.BLACK
+      inlineCodeBackgroundColor = Color.BLACK
+      mentionColor = 0xFF0000FF.toInt() // Default blue
+      mentionBackgroundColor = Color.BLACK
+      mentionUnderline = true
 
-    val h2Style = style?.getMap("h2")
-    h2FontSize = parseFloat(h2Style, "fontSize", defaults.h2.fontSize).toInt()
+      return
+    }
 
-    val h3Style = style?.getMap("h3")
-    h3FontSize = parseFloat(h3Style, "fontSize", defaults.h3.fontSize).toInt()
+    val h1Style = style.getMap("h1")
+    h1FontSize = parseFloat(h1Style, "fontSize").toInt()
 
-    val blockquoteStyle = style?.getMap("blockquote")
-    blockquoteColor = parseColor(blockquoteStyle, "color", defaults.blockquote.color)
-    blockquoteGapWidth = parseFloat(blockquoteStyle, "gapWidth", defaults.blockquote.gapWidth).toInt()
-    blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth", defaults.blockquote.stripeWidth).toInt()
+    val h2Style = style.getMap("h2")
+    h2FontSize = parseFloat(h2Style, "fontSize").toInt()
 
-    val olStyle = style?.getMap("ol")
-    olGapWidth = parseFloat(olStyle, "gapWidth", defaults.ol.gapWidth).toInt()
-    olMarginLeft = parseFloat(olStyle, "marginLeft", defaults.ol.marginLeft).toInt()
+    val h3Style = style.getMap("h3")
+    h3FontSize = parseFloat(h3Style, "fontSize").toInt()
 
-    val ulStyle = style?.getMap("ul")
-    ulBulletColor = parseColor(ulStyle, "bulletColor", defaults.ul.bulletColor)
-    ulGapWidth = parseFloat(ulStyle, "gapWidth", defaults.ul.gapWidth).toInt()
-    ulMarginLeft = parseFloat(ulStyle, "marginLeft", defaults.ul.marginLeft).toInt()
-    ulBulletSize = parseFloat(ulStyle, "bulletSize", defaults.ul.bulletSize).toInt()
+    val blockquoteStyle = style.getMap("blockquote")
+    blockquoteColor = parseColor(blockquoteStyle, "borderColor")
+    blockquoteGapWidth = parseFloat(blockquoteStyle, "gapWidth").toInt()
+    blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth").toInt()
 
-    val imgStyle = style?.getMap("img")
-    imgWidth = parseFloat(imgStyle, "width", defaults.img.width).toInt()
-    imgHeight = parseFloat(imgStyle, "height", defaults.img.height).toInt()
+    val olStyle = style.getMap("ol")
+    olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
+    olMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
 
-    val aStyle = style?.getMap("a")
-    aColor = parseColor(aStyle, "color", defaults.a.color)
-    aUnderline = parseIsUnderline(aStyle, defaults.a.underline)
+    val ulStyle = style.getMap("ul")
+    ulBulletColor = parseColor(ulStyle, "bulletColor")
+    ulGapWidth = parseFloat(ulStyle, "gapWidth").toInt()
+    ulMarginLeft = parseFloat(ulStyle, "marginLeft").toInt()
+    ulBulletSize = parseFloat(ulStyle, "bulletSize").toInt()
 
-    val codeBlockStyle = style?.getMap("codeblock")
-    codeBlockRadius = parseFloat(codeBlockStyle, "borderRadius", defaults.codeBlock.radius)
-    codeBlockColor = parseColor(codeBlockStyle, "color", defaults.codeBlock.color)
-    codeBlockBackgroundColor = parseColorWithOpacity(codeBlockStyle, "backgroundColor", defaults.codeBlock.backgroundColor, 80)
+    val imgStyle = style.getMap("img")
+    imgWidth = parseFloat(imgStyle, "width").toInt()
+    imgHeight = parseFloat(imgStyle, "height").toInt()
 
-    val inlineCodeStyle = style?.getMap("code")
-    inlineCodeColor = parseColor(inlineCodeStyle, "color", defaults.inlineCodeStyle.color)
-    inlineCodeBackgroundColor = parseColorWithOpacity(inlineCodeStyle, "backgroundColor", defaults.inlineCodeStyle.backgroundColor, 80)
+    val aStyle = style.getMap("a")
+    aColor = parseColor(aStyle, "color")
+    aUnderline = parseIsUnderline(aStyle)
 
-    val mentionStyle = style?.getMap("mention")
-    mentionUnderline = parseIsUnderline(mentionStyle, defaults.mentionStyle.underline)
-    mentionColor = parseColor(mentionStyle, "color", defaults.mentionStyle.color)
-    mentionBackgroundColor = parseColorWithOpacity(mentionStyle, "backgroundColor", defaults.mentionStyle.backgroundColor, 80)
+    val codeBlockStyle = style.getMap("codeblock")
+    codeBlockRadius = parseFloat(codeBlockStyle, "borderRadius")
+    codeBlockColor = parseColor(codeBlockStyle, "color")
+    codeBlockBackgroundColor = parseColorWithOpacity(codeBlockStyle, "backgroundColor", 80)
+
+    val inlineCodeStyle = style.getMap("code")
+    inlineCodeColor = parseColor(inlineCodeStyle, "color")
+    inlineCodeBackgroundColor = parseColorWithOpacity(inlineCodeStyle, "backgroundColor", 80)
+
+    val mentionStyle = style.getMap("mention")
+    mentionUnderline = parseIsUnderline(mentionStyle)
+    mentionColor = parseColor(mentionStyle, "color")
+    mentionBackgroundColor = parseColorWithOpacity(mentionStyle, "backgroundColor", 80)
   }
 
-  private fun parseFloat(map: ReadableMap?, key: String, defaultValue: Float): Float {
-    if (map == null) return defaultValue
+  private fun parseFloat(map: ReadableMap?, key: String): Float {
+    val safeMap = ensureValueIsSet(map, key)
 
-    if (!map.hasKey(key)) return defaultValue
-
-    if (map.isNull(key)) return defaultValue
-
-    val fontSize = map.getDouble(key)
+    val fontSize = safeMap.getDouble(key)
     return ceil(PixelUtil.toPixelFromSP(fontSize))
   }
 
-  private fun parseColorWithOpacity(map: ReadableMap?, key: String, defaultValue: Int, opacity: Int): Int {
-    val color = parseColor(map, key, defaultValue)
+  private fun parseColorWithOpacity(map: ReadableMap?, key: String, opacity: Int): Int {
+    val color = parseColor(map, key)
     return withOpacity(color, opacity)
   }
 
-  private fun parseColor(map: ReadableMap?, key: String, defaultValue: Int): Int {
-    if (map == null) return defaultValue
+  private fun parseColor(map: ReadableMap?, key: String): Int {
+    val safeMap = ensureValueIsSet(map, key)
 
-    if (!map.hasKey(key)) return defaultValue
-
-    if (map.isNull(key)) return defaultValue
-
-    val color = map.getDouble(key)
+    val color = safeMap.getDouble(key)
     val parsedColor = ColorPropConverter.getColor(color, context)
 
     return parsedColor
@@ -130,53 +154,24 @@ class RichTextStyle {
     return (color and 0x00FFFFFF) or (a shl 24)
   }
 
-  private fun parseIsUnderline(map: ReadableMap?, defaultValue: Boolean): Boolean {
+  private fun parseIsUnderline(map: ReadableMap?): Boolean {
     val underline = map?.getString("textDecorationLine")
     val isEnabled = underline == "underline"
     val isDisabled = underline == "none"
 
     if (isEnabled) return true
     if (isDisabled) return false
-    return defaultValue
+
+    throw Error("Specified textDecorationLine value is not supported: $underline. Supported values are 'underline' and 'none'.")
   }
 
-  companion object {
-    data class HeadingStyle(val fontSize: Float)
-    data class BlockQuoteStyle(val color: Int, val stripeWidth: Float, val gapWidth: Float)
-    data class OlStyle(val gapWidth: Float, val marginLeft: Float)
-    data class UlStyle(val gapWidth: Float, val marginLeft: Float, val bulletSize: Float, val bulletColor: Int)
-    data class ImgStyle(val width: Float, val height: Float)
-    data class AStyle(val color: Int, val underline: Boolean)
-    data class CodeBlockStyle(val color: Int, val backgroundColor: Int, val radius: Float)
-    data class InlineCodeStyle(val color: Int, val backgroundColor: Int)
-    data class MentionStyle(val color: Int, val backgroundColor: Int, val underline: Boolean)
+  private fun ensureValueIsSet(map: ReadableMap?, key: String): ReadableMap {
+    if (map == null) throw Error("Style map cannot be null")
 
-    data class Defaults(
-      val h1: HeadingStyle,
-      val h2: HeadingStyle,
-      val h3: HeadingStyle,
-      val blockquote: BlockQuoteStyle,
-      val ol: OlStyle,
-      val ul: UlStyle,
-      val img: ImgStyle,
-      val a: AStyle,
-      val codeBlock: CodeBlockStyle,
-      val inlineCodeStyle: InlineCodeStyle,
-      val mentionStyle: MentionStyle,
-    )
+    if (!map.hasKey(key)) throw Error("Style map must contain key: $key")
 
-    val defaults = Defaults(
-      h1 = HeadingStyle(72f),
-      h2 = HeadingStyle(64f),
-      h3 = HeadingStyle(56f),
-      blockquote = BlockQuoteStyle(Color.GRAY, 8f, 24f),
-      ol = OlStyle(30f, 40f),
-      ul = UlStyle(30f, 26f, 20f, Color.BLACK),
-      img = ImgStyle(160f, 160f),
-      a = AStyle(Color.BLUE, true),
-      codeBlock = CodeBlockStyle(Color.BLACK, Color.rgb(250, 250, 250), 8f),
-      inlineCodeStyle = InlineCodeStyle(Color.RED, Color.rgb(250, 250, 250)),
-      mentionStyle = MentionStyle(Color.BLUE, Color.rgb(0, 0, 255), true)
-    )
+    if (map.isNull(key)) throw Error("Style map cannot contain null value for key: $key")
+
+    return map
   }
 }
