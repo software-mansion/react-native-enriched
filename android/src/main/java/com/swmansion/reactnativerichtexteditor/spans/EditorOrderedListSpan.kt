@@ -8,10 +8,8 @@ import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
-  private val leadWidth = 40
-
   override fun getLeadingMargin(first: Boolean): Int {
-    return leadWidth + richTextStyle.olGapWidth
+    return richTextStyle.olMarginLeft + richTextStyle.olGapWidth
   }
 
   override fun drawLeadingMargin(
@@ -33,8 +31,7 @@ class EditorOrderedListSpan(private var index: Int, private val richTextStyle: R
       val width = paint.measureText(text)
 
       val yPosition = baseline.toFloat()
-      val xPosition = (leadWidth + x - width / 2) * dir
-
+      val xPosition = (richTextStyle.olMarginLeft + x - width / 2) * dir
       canvas.drawText(text, xPosition, yPosition, paint)
     }
   }

@@ -5,79 +5,61 @@ import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
+import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import kotlin.Float
 import kotlin.Int
 import kotlin.String
 import kotlin.math.ceil
 
 class RichTextStyle {
-  private var context: ReactContext? = null
+  private var style: ReadableMap? = null
+  private var editorView: ReactNativeRichTextEditorView? = null
 
-  var h1FontSize: Int
-  var h2FontSize: Int
-  var h3FontSize: Int
+  // Default values are ignored as they are specified on the JS side.
+  // They are specified only because they are required by the constructor.
+  // JS passes them as a prop - so they are initialized after the constructor is called.
+  var h1FontSize: Int = 72
+  var h2FontSize: Int = 64
+  var h3FontSize: Int = 56
 
-  var blockquoteColor: Int
-  var blockquoteStripeWidth: Int
-  var blockquoteGapWidth: Int
+  var blockquoteColor: Int = Color.BLACK
+  var blockquoteStripeWidth: Int = 2
+  var blockquoteGapWidth: Int = 16
 
-  var olGapWidth: Int
+  var olGapWidth: Int = 16
+  var olMarginLeft: Int = 24
 
-  var ulGapWidth: Int
-  var ulMarginLeft: Int
-  var ulBulletSize: Int
-  var ulBulletColor: Int
+  var ulGapWidth: Int = 16
+  var ulMarginLeft: Int = 24
+  var ulBulletSize: Int = 8
+  var ulBulletColor: Int = Color.BLACK
 
-  var imgWidth: Int
-  var imgHeight: Int
+  var imgWidth: Int = 200
+  var imgHeight: Int = 200
 
-  var aColor: Int
-  var aUnderline: Boolean
+  var aColor: Int = Color.BLACK
+  var aUnderline: Boolean = true
 
-  var codeBlockColor: Int
-  var codeBlockBackgroundColor: Int
-  var codeBlockRadius: Float
+  var codeBlockColor: Int = Color.BLACK
+  var codeBlockBackgroundColor: Int = Color.BLACK
+  var codeBlockRadius: Float = 4f
 
-  var inlineCodeColor: Int
-  var inlineCodeBackgroundColor: Int
+  var inlineCodeColor: Int = Color.BLACK
+  var inlineCodeBackgroundColor: Int = Color.BLACK
 
-  var mentionColor: Int
-  var mentionBackgroundColor: Int
-  var mentionUnderline: Boolean
+  var mentionColor: Int = Color.BLACK
+  var mentionBackgroundColor: Int = Color.BLACK
+  var mentionUnderline: Boolean = true
 
-  constructor(context: ReactContext, style: ReadableMap?) {
-    this.context = context
+  constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
+    this.editorView = editorView
+    this.style = style
 
-    // Default values are ignored as they are specified on the JS side.
-    // They are specified only because they are required by the constructor.
-    // JS passes them as a prop - so they are initialized after the constructor is called.
-    if (style == null) {
-      h1FontSize = 72
-      h2FontSize = 64
-      h3FontSize = 56
-      blockquoteColor = Color.BLACK
-      blockquoteStripeWidth = 2
-      blockquoteGapWidth = 16
-      olGapWidth = 16
-      ulGapWidth = 16
-      ulMarginLeft = 16
-      ulBulletSize = 8
-      ulBulletColor = Color.BLACK
-      imgWidth = 200
-      imgHeight = 200
-      aColor = Color.BLACK
-      aUnderline = true
-      codeBlockColor = Color.BLACK
-      codeBlockBackgroundColor = Color.BLACK
-      codeBlockRadius = 4f
-      inlineCodeColor = Color.BLACK
-      inlineCodeBackgroundColor = Color.BLACK
-      mentionColor = 0xFF0000FF.toInt() // Default blue
-      mentionBackgroundColor = Color.BLACK
-      mentionUnderline = true
+    invalidateStyles()
+  }
 
-      return
-    }
+  fun invalidateStyles() {
+    val style = this.style ?: return
 
     val h1Style = style.getMap("h1")
     h1FontSize = parseFloat(h1Style, "fontSize").toInt()
@@ -94,6 +76,9 @@ class RichTextStyle {
     blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth").toInt()
 
     val olStyle = style.getMap("ol")
+    val userDefinedMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
+    val calculatedMarginLeft = calculateOlMarginLeft(editorView, userDefinedMarginLeft)
+    olMarginLeft = calculatedMarginLeft
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
 
     val ulStyle = style.getMap("ul")
@@ -141,7 +126,7 @@ class RichTextStyle {
     val safeMap = ensureValueIsSet(map, key)
 
     val color = safeMap.getDouble(key)
-    val parsedColor = ColorPropConverter.getColor(color, context)
+    val parsedColor = ColorPropConverter.getColor(color, editorView?.context as ReactContext)
 
     return parsedColor
   }
@@ -160,6 +145,13 @@ class RichTextStyle {
     if (isDisabled) return false
 
     throw Error("Specified textDecorationLine value is not supported: $underline. Supported values are 'underline' and 'none'.")
+  }
+
+  private fun calculateOlMarginLeft(editorView: ReactNativeRichTextEditorView?, userMargin: Int): Int {
+    val fontSize = editorView?.fontSize?.toInt() ?: 0
+    val leadMargin = fontSize / 2
+
+    return leadMargin + userMargin
   }
 
   private fun ensureValueIsSet(map: ReadableMap?, key: String): ReadableMap {

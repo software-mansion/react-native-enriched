@@ -40,6 +40,7 @@ const defaultStyle: Required<RichTextStyle> = {
   },
   ol: {
     gapWidth: 16,
+    marginLeft: 16,
   },
   ul: {
     bulletColor: 'black',
