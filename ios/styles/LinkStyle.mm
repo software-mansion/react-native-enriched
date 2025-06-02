@@ -79,40 +79,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     ];
     return onlyLinks ? [self isSingleLinkIn:range] : NO;
   } else {
-    NSString *linkAttr = (NSString *)_editor->textView.typingAttributes[NSLinkAttributeName];
-    if(linkAttr == nullptr) {
-      return NO;
-    }
-    
-    // we must make sure that the present link isn't mention but either a Manual or an Automatic link
-    NSRange manualLinkRange = NSMakeRange(0, 0);
-    NSRange automaticLinkRange = NSMakeRange(0, 0);
-    NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
-  
-    // get the previous index if possible when at the very end of input
-    NSUInteger searchLocation = range.location;
-    if(searchLocation == _editor->textView.textStorage.length) {
-      if(searchLocation == 0) {
-        return NO;
-      } else {
-        searchLocation = searchLocation - 1;
-      }
-    }
-    
-    [_editor->textView.textStorage
-     attribute:ManualLinkAttributeName
-     atIndex:searchLocation
-     longestEffectiveRange: &manualLinkRange
-     inRange:editorRange
-    ];
-    [_editor->textView.textStorage
-     attribute:ManualLinkAttributeName
-     atIndex:searchLocation
-     longestEffectiveRange: &automaticLinkRange
-     inRange:editorRange
-    ];
-    
-    return manualLinkRange.length != 0 || automaticLinkRange.length != 0;
+    return [self getLinkDataAt:range.location] != nullptr;
   }
 }
 
@@ -163,13 +130,14 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
 }
 
-// used for getting exact link data at the given range
-- (LinkData *)getCurrentLinkDataIn:(NSRange)range {
-  NSRange linkRange = NSMakeRange(0, 0);
+// get exact link data at the given location if it exists
+- (LinkData *)getLinkDataAt:(NSUInteger)location {
+  NSRange manualLinkRange = NSMakeRange(0, 0);
+  NSRange automaticLinkRange = NSMakeRange(0, 0);
   NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
   
   // get the previous index if possible when at the very end of input
-  NSUInteger searchLocation = range.location;
+  NSUInteger searchLocation = location;
   if(searchLocation == _editor->textView.textStorage.length) {
     if(searchLocation == 0) {
       return nullptr;
@@ -178,87 +146,104 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  NSString *url = [_editor->textView.textStorage
-   attribute:NSLinkAttributeName
+  NSString *manualUrl = [_editor->textView.textStorage
+    attribute:ManualLinkAttributeName
+    atIndex:searchLocation
+    longestEffectiveRange: &manualLinkRange
+    inRange:editorRange
+  ];
+  NSString *automaticUrl = [_editor->textView.textStorage
+    attribute:AutomaticLinkAttributeName
    atIndex:searchLocation
-   longestEffectiveRange: &linkRange
+    longestEffectiveRange: &automaticLinkRange
    inRange:editorRange
   ];
   
-  if(url == nullptr || linkRange.length == 0) {
+  if((manualUrl == nullptr && automaticUrl == nullptr) || (manualLinkRange.length == 0 && automaticLinkRange.length == 0)) {
     return nullptr;
   }
   
+  NSString *linkUrl = manualUrl == nullptr ? automaticUrl : manualUrl;
+  NSRange linkRange = manualUrl == nullptr ? automaticLinkRange : manualLinkRange;
+  
   LinkData *data = [[LinkData alloc] init];
-  data.url = url;
+  data.url = linkUrl;
   data.text = [_editor->textView.textStorage.string substringWithRange:linkRange];
   return data;
 }
 
-// returns full range of a link at some location, useful for removing links
-// it assumes we have a link here (not a mention)
+// returns full range of a link at some location
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location {
-  NSRange linkRange = NSMakeRange(0, 0);
+  NSRange manualLinkRange = NSMakeRange(0, 0);
+  NSRange automaticLinkRange = NSMakeRange(0, 0);
   NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
   
   // get the previous index if possible when at the very end of input
   NSUInteger searchLocation = location;
   if(searchLocation == _editor->textView.textStorage.length) {
     if(searchLocation == 0) {
-      return linkRange;
+      return NSMakeRange(0, 0);
     } else {
       searchLocation = searchLocation - 1;
     }
   }
   
   [_editor->textView.textStorage
-   attribute:NSLinkAttributeName
+    attribute:ManualLinkAttributeName
+    atIndex:searchLocation
+    longestEffectiveRange: &manualLinkRange
+    inRange:editorRange
+  ];
+  [_editor->textView.textStorage
+    attribute:AutomaticLinkAttributeName
    atIndex:searchLocation
-   longestEffectiveRange: &linkRange
+    longestEffectiveRange: &automaticLinkRange
    inRange:editorRange
   ];
-  return linkRange;
+  
+  return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
-  // manual link can be extended via typing attributes only if it's done from the inside
-  // adding text before or after shouldn't be considered a link
+  // adding text before or after a link shouldn't be considered a link
   // that's why we remove typing attributes in these cases here
+  // also removes the attribute for mentions
   if(_editor->textView.selectedRange.length > 0) {
     return;
   }
   
   BOOL linkBefore = NO;
   if(_editor->textView.selectedRange.location >= 1) {
-    NSRange rangeBefore = NSMakeRange(_editor->textView.selectedRange.location - 1, 1);
-    if([self anyOccurence:rangeBefore]) {
+    NSString *link = [_editor->textView.textStorage
+      attribute:NSLinkAttributeName
+      atIndex:_editor->textView.selectedRange.location - 1
+      effectiveRange:nullptr
+    ];
+    if(link != nullptr) {
       linkBefore = YES;
     }
   }
   
-  if(!linkBefore) {
-    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-    [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
-    _editor->textView.typingAttributes = newTypingAttrs;
-    return;
-  }
-  
   BOOL linkAfter = NO;
   if(_editor->textView.selectedRange.location < _editor->textView.textStorage.length) {
-    NSRange rangeAfter = NSMakeRange(_editor->textView.selectedRange.location, 1);
-    if([self anyOccurence:rangeAfter]) {
+    NSString *link = [_editor->textView.textStorage
+      attribute:NSLinkAttributeName
+      atIndex:_editor->textView.selectedRange.location
+      effectiveRange:nullptr
+    ];
+    if(link != nullptr) {
       linkAfter = YES;
     }
   }
   
-  if(!linkAfter) {
+  if((!linkBefore && linkAfter) || (linkBefore && !linkAfter)) {
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
     [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
 
-// handles automatic links and extending the custom NSAttributedKeys
+// handles detecting and removing automatic links
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
   InlineCodeStyle *inlineCodeStyle = [_editor->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
   //MentionStyle *mentionStyle = [[_editor->stylesDict objectForKey:@([MentionStyle getStyleType])];
@@ -283,39 +268,17 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     return;
   }
   
-  // look for manual links within the word
-  __block NSString *manualLinkMinValue = @"";
-  __block NSString *manualLinkMaxValue = @"";
-  __block NSInteger manualLinkMinIdx = -1;
-  __block NSInteger manualLinkMaxIdx = -1;
-  
+  // we don't recognize automatic links along manual ones
+  __block BOOL manualLinkPresent = NO;
   [_editor->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
     usingBlock:^(id value, NSRange range, BOOL *stop) {
       NSString *urlValue = (NSString *)value;
-      if (urlValue != nullptr) {
-        NSInteger linkMin = range.location;
-        NSInteger linkMax = range.location + range.length - 1;
-        if (manualLinkMinIdx == -1 || linkMin < manualLinkMinIdx) {
-          manualLinkMinIdx = linkMin;
-          manualLinkMinValue = value;
-        }
-        if (manualLinkMaxIdx == -1 || linkMax > manualLinkMaxIdx) {
-          manualLinkMaxIdx = linkMax;
-          manualLinkMaxValue = value;
-        }
+      if(urlValue != nullptr) {
+        manualLinkPresent = YES;
+        *stop = YES;
       }
   }];
-  
-  BOOL manualLinkPresent = manualLinkMinIdx != -1 && manualLinkMaxIdx != -1;
-  if (manualLinkPresent) {
-    // this is a heuristic for refreshing manual links:
-    // since manual links cannot be extended from the sides, but can be from the inside,
-    // we update the attribute between the bounds of the already existing one
-    // we do that only if the bounds are the same one link though
-    if ([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
-      NSRange newManualAttributeRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
-      [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newManualAttributeRange];
-    }
+  if(manualLinkPresent) {
     return;
   }
   
@@ -366,6 +329,87 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
       _editor->textView.typingAttributes = newTypingAttrs;
     }
   }
+}
+
+// handles extending and refreshing manual links
+- (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange {
+  // look for manual links within the word
+  __block NSString *manualLinkMinValue = @"";
+  __block NSString *manualLinkMaxValue = @"";
+  __block NSInteger manualLinkMinIdx = -1;
+  __block NSInteger manualLinkMaxIdx = -1;
+  
+  [_editor->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
+    usingBlock:^(id value, NSRange range, BOOL *stop) {
+      NSString *urlValue = (NSString *)value;
+      if (urlValue != nullptr) {
+        NSInteger linkMin = range.location;
+        NSInteger linkMax = range.location + range.length - 1;
+        if (manualLinkMinIdx == -1 || linkMin < manualLinkMinIdx) {
+          manualLinkMinIdx = linkMin;
+          manualLinkMinValue = value;
+        }
+        if (manualLinkMaxIdx == -1 || linkMax > manualLinkMaxIdx) {
+          manualLinkMaxIdx = linkMax;
+          manualLinkMaxValue = value;
+        }
+      }
+  }];
+  
+  // no manual links
+  if(manualLinkMinIdx == -1 || manualLinkMaxIdx == -1) {
+    return;
+  }
+  
+  // get NSLinkAttribute bounds the same way
+  __block NSString *anyLinkMinValue = @"";
+  __block NSString *anyLinkMaxValue = @"";
+  __block NSInteger anyLinkMinIdx = -1;
+  __block NSInteger anyLinkMaxIdx = -1;
+  
+  [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:wordRange options:0
+    usingBlock:^(id value, NSRange range, BOOL *stop) {
+      NSString *urlValue = (NSString *)value;
+      if (urlValue != nullptr) {
+        NSInteger linkMin = range.location;
+        NSInteger linkMax = range.location + range.length - 1;
+        if (anyLinkMinIdx == -1 || linkMin < anyLinkMinIdx) {
+          anyLinkMinIdx = linkMin;
+          anyLinkMinValue = value;
+        }
+        if (anyLinkMaxIdx == -1 || linkMax > anyLinkMaxIdx) {
+          anyLinkMaxIdx = linkMax;
+          anyLinkMaxValue = value;
+        }
+      }
+  }];
+  
+  // first heuristic for refreshing manual links:
+  // we update the Manual attribute between the bounds of existing ones
+  // we do that only if the bounds point to the same url
+  if([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
+    NSRange newRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
+    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:manualLinkMinValue range:newRange];
+    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newRange];
+  }
+  
+  // second manual link extension heuristic:
+  // it is possible to select first few or last few characters of manual link and type sth
+  // this copies the NSLinkAttribute but doesn't refresh ManualAttribute
+  // so we check for the bounds and extend accordingly
+  if(anyLinkMinIdx < manualLinkMinIdx && [anyLinkMinValue isEqualToString:manualLinkMinValue]) {
+    NSRange newRange = NSMakeRange(anyLinkMinIdx, manualLinkMinIdx - anyLinkMinIdx);
+    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:anyLinkMinValue range:newRange];
+    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:anyLinkMinValue range:newRange];
+  }
+  if(anyLinkMaxIdx > manualLinkMaxIdx && [anyLinkMaxValue isEqualToString:manualLinkMaxValue]) {
+    NSRange newRange = NSMakeRange(manualLinkMaxIdx + 1, anyLinkMaxIdx - manualLinkMaxIdx);
+    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:anyLinkMaxValue range:newRange];
+    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:anyLinkMaxValue range:newRange];
+  }
+  
+  // link typing attributes need to be fixed after these changes
+  [self manageLinkTypingAttributes];
 }
 
 // MARK: - Private non-standard methods

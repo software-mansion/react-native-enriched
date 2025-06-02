@@ -244,7 +244,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       NSRange candidateLinkRange = NSMakeRange(0, 0);
       LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
       if(linkStyleClass != nullptr) {
-        candidateLinkData = [linkStyleClass getCurrentLinkDataIn:textView.selectedRange];
+        candidateLinkData = [linkStyleClass getLinkDataAt:textView.selectedRange.location];
         candidateLinkRange = [linkStyleClass getFullLinkRangeAt:textView.selectedRange.location];
       }
       
@@ -420,6 +420,24 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   return resultArray;
 }
 
+- (void)manageSelectionBasedChanges {
+  // link typing attributes fix
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  if(linkStyleClass != nullptr) {
+    [linkStyleClass manageLinkTypingAttributes];
+  }
+}
+
+- (void)handleWordModificationBasedChanges:(NSString*)word inRange:(NSRange)range {
+  // manual links refreshing and automatic links detection handling
+  LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
+  if(linkStyle != nullptr) {
+    // manual links need to be handled first because they can block automatic links after being refreshed
+    [linkStyle handleManualLinks:word inRange:range];
+    [linkStyle handleAutomaticLinks:word inRange:range];
+  }
+}
+
 // MARK: - UITextView delegate methods
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
@@ -435,6 +453,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       .text = [textAtSelection toCppString]
     });
   }
+  // manage selection changes since textViewDidChangeSelection sometimes doesn't run on focus
+  [self manageSelectionBasedChanges];
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
@@ -465,17 +485,19 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     });
   }
   
-  // link typing attributes fix
-  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
-  if(linkStyleClass != nullptr) {
-    [linkStyleClass manageLinkTypingAttributes];
-  }
+  // manage selection changes
+  [self manageSelectionBasedChanges];
   
   // update active styles
   [self tryUpdatingActiveStyles];
 }
 
 - (void)textViewDidChange:(UITextView *)textView {
+  // revert typing attributes to the defaults if field is empty
+  if(textView.textStorage.length == 0) {
+    textView.typingAttributes = _defaultTypingAttributes;
+  }
+
   // fix the marked text issues
   if(textView.markedTextRange != nullptr) {
     // when there is some sort of system marking, we don't process modified words
@@ -497,23 +519,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
   }
   
-  // revert typing attributes to the defaults if field is empty
-  if(textView.textStorage.length == 0) {
-    textView.typingAttributes = _defaultTypingAttributes;
-  }
-  
-  LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
-  
+  // handle modified words
   if(_modifiedWords != nullptr) {
     for(NSDictionary *wordDict in _modifiedWords) {
       NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
       NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
       
-      if(wordText == nullptr || wordRange == nullptr || linkStyle == nullptr) {
+      if(wordText == nullptr || wordRange == nullptr) {
         continue;
       }
       
-      [linkStyle handleAutomaticLinks:wordText inRange:[wordRange rangeValue]];
+      [self handleWordModificationBasedChanges:wordText inRange:[wordRange rangeValue]];
     }
   }
   
