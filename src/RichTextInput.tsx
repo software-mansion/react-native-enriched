@@ -2,6 +2,7 @@ import {
   type Component,
   type RefObject,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from 'react';
 import ReactNativeRichTextEditorView, {
@@ -29,6 +30,7 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
+import { parseColors } from './colorParser';
 
 export interface RichTextInputInstance extends NativeMethods {
   // General commands
@@ -178,6 +180,10 @@ export const RichTextInput = ({
   ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+  const normalizedRichTextStyle = useMemo(
+    () => parseColors(richTextStyle),
+    [richTextStyle]
+  );
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -312,7 +318,7 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
-      richTextStyle={richTextStyle}
+      richTextStyle={normalizedRichTextStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
       onChangeText={onChangeText}

@@ -1,16 +1,17 @@
 package com.swmansion.reactnativerichtexteditor.styles
 
 import android.graphics.Color
+import com.facebook.react.bridge.ColorPropConverter
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
-import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import kotlin.Float
 import kotlin.Int
 import kotlin.String
 import kotlin.math.ceil
 
 class RichTextStyle {
-  private var mEditorView: ReactNativeRichTextEditorView? = null
+  private var context: ReactContext? = null
 
   var h1FontSize: Int = defaults.h1.fontSize.toInt()
   var h2FontSize: Int = defaults.h2.fontSize.toInt()
@@ -45,8 +46,8 @@ class RichTextStyle {
   var mentionBackgroundColor: Int = defaults.mentionStyle.backgroundColor
   var mentionUnderline: Boolean = defaults.mentionStyle.underline
 
-  constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
-    mEditorView = editorView
+  constructor(context: ReactContext, style: ReadableMap?) {
+    this.context = context
 
     val h1Style = style?.getMap("h1")
     h1FontSize = parseFloat(h1Style, "fontSize", defaults.h1.fontSize).toInt()
@@ -58,7 +59,7 @@ class RichTextStyle {
     h3FontSize = parseFloat(h3Style, "fontSize", defaults.h3.fontSize).toInt()
 
     val blockquoteStyle = style?.getMap("blockquote")
-    // TODO: handle blockquote color
+    blockquoteColor = parseColor(blockquoteStyle, "color", defaults.blockquote.color)
     blockquoteGapWidth = parseFloat(blockquoteStyle, "gapWidth", defaults.blockquote.gapWidth).toInt()
     blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth", defaults.blockquote.stripeWidth).toInt()
 
@@ -67,7 +68,7 @@ class RichTextStyle {
     olMarginLeft = parseFloat(olStyle, "marginLeft", defaults.ol.marginLeft).toInt()
 
     val ulStyle = style?.getMap("ul")
-    // TODO: handle ul bullet color
+    ulBulletColor = parseColor(ulStyle, "bulletColor", defaults.ul.bulletColor)
     ulGapWidth = parseFloat(ulStyle, "gapWidth", defaults.ul.gapWidth).toInt()
     ulMarginLeft = parseFloat(ulStyle, "marginLeft", defaults.ul.marginLeft).toInt()
     ulBulletSize = parseFloat(ulStyle, "bulletSize", defaults.ul.bulletSize).toInt()
@@ -77,22 +78,22 @@ class RichTextStyle {
     imgHeight = parseFloat(imgStyle, "height", defaults.img.height).toInt()
 
     val aStyle = style?.getMap("a")
-    // TODO: handle link color
+    aColor = parseColor(aStyle, "color", defaults.a.color)
     aUnderline = parseIsUnderline(aStyle, defaults.a.underline)
 
     val codeBlockStyle = style?.getMap("codeblock")
-    // TODO: handle code block color
-    // TODO: handle code block background color
     codeBlockRadius = parseFloat(codeBlockStyle, "borderRadius", defaults.codeBlock.radius)
+    codeBlockColor = parseColor(codeBlockStyle, "color", defaults.codeBlock.color)
+    codeBlockBackgroundColor = parseColorWithOpacity(codeBlockStyle, "backgroundColor", defaults.codeBlock.backgroundColor, 80)
 
     val inlineCodeStyle = style?.getMap("code")
-    // TODO: handle inline code color
-    // TODO: handle inline code background color
+    inlineCodeColor = parseColor(inlineCodeStyle, "color", defaults.inlineCodeStyle.color)
+    inlineCodeBackgroundColor = parseColorWithOpacity(inlineCodeStyle, "backgroundColor", defaults.inlineCodeStyle.backgroundColor, 80)
 
     val mentionStyle = style?.getMap("mention")
-    // TODO: handle mention color
-    // TODO: handle mention background color
     mentionUnderline = parseIsUnderline(mentionStyle, defaults.mentionStyle.underline)
+    mentionColor = parseColor(mentionStyle, "color", defaults.mentionStyle.color)
+    mentionBackgroundColor = parseColorWithOpacity(mentionStyle, "backgroundColor", defaults.mentionStyle.backgroundColor, 80)
   }
 
   private fun parseFloat(map: ReadableMap?, key: String, defaultValue: Float): Float {
@@ -104,6 +105,29 @@ class RichTextStyle {
 
     val fontSize = map.getDouble(key)
     return ceil(PixelUtil.toPixelFromSP(fontSize))
+  }
+
+  private fun parseColorWithOpacity(map: ReadableMap?, key: String, defaultValue: Int, opacity: Int): Int {
+    val color = parseColor(map, key, defaultValue)
+    return withOpacity(color, opacity)
+  }
+
+  private fun parseColor(map: ReadableMap?, key: String, defaultValue: Int): Int {
+    if (map == null) return defaultValue
+
+    if (!map.hasKey(key)) return defaultValue
+
+    if (map.isNull(key)) return defaultValue
+
+    val color = map.getDouble(key)
+    val parsedColor = ColorPropConverter.getColor(color, context)
+
+    return parsedColor
+  }
+
+  private fun withOpacity(color: Int, alpha: Int): Int {
+    val a = alpha.coerceIn(0, 255)
+    return (color and 0x00FFFFFF) or (a shl 24)
   }
 
   private fun parseIsUnderline(map: ReadableMap?, defaultValue: Boolean): Boolean {
@@ -150,9 +174,9 @@ class RichTextStyle {
       ul = UlStyle(30f, 26f, 20f, Color.BLACK),
       img = ImgStyle(160f, 160f),
       a = AStyle(Color.BLUE, true),
-      codeBlock = CodeBlockStyle(Color.BLACK, Color.argb(90, 250, 250, 250), 8f),
-      inlineCodeStyle = InlineCodeStyle(Color.RED, Color.argb(90, 250, 250, 250)),
-      mentionStyle = MentionStyle(Color.BLUE, Color.argb(50, 0, 0, 255), true)
+      codeBlock = CodeBlockStyle(Color.BLACK, Color.rgb(250, 250, 250), 8f),
+      inlineCodeStyle = InlineCodeStyle(Color.RED, Color.rgb(250, 250, 250)),
+      mentionStyle = MentionStyle(Color.BLUE, Color.rgb(0, 0, 255), true)
     )
   }
 }

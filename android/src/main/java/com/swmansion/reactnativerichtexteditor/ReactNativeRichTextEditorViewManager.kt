@@ -1,6 +1,7 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -131,7 +132,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
 
   @ReactProp(name = "richTextStyle")
   override fun setRichTextStyle(view: ReactNativeRichTextEditorView?, style: ReadableMap?) {
-    view?.richTextStyle = RichTextStyle(view, style)
+    view?.richTextStyle = RichTextStyle(view.context as ReactContext, style)
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
