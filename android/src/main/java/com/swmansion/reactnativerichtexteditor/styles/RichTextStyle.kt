@@ -31,6 +31,20 @@ class RichTextStyle {
   var imgWidth: Int = defaults.img.width.toInt()
   var imgHeight: Int = defaults.img.height.toInt()
 
+  var aColor: Int = defaults.a.color
+  var aUnderline: Boolean = defaults.a.underline
+
+  var codeBlockColor: Int = defaults.codeBlock.color
+  var codeBlockBackgroundColor: Int = defaults.codeBlock.backgroundColor
+  var codeBlockRadius: Float = defaults.codeBlock.radius
+
+  var inlineCodeColor: Int = defaults.inlineCodeStyle.color
+  var inlineCodeBackgroundColor: Int = defaults.inlineCodeStyle.backgroundColor
+
+  var mentionColor: Int = defaults.mentionStyle.color
+  var mentionBackgroundColor: Int = defaults.mentionStyle.backgroundColor
+  var mentionUnderline: Boolean = defaults.mentionStyle.underline
+
   constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
     mEditorView = editorView
 
@@ -45,7 +59,6 @@ class RichTextStyle {
 
     val blockquoteStyle = style?.getMap("blockquote")
     // TODO: handle blockquote color
-    // blockquoteColor = parseColor(blockquoteStyle, "borderColor", defaults.blockquote.color)
     blockquoteGapWidth = parseFloat(blockquoteStyle, "gapWidth", defaults.blockquote.gapWidth).toInt()
     blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth", defaults.blockquote.stripeWidth).toInt()
 
@@ -62,6 +75,24 @@ class RichTextStyle {
     val imgStyle = style?.getMap("img")
     imgWidth = parseFloat(imgStyle, "width", defaults.img.width).toInt()
     imgHeight = parseFloat(imgStyle, "height", defaults.img.height).toInt()
+
+    val aStyle = style?.getMap("a")
+    // TODO: handle link color
+    aUnderline = parseIsUnderline(aStyle, defaults.a.underline)
+
+    val codeBlockStyle = style?.getMap("codeblock")
+    // TODO: handle code block color
+    // TODO: handle code block background color
+    codeBlockRadius = parseFloat(codeBlockStyle, "borderRadius", defaults.codeBlock.radius)
+
+    val inlineCodeStyle = style?.getMap("code")
+    // TODO: handle inline code color
+    // TODO: handle inline code background color
+
+    val mentionStyle = style?.getMap("mention")
+    // TODO: handle mention color
+    // TODO: handle mention background color
+    mentionUnderline = parseIsUnderline(mentionStyle, defaults.mentionStyle.underline)
   }
 
   private fun parseFloat(map: ReadableMap?, key: String, defaultValue: Float): Float {
@@ -75,12 +106,26 @@ class RichTextStyle {
     return ceil(PixelUtil.toPixelFromSP(fontSize))
   }
 
+  private fun parseIsUnderline(map: ReadableMap?, defaultValue: Boolean): Boolean {
+    val underline = map?.getString("textDecorationLine")
+    val isEnabled = underline == "underline"
+    val isDisabled = underline == "none"
+
+    if (isEnabled) return true
+    if (isDisabled) return false
+    return defaultValue
+  }
+
   companion object {
     data class HeadingStyle(val fontSize: Float)
     data class BlockQuoteStyle(val color: Int, val stripeWidth: Float, val gapWidth: Float)
     data class OlStyle(val gapWidth: Float, val marginLeft: Float)
     data class UlStyle(val gapWidth: Float, val marginLeft: Float, val bulletSize: Float, val bulletColor: Int)
     data class ImgStyle(val width: Float, val height: Float)
+    data class AStyle(val color: Int, val underline: Boolean)
+    data class CodeBlockStyle(val color: Int, val backgroundColor: Int, val radius: Float)
+    data class InlineCodeStyle(val color: Int, val backgroundColor: Int)
+    data class MentionStyle(val color: Int, val backgroundColor: Int, val underline: Boolean)
 
     data class Defaults(
       val h1: HeadingStyle,
@@ -89,7 +134,11 @@ class RichTextStyle {
       val blockquote: BlockQuoteStyle,
       val ol: OlStyle,
       val ul: UlStyle,
-      val img: ImgStyle
+      val img: ImgStyle,
+      val a: AStyle,
+      val codeBlock: CodeBlockStyle,
+      val inlineCodeStyle: InlineCodeStyle,
+      val mentionStyle: MentionStyle,
     )
 
     val defaults = Defaults(
@@ -99,7 +148,11 @@ class RichTextStyle {
       blockquote = BlockQuoteStyle(Color.GRAY, 8f, 24f),
       ol = OlStyle(30f, 40f),
       ul = UlStyle(30f, 26f, 20f, Color.BLACK),
-      img = ImgStyle(160f, 160f)
+      img = ImgStyle(160f, 160f),
+      a = AStyle(Color.BLUE, true),
+      codeBlock = CodeBlockStyle(Color.BLACK, Color.argb(90, 250, 250, 250), 8f),
+      inlineCodeStyle = InlineCodeStyle(Color.RED, Color.argb(90, 250, 250, 250)),
+      mentionStyle = MentionStyle(Color.BLUE, Color.argb(50, 0, 0, 255), true)
     )
   }
 }

@@ -16,7 +16,6 @@ import ReactNativeRichTextEditorView, {
   type OnPressLink,
   type OnPressMention,
   type OnPressMentionEventInternal,
-  type RichTextStyle,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -59,6 +58,55 @@ export interface RichTextInputInstance extends NativeMethods {
 export interface OnChangeMentionEvent {
   indicator: string;
   text: string;
+}
+
+export interface RichTextStyle {
+  h1?: {
+    fontSize?: number;
+  };
+  h2?: {
+    fontSize?: number;
+  };
+  h3?: {
+    fontSize?: number;
+  };
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: number;
+    gapWidth?: number;
+  };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: number;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  mention?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  img?: {
+    width?: number;
+    height?: number;
+  };
+  ol?: {
+    marginLeft?: number;
+    gapWidth?: number;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: number;
+    marginLeft?: number;
+    gapWidth?: number;
+  };
 }
 
 export interface RichTextInputProps extends Omit<ViewProps, 'children'> {

@@ -80,6 +80,28 @@ export interface RichTextStyle {
     borderWidth?: Float;
     gapWidth?: Float;
   };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: Float;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: string;
+  };
+  mention?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+    textDecorationLine?: string;
+  };
+  img?: {
+    width?: Float;
+    height?: Float;
+  };
   ol?: {
     marginLeft?: Float;
     gapWidth?: Float;

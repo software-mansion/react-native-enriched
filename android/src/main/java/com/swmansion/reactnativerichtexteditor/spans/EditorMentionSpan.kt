@@ -1,15 +1,12 @@
 package com.swmansion.reactnativerichtexteditor.spans
 
-import android.graphics.Color
 import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
-import androidx.core.graphics.toColorInt
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-@Suppress("UNUSED_PARAMETER")
 class EditorMentionSpan(private val text: String, private val attributes: Map<String, String>, private val mentionHandler: MentionHandler, private val richTextStyle: RichTextStyle) :
   ClickableSpan(), EditorInlineSpan {
   override fun onClick(view: View) {
@@ -19,8 +16,9 @@ class EditorMentionSpan(private val text: String, private val attributes: Map<St
   override fun updateDrawState(textPaint: TextPaint) {
     super.updateDrawState(textPaint)
 
-    textPaint.color = Color.BLUE
-    textPaint.bgColor = "#33088F8F".toColorInt()
+    textPaint.color = richTextStyle.mentionColor
+    textPaint.bgColor = richTextStyle.mentionBackgroundColor
+    textPaint.isUnderlineText = richTextStyle.mentionUnderline
   }
 
   fun getAttributes(): Map<String, String> {
