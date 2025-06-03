@@ -4,6 +4,7 @@ import android.text.Editable
 import android.text.Spannable
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
@@ -32,7 +33,8 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
     }
 
     val span = type.getDeclaredConstructor().newInstance()
-    spannable.setSpan(span, minimum.coerceAtMost(maximum), maximum.coerceAtLeast(minimum), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(minimum, maximum)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   private fun <T>setAndMergeSpans(spannable: Spannable, type: Class<T>, start: Int, end: Int) {

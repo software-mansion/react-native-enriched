@@ -8,6 +8,7 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>getPreviousParagraphSpan(spannable: Spannable, s: Int, type: Class<T>): T? {
@@ -37,16 +38,18 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
   }
 
   private fun setSpan(spannable: Spannable, name: String, start: Int, end: Int) {
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+
     if (name == EditorSpans.UNORDERED_LIST) {
       val span = EditorUnorderedListSpan()
-      spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       return
     }
 
     if (name == EditorSpans.ORDERED_LIST) {
-      val index = getOrderedListIndex(spannable, start)
+      val index = getOrderedListIndex(spannable, safeStart)
       val span = EditorOrderedListSpan(index)
-      spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
