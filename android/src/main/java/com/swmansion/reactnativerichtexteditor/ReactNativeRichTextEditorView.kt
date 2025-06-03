@@ -51,13 +51,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   var isSettingValue: Boolean = false
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
-  var richTextStyle: RichTextStyle = RichTextStyle(this.context as ReactContext, null)
+  var richTextStyle: RichTextStyle = RichTextStyle(this, null)
 
+  var fontSize: Float? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
   private var detectScrollMovement = false
-  private var fontSize: Float? = null
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
@@ -234,6 +234,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
 
+    // This ensured that newly created spans will take the new font size into account
+    richTextStyle.invalidateStyles()
     updateYogaState()
   }
 

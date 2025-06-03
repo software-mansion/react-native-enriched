@@ -265,11 +265,12 @@ const richTextStyles: RichTextStyle = {
   },
   ol: {
     gapWidth: 16,
+    marginLeft: 24,
   },
   ul: {
     bulletColor: 'aquamarine',
     bulletSize: 8,
-    marginLeft: 16,
+    marginLeft: 24,
     gapWidth: 16,
   },
 };

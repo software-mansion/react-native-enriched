@@ -100,6 +100,7 @@ export interface RichTextStyle {
   };
   ol?: {
     gapWidth?: number;
+    marginLeft?: number;
   };
   ul?: {
     bulletColor?: ColorValue;

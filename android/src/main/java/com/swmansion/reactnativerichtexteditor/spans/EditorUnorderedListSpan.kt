@@ -11,7 +11,7 @@ import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
 class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
   override fun getLeadingMargin(p0: Boolean): Int {
-    return richTextStyle.ulBulletSize + richTextStyle.ulGapWidth
+    return richTextStyle.ulBulletSize + richTextStyle.ulGapWidth + richTextStyle.ulMarginLeft
   }
 
   override fun drawLeadingMargin(
