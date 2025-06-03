@@ -4,14 +4,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorOrderedListSpan(private var index: Int) : LeadingMarginSpan, EditorSpan {
-  private val leadWidth = 40
-  private val gapWidth = 30
-
+class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
   override fun getLeadingMargin(first: Boolean): Int {
-    return leadWidth + gapWidth
+    return richTextStyle.olMarginLeft + richTextStyle.olGapWidth
   }
 
   override fun drawLeadingMargin(
@@ -33,8 +31,7 @@ class EditorOrderedListSpan(private var index: Int) : LeadingMarginSpan, EditorS
       val width = paint.measureText(text)
 
       val yPosition = baseline.toFloat()
-      val xPosition = (leadWidth + x - width / 2) * dir
-
+      val xPosition = (richTextStyle.olMarginLeft + x - width / 2) * dir
       canvas.drawText(text, xPosition, yPosition, paint)
     }
   }

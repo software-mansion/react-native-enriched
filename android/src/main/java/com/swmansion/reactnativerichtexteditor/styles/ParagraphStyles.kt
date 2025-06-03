@@ -5,12 +5,13 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
-// Fixme: after adding/removing the span next line's layout is incorrect until we change selection
 class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    val span = type.getDeclaredConstructor().newInstance()
-    spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>) {
@@ -126,7 +127,7 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
         s.removeSpan(span)
       }
 
-      this.setSpan(s, config.clazz, start, end)
+      setSpan(s, config.clazz, start, end)
     }
   }
 

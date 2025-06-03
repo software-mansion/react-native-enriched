@@ -2,6 +2,7 @@ import {
   type Component,
   type RefObject,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from 'react';
 import ReactNativeRichTextEditorView, {
@@ -11,8 +12,10 @@ import ReactNativeRichTextEditorView, {
   type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnMentionEvent,
+  type OnMentionDetected,
+  type OnMentionDetectedInternal,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -26,6 +29,7 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
+import { normalizeRichTextStyle } from './normalizeRichTextStyle';
 
 export interface RichTextInputInstance extends NativeMethods {
   // General commands
@@ -57,6 +61,55 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
+export interface RichTextStyle {
+  h1?: {
+    fontSize?: number;
+  };
+  h2?: {
+    fontSize?: number;
+  };
+  h3?: {
+    fontSize?: number;
+  };
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: number;
+    gapWidth?: number;
+  };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: number;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  mention?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  img?: {
+    width?: number;
+    height?: number;
+  };
+  ol?: {
+    gapWidth?: number;
+    marginLeft?: number;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: number;
+    marginLeft?: number;
+    gapWidth?: number;
+  };
+}
+
 export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
@@ -67,13 +120,15 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  richTextStyle?: RichTextStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
+  onLinkDetected?: (e: OnLinkDetected) => void;
+  onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
@@ -107,12 +162,14 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
+  richTextStyle,
   onFocus,
   onBlur,
   onChangeText,
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onMentionDetected,
   onStartMention,
   onChangeMention,
   onEndMention,
@@ -120,6 +177,11 @@ export const RichTextInput = ({
   ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+
+  const normalizedRichTextStyle = useMemo(
+    () => normalizeRichTextStyle(richTextStyle),
+    [richTextStyle]
+  );
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -229,6 +291,19 @@ export const RichTextInput = ({
     }
   };
 
+  const handleLinkDetected = (e: NativeSyntheticEvent<OnLinkDetected>) => {
+    const { text, url } = e.nativeEvent;
+    onLinkDetected?.({ text, url });
+  };
+
+  const handleMentionDetected = (
+    e: NativeSyntheticEvent<OnMentionDetectedInternal>
+  ) => {
+    const { text, payload } = e.nativeEvent;
+    const parsedAttributes = JSON.parse(payload) as Record<string, string>;
+    onMentionDetected?.({ text, attributes: parsedAttributes });
+  };
+
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
@@ -241,12 +316,14 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
+      richTextStyle={normalizedRichTextStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}
-      onLinkDetected={onLinkDetected}
+      onLinkDetected={handleLinkDetected}
+      onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
       {...rest}

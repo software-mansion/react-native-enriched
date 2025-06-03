@@ -7,14 +7,18 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.events.OnChangeSelectionEvent
 import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
+import com.swmansion.reactnativerichtexteditor.events.OnMentionDetectedEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
+import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import org.json.JSONObject
 
 class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   var start: Int = 0
   var end: Int = 0
 
   private var previousLinkDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "url" to "")
+  private var previousMentionDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "payload" to "")
 
   fun onSelection(selStart: Int, selEnd: Int) {
     var shouldValidateStyles = false
@@ -162,9 +166,15 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, type)
     val isLinkType = type == EditorLinkSpan::class.java
+    val isMentionType = type == EditorMentionSpan::class.java
 
     if (isLinkType && spans.isEmpty()) {
       emitLinkDetectedEvent(spannable, null, start, end)
+      return null
+    }
+
+    if (isMentionType && spans.isEmpty()) {
+      emitMentionDetectedEvent(spannable, null, start, end)
       return null
     }
 
@@ -175,6 +185,8 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       if (start >= spanStart && end <= spanEnd) {
         if (isLinkType && span is EditorLinkSpan) {
           emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
+        } else if (isMentionType && span is EditorMentionSpan) {
+          emitMentionDetectedEvent(spannable, span, spanStart, spanEnd)
         }
 
         return spanStart
@@ -190,6 +202,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+
     val text = editable.substring(start, end)
     dispatcher?.dispatchEvent(OnChangeSelectionEvent(surfaceId, editorView.id, text, start ,end))
   }
@@ -208,5 +221,21 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
     dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url))
+  }
+
+  private fun emitMentionDetectedEvent(spannable: Spannable, span: EditorMentionSpan?, start: Int, end: Int) {
+    val text = spannable.substring(start, end)
+    val attributes = span?.getAttributes() ?: emptyMap()
+    val payload = JSONObject(attributes).toString()
+
+    if (text == previousMentionDetectedEvent["text"] && payload == previousMentionDetectedEvent["payload"]) return
+
+    previousMentionDetectedEvent.put("text", text)
+    previousMentionDetectedEvent.put("payload", payload)
+
+    val context = editorView.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, editorView.id, text, payload))
   }
 }

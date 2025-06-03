@@ -34,9 +34,19 @@ export interface OnChangeStateEvent {
   isMention: boolean;
 }
 
-export interface OnLinkDetectedEvent {
+export interface OnLinkDetected {
   text: string;
   url: string;
+}
+
+export interface OnMentionDetectedInternal {
+  text: string;
+  payload: string;
+}
+
+export interface OnMentionDetected {
+  text: string;
+  attributes: Record<string, string>;
 }
 
 export interface OnMentionEvent {
@@ -50,6 +60,55 @@ export interface OnChangeSelectionEvent {
   text: string;
 }
 
+export interface RichTextStyle {
+  h1?: {
+    fontSize?: Float;
+  };
+  h2?: {
+    fontSize?: Float;
+  };
+  h3?: {
+    fontSize?: Float;
+  };
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: Float;
+    gapWidth?: Float;
+  };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: Float;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: string;
+  };
+  mention?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+    textDecorationLine?: string;
+  };
+  img?: {
+    width?: Float;
+    height?: Float;
+  };
+  ol?: {
+    gapWidth?: Float;
+    marginLeft?: Float;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: Float;
+    marginLeft?: Float;
+    gapWidth?: Float;
+  };
+}
+
 export interface NativeProps extends ViewProps {
   // base props
   autoFocus?: boolean;
@@ -60,6 +119,7 @@ export interface NativeProps extends ViewProps {
   mentionIndicators: string[];
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  richTextStyle?: RichTextStyle;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<null>;
@@ -67,7 +127,8 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetected>;
+  onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
 

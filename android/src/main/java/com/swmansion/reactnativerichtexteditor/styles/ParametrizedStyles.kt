@@ -9,6 +9,7 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 import java.io.File
 
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
@@ -16,8 +17,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   var mentionIndicators: Array<String> = emptyArray<String>()
 
   fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
-    val linkHandler = editorView.linkHandler ?: return
-
     val spannable = editorView.text as SpannableStringBuilder
     val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
     for (span in spans) {
@@ -31,8 +30,11 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     val spanEnd = start + text.length
-    val span = EditorLinkSpan(url, linkHandler)
-    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val span = EditorLinkSpan(url, editorView.richTextStyle)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    editorView.selection?.validateStyles()
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {
@@ -62,7 +64,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
-    val linkHandler = editorView.linkHandler ?: return
     val spannable = editorView.text as Spannable
     val (word, start, end) = result
 
@@ -75,8 +76,9 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     if (urlPattern.matches()) {
-      val span = EditorLinkSpan(word, linkHandler)
-      spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      val span = EditorLinkSpan(word, editorView.richTextStyle)
+      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
@@ -126,8 +128,9 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     val uri = Uri.fromFile(File(src))
-    val span = EditorImageSpan(editorView.context, uri)
-    spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val span = EditorImageSpan(editorView.context, uri, editorView.richTextStyle)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {
@@ -144,7 +147,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   fun setMentionSpan(text: String, attributes: Map<String, String>) {
-    val mentionHandler = editorView.mentionHandler ?: return
     val selection = editorView.selection ?: return
 
     val spannable = editorView.text as SpannableStringBuilder
@@ -158,8 +160,11 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     var start = mentionStart ?: return
     spannable.replace(start, selectionEnd, text)
 
-    val span = EditorMentionSpan(text, attributes, mentionHandler)
+    val span = EditorMentionSpan(text, attributes, editorView.richTextStyle)
     val spanEnd = start + text.length
-    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    editorView.selection.validateStyles()
   }
 }

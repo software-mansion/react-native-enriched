@@ -1,5 +1,6 @@
 package com.swmansion.reactnativerichtexteditor.utils
 
+import android.text.Spannable
 import android.util.Log
 import org.json.JSONObject
 
@@ -18,4 +19,11 @@ fun jsonStringToStringMap(json: String): Map<String, String> {
   }
 
   return result
+}
+
+fun Spannable.getSafeSpanBoundaries(start: Int, end: Int): Pair<Int, Int> {
+  val safeStart = start.coerceAtMost(end).coerceAtLeast(0)
+  val safeEnd = end.coerceAtLeast(start).coerceAtMost(this.length)
+
+  return Pair(safeStart, safeEnd)
 }

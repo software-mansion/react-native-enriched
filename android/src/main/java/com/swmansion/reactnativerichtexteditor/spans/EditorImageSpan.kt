@@ -5,18 +5,21 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorImageSpan : ImageSpan, EditorSpan {
-  private val width = 160
-  private val height = 160
+class EditorImageSpan : ImageSpan, EditorInlineSpan {
+  private var richTextStyle: RichTextStyle? = null
 
-  constructor(context: Context, uri: Uri) : super(context, uri, DynamicDrawableSpan.ALIGN_BASELINE)
+  constructor(context: Context, uri: Uri, richTextStyle: RichTextStyle, ) : super(context, uri, ALIGN_BASELINE) {
+    this.richTextStyle = richTextStyle
+  }
 
-  constructor(drawable: Drawable, source: String) : super(drawable, source, DynamicDrawableSpan.ALIGN_BASELINE)
+  constructor(drawable: Drawable, source: String, richTextStyle: RichTextStyle) : super(drawable, source, ALIGN_BASELINE) {
+    this.richTextStyle = richTextStyle
+  }
 
   override fun draw(
     canvas: Canvas, text: CharSequence?, start: Int, end: Int, x: Float,
@@ -32,7 +35,7 @@ class EditorImageSpan : ImageSpan, EditorSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, width, height)
+    drawable.setBounds(0, 0, richTextStyle!!.imgWidth, richTextStyle!!.imgHeight)
     return drawable
   }
 }

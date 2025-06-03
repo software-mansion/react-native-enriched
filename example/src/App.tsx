@@ -10,11 +10,12 @@ import {
   RichTextInput,
   type OnChangeTextEvent,
   type RichTextInputInstance,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnChangeMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
+  type RichTextStyle,
 } from '@swmansion/react-native-rich-text-editor';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -26,7 +27,7 @@ import { type MentionItem, useMention } from './useMention';
 
 type StylesState = OnChangeStateEvent;
 
-type CurrentLinkState = OnLinkDetectedEvent;
+type CurrentLinkState = OnLinkDetected;
 
 interface Selection {
   start: number;
@@ -83,12 +84,6 @@ export default function App() {
 
   const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
     setStylesState(e.nativeEvent);
-  };
-
-  const handleLinkDetected = async (
-    e: NativeSyntheticEvent<OnLinkDetectedEvent>
-  ) => {
-    setCurrentLink(e.nativeEvent);
   };
 
   const handleFocus = () => {
@@ -181,6 +176,7 @@ export default function App() {
             ref={ref}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
+            richTextStyle={richTextStyles}
             placeholder="Type something here..."
             placeholderTextColor="blue"
             selectionColor="red"
@@ -189,7 +185,8 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
-            onLinkDetected={handleLinkDetected}
+            onLinkDetected={setCurrentLink}
+            onMentionDetected={console.log}
             onStartMention={openMentionPopup}
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
@@ -228,6 +225,55 @@ export default function App() {
     </>
   );
 }
+
+const richTextStyles: RichTextStyle = {
+  h1: {
+    fontSize: 40,
+  },
+  h2: {
+    fontSize: 32,
+  },
+  h3: {
+    fontSize: 24,
+  },
+  blockquote: {
+    borderColor: 'navy',
+    borderWidth: 4,
+    gapWidth: 16,
+  },
+  codeblock: {
+    color: 'green',
+    borderRadius: 8,
+    backgroundColor: 'aquamarine',
+  },
+  code: {
+    color: 'purple',
+    backgroundColor: 'yellow',
+  },
+  a: {
+    color: 'green',
+    textDecorationLine: 'underline',
+  },
+  mention: {
+    color: 'red',
+    backgroundColor: 'lightyellow',
+    textDecorationLine: 'underline',
+  },
+  img: {
+    width: 50,
+    height: 50,
+  },
+  ol: {
+    gapWidth: 16,
+    marginLeft: 24,
+  },
+  ul: {
+    bulletColor: 'aquamarine',
+    bulletSize: 8,
+    marginLeft: 24,
+    gapWidth: 16,
+  },
+};
 
 const styles = StyleSheet.create({
   container: {
