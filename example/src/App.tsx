@@ -3,8 +3,6 @@ import {
   StyleSheet,
   Text,
   type NativeSyntheticEvent,
-  Linking,
-  Alert,
   TextInput,
   ScrollView,
 } from 'react-native';
@@ -12,9 +10,7 @@ import {
   RichTextInput,
   type OnChangeTextEvent,
   type RichTextInputInstance,
-  type OnPressMention,
-  type OnPressLink,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnChangeMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
@@ -31,7 +27,7 @@ import { type MentionItem, useMention } from './useMention';
 
 type StylesState = OnChangeStateEvent;
 
-type CurrentLinkState = OnLinkDetectedEvent;
+type CurrentLinkState = OnLinkDetected;
 
 interface Selection {
   start: number;
@@ -88,17 +84,6 @@ export default function App() {
 
   const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
     setStylesState(e.nativeEvent);
-  };
-
-  const handleLinkPress = async ({ url }: OnPressLink) => {
-    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
-    await Linking.openURL(formattedUrl);
-  };
-
-  const handleLinkDetected = async (
-    e: NativeSyntheticEvent<OnLinkDetectedEvent>
-  ) => {
-    setCurrentLink(e.nativeEvent);
   };
 
   const handleFocus = () => {
@@ -164,13 +149,6 @@ export default function App() {
     closeMentionPopup();
   };
 
-  const handleMentionPress = ({ text, attributes }: OnPressMention) => {
-    Alert.alert(
-      'Mention Pressed',
-      `Text: ${text}\nAttributes: ${JSON.stringify(attributes)}`
-    );
-  };
-
   const handleFocusEvent = () => {
     console.log('Input focused');
   };
@@ -207,12 +185,11 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
-            onPressLink={handleLinkPress}
-            onLinkDetected={handleLinkDetected}
+            onLinkDetected={setCurrentLink}
+            onMentionDetected={console.log}
             onStartMention={openMentionPopup}
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
-            onPressMention={handleMentionPress}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}

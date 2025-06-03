@@ -9,6 +9,7 @@ import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan {
   override fun getLeadingMargin(first: Boolean): Int {
+    return leadWidth + richTextStyle.olGapWidth
     return richTextStyle.olMarginLeft + richTextStyle.olGapWidth
   }
 
