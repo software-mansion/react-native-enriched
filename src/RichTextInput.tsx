@@ -2,6 +2,7 @@ import {
   type Component,
   type RefObject,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from 'react';
 import ReactNativeRichTextEditorView, {
@@ -28,6 +29,7 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
+import { normalizeRichTextStyle } from './normalizeRichTextStyle';
 
 export interface RichTextInputInstance extends NativeMethods {
   // General commands
@@ -59,6 +61,54 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
+export interface RichTextStyle {
+  h1?: {
+    fontSize?: number;
+  };
+  h2?: {
+    fontSize?: number;
+  };
+  h3?: {
+    fontSize?: number;
+  };
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: number;
+    gapWidth?: number;
+  };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: number;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  mention?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+    textDecorationLine?: 'underline' | 'none';
+  };
+  img?: {
+    width?: number;
+    height?: number;
+  };
+  ol?: {
+    gapWidth?: number;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: number;
+    marginLeft?: number;
+    gapWidth?: number;
+  };
+}
+
 export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<RichTextInputInstance | null>;
   autoFocus?: boolean;
@@ -69,6 +119,7 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  richTextStyle?: RichTextStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -110,6 +161,7 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
+  richTextStyle,
   onFocus,
   onBlur,
   onChangeText,
@@ -124,6 +176,11 @@ export const RichTextInput = ({
   ...rest
 }: RichTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+
+  const normalizedRichTextStyle = useMemo(
+    () => normalizeRichTextStyle(richTextStyle),
+    [richTextStyle]
+  );
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -258,6 +315,7 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
+      richTextStyle={normalizedRichTextStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
       onChangeText={onChangeText}

@@ -30,7 +30,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     val spanEnd = start + text.length
-    val span = EditorLinkSpan(url)
+    val span = EditorLinkSpan(url, editorView.richTextStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
@@ -76,7 +76,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     if (urlPattern.matches()) {
-      val span = EditorLinkSpan(word)
+      val span = EditorLinkSpan(word, editorView.richTextStyle)
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
@@ -128,7 +128,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     val uri = Uri.fromFile(File(src))
-    val span = EditorImageSpan(editorView.context, uri)
+    val span = EditorImageSpan(editorView.context, uri, editorView.richTextStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
@@ -160,7 +160,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     var start = mentionStart ?: return
     spannable.replace(start, selectionEnd, text)
 
-    val span = EditorMentionSpan(text, attributes)
+    val span = EditorMentionSpan(text, attributes, editorView.richTextStyle)
     val spanEnd = start + text.length
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -1,7 +1,6 @@
 package com.swmansion.reactnativerichtexteditor.spans
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -9,14 +8,12 @@ import android.text.TextPaint
 import android.text.style.CharacterStyle
 import android.text.style.LineBackgroundSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
+import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorCodeBlockSpan : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan {
-  private val radius = 8f
-  private val typeface = Typeface.MONOSPACE
-  private val backgroundColor = Color.argb(90, 250, 250, 250)
-
+class EditorCodeBlockSpan(private val richTextStyle: RichTextStyle) : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan {
   override fun updateDrawState(paint: TextPaint?) {
-    paint?.typeface = typeface
+    paint?.typeface = Typeface.MONOSPACE
+    paint?.color = richTextStyle.codeBlockColor
   }
 
   override fun drawBackground(
@@ -32,10 +29,10 @@ class EditorCodeBlockSpan : CharacterStyle(), LineBackgroundSpan, EditorParagrap
     end: Int,
     lineNum: Int
   ) {
-    val previousColor = p.color;
-    p.color = backgroundColor;
+    val previousColor = p.color
+    p.color = richTextStyle.codeBlockBackgroundColor
     val rect = RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
-    canvas.drawRoundRect(rect, radius, radius, p);
+    canvas.drawRoundRect(rect, richTextStyle.codeBlockRadius, richTextStyle.codeBlockRadius, p)
     p.color = previousColor
   }
 }

@@ -9,7 +9,7 @@ import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    val span = type.getDeclaredConstructor().newInstance()
+    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }

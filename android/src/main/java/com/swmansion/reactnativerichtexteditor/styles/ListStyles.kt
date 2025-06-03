@@ -41,14 +41,14 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
 
     if (name == EditorSpans.UNORDERED_LIST) {
-      val span = EditorUnorderedListSpan()
+      val span = EditorUnorderedListSpan(editorView.richTextStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       return
     }
 
     if (name == EditorSpans.ORDERED_LIST) {
       val index = getOrderedListIndex(spannable, safeStart)
-      val span = EditorOrderedListSpan(index)
+      val span = EditorOrderedListSpan(index, editorView.richTextStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }

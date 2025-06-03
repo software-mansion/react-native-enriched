@@ -154,6 +154,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isH1;
       case 'heading-2':
         return stylesState.isH2;
+      case 'heading-3':
+        return stylesState.isH3;
       case 'code-block':
         return stylesState.isCodeBlock;
       case 'quote':
