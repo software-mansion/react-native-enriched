@@ -9,6 +9,7 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 import java.io.File
 
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
@@ -30,7 +31,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
 
     val spanEnd = start + text.length
     val span = EditorLinkSpan(url)
-    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
     editorView.selection?.validateStyles()
   }
@@ -75,7 +77,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
 
     if (urlPattern.matches()) {
       val span = EditorLinkSpan(word)
-      spannable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
@@ -126,7 +129,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
 
     val uri = Uri.fromFile(File(src))
     val span = EditorImageSpan(editorView.context, uri)
-    spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {
@@ -158,7 +162,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
 
     val span = EditorMentionSpan(text, attributes)
     val spanEnd = start + text.length
-    spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
     editorView.selection.validateStyles()
   }
