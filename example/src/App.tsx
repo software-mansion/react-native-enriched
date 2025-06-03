@@ -10,7 +10,7 @@ import {
   RichTextInput,
   type OnChangeTextEvent,
   type RichTextInputInstance,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnChangeMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
@@ -26,7 +26,7 @@ import { type MentionItem, useMention } from './useMention';
 
 type StylesState = OnChangeStateEvent;
 
-type CurrentLinkState = OnLinkDetectedEvent;
+type CurrentLinkState = OnLinkDetected;
 
 interface Selection {
   start: number;
@@ -83,12 +83,6 @@ export default function App() {
 
   const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
     setStylesState(e.nativeEvent);
-  };
-
-  const handleLinkDetected = async (
-    e: NativeSyntheticEvent<OnLinkDetectedEvent>
-  ) => {
-    setCurrentLink(e.nativeEvent);
   };
 
   const handleFocus = () => {
@@ -189,7 +183,8 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
-            onLinkDetected={handleLinkDetected}
+            onLinkDetected={setCurrentLink}
+            onMentionDetected={console.log}
             onStartMention={openMentionPopup}
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}

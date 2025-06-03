@@ -11,8 +11,10 @@ import ReactNativeRichTextEditorView, {
   type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnMentionEvent,
+  type OnMentionDetected,
+  type OnMentionDetectedInternal,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -73,7 +75,8 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
+  onLinkDetected?: (e: OnLinkDetected) => void;
+  onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
@@ -113,6 +116,7 @@ export const RichTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onMentionDetected,
   onStartMention,
   onChangeMention,
   onEndMention,
@@ -229,6 +233,19 @@ export const RichTextInput = ({
     }
   };
 
+  const handleLinkDetected = (e: NativeSyntheticEvent<OnLinkDetected>) => {
+    const { text, url } = e.nativeEvent;
+    onLinkDetected?.({ text, url });
+  };
+
+  const handleMentionDetected = (
+    e: NativeSyntheticEvent<OnMentionDetectedInternal>
+  ) => {
+    const { text, payload } = e.nativeEvent;
+    const parsedAttributes = JSON.parse(payload) as Record<string, string>;
+    onMentionDetected?.({ text, attributes: parsedAttributes });
+  };
+
   return (
     <ReactNativeRichTextEditorView
       ref={nativeRef}
@@ -246,7 +263,8 @@ export const RichTextInput = ({
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}
-      onLinkDetected={onLinkDetected}
+      onLinkDetected={handleLinkDetected}
+      onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
       {...rest}
