@@ -24,8 +24,6 @@ import com.swmansion.reactnativerichtexteditor.events.OnChangeTextEvent
 import com.swmansion.reactnativerichtexteditor.events.OnInputFocusEvent
 import com.swmansion.reactnativerichtexteditor.events.OnLinkDetectedEvent
 import com.swmansion.reactnativerichtexteditor.events.OnMentionEvent
-import com.swmansion.reactnativerichtexteditor.events.OnPressLinkEvent
-import com.swmansion.reactnativerichtexteditor.events.OnPressMentionEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.utils.jsonStringToStringMap
 
@@ -70,10 +68,8 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
      map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
      map.put(OnChangeHtmlEvent.EVENT_NAME, mapOf("registrationName" to OnChangeHtmlEvent.EVENT_NAME))
      map.put(OnChangeStateEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStateEvent.EVENT_NAME))
-     map.put(OnPressLinkEvent.EVENT_NAME, mapOf("registrationName" to OnPressLinkEvent.EVENT_NAME))
      map.put(OnLinkDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnLinkDetectedEvent.EVENT_NAME))
      map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
-     map.put(OnPressMentionEvent.EVENT_NAME, mapOf("registrationName" to OnPressMentionEvent.EVENT_NAME))
      map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
 
      return map

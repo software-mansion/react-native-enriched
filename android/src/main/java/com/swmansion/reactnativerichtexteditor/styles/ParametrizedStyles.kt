@@ -17,8 +17,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   var mentionIndicators: Array<String> = emptyArray<String>()
 
   fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
-    val linkHandler = editorView.linkHandler ?: return
-
     val spannable = editorView.text as SpannableStringBuilder
     val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
     for (span in spans) {
@@ -32,7 +30,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     val spanEnd = start + text.length
-    val span = EditorLinkSpan(url, linkHandler)
+    val span = EditorLinkSpan(url)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
@@ -64,7 +62,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
-    val linkHandler = editorView.linkHandler ?: return
     val spannable = editorView.text as Spannable
     val (word, start, end) = result
 
@@ -77,7 +74,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
 
     if (urlPattern.matches()) {
-      val span = EditorLinkSpan(word, linkHandler)
+      val span = EditorLinkSpan(word)
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
@@ -148,7 +145,6 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   fun setMentionSpan(text: String, attributes: Map<String, String>) {
-    val mentionHandler = editorView.mentionHandler ?: return
     val selection = editorView.selection ?: return
 
     val spannable = editorView.text as SpannableStringBuilder
@@ -162,7 +158,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     var start = mentionStart ?: return
     spannable.replace(start, selectionEnd, text)
 
-    val span = EditorMentionSpan(text, attributes, mentionHandler)
+    val span = EditorMentionSpan(text, attributes)
     val spanEnd = start + text.length
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
