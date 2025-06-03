@@ -12,11 +12,10 @@ import ReactNativeRichTextEditorView, {
   type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
-  type OnLinkDetectedEvent,
+  type OnLinkDetected,
   type OnMentionEvent,
-  type OnPressLink,
-  type OnPressMention,
-  type OnPressMentionEventInternal,
+  type OnMentionDetected,
+  type OnMentionDetectedInternal,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -127,12 +126,11 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  onPressLink?: (e: OnPressLink) => void;
-  onLinkDetected?: (e: NativeSyntheticEvent<OnLinkDetectedEvent>) => void;
+  onLinkDetected?: (e: OnLinkDetected) => void;
+  onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
-  onPressMention?: (e: OnPressMention) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
 }
 
@@ -169,12 +167,11 @@ export const RichTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
-  onPressLink,
   onLinkDetected,
+  onMentionDetected,
   onStartMention,
   onChangeMention,
   onEndMention,
-  onPressMention,
   onChangeSelection,
   ...rest
 }: RichTextInputProps) => {
@@ -293,17 +290,17 @@ export const RichTextInput = ({
     }
   };
 
-  const handleMentionPress = (
-    e: NativeSyntheticEvent<OnPressMentionEventInternal>
-  ) => {
-    const { text, attributes } = e.nativeEvent;
-    const parsedAttributes = JSON.parse(attributes) as Record<string, string>;
-
-    onPressMention?.({ text, attributes: parsedAttributes });
+  const handleLinkDetected = (e: NativeSyntheticEvent<OnLinkDetected>) => {
+    const { text, url } = e.nativeEvent;
+    onLinkDetected?.({ text, url });
   };
 
-  const handleLinkPress = (e: NativeSyntheticEvent<OnPressLink>) => {
-    onPressLink?.({ url: e.nativeEvent.url });
+  const handleMentionDetected = (
+    e: NativeSyntheticEvent<OnMentionDetectedInternal>
+  ) => {
+    const { text, payload } = e.nativeEvent;
+    const parsedAttributes = JSON.parse(payload) as Record<string, string>;
+    onMentionDetected?.({ text, attributes: parsedAttributes });
   };
 
   return (
@@ -324,10 +321,9 @@ export const RichTextInput = ({
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       onChangeState={onChangeState}
-      onLinkDetected={onLinkDetected}
-      onPressLink={handleLinkPress}
+      onLinkDetected={handleLinkDetected}
+      onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
-      onPressMention={handleMentionPress}
       onChangeSelection={onChangeSelection}
       {...rest}
     />

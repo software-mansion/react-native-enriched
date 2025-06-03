@@ -1,12 +1,12 @@
 import { type FC, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
-import type { OnLinkDetectedEvent } from '@swmansion/react-native-rich-text-editor';
+import type { OnLinkDetected } from '@swmansion/react-native-rich-text-editor';
 import { Icon } from './Icon';
 
 interface LinkModalProps {
   isOpen: boolean;
-  defaults: OnLinkDetectedEvent;
+  defaults: OnLinkDetected;
   onClose: () => void;
   onSubmit: (text: string, url: string) => void;
 }

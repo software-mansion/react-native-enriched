@@ -8,13 +8,6 @@ class MentionHandler(private val editorView: ReactNativeRichTextEditorView) {
   private var previousText: String? = null
   private var previousIndicator: String? = null
 
-  fun onPress(text: String, attributes: Map<String, String>) {
-    val context = editorView.context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnPressMentionEvent(surfaceId, editorView.id, text, attributes))
-  }
-
   fun endMention() {
     val indicator = previousIndicator
     if (indicator == null) return
