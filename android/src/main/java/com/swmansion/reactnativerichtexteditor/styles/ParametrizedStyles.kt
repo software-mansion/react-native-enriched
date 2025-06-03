@@ -31,6 +31,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     val spanEnd = start + text.length
     val span = EditorLinkSpan(url)
     spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    editorView.selection?.validateStyles()
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {
@@ -157,5 +159,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     val span = EditorMentionSpan(text, attributes)
     val spanEnd = start + text.length
     spannable.setSpan(span, start, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    editorView.selection.validateStyles()
   }
 }

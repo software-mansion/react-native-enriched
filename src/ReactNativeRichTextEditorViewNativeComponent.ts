@@ -34,9 +34,19 @@ export interface OnChangeStateEvent {
   isMention: boolean;
 }
 
-export interface OnLinkDetectedEvent {
+export interface OnLinkDetected {
   text: string;
   url: string;
+}
+
+export interface OnMentionDetectedInternal {
+  text: string;
+  payload: string;
+}
+
+export interface OnMentionDetected {
+  text: string;
+  attributes: Record<string, string>;
 }
 
 export interface OnMentionEvent {
@@ -67,7 +77,8 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetected>;
+  onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
 
