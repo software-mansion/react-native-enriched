@@ -10,6 +10,7 @@ import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorHeadingSpan
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
+import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) : SpanWatcher {
   private var previousHtml: String? = null
@@ -42,9 +43,10 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
     class EmptySpan : ParagraphStyle {}
 
     if (what is EditorHeadingSpan) {
-      val finalStart = (end + 1).coerceAtMost(text.length)
+      val finalStart = (end + 1)
       val finalEnd = text.length
-      text.setSpan(EmptySpan(), finalStart, finalEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      val (safeStart, safeEnd) = text.getSafeSpanBoundaries(finalStart, finalEnd)
+      text.setSpan(EmptySpan(), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
