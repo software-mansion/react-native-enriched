@@ -8,7 +8,6 @@ import android.graphics.Rect
 import android.os.Build
 import android.text.Spannable
 import android.text.StaticLayout
-import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -24,7 +23,6 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
-import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.events.MentionHandler
 import com.swmansion.reactnativerichtexteditor.events.OnInputBlurEvent
 import com.swmansion.reactnativerichtexteditor.events.OnInputFocusEvent
@@ -51,7 +49,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingValue: Boolean = false
 
-  var linkHandler: LinkHandler? = LinkHandler(this)
   val mentionHandler: MentionHandler? = MentionHandler(this)
 
   private var autoFocus = false
@@ -92,9 +89,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     isVerticalScrollBarEnabled = true
     gravity = android.view.Gravity.TOP or android.view.Gravity.START
     inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
-
-    // required to make ClickableSpans really clickable
-    movementMethod = LinkMovementMethod.getInstance()
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
@@ -170,7 +164,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val isPTagRecognized = value.startsWith("<p>") && value.endsWith("</p>")
     val isHtml = isHtmlTagRecognized || isPTagRecognized
     if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null, linkHandler, mentionHandler)
+      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, null, null)
       setText(parsed)
     } else {
       setText(value)

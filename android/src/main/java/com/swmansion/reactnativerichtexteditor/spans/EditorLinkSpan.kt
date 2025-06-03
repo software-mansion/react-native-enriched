@@ -4,13 +4,13 @@ import android.graphics.Color
 import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
-import com.swmansion.reactnativerichtexteditor.events.LinkHandler
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
 
 
-class EditorLinkSpan(private val url: String, private val linkHandler: LinkHandler) : ClickableSpan(), EditorSpan {
+class EditorLinkSpan(private val url: String) : ClickableSpan(), EditorSpan {
   override fun onClick(view: View) {
-    linkHandler.onPress(url)
+    // Do nothing, links inside the editor are not clickable.
+    // We are using `ClickableSpan` to allow the text to be styled as a link.
   }
 
   override fun updateDrawState(textPaint: TextPaint) {

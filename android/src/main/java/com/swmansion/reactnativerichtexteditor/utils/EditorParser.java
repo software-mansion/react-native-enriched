@@ -15,8 +15,6 @@ import android.text.style.ParagraphStyle;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
 
-import com.swmansion.reactnativerichtexteditor.events.LinkHandler;
-import com.swmansion.reactnativerichtexteditor.events.MentionHandler;
 import com.swmansion.reactnativerichtexteditor.spans.EditorBlockQuoteSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorBoldSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorCodeBlockSpan;
@@ -134,7 +132,7 @@ public class EditorParser {
    */
   public static final int FROM_HTML_OPTION_USE_CSS_COLORS = 0x00000100;
   /**
-   * Flags for {@link #fromHtml(String, int, ImageGetter, TagHandler, LinkHandler, MentionHandler)}: Separate block-level
+   * Flags for {@link #fromHtml(String, int, ImageGetter, TagHandler)}: Separate block-level
    * elements with line breaks (single newline character) in between. This inverts the
    * {@link Spanned} to HTML string conversion done with the option
    * {@link #TO_HTML_PARAGRAPH_LINES_INDIVIDUAL}.
@@ -159,7 +157,7 @@ public class EditorParser {
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
   public static Spanned fromHtml(String source, int flags) {
-    return fromHtml(source, flags, null, null, null, null);
+    return fromHtml(source, flags, null, null);
   }
   /**
    * Lazy initialization holder for HTML parser. This class will
@@ -177,9 +175,7 @@ public class EditorParser {
    *
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
-  public static Spanned fromHtml(String source, int flags, ImageGetter imageGetter,
-                                 TagHandler tagHandler, LinkHandler linkHandler,
-                                 MentionHandler mentionHandler) {
+  public static Spanned fromHtml(String source, int flags, ImageGetter imageGetter, TagHandler tagHandler) {
     Parser parser = new Parser();
     try {
       parser.setProperty(Parser.schemaProperty, HtmlParser.schema);
@@ -188,7 +184,7 @@ public class EditorParser {
       throw new RuntimeException(e);
     }
     HtmlToSpannedConverter converter =
-      new HtmlToSpannedConverter(source, imageGetter, tagHandler, linkHandler, mentionHandler, parser, flags);
+      new HtmlToSpannedConverter(source, imageGetter, tagHandler, parser, flags);
     return converter.convert();
   }
   /**
@@ -560,8 +556,6 @@ class HtmlToSpannedConverter implements ContentHandler {
   private final SpannableStringBuilder mSpannableStringBuilder;
   private final EditorParser.ImageGetter mImageGetter;
   private final EditorParser.TagHandler mTagHandler;
-  private final LinkHandler mlinkHandler;
-  private final MentionHandler mMentionHandler;
   private final int mFlags;
   private static Pattern sTextAlignPattern;
   private static Pattern sForegroundColorPattern;
@@ -617,13 +611,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     return sTextDecorationPattern;
   }
 
-  public HtmlToSpannedConverter(String source, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, LinkHandler linkHandler, MentionHandler mentionHandler, Parser parser, int flags) {
+  public HtmlToSpannedConverter(String source, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, Parser parser, int flags) {
     mSource = source;
     mSpannableStringBuilder = new SpannableStringBuilder();
     mImageGetter = imageGetter;
     mTagHandler = tagHandler;
-    mlinkHandler = linkHandler;
-    mMentionHandler = mentionHandler;
     mReader = parser;
     mFlags = flags;
   }
@@ -1062,7 +1054,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     Href h = getLast(text, Href.class);
     if (h != null) {
       if (h.mHref != null) {
-        setSpanFromMark(text, h, new EditorLinkSpan(h.mHref, this.mlinkHandler));
+        setSpanFromMark(text, h, new EditorLinkSpan(h.mHref));
       }
     }
   }
@@ -1086,7 +1078,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     if (m == null) return;
     if (m.mText == null) return;
 
-    setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mAttributes, this.mMentionHandler));
+    setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mAttributes));
   }
 
   private int getHtmlColor(String color) {

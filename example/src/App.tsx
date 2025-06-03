@@ -3,8 +3,6 @@ import {
   StyleSheet,
   Text,
   type NativeSyntheticEvent,
-  Linking,
-  Alert,
   TextInput,
   ScrollView,
 } from 'react-native';
@@ -12,8 +10,6 @@ import {
   RichTextInput,
   type OnChangeTextEvent,
   type RichTextInputInstance,
-  type OnPressMention,
-  type OnPressLink,
   type OnLinkDetectedEvent,
   type OnChangeMentionEvent,
   type OnChangeHtmlEvent,
@@ -89,11 +85,6 @@ export default function App() {
     setStylesState(e.nativeEvent);
   };
 
-  const handleLinkPress = async ({ url }: OnPressLink) => {
-    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
-    await Linking.openURL(formattedUrl);
-  };
-
   const handleLinkDetected = async (
     e: NativeSyntheticEvent<OnLinkDetectedEvent>
   ) => {
@@ -163,13 +154,6 @@ export default function App() {
     closeMentionPopup();
   };
 
-  const handleMentionPress = ({ text, attributes }: OnPressMention) => {
-    Alert.alert(
-      'Mention Pressed',
-      `Text: ${text}\nAttributes: ${JSON.stringify(attributes)}`
-    );
-  };
-
   const handleFocusEvent = () => {
     console.log('Input focused');
   };
@@ -205,12 +189,10 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
-            onPressLink={handleLinkPress}
             onLinkDetected={handleLinkDetected}
             onStartMention={openMentionPopup}
             onChangeMention={handleChangeMention}
             onEndMention={closeMentionPopup}
-            onPressMention={handleMentionPress}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
