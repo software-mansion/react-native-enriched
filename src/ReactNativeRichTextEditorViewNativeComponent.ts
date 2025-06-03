@@ -34,10 +34,6 @@ export interface OnChangeStateEvent {
   isMention: boolean;
 }
 
-export interface OnPressLink {
-  url: string;
-}
-
 export interface OnLinkDetectedEvent {
   text: string;
   url: string;
@@ -46,17 +42,6 @@ export interface OnLinkDetectedEvent {
 export interface OnMentionEvent {
   indicator: string;
   text: string | null;
-}
-
-// Codegen does not support `Record<string, string>` yet, so we use `string` which is JSON.parsed later
-export interface OnPressMentionEventInternal {
-  text: string;
-  attributes: string;
-}
-
-export interface OnPressMention {
-  text: string;
-  attributes: Record<string, string>;
 }
 
 export interface OnChangeSelectionEvent {
@@ -82,10 +67,8 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onPressLink?: DirectEventHandler<OnPressLink>;
   onLinkDetected?: DirectEventHandler<OnLinkDetectedEvent>;
   onMention?: DirectEventHandler<OnMentionEvent>;
-  onPressMention?: DirectEventHandler<OnPressMentionEventInternal>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
 
   // Style related props - used for generating proper setters in component's manager

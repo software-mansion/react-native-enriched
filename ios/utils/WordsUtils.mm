@@ -31,7 +31,11 @@
       rightIt += 1;
     }
   }
-  rightIt = MIN(text.length - 1, rightIt);
+  rightIt = MIN(NSInteger(text.length - 1), rightIt);
+  
+  if(leftIt > rightIt) {
+    return [[NSArray alloc] init];
+  }
   
   NSMutableArray<NSDictionary *> *separatedWords = [[NSMutableArray<NSDictionary *> alloc] init];
   NSMutableString *currentWord = [[NSMutableString alloc] init];
@@ -47,8 +51,8 @@
           @"range": [NSValue valueWithRange:NSMakeRange(currentRangeStart, currentWord.length)]
         }];
         [currentWord setString:@""];
-        currentRangeStart = currentIdx + 1;
       }
+      currentRangeStart = currentIdx + 1;
     } else {
       [currentWord appendFormat:@"%C", charAtIndex];
     }

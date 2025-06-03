@@ -38,15 +38,17 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   [_editor->textView.textStorage beginEditing];
   for(StylePair *pair in links) {
     NSRange linkRange = [self getFullLinkRangeAt:[pair.rangeValue rangeValue].location];
-    [_editor->textView.textStorage removeAttribute:NSLinkAttributeName range:linkRange];
     [_editor->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
     [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
+    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:range];
+    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:range];
   }
   [_editor->textView.textStorage endEditing];
-  // remove typing attributes as well
+  
+  // adjust typing attributes as well
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
-  // no need to remove ManualLink or AutomaticLink since they don't work with typingAttributes
+  newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -54,14 +56,16 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 - (void)removeTypingAttributes {
   NSRange linkRange = [self getFullLinkRangeAt:_editor->textView.selectedRange.location];
   [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage removeAttribute:NSLinkAttributeName range:linkRange];
   [_editor->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
   [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
+  [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+  [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:linkRange];
   [_editor->textView.textStorage endEditing];
-  // remove typing attributes as well
+  
+  // adjust typing attributes as well
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
-  // no need to remove ManualLink or AutomaticLink since they don't work with typingAttributess
+  newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -105,7 +109,8 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   NSString *currentText = [_editor->textView.textStorage.string substringWithRange:range];
   
   NSMutableDictionary<NSAttributedStringKey, id> *newAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-  newAttrs[NSLinkAttributeName] = [url copy];
+  newAttrs[NSForegroundColorAttributeName] = [UIColor systemBlueColor]; // TODO: LINK APPEARANCE CONFIG
+  newAttrs[NSUnderlineColorAttributeName] = [UIColor systemBlueColor]; // TODO: LINK APPEARANCE CONFIG
   if(manual) {
     newAttrs[ManualLinkAttributeName] = [url copy];
   } else {
@@ -128,6 +133,8 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     // replace text with link
     [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:newAttrs];
   }
+  
+  [self manageLinkTypingAttributes];
 }
 
 // get exact link data at the given location if it exists
@@ -205,40 +212,32 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 }
 
 - (void)manageLinkTypingAttributes {
-  // adding text before or after a link shouldn't be considered a link
-  // that's why we remove typing attributes in these cases here
-  // also removes the attribute for mentions
-  if(_editor->textView.selectedRange.length > 0) {
-    return;
-  }
+  // link's typing attribtues need to be removed at ALL times whenever have some link occurence in our range!
+  BOOL removeAttrs = NO;
   
-  BOOL linkBefore = NO;
-  if(_editor->textView.selectedRange.location >= 1) {
-    NSString *link = [_editor->textView.textStorage
-      attribute:NSLinkAttributeName
-      atIndex:_editor->textView.selectedRange.location - 1
-      effectiveRange:nullptr
-    ];
-    if(link != nullptr) {
-      linkBefore = YES;
+  if(_editor->textView.selectedRange.length == 0) {
+    // check before
+    if(_editor->textView.selectedRange.location >= 1) {
+      if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location - 1, 1)]) {
+        removeAttrs = YES;
+      }
+    }
+    // check after
+    if(_editor->textView.selectedRange.location < _editor->textView.textStorage.length) {
+      if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location, 1)]) {
+        removeAttrs = YES;
+      }
+    }
+  } else {
+    if([self anyOccurence:_editor->textView.selectedRange]) {
+      removeAttrs = YES;
     }
   }
   
-  BOOL linkAfter = NO;
-  if(_editor->textView.selectedRange.location < _editor->textView.textStorage.length) {
-    NSString *link = [_editor->textView.textStorage
-      attribute:NSLinkAttributeName
-      atIndex:_editor->textView.selectedRange.location
-      effectiveRange:nullptr
-    ];
-    if(link != nullptr) {
-      linkAfter = YES;
-    }
-  }
-  
-  if((!linkBefore && linkAfter) || (linkBefore && !linkAfter)) {
+  if(removeAttrs) {
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-    [newTypingAttrs removeObjectForKey:NSLinkAttributeName];
+    newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
+    newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -298,15 +297,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   NSString *regexPassedUrl = nullptr;
   
   if ([fullRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
-    [self addLink:word url:word range:wordRange manual:NO];
     regexPassedUrl = word;
   } else if ([wwwRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
     NSString *httpWord = [NSString stringWithFormat:@"https://%@", word];
-    [self addLink:word url:httpWord range:wordRange manual:NO];
     regexPassedUrl = httpWord;
   } else if ([bareRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
     NSString *httpWwwWord = [NSString stringWithFormat:@"https://www.%@", word];
-    [self addLink:word url:httpWwwWord range:wordRange manual:NO];
     regexPassedUrl = httpWwwWord;
   } else if ([self anyOccurence:wordRange]) {
     // there was some automatic link (because anyOccurence is true and we are sure there are no manual links)
@@ -315,23 +311,24 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   if(regexPassedUrl != nullptr) {
+    // add style only if needed
+    BOOL addStyle = YES;
+    if([self detectStyle:wordRange]) {
+      LinkData *currentData = [self getLinkDataAt:wordRange.location];
+      if(currentData != nullptr && currentData.url != nullptr && [currentData.url isEqualToString:regexPassedUrl]) {
+        addStyle = NO;
+      }
+    }
+    if(addStyle) {
+      [self addLink:word url:regexPassedUrl range:wordRange manual:NO];
+    }
+  
     // emit onLinkDetected
     [_editor emitOnLinkDetectedEvent:word url:regexPassedUrl];
-    
-    // fix typing attributes if we made automatic link while being inside of its detection range
-    NSRange editorRange = _editor->textView.selectedRange;
-    if(editorRange.length == 0 &&
-       editorRange.location > wordRange.location &&
-       editorRange.location < wordRange.location + wordRange.length
-    ) {
-      NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-      newTypingAttrs[NSLinkAttributeName] = regexPassedUrl;
-      _editor->textView.typingAttributes = newTypingAttrs;
-    }
   }
 }
 
-// handles extending and refreshing manual links
+// handles refreshing manual links
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange {
   // look for manual links within the word
   __block NSString *manualLinkMinValue = @"";
@@ -360,54 +357,20 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   if(manualLinkMinIdx == -1 || manualLinkMaxIdx == -1) {
     return;
   }
-  
-  // get NSLinkAttribute bounds the same way
-  __block NSString *anyLinkMinValue = @"";
-  __block NSString *anyLinkMaxValue = @"";
-  __block NSInteger anyLinkMinIdx = -1;
-  __block NSInteger anyLinkMaxIdx = -1;
-  
-  [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:wordRange options:0
-    usingBlock:^(id value, NSRange range, BOOL *stop) {
-      NSString *urlValue = (NSString *)value;
-      if (urlValue != nullptr) {
-        NSInteger linkMin = range.location;
-        NSInteger linkMax = range.location + range.length - 1;
-        if (anyLinkMinIdx == -1 || linkMin < anyLinkMinIdx) {
-          anyLinkMinIdx = linkMin;
-          anyLinkMinValue = value;
-        }
-        if (anyLinkMaxIdx == -1 || linkMax > anyLinkMaxIdx) {
-          anyLinkMaxIdx = linkMax;
-          anyLinkMaxValue = value;
-        }
-      }
-  }];
-  
-  // first heuristic for refreshing manual links:
+    
+  // heuristic for refreshing manual links:
   // we update the Manual attribute between the bounds of existing ones
   // we do that only if the bounds point to the same url
+  // this way manual link gets "extended" only if some characters were added inside it
   if([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
     NSRange newRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
-    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:manualLinkMinValue range:newRange];
+     // TODO: LINK APPEARANCE CONFIG
+    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[UIColor systemBlueColor] range:newRange];
+     // TODO: LINK APPEARANCE CONFIG
+    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[UIColor systemBlueColor] range:newRange];
     [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newRange];
   }
-  
-  // second manual link extension heuristic:
-  // it is possible to select first few or last few characters of manual link and type sth
-  // this copies the NSLinkAttribute but doesn't refresh ManualAttribute
-  // so we check for the bounds and extend accordingly
-  if(anyLinkMinIdx < manualLinkMinIdx && [anyLinkMinValue isEqualToString:manualLinkMinValue]) {
-    NSRange newRange = NSMakeRange(anyLinkMinIdx, manualLinkMinIdx - anyLinkMinIdx);
-    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:anyLinkMinValue range:newRange];
-    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:anyLinkMinValue range:newRange];
-  }
-  if(anyLinkMaxIdx > manualLinkMaxIdx && [anyLinkMaxValue isEqualToString:manualLinkMaxValue]) {
-    NSRange newRange = NSMakeRange(manualLinkMaxIdx + 1, anyLinkMaxIdx - manualLinkMaxIdx);
-    [_editor->textView.textStorage addAttribute:NSLinkAttributeName value:anyLinkMaxValue range:newRange];
-    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:anyLinkMaxValue range:newRange];
-  }
-  
+    
   // link typing attributes need to be fixed after these changes
   [self manageLinkTypingAttributes];
 }

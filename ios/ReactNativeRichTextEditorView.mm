@@ -467,6 +467,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
+  // selection based changes ALSO need to be run here
+  [self manageSelectionBasedChanges];
   return true;
 }
 
@@ -537,16 +539,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self tryUpdatingHeight];
   // for safety: update active styles as well
   [self tryUpdatingActiveStyles];
-}
-
-- (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction {
-  if(URL.absoluteURL != nullptr) {
-    auto emitter = [self getEventEmitter];
-    if(emitter != nullptr) {
-      emitter->onPressLink({ .url = [URL.absoluteString toCppString]});
-    }
-  }
-  return false;
 }
 
 @end
