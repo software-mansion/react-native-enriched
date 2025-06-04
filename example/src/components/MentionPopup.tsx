@@ -8,20 +8,30 @@ import {
   View,
 } from 'react-native';
 import { Icon } from './Icon';
-import type { MentionData, MentionItem } from '../useMention';
+
+export interface MentionItem {
+  id: string;
+  name: string;
+}
+
+export type MentionData = MentionItem[];
 
 interface MentionPopupProps {
+  variant: 'user' | 'channel';
   data: MentionData;
   isOpen: boolean;
   onItemPress: (item: MentionItem) => void;
 }
 
 export const MentionPopup: FC<MentionPopupProps> = ({
+  variant,
   data,
   isOpen,
   onItemPress,
 }) => {
   if (!isOpen || !data.length) return null;
+
+  const isUserMention = variant === 'user';
 
   const renderItem = ({ item }: ListRenderItemInfo<MentionItem>) => (
     <Pressable
@@ -32,7 +42,7 @@ export const MentionPopup: FC<MentionPopupProps> = ({
       onPress={() => onItemPress(item)}
     >
       <View style={styles.avatar}>
-        <Icon name="user" color="grey" size={24} />
+        <Icon name={isUserMention ? 'user' : 'home'} color="grey" size={24} />
       </View>
       <Text style={styles.itemLabel}>{item.name}</Text>
     </Pressable>

@@ -1,5 +1,9 @@
 import type { RichTextStyle } from './RichTextInput';
 import { type ColorValue, processColor } from 'react-native';
+import type {
+  MentionStyleProperties,
+  RichTextStyleInternal,
+} from './ReactNativeRichTextEditorViewNativeComponent';
 
 const defaultStyle: Required<RichTextStyle> = {
   h1: {
@@ -50,31 +54,103 @@ const defaultStyle: Required<RichTextStyle> = {
   },
 };
 
-const assignDefaultValues = (style: RichTextStyle): RichTextStyle => {
+const isMentionStyleRecord = (
+  mentionStyle: RichTextStyle['mention']
+): mentionStyle is Record<string, MentionStyleProperties> => {
+  if (
+    mentionStyle &&
+    typeof mentionStyle === 'object' &&
+    !Array.isArray(mentionStyle)
+  ) {
+    const keys = Object.keys(mentionStyle);
+
+    return (
+      keys.length > 0 &&
+      keys.every(
+        (key) =>
+          typeof (mentionStyle as Record<string, unknown>)[key] === 'object' &&
+          (mentionStyle as Record<string, unknown>)[key] !== null
+      )
+    );
+  }
+  return false;
+};
+
+const assignMentionStyles = (
+  style: RichTextStyle,
+  mentionIndicators: string[]
+): RichTextStyleInternal => {
+  const mentionStyles: Record<string, MentionStyleProperties> = {};
+
+  mentionIndicators.forEach((indicator) => {
+    mentionStyles[indicator] = {
+      ...defaultStyle.mention,
+      ...(isMentionStyleRecord(style.mention)
+        ? (style.mention[indicator] ?? style.mention.default ?? {})
+        : style.mention),
+    };
+  });
+
+  return {
+    ...style,
+    mention: mentionStyles,
+  };
+};
+
+const assignDefaultValues = (
+  style: RichTextStyleInternal
+): RichTextStyleInternal => {
   const merged: Record<string, any> = { ...defaultStyle };
 
   for (const key in style) {
+    if (key === 'mention') {
+      merged[key] = {
+        ...style.mention,
+      };
+
+      continue;
+    }
+
     merged[key] = {
       ...defaultStyle[key as keyof RichTextStyle],
       ...style[key as keyof RichTextStyle],
     };
   }
+
   return merged;
 };
 
-const parseColors = (style: RichTextStyle): RichTextStyle => {
+const parseStyle = (name: string, value: unknown) => {
+  if (name !== 'color' && !name.endsWith('Color')) {
+    return value;
+  }
+
+  return processColor(value as ColorValue);
+};
+
+const parseColors = (style: RichTextStyleInternal): RichTextStyleInternal => {
   const finalStyle: Record<string, any> = {};
 
   for (const [tagName, tagStyle] of Object.entries(style)) {
     const tagStyles: Record<string, any> = {};
 
-    for (const [styleName, styleValue] of Object.entries(tagStyle)) {
-      if (styleName !== 'color' && !styleName.endsWith('Color')) {
-        tagStyles[styleName] = styleValue;
-        continue;
+    if (tagName === 'mention') {
+      for (const [indicator, mentionStyle] of Object.entries(tagStyle)) {
+        tagStyles[indicator] = {};
+
+        for (const [styleName, styleValue] of Object.entries(
+          mentionStyle as MentionStyleProperties
+        )) {
+          tagStyles[indicator][styleName] = parseStyle(styleName, styleValue);
+        }
       }
 
-      tagStyles[styleName] = processColor(styleValue as ColorValue);
+      finalStyle[tagName] = tagStyles;
+      continue;
+    }
+
+    for (const [styleName, styleValue] of Object.entries(tagStyle)) {
+      tagStyles[styleName] = parseStyle(styleName, styleValue);
     }
 
     finalStyle[tagName] = tagStyles;
@@ -84,8 +160,10 @@ const parseColors = (style: RichTextStyle): RichTextStyle => {
 };
 
 export const normalizeRichTextStyle = (
-  style: RichTextStyle = {}
-): RichTextStyle => {
-  const withDefaults = assignDefaultValues(style);
+  style: RichTextStyle,
+  mentionIndicators: string[]
+): RichTextStyleInternal => {
+  const withMentions = assignMentionStyles(style, mentionIndicators);
+  const withDefaults = assignDefaultValues(withMentions);
   return parseColors(withDefaults);
 };

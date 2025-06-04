@@ -53,12 +53,22 @@ export interface RichTextInputInstance extends NativeMethods {
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string) => void;
   startMention: (indicator: string) => void;
-  setMention: (text: string, attributes?: Record<string, string>) => void;
+  setMention: (
+    indicator: string,
+    text: string,
+    attributes?: Record<string, string>
+  ) => void;
 }
 
 export interface OnChangeMentionEvent {
   indicator: string;
   text: string;
+}
+
+interface MentionProperties {
+  color?: ColorValue;
+  backgroundColor?: ColorValue;
+  textDecorationLine?: 'underline' | 'none';
 }
 
 export interface RichTextStyle {
@@ -89,11 +99,7 @@ export interface RichTextStyle {
     color?: ColorValue;
     textDecorationLine?: 'underline' | 'none';
   };
-  mention?: {
-    color?: ColorValue;
-    backgroundColor?: ColorValue;
-    textDecorationLine?: 'underline' | 'none';
-  };
+  mention?: Record<string, MentionProperties> | MentionProperties;
   img?: {
     width?: number;
     height?: number;
@@ -162,7 +168,7 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
-  richTextStyle,
+  richTextStyle = {},
   onFocus,
   onBlur,
   onChangeText,
@@ -179,8 +185,8 @@ export const RichTextInput = ({
   const nativeRef = useRef<ComponentType | null>(null);
 
   const normalizedRichTextStyle = useMemo(
-    () => normalizeRichTextStyle(richTextStyle),
-    [richTextStyle]
+    () => normalizeRichTextStyle(richTextStyle, mentionIndicators),
+    [richTextStyle, mentionIndicators]
   );
 
   useImperativeHandle(ref, () => ({
@@ -255,12 +261,17 @@ export const RichTextInput = ({
     setImage: (uri: string) => {
       Commands.addImage(nullthrows(nativeRef.current), uri);
     },
-    setMention: (text: string, attributes?: Record<string, string>) => {
+    setMention: (
+      indicator: string,
+      text: string,
+      attributes?: Record<string, string>
+    ) => {
       // Codegen does not support objects as Commands parameters, so we stringify attributes
       const parsedAttributes = JSON.stringify(attributes ?? {});
 
       Commands.addMention(
         nullthrows(nativeRef.current),
+        indicator,
         text,
         parsedAttributes
       );
