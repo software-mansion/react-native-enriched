@@ -16,6 +16,7 @@ import ReactNativeRichTextEditorView, {
   type OnMentionEvent,
   type OnMentionDetected,
   type OnMentionDetectedInternal,
+  type MentionStyleProperties,
 } from './ReactNativeRichTextEditorViewNativeComponent';
 import type {
   ColorValue,
@@ -65,12 +66,6 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
-interface MentionProperties {
-  color?: ColorValue;
-  backgroundColor?: ColorValue;
-  textDecorationLine?: 'underline' | 'none';
-}
-
 export interface RichTextStyle {
   h1?: {
     fontSize?: number;
@@ -99,7 +94,7 @@ export interface RichTextStyle {
     color?: ColorValue;
     textDecorationLine?: 'underline' | 'none';
   };
-  mention?: Record<string, MentionProperties> | MentionProperties;
+  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
   img?: {
     width?: number;
     height?: number;
