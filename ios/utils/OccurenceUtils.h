@@ -9,13 +9,28 @@
   withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
   inRange:(NSRange)range
   withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
++ (BOOL)detectMultiple
+  :(NSArray<NSAttributedStringKey> *_Nonnull)keys
+  withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
+  inRange:(NSRange)range
+  withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
 + (BOOL)any
   :(NSAttributedStringKey _Nonnull)key
   withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
   inRange:(NSRange)range
   withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
++ (BOOL)anyMultiple
+  :(NSArray<NSAttributedStringKey> *_Nonnull)keys
+  withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
+  inRange:(NSRange)range
+  withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
 + (NSArray<StylePair *> *_Nullable)all
   :(NSAttributedStringKey _Nonnull)key
+  withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
+  inRange:(NSRange)range
+  withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
++ (NSArray<StylePair *> *_Nullable)allMultiple
+  :(NSArray<NSAttributedStringKey> *_Nonnull)keys
   withEditor:(ReactNativeRichTextEditorView* _Nonnull)editor
   inRange:(NSRange)range
   withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition;
