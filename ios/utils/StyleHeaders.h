@@ -34,5 +34,6 @@
 - (void)manageMentionEditing;
 - (void)manageMentionTypingAttributes;
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
+- (NSRange)getFullMentionRangeAt:(NSUInteger)location;
 - (NSValue *)getActiveMentionRange;
 @end

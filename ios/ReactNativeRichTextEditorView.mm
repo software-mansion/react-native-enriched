@@ -29,6 +29,8 @@ using namespace facebook::react;
   NSRange _recentlyActiveLinkRange;
   NSRange _recentlyChangedRange;
   NSString *_recentlyEmittedString;
+  MentionParams *_recentlyActiveMentionParams;
+  NSRange _recentlyActiveMentionRange;
 }
 
 // MARK: - Component utils
@@ -62,6 +64,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _componentViewHeightUpdateCounter = 0;
   _activeStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
+  _recentlyActiveMentionRange = NSMakeRange(0, 0);
   _recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
   
@@ -242,6 +245,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
+  
+  // data for onMentionDetected event
+  MentionParams *detectedMentionParams;
+  NSRange detectedMentionRange = NSMakeRange(0, 0);
 
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
@@ -272,13 +279,39 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         detectedLinkData = candidateLinkData;
         detectedLinkRange = candidateLinkRange;
       } else if(
-        _recentlyActiveLinkData.url != candidateLinkData.url ||
-        _recentlyActiveLinkData.text != candidateLinkData.text ||
+        ![_recentlyActiveLinkData.url isEqualToString:candidateLinkData.url] ||
+        ![_recentlyActiveLinkData.text isEqualToString:candidateLinkData.text] ||
         !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)
       ) {
         // we changed selection from one link to the other or modified current link's text
         detectedLinkData = candidateLinkData;
         detectedLinkRange = candidateLinkRange;
+      }
+    }
+    
+    // onMentionDetected event
+    if(isActive && [type intValue] == [MentionStyle getStyleType]) {
+      // get mention data
+      MentionParams *candidateMentionParams;
+      NSRange candidateMentionRange = NSMakeRange(0, 0);
+      MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+      if(mentionStyleClass != nullptr) {
+        candidateMentionParams = [mentionStyleClass getMentionParamsAt:textView.selectedRange.location];
+        candidateMentionRange = [mentionStyleClass getFullMentionRangeAt:textView.selectedRange.location];
+      }
+      
+      if(wasActive == NO) {
+        // selection was changed from a non-mention to a mention
+        detectedMentionParams = candidateMentionParams;
+        detectedMentionRange = candidateMentionRange;
+      } else if(
+        ![_recentlyActiveMentionParams.text isEqualToString:candidateMentionParams.text] ||
+        ![_recentlyActiveMentionParams.attributes isEqualToString:candidateMentionParams.attributes] ||
+        !NSEqualRanges(_recentlyActiveMentionRange, candidateMentionRange)
+      ) {
+        // selection changed from one mention to another
+        detectedMentionParams = candidateMentionParams;
+        detectedMentionRange = candidateMentionRange;
       }
     }
   }
@@ -309,9 +342,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(detectedLinkData != nullptr) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url];
-    // set the recentlyActiveUrl for future use
+    
     _recentlyActiveLinkData = detectedLinkData;
     _recentlyActiveLinkRange = detectedLinkRange;
+  }
+  
+  if(detectedMentionParams != nullptr) {
+    // emit onMentionDetected event
+    [self emitOnMentionDetectedEvent:detectedMentionParams.text attributes:detectedMentionParams.attributes];
+    
+    _recentlyActiveMentionParams = detectedMentionParams;
+    _recentlyActiveMentionRange = detectedMentionRange;
   }
 }
 
@@ -371,6 +412,16 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     emitter->onLinkDetected({
       .text = [text toCppString],
       .url = [url toCppString]
+    });
+  }
+}
+
+- (void)emitOnMentionDetectedEvent:(NSString *)text attributes:(NSString *)attributes {
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    emitter->onMentionDetected({
+      .text = [text toCppString],
+      .payload = [attributes toCppString]
     });
   }
 }

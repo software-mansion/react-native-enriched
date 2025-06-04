@@ -12,6 +12,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   ReactNativeRichTextEditorView *_editor;
   NSValue *_activeMentionRange;
   NSString *_activeMentionIndicator;
+  BOOL _blockMentionEditing;
 }
 
 + (StyleType)getStyleType { return Mention; }
@@ -21,6 +22,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   _editor = (ReactNativeRichTextEditorView *) editor;
   _activeMentionRange = nullptr;
   _activeMentionIndicator = nullptr;
+  _blockMentionEditing = NO;
   return self;
 }
 
@@ -115,6 +117,9 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     return;
   }
   
+  // we block callbacks resulting from manageMentionEditing while we tamper with them here
+  _blockMentionEditing = YES;
+  
   MentionParams *params = [[MentionParams alloc] init];
   params.text = text;
   params.attributes = attributes;
@@ -131,6 +136,13 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   
   // THEN, add the attributes to not apply them on the space
   [_editor->textView.textStorage addAttributes:newAttrs range:NSMakeRange(rangeToBeReplaced.location, text.length)];
+  
+  // mention editing should finish
+  _activeMentionIndicator = nullptr;
+  _activeMentionRange = nullptr;
+  
+  // unlock editing
+  _blockMentionEditing = NO;
 }
 
 - (void)startMentionWithIndicator:(NSString *)indicator {
@@ -220,6 +232,11 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 
 // manages active mention range, which in turn emits proper onMention event
 - (void)manageMentionEditing {
+  // no actions performed when block is active
+  if(_blockMentionEditing) {
+    return;
+  }
+
   // we don't take longer selections into consideration
   if(_editor->textView.selectedRange.length > 0) {
     [self removeActiveMentionRange];
@@ -331,8 +348,6 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return _activeMentionRange;
 }
 
-// MARK: - Private non-standard methods
-
 // returns full range of a mention at some location
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location {
   NSRange mentionRange = NSMakeRange(0, 0);
@@ -357,6 +372,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return mentionRange;
 }
 
+// MARK: - Private non-standard methods
+
 // both used for setting the active mention range + indicator and fires proper onMention event
 - (void)setActiveMentionRange:(NSRange)range text:(NSString *)text {
   NSString *indicatorString = [NSString stringWithFormat:@"%C", [text characterAtIndex:0]];
@@ -369,9 +386,10 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 // removes stored mention range + indicator, which means that we no longer edit a mention and onMention event gets fired
 - (void)removeActiveMentionRange {
   if(_activeMentionIndicator != nullptr && _activeMentionRange != nullptr) {
-    [_editor emitOnMentionEvent:_activeMentionIndicator text:nullptr];
+    NSString *indicatorCopy = [_activeMentionIndicator copy];
     _activeMentionIndicator = nullptr;
     _activeMentionRange = nullptr;
+    [_editor emitOnMentionEvent:indicatorCopy text:nullptr];
   }
 }
 
