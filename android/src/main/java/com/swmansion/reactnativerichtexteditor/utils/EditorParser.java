@@ -460,7 +460,7 @@ public class EditorParser {
           out.append(((EditorMentionSpan) style[j]).getText());
           out.append("\"");
 
-          out.append(" indicator-\"");
+          out.append(" indicator=\"");
           out.append(((EditorMentionSpan) style[j]).getIndicator());
           out.append("\"");
 
