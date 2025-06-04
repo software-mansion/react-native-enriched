@@ -4,6 +4,7 @@ import type {
   DirectEventHandler,
   Float,
   Int32,
+  UnsafeMixed,
 } from 'react-native/Libraries/Types/CodegenTypes';
 import type { ColorValue, HostComponent, ViewProps } from 'react-native';
 import React from 'react';
@@ -51,7 +52,7 @@ export interface OnMentionDetected {
 
 export interface OnMentionEvent {
   indicator: string;
-  text: string | null;
+  text: UnsafeMixed;
 }
 
 export interface OnChangeSelectionEvent {

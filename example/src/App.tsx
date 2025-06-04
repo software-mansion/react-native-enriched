@@ -108,6 +108,7 @@ export default function App() {
 
   const openMentionPopup = () => {
     setIsMentionPopupOpen(true);
+    onMentionChange('');
   };
 
   const closeMentionPopup = () => {

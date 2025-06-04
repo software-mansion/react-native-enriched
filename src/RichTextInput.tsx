@@ -278,16 +278,14 @@ export const RichTextInput = ({
     const mentionText = e.nativeEvent.text;
     const mentionIndicator = e.nativeEvent.indicator;
 
-    switch (mentionText) {
-      case '':
+    if (typeof mentionText === 'string') {
+      if (mentionText === '') {
         onStartMention?.(mentionIndicator);
-        break;
-      case null:
-        onEndMention?.(mentionIndicator);
-        break;
-      default:
+      } else {
         onChangeMention?.({ indicator: mentionIndicator, text: mentionText });
-        break;
+      }
+    } else if (mentionText === null) {
+      onEndMention?.(mentionIndicator);
     }
   };
 

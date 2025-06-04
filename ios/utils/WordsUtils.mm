@@ -8,6 +8,7 @@
   }
 
   NSInteger leftIt = range.location - 1;
+  leftIt = MIN(leftIt, NSInteger(text.length - 1));
   if (leftIt > 0) {
     while (leftIt >= 0) {
       unichar charAtIndex = [text characterAtIndex:leftIt];
@@ -19,6 +20,7 @@
     }
   }
   leftIt = MAX(0, leftIt);
+  leftIt = MIN(NSInteger(text.length - 1), leftIt);
   
   NSInteger rightIt = range.location + range.length;
   if (rightIt < text.length - 1) {
@@ -67,6 +69,20 @@
   }
   
   return separatedWords;
+}
+
++ (NSDictionary *)getCurrentWord:(NSString *)text range:(NSRange)range {
+  // we just get current word at the cursor
+  if(range.length > 0) {
+    return nullptr;
+  }
+  
+  NSArray<NSDictionary *> *words = [WordsUtils getAffectedWordsFromText:text modificationRange:range];
+  if(words != nullptr && [words count] == 1 && [words firstObject] != nullptr) {
+    return [words firstObject];
+  }
+  
+  return nullptr;
 }
 
 @end

@@ -1,6 +1,7 @@
 #pragma once
 #import "BaseStyleProtocol.h"
 #import "LinkData.h"
+#import "MentionParams.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>
 @end
@@ -24,4 +25,14 @@
 - (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
+@end
+
+@interface MentionStyle : NSObject<BaseStyleProtocol>
+- (void)addMentionWithText:(NSString *)text attributes:(NSString *)attributes;
+- (void)startMentionWithIndicator:(NSString *)indicator;
+- (void)handleExistingMentions;
+- (void)manageMentionEditing;
+- (void)manageMentionTypingAttributes;
+- (MentionParams *)getMentionParamsAt:(NSUInteger)location;
+- (NSValue *)getActiveMentionRange;
 @end

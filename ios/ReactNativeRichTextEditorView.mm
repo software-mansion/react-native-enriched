@@ -1,10 +1,11 @@
-  #import "ReactNativeRichTextEditorView.h"
+#import "ReactNativeRichTextEditorView.h"
 #import "RCTFabricComponentsPlugins.h"
 #import <ReactNativeRichTextEditor/ReactNativeRichTextEditorViewComponentDescriptor.h>
 #import <ReactNativeRichTextEditor/EventEmitters.h>
 #import <ReactNativeRichTextEditor/Props.h>
 #import <ReactNativeRichTextEditor/RCTComponentViewHelpers.h>
 #import <react/utils/ManagedObjectWrapper.h>
+#import <folly/dynamic.h>
 #import "UIView+React.h"
 #import "StringExtension.h"
 #import "CoreText/CoreText.h"
@@ -70,7 +71,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithEditor:self],
     @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self],
     @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self],
-    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithEditor:self]
+    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithEditor:self],
+    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self]
   };
   
   conflictingStyles = @{
@@ -78,8 +80,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])]
+    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
+    @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
+    @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])]
   };
   
   blockingStyles = @{
@@ -88,7 +91,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
     @([InlineCodeStyle getStyleType]) : @[],
-    @([LinkStyle getStyleType]): @[]
+    @([LinkStyle getStyleType]): @[],
+    @([MentionStyle getStyleType]): @[],
   };
 }
 
@@ -147,6 +151,21 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
     textView.text = [NSString fromCppString:newViewProps.defaultValue];
     heightUpdateNeeded = YES;
+  }
+  
+  // mention indicators
+  auto mismatchPair = std::mismatch(
+    newViewProps.mentionIndicators.begin(), newViewProps.mentionIndicators.end(),
+    oldViewProps.mentionIndicators.begin(), oldViewProps.mentionIndicators.end()
+  );
+  if(mismatchPair.first != newViewProps.mentionIndicators.end() || mismatchPair.second != oldViewProps.mentionIndicators.end()) {
+    NSMutableSet<NSNumber *> *newIndicators = [[NSMutableSet alloc] init];
+    for(const std::string &item : newViewProps.mentionIndicators) {
+      if(item.length() == 1) {
+        [newIndicators addObject:@(item[0])];
+      }
+    }
+    [config setMentionIndicators:newIndicators];
   }
   
   [super updateProps:props oldProps:oldProps];
@@ -274,7 +293,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         .isStrikeThrough = [_activeStyles containsObject: @([StrikethroughStyle getStyleType])],
         .isInlineCode = [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
         .isLink = [_activeStyles containsObject: @([LinkStyle getStyleType])],
-        //.isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
+        .isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
         .isH1 = NO, // [_activeStyles containsObject: @([H1Style getStyleType])],
         .isH2 = NO, // [_activeStyles containsObject: @([H2Style getStyleType])],
         .isH3 = NO, // [_activeStyles containsObject: @([H3Style getStyleType])],
@@ -319,6 +338,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     NSString *text = (NSString *)args[2];
     NSString *url = (NSString *)args[3];
     [self addLinkAt:start end:end text:text url:url];
+  } else if([commandName isEqualToString:@"addMention"]) {
+    NSString *text = (NSString *)args[0];
+    NSString *attributes = (NSString *)args[1];
+    [self addMentionWithText:text attributes:attributes];
+  } else if([commandName isEqualToString:@"startMention"]) {
+    NSString *indicator = (NSString *)args[0];
+    [self startMentionWithIndicator:indicator];
   }
 }
 
@@ -349,6 +375,25 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
+- (void)emitOnMentionEvent:(NSString *)indicator text:(NSString *)text {
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    if(text != nullptr) {
+      folly::dynamic fdStr = [text toCppString];
+      emitter->onMention({
+        .indicator = [indicator toCppString],
+        .text = fdStr
+      });
+    } else {
+      folly::dynamic nul = nullptr;
+      emitter->onMention({
+        .indicator = [indicator toCppString],
+        .text = nul
+      });
+    }
+  }
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -368,6 +413,27 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
     [linkStyleClass addLink:text url:url range:linkRange manual:YES];
+    [self tryUpdatingActiveStyles];
+  }
+}
+
+- (void)addMentionWithText:(NSString *)text attributes:(NSString *)attributes {
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass == nullptr) { return; }
+  if([mentionStyleClass getActiveMentionRange] == nullptr) { return; }
+  
+  if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
+    [mentionStyleClass addMentionWithText:text attributes:attributes];
+    [self tryUpdatingActiveStyles];
+  }
+}
+
+- (void)startMentionWithIndicator:(NSString *)indicator {
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass == nullptr) { return; }
+  
+  if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
+    [mentionStyleClass startMentionWithIndicator:indicator];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -426,6 +492,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(linkStyleClass != nullptr) {
     [linkStyleClass manageLinkTypingAttributes];
   }
+  
+  // mention typing attribtues fix and active editing
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass != nullptr) {
+    [mentionStyleClass manageMentionTypingAttributes];
+    [mentionStyleClass manageMentionEditing];
+  }
 }
 
 - (void)handleWordModificationBasedChanges:(NSString*)word inRange:(NSRange)range {
@@ -435,6 +508,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // manual links need to be handled first because they can block automatic links after being refreshed
     [linkStyle handleManualLinks:word inRange:range];
     [linkStyle handleAutomaticLinks:word inRange:range];
+  }
+  
+  // mentions removal in case of some invalid modifications
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass != nullptr) {
+    [mentionStyleClass handleExistingMentions];
   }
 }
 
@@ -467,8 +546,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
-  // selection based changes ALSO need to be run here
-  [self manageSelectionBasedChanges];
   return true;
 }
 
