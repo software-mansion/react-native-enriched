@@ -138,8 +138,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   [_editor->textView.textStorage addAttributes:newAttrs range:NSMakeRange(rangeToBeReplaced.location, text.length)];
   
   // mention editing should finish
-  _activeMentionIndicator = nullptr;
-  _activeMentionRange = nullptr;
+  [self removeActiveMentionRange];
   
   // unlock editing
   _blockMentionEditing = NO;
