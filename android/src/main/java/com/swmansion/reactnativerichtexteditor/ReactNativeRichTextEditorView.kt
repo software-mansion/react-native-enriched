@@ -374,11 +374,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     parametrizedStyles?.startMention(indicator)
   }
 
-  fun addMention(text: String, attributes: Map<String, String>) {
+  fun addMention(indicator: String, text: String, attributes: Map<String, String>) {
     val isValid = verifyStyle(EditorSpans.MENTION)
     if (!isValid) return
 
-    parametrizedStyles?.setMentionSpan(text, attributes)
+    parametrizedStyles?.setMentionSpan(text, indicator, attributes)
   }
 
   // Update shadow node's state in order to recalculate layout

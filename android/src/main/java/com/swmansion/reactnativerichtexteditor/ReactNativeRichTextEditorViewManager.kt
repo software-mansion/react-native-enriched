@@ -1,7 +1,6 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -247,9 +246,9 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.startMention(indicator)
   }
 
-  override fun addMention(view: ReactNativeRichTextEditorView?, text: String, payload: String) {
+  override fun addMention(view: ReactNativeRichTextEditorView?, indicator: String, text: String, payload: String) {
     val attributes = jsonStringToStringMap(payload)
-    view?.addMention(text, attributes)
+    view?.addMention(text, indicator, attributes)
   }
 
   override fun measure(

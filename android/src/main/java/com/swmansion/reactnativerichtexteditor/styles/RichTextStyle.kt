@@ -47,9 +47,7 @@ class RichTextStyle {
   var inlineCodeColor: Int = Color.BLACK
   var inlineCodeBackgroundColor: Int = Color.BLACK
 
-  var mentionColor: Int = Color.BLACK
-  var mentionBackgroundColor: Int = Color.BLACK
-  var mentionUnderline: Boolean = true
+  var mentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
 
   constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
     this.editorView = editorView
@@ -105,9 +103,7 @@ class RichTextStyle {
     inlineCodeBackgroundColor = parseColorWithOpacity(inlineCodeStyle, "backgroundColor", 80)
 
     val mentionStyle = style.getMap("mention")
-    mentionUnderline = parseIsUnderline(mentionStyle)
-    mentionColor = parseColor(mentionStyle, "color")
-    mentionBackgroundColor = parseColorWithOpacity(mentionStyle, "backgroundColor", 80)
+    mentionsStyle = parseMentionsStyle(mentionStyle)
   }
 
   private fun parseFloat(map: ReadableMap?, key: String): Float {
@@ -162,5 +158,35 @@ class RichTextStyle {
     if (map.isNull(key)) throw Error("Style map cannot contain null value for key: $key")
 
     return map
+  }
+
+  private fun parseMentionsStyle(mentionsStyle: ReadableMap?): MutableMap<String, MentionStyle> {
+    if (mentionsStyle == null) throw Error("Mentions style cannot be null")
+
+    val parsedMentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
+
+     val iterator = mentionsStyle.keySetIterator()
+        while (iterator.hasNextKey()) {
+          val key = iterator.nextKey()
+          val value = mentionsStyle.getMap(key)
+
+          if (value == null) throw Error("Mention style for key '$key' cannot be null")
+
+          val color = parseColor(value, "color")
+          val backgroundColor = parseColorWithOpacity(value, "backgroundColor", 80)
+          val isUnderline = parseIsUnderline(value)
+          val parsedStyle = MentionStyle(color, backgroundColor, isUnderline)
+          parsedMentionsStyle.put(key, parsedStyle)
+        }
+
+    return parsedMentionsStyle
+  }
+
+  companion object {
+    data class MentionStyle(
+      val color: Int,
+      val backgroundColor: Int,
+      val underline: Boolean
+    )
   }
 }

@@ -3,29 +3,22 @@ import { useMemo, useState } from 'react';
 const MOCKED_DATA = [
   {
     id: '1',
-    name: 'John Doe',
+    name: 'General',
   },
   {
     id: '2',
-    name: 'Jane Smith',
+    name: 'Random',
   },
   {
     id: '3',
-    name: 'Alice Johnson',
-  },
-  {
-    id: '4',
-    name: 'Bob Brown',
+    name: 'Engineering',
   },
 ];
 
-export type MentionItem = (typeof MOCKED_DATA)[number];
-export type MentionData = MentionItem[];
-
-export const useMention = () => {
+export const useChannelMention = () => {
   const [mention, setMention] = useState('');
 
-  const mentionData = useMemo(
+  const data = useMemo(
     () => MOCKED_DATA.filter((i) => i.name.toLowerCase().startsWith(mention)),
     [mention]
   );
@@ -34,5 +27,5 @@ export const useMention = () => {
     setMention(value.toLowerCase());
   };
 
-  return { mentionData, onMentionChange };
+  return { data, onMentionChange };
 };

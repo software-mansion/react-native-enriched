@@ -460,6 +460,10 @@ public class EditorParser {
           out.append(((EditorMentionSpan) style[j]).getText());
           out.append("\"");
 
+          out.append(" indicator=\"");
+          out.append(((EditorMentionSpan) style[j]).getIndicator());
+          out.append("\"");
+
           Map<String, String> attributes = ((EditorMentionSpan) style[j]).getAttributes();
           for (Map.Entry<String, String> entry : attributes.entrySet()) {
             out.append(" ");
@@ -1064,15 +1068,18 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static void startMention(Editable mention, Attributes attributes) {
     String text = attributes.getValue("", "text");
+    String indicator = attributes.getValue("", "indicator");
 
     Map<String, String> attributesMap = new HashMap<>();
     for (int i = 0; i < attributes.getLength(); i++) {
-      if (!"text".equals(attributes.getLocalName(i))) {
-        attributesMap.put(attributes.getLocalName(i), attributes.getValue(i));
+      String localName = attributes.getLocalName(i);
+
+      if (!"text".equals(localName) && !"indicator".equals(localName)) {
+        attributesMap.put(localName, attributes.getValue(i));
       }
     }
 
-    start(mention, new Mention(text, attributesMap));
+    start(mention, new Mention(indicator, text, attributesMap));
   }
 
   private void endMention(Editable text, RichTextStyle style) {
@@ -1081,7 +1088,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     if (m == null) return;
     if (m.mText == null) return;
 
-    setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mAttributes, style));
+    setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mIndicator, m.mAttributes, style));
   }
 
   private int getHtmlColor(String color) {
@@ -1204,9 +1211,11 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static class Mention {
     public Map<String, String> mAttributes;
+    public String mIndicator;
     public String mText;
 
-    public Mention(String text, Map<String, String> attributes) {
+    public Mention(String indicator, String text, Map<String, String> attributes) {
+      mIndicator = indicator;
       mAttributes = attributes;
       mText = text;
     }
