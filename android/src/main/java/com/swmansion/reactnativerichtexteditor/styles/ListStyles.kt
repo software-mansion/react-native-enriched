@@ -126,12 +126,16 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
     if (!isBackspace && isShortcut) {
       s.replace(start, cursorPosition, "\u200B")
       setSpan(s, name, start, start + 1)
+      // Inform that new span has been added
+      editorView.selection.validateStyles()
       return
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
       s.insert(cursorPosition, "\u200B")
       setSpan(s, name, start, end + 1)
+      // Inform that new span has been added
+      editorView.selection.validateStyles()
       return
     }
 
