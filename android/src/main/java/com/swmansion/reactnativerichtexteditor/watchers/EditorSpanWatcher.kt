@@ -9,6 +9,7 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.events.OnChangeHtmlEvent
 import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorHeadingSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorSpan
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
@@ -18,13 +19,13 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
   override fun onSpanAdded(text: Spannable, what: Any, start: Int, end: Int) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
-    emitEvent(text)
+    emitEvent(text, what)
   }
 
   override fun onSpanRemoved(text: Spannable, what: Any, start: Int, end: Int) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
-    emitEvent(text)
+    emitEvent(text, what)
   }
 
   override fun onSpanChanged(text: Spannable, what: Any, ostart: Int, oend: Int, nstart: Int, nend: Int) {
@@ -50,7 +51,10 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
     }
   }
 
-  private fun emitEvent(s: Spannable) {
+  fun emitEvent(s: Spannable, what: Any?) {
+    // Emit event only if we change one of ours spans
+    if (what != null && what !is EditorSpan) return;
+
     val html = EditorParser.toHtml(s, EditorParser.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
     if (html == previousHtml) return;
 
