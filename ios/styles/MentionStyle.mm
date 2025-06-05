@@ -112,7 +112,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 
 // MARK: - Public non-standard methods
 
-- (void)addMentionWithText:(NSString *)text attributes:(NSString *)attributes {
+- (void)addMention:(NSString *)indicator text:(NSString *)text attributes:(NSString *)attributes {
   if(_activeMentionRange == nullptr) {
     return;
   }

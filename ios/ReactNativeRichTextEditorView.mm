@@ -380,9 +380,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     NSString *url = (NSString *)args[3];
     [self addLinkAt:start end:end text:text url:url];
   } else if([commandName isEqualToString:@"addMention"]) {
-    NSString *text = (NSString *)args[0];
-    NSString *attributes = (NSString *)args[1];
-    [self addMentionWithText:text attributes:attributes];
+    NSString *indicator = (NSString *)args[0];
+    NSString *text = (NSString *)args[1];
+    NSString *attributes = (NSString *)args[2];
+    [self addMention:indicator text:text attributes:attributes];
   } else if([commandName isEqualToString:@"startMention"]) {
     NSString *indicator = (NSString *)args[0];
     [self startMentionWithIndicator:indicator];
@@ -468,13 +469,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
-- (void)addMentionWithText:(NSString *)text attributes:(NSString *)attributes {
+- (void)addMention:(NSString *)indicator text:(NSString *)text attributes:(NSString *)attributes {
   MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyleClass == nullptr) { return; }
   if([mentionStyleClass getActiveMentionRange] == nullptr) { return; }
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
-    [mentionStyleClass addMentionWithText:text attributes:attributes];
+    [mentionStyleClass addMention:indicator text:text attributes:attributes];
     [self tryUpdatingActiveStyles];
   }
 }
