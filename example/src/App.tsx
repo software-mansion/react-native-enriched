@@ -108,11 +108,11 @@ export default function App() {
 
   const openMentionPopup = () => {
     setIsMentionPopupOpen(true);
-    onMentionChange('');
   };
 
   const closeMentionPopup = () => {
     setIsMentionPopupOpen(false);
+    onMentionChange('');
   };
 
   const submitLink = (text: string, url: string) => {
