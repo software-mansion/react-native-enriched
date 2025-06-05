@@ -115,6 +115,7 @@ export default function App() {
 
   const closeUserMentionPopup = () => {
     setIsUserPopupOpen(false);
+    userMention.onMentionChange('');
   };
 
   const openChannelMentionPopup = () => {
@@ -123,6 +124,7 @@ export default function App() {
 
   const closeChannelMentionPopup = () => {
     setIsChannelPopupOpen(false);
+    channelMention.onMentionChange('');
   };
 
   const handleStartMention = (indicator: string) => {

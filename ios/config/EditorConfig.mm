@@ -12,6 +12,7 @@
   BOOL _monospacedFontNeedsRecreation;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
+  NSSet<NSNumber*> *_mentionIndicators;
 }
 
 - (instancetype) init {
@@ -106,6 +107,14 @@
   if(![newValue isEqual:_inlineCodeBgColor]) {
     _inlineCodeBgColor = newValue;
   }
+}
+
+- (NSSet<NSNumber*>*)mentionIndicators {
+  return _mentionIndicators != nullptr ? _mentionIndicators : [[NSSet alloc] init];
+}
+
+- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue {
+  _mentionIndicators = newValue;
 }
 
 @end

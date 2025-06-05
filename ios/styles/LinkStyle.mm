@@ -143,14 +143,10 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   NSRange automaticLinkRange = NSMakeRange(0, 0);
   NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
   
-  // get the previous index if possible when at the very end of input
+  // don't search at the very end of input
   NSUInteger searchLocation = location;
   if(searchLocation == _editor->textView.textStorage.length) {
-    if(searchLocation == 0) {
-      return nullptr;
-    } else {
-      searchLocation = searchLocation - 1;
-    }
+    return nullptr;
   }
   
   NSString *manualUrl = [_editor->textView.textStorage
@@ -161,9 +157,9 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   ];
   NSString *automaticUrl = [_editor->textView.textStorage
     attribute:AutomaticLinkAttributeName
-   atIndex:searchLocation
+    atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
-   inRange:editorRange
+    inRange:editorRange
   ];
   
   if((manualUrl == nullptr && automaticUrl == nullptr) || (manualLinkRange.length == 0 && automaticLinkRange.length == 0)) {
@@ -203,16 +199,16 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   ];
   [_editor->textView.textStorage
     attribute:AutomaticLinkAttributeName
-   atIndex:searchLocation
+    atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
-   inRange:editorRange
+    inRange:editorRange
   ];
   
   return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
-  // link's typing attribtues need to be removed at ALL times whenever have some link occurence in our range!
+  // link's typing attribtues need to be removed at ALL times whenever we have some link around
   BOOL removeAttrs = NO;
   
   if(_editor->textView.selectedRange.length == 0) {
@@ -245,16 +241,16 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // handles detecting and removing automatic links
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
   InlineCodeStyle *inlineCodeStyle = [_editor->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
-  //MentionStyle *mentionStyle = [[_editor->stylesDict objectForKey:@([MentionStyle getStyleType])];
+  MentionStyle *mentionStyle = [_editor->stylesDict objectForKey:@([MentionStyle getStyleType])];
   
-  if (inlineCodeStyle == nullptr /*|| mentionStyle == nullptr*/) {
+  if (inlineCodeStyle == nullptr || mentionStyle == nullptr) {
     return;
   }
   
-//  // we don't recognize links along mentions
-//  if ([mentionStyle anyOccurence:wordRange) {
-//    return;
-//  }
+  // we don't recognize links along mentions
+  if ([mentionStyle anyOccurence:wordRange]) {
+    return;
+  }
   
   // we don't recognize links among inline code
   if ([inlineCodeStyle anyOccurence:wordRange]) {
@@ -262,7 +258,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   // remove connected different links
-  if(![self isSingleLinkIn:wordRange]) {
+  BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:wordRange
+    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
+  ];
+  if(onlyLinks && ![self isSingleLinkIn:wordRange]) {
     [self removeAttributes:wordRange];
     return;
   }
@@ -380,21 +381,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // determines whether a given range contains only links pointing to one url
 // assumes the whole range is links only already
 - (BOOL)isSingleLinkIn:(NSRange)range {
-  __block NSString *linkUrl;
-  __block BOOL isSigleLink = YES;
-  // we can enumerate NSLinkAttributeName since it should have same values as Manual and Automatic links
-  [_editor->textView.textStorage enumerateAttribute:NSLinkAttributeName inRange:range options:0 usingBlock:
-     ^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-    NSString *linkValue = (NSString *)value;
-    if(linkValue != nullptr && linkUrl == nullptr) {
-      linkUrl = linkValue;
-    } else if(linkValue != nullptr && linkValue != linkUrl) {
-      isSigleLink = NO;
-      *stop = YES;
-    }
-  }
-  ];
-  return isSigleLink;
+  return [self findAllOccurences:range].count == 1;
 }
 
 @end

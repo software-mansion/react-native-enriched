@@ -17,4 +17,6 @@
 - (void)setInlineCodeFgColor:(UIColor *)newValue;
 - (UIColor *)inlineCodeBgColor;
 - (void)setInlineCodeBgColor:(UIColor *)newValue;
+- (NSSet<NSNumber*>*)mentionIndicators;
+- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue;
 @end
