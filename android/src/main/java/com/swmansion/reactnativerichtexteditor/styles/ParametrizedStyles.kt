@@ -146,7 +146,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     }
   }
 
-  fun setMentionSpan(text: String, attributes: Map<String, String>) {
+  fun setMentionSpan(indicator: String, text: String, attributes: Map<String, String>) {
     val selection = editorView.selection ?: return
 
     val spannable = editorView.text as SpannableStringBuilder
@@ -160,7 +160,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     var start = mentionStart ?: return
     spannable.replace(start, selectionEnd, text)
 
-    val span = EditorMentionSpan(text, attributes, editorView.richTextStyle)
+    val span = EditorMentionSpan(text, indicator, attributes, editorView.richTextStyle)
     val spanEnd = start + text.length
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -61,7 +61,13 @@ export interface OnChangeSelectionEvent {
   text: string;
 }
 
-export interface RichTextStyle {
+export interface MentionStyleProperties {
+  color?: ColorValue;
+  backgroundColor?: ColorValue;
+  textDecorationLine?: 'underline' | 'none';
+}
+
+export interface RichTextStyleInternal {
   h1?: {
     fontSize?: Float;
   };
@@ -89,11 +95,10 @@ export interface RichTextStyle {
     color?: ColorValue;
     textDecorationLine?: string;
   };
-  mention?: {
-    color?: ColorValue;
-    backgroundColor?: ColorValue;
-    textDecorationLine?: string;
-  };
+  // This is a workaround for the fact that codegen does not support Records.
+  // Instead, we pass an empty object as a type.
+  // However, this object is not empty in practice, and will become ReadableMap on the native side
+  mention?: {};
   img?: {
     width?: Float;
     height?: Float;
@@ -120,7 +125,7 @@ export interface NativeProps extends ViewProps {
   mentionIndicators: string[];
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
-  richTextStyle?: RichTextStyle;
+  richTextStyle?: RichTextStyleInternal;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<null>;
@@ -177,6 +182,7 @@ interface NativeCommands {
   ) => void;
   addMention: (
     viewRef: React.ElementRef<ComponentType>,
+    indicator: string,
     text: string,
     payload: string
   ) => void;

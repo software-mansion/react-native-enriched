@@ -6,7 +6,7 @@ import android.view.View
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorMentionSpan(private val text: String, private val attributes: Map<String, String>, private val richTextStyle: RichTextStyle) :
+class EditorMentionSpan(private val text: String, private val indicator: String, private val attributes: Map<String, String>, private val richTextStyle: RichTextStyle) :
   ClickableSpan(), EditorInlineSpan {
   override fun onClick(view: View) {
     // Do nothing. Mentions inside the editor are not clickable.
@@ -16,9 +16,10 @@ class EditorMentionSpan(private val text: String, private val attributes: Map<St
   override fun updateDrawState(textPaint: TextPaint) {
     super.updateDrawState(textPaint)
 
-    textPaint.color = richTextStyle.mentionColor
-    textPaint.bgColor = richTextStyle.mentionBackgroundColor
-    textPaint.isUnderlineText = richTextStyle.mentionUnderline
+    val mentionsStyle = richTextStyle.mentionsStyle[indicator] ?: return
+    textPaint.color = mentionsStyle.color
+    textPaint.bgColor = mentionsStyle.backgroundColor
+    textPaint.isUnderlineText = mentionsStyle.underline
   }
 
   fun getAttributes(): Map<String, String> {
@@ -27,5 +28,9 @@ class EditorMentionSpan(private val text: String, private val attributes: Map<St
 
   fun getText(): String {
     return text
+  }
+
+  fun getIndicator(): String {
+    return indicator
   }
 }

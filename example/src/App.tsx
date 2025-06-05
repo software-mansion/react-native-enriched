@@ -22,8 +22,9 @@ import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { MentionPopup } from './components/MentionPopup';
-import { type MentionItem, useMention } from './useMention';
+import { type MentionItem, MentionPopup } from './components/MentionPopup';
+import { useUserMention } from './useUserMention';
+import { useChannelMention } from './useChannelMention';
 
 type StylesState = OnChangeStateEvent;
 
@@ -61,7 +62,8 @@ const DEFAULT_LINK_STATE = {
 const DEBUG_SCROLLABLE = false;
 
 export default function App() {
-  const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false);
+  const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
+  const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
   const [selection, setSelection] = useState<Selection>();
@@ -72,7 +74,8 @@ export default function App() {
 
   const ref = useRef<RichTextInputInstance>(null);
 
-  const { mentionData, onMentionChange } = useMention();
+  const userMention = useUserMention();
+  const channelMention = useChannelMention();
 
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
@@ -106,13 +109,39 @@ export default function App() {
     setIsLinkModalOpen(false);
   };
 
-  const openMentionPopup = () => {
-    setIsMentionPopupOpen(true);
+  const openUserMentionPopup = () => {
+    setIsUserPopupOpen(true);
   };
 
-  const closeMentionPopup = () => {
-    setIsMentionPopupOpen(false);
-    onMentionChange('');
+  const closeUserMentionPopup = () => {
+    setIsUserPopupOpen(false);
+    userMention.onMentionChange('');
+  };
+
+  const openChannelMentionPopup = () => {
+    setIsChannelPopupOpen(true);
+  };
+
+  const closeChannelMentionPopup = () => {
+    setIsChannelPopupOpen(false);
+    channelMention.onMentionChange('');
+  };
+
+  const handleStartMention = (indicator: string) => {
+    indicator === '@' ? openUserMentionPopup() : openChannelMentionPopup();
+  };
+
+  const handleEndMention = (indicator: string) => {
+    const isUserMention = indicator === '@';
+
+    if (isUserMention) {
+      closeUserMentionPopup();
+      userMention.onMentionChange('');
+      return;
+    }
+
+    closeChannelMentionPopup();
+    channelMention.onMentionChange('');
   };
 
   const submitLink = (text: string, url: string) => {
@@ -134,20 +163,26 @@ export default function App() {
     ref.current?.setImage(imageUri);
   };
 
-  const handleChangeMention = ({ text }: OnChangeMentionEvent) => {
-    if (!isMentionPopupOpen) {
-      openMentionPopup();
-    }
-
-    onMentionChange(text);
+  const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
+    indicator === '@'
+      ? userMention.onMentionChange(text)
+      : channelMention.onMentionChange(text);
   };
 
-  const handleMentionSelected = (item: MentionItem) => {
-    ref.current?.setMention(`@${item.name}`, {
+  const handleUserMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('@', `@${item.name}`, {
       id: item.id,
       type: 'user',
     });
-    closeMentionPopup();
+    closeUserMentionPopup();
+  };
+
+  const handleChannelMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('#', `#${item.name}`, {
+      id: item.id,
+      type: 'channel',
+    });
+    closeChannelMentionPopup();
   };
 
   const handleFocusEvent = () => {
@@ -188,9 +223,9 @@ export default function App() {
             onChangeState={handleChangeState}
             onLinkDetected={setCurrentLink}
             onMentionDetected={console.log}
-            onStartMention={openMentionPopup}
+            onStartMention={handleStartMention}
             onChangeMention={handleChangeMention}
-            onEndMention={closeMentionPopup}
+            onEndMention={handleEndMention}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
@@ -219,9 +254,16 @@ export default function App() {
         onClose={closeLinkModal}
       />
       <MentionPopup
-        data={mentionData}
-        isOpen={isMentionPopupOpen}
-        onItemPress={handleMentionSelected}
+        variant="user"
+        data={userMention.data}
+        isOpen={isUserPopupOpen}
+        onItemPress={handleUserMentionSelected}
+      />
+      <MentionPopup
+        variant="channel"
+        data={channelMention.data}
+        isOpen={isChannelPopupOpen}
+        onItemPress={handleChannelMentionSelected}
       />
     </>
   );
@@ -256,9 +298,16 @@ const richTextStyles: RichTextStyle = {
     textDecorationLine: 'underline',
   },
   mention: {
-    color: 'red',
-    backgroundColor: 'lightyellow',
-    textDecorationLine: 'underline',
+    '#': {
+      color: 'blue',
+      backgroundColor: 'lightblue',
+      textDecorationLine: 'underline',
+    },
+    '@': {
+      color: 'green',
+      backgroundColor: 'lightgreen',
+      textDecorationLine: 'none',
+    },
   },
   img: {
     width: 50,
