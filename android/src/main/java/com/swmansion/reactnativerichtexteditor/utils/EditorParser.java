@@ -202,7 +202,7 @@ public class EditorParser {
     StringBuilder out = new StringBuilder();
     withinHtml(out, text, option);
     String outString = out.toString();
-    return "<html>" + outString + "</html>";
+    return "<html>\n" + outString + "</html>";
   }
   /**
    * Returns an HTML escaped representation of the given plain text.
