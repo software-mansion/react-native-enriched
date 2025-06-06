@@ -1,4 +1,4 @@
 package com.swmansion.reactnativerichtexteditor.spans.interfaces
 
-interface EditorHeadingSpan {
+interface EditorHeadingSpan : EditorSpan {
 }
