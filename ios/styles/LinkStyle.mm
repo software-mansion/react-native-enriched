@@ -3,6 +3,7 @@
 #import "OccurenceUtils.h"
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
+#import "WordsUtils.h"
 
 // custom NSAttributedStringKeys to differentiate manually added and automatically detected links
 static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
@@ -134,6 +135,17 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:newAttrs];
   }
   
+  // mandatory connected links check
+  NSDictionary *currentWord = [WordsUtils getCurrentWord:_editor->textView.textStorage.string range:_editor->textView.selectedRange];
+  if(currentWord != nullptr) {
+    // get word properties
+    NSString *wordText = (NSString *)[currentWord objectForKey:@"word"];
+    NSValue *wordRangeValue = (NSValue *)[currentWord objectForKey:@"range"];
+    if(wordText != nullptr && wordRangeValue != nullptr) {
+      [self removeConnectedLinksIfNeeded:wordText range:[wordRangeValue rangeValue]];
+    }
+  }
+  
   [self manageLinkTypingAttributes];
 }
 
@@ -258,15 +270,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   // remove connected different links
-  BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:wordRange
-    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
-  ];
-  if(onlyLinks && ![self isSingleLinkIn:wordRange]) {
-    [self removeAttributes:wordRange];
-    return;
-  }
+  [self removeConnectedLinksIfNeeded:word range:wordRange];
   
   // we don't recognize automatic links along manual ones
   __block BOOL manualLinkPresent = NO;
@@ -382,6 +386,38 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // assumes the whole range is links only already
 - (BOOL)isSingleLinkIn:(NSRange)range {
   return [self findAllOccurences:range].count == 1;
+}
+
+- (void)removeConnectedLinksIfNeeded:(NSString *)word range:(NSRange)wordRange {
+  BOOL anyAutomatic = [OccurenceUtils any:AutomaticLinkAttributeName withEditor:_editor inRange:wordRange
+    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
+  ];
+  BOOL anyManual = [OccurenceUtils any:ManualLinkAttributeName withEditor:_editor inRange:wordRange
+    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
+  ];
+  
+  // both manual and automatic links are somewhere - delete!
+  if(anyAutomatic && anyManual) {
+    [self removeAttributes:wordRange];
+    [self manageLinkTypingAttributes];
+  }
+  
+  // we are now sure there is only one type of link there - and make sure it covers the whole word
+  BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:wordRange
+    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
+  ];
+    
+  // only one link might be present!
+  if(onlyLinks && ![self isSingleLinkIn:wordRange]) {
+    [self removeAttributes:wordRange];
+    [self manageLinkTypingAttributes];
+  }
 }
 
 @end
