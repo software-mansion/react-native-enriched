@@ -523,7 +523,10 @@ public class EditorParser {
                                   int start, int end) {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
-      if (c == '<') {
+      if (c == '\u200B') {
+        // Do not output zero-width space characters.
+        continue;
+      } else if (c == '<') {
         out.append("&lt;");
       } else if (c == '>') {
         out.append("&gt;");
