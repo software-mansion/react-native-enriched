@@ -869,9 +869,9 @@ class HtmlToSpannedConverter implements ContentHandler {
     List l = getLast(text, List.class);
     if (l != null) {
       if (l.mType.equals("ol")) {
-        setListSpanFromMark(text, l, new EditorOrderedListSpan(l.mIndex, style));
+        setParagraphSpanFromMark(text, l, new EditorOrderedListSpan(l.mIndex, style));
       } else {
-        setListSpanFromMark(text, l, new EditorUnorderedListSpan(style));
+        setParagraphSpanFromMark(text, l, new EditorUnorderedListSpan(style));
       }
     }
 
@@ -885,18 +885,19 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static void endBlockquote(Editable text, RichTextStyle style) {
     endBlockElement(text);
-    end(text, Blockquote.class, new EditorBlockQuoteSpan(style));
+    Blockquote last = getLast(text, Blockquote.class);
+    setParagraphSpanFromMark(text, last, new EditorBlockQuoteSpan(style));
   }
 
   private void startCodeBlock(Editable text, Attributes attributes) {
     startBlockElement(text, attributes, getMarginBlockquote());
     start(text, new CodeBlock());
-    ;
   }
 
   private static void endCodeBlock(Editable text, RichTextStyle style) {
     endBlockElement(text);
-    end(text, CodeBlock.class, new EditorCodeBlockSpan(style));
+    CodeBlock last = getLast(text, CodeBlock.class);
+    setParagraphSpanFromMark(text, last, new EditorCodeBlockSpan(style));
   }
 
   private void startHeading(Editable text, Attributes attributes, int level) {
@@ -939,7 +940,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void setListSpanFromMark(Spannable text, Object mark, Object... spans) {
+  private static void setParagraphSpanFromMark(Spannable text, Object mark, Object... spans) {
     int where = text.getSpanStart(mark);
     text.removeSpan(mark);
     int len = text.length();

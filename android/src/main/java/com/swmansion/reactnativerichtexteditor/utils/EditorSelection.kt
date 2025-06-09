@@ -104,6 +104,11 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       endPosition++
     }
 
+    if (startPosition >= endPosition) {
+      // If the start position is equal or greater than the end position, return the same position
+      startPosition = endPosition
+    }
+
     return Pair(startPosition, endPosition)
   }
 
