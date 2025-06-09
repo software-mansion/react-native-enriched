@@ -12,6 +12,7 @@
 #import <React/RCTConversions.h>
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
+#import "EditorParser.h"
 
 using namespace facebook::react;
 
@@ -31,6 +32,9 @@ using namespace facebook::react;
   NSString *_recentlyEmittedString;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
+  EditorParser *_editorParser;
+  NSString *_recentlyEmittedHtml;
+  BOOL _emitHtml;
 }
 
 // MARK: - Component utils
@@ -67,6 +71,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   _recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
+  _recentlyEmittedHtml = @"";
+  _emitHtml = NO;
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -97,6 +103,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([LinkStyle getStyleType]): @[],
     @([MentionStyle getStyleType]): @[],
   };
+  
+  _editorParser = [[EditorParser alloc] initWithEditor:self];
 }
 
 - (void)setupTextView {
@@ -170,6 +178,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
     [config setMentionIndicators:newIndicators];
   }
+  
+  // onChangeHtmlSet
+  _emitHtml = newViewProps.onChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
   
@@ -354,6 +365,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
   }
+  
+  // emit onChangeHtml event if needed
+  [self tryEmittingOnChangeHtmlEvent];
 }
 
 // MARK: - Native commands
@@ -441,6 +455,23 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       emitter->onMention({
         .indicator = [indicator toCppString],
         .text = nul
+      });
+    }
+  }
+}
+
+- (void)tryEmittingOnChangeHtmlEvent {
+  if(!_emitHtml) {
+    return;
+  }
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    NSString *htmlOutput = [_editorParser parseToHtml];
+    // make sure html really changed
+    if(![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
+      _recentlyEmittedHtml = htmlOutput;
+      emitter->onChangeHtml({
+        .value = [htmlOutput toCppString]
       });
     }
   }

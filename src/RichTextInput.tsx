@@ -325,6 +325,7 @@ export const RichTextInput = ({
       onInputBlur={onBlur}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
+      onChangeHtmlSet={onChangeHtml !== undefined}
       onChangeState={onChangeState}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}

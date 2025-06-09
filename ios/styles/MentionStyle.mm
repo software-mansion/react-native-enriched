@@ -122,6 +122,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   
   MentionParams *params = [[MentionParams alloc] init];
   params.text = text;
+  params.indicator = indicator;
   params.attributes = attributes;
   NSDictionary<NSAttributedStringKey, id> *newAttrs = @{
     MentionAttributeName: params,
