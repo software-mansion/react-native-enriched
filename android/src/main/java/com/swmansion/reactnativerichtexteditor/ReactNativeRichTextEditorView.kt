@@ -52,6 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var richTextStyle: RichTextStyle = RichTextStyle(this, null)
+  var spanWatcher: EditorSpanWatcher? = null
 
   var fontSize: Float? = null
   private var autoFocus = false
@@ -343,6 +344,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private fun addSpanWatcher(watcher: EditorSpanWatcher) {
     val spannable = text as Spannable
     spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+    spanWatcher = watcher
   }
 
   fun verifyAndToggleStyle(name: String) {
