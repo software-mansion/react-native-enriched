@@ -277,6 +277,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   fun measureSize(maxWidth: Float): Pair<Float, Float> {
+    Log.d("ReactNativeRichTextEditorView", "measureSize called with maxWidth: $maxWidth")
+
     val paint = this.paint
     val spannable = text as Spannable
     val spannableLength = spannable.length
