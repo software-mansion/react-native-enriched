@@ -12,7 +12,6 @@ import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ParagraphStyle;
-import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
 
 import com.swmansion.reactnativerichtexteditor.spans.EditorBlockQuoteSpan;
@@ -32,6 +31,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorUnderlineSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan;
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan;
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle;
 
 import org.ccil.cowan.tagsoup.HTMLSchema;
@@ -523,7 +523,10 @@ public class EditorParser {
                                   int start, int end) {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
-      if (c == '<') {
+      if (c == '\u200B') {
+        // Do not output zero-width space characters.
+        continue;
+      } else if (c == '<') {
         out.append("&lt;");
       } else if (c == '>') {
         out.append("&gt;");
@@ -658,6 +661,17 @@ class HtmlToSpannedConverter implements ContentHandler {
         mSpannableStringBuilder.setSpan(obj[i], start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
       }
     }
+
+    // Assign zero-width space character to the proper spans.
+    EditorZeroWidthSpaceSpan[] zeroWidthSpaceSpans = mSpannableStringBuilder.getSpans(0, mSpannableStringBuilder.length(), EditorZeroWidthSpaceSpan.class);
+    for (EditorZeroWidthSpaceSpan zeroWidthSpaceSpan : zeroWidthSpaceSpans) {
+      int start = mSpannableStringBuilder.getSpanStart(zeroWidthSpaceSpan);
+      int end = mSpannableStringBuilder.getSpanEnd(zeroWidthSpaceSpan);
+      mSpannableStringBuilder.insert(start, "\u200B");
+      mSpannableStringBuilder.removeSpan(zeroWidthSpaceSpan);
+      mSpannableStringBuilder.setSpan(zeroWidthSpaceSpan, start, end + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
     return mSpannableStringBuilder;
   }
 
@@ -700,11 +714,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("strike")) {
       start(mSpannableStringBuilder, new Strikethrough());
     } else if (tag.equalsIgnoreCase("h1")) {
-      start(mSpannableStringBuilder, new H1());
+      startHeading(mSpannableStringBuilder, attributes, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      start(mSpannableStringBuilder, new H2());
+      startHeading(mSpannableStringBuilder, attributes, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      start(mSpannableStringBuilder, new H3());
+      startHeading(mSpannableStringBuilder, attributes, 3);
     } else if (tag.equalsIgnoreCase("img")) {
       startImg(mSpannableStringBuilder, attributes, mImageGetter, mStyle);
     } else if (tag.equalsIgnoreCase("code")) {
@@ -747,11 +761,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("s")) {
       end(mSpannableStringBuilder, Strikethrough.class, new EditorStrikeThroughSpan(mStyle));
     } else if (tag.equalsIgnoreCase("h1")) {
-      end(mSpannableStringBuilder, H1.class, new EditorH1Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      end(mSpannableStringBuilder, H2.class, new EditorH2Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      end(mSpannableStringBuilder, H3.class, new EditorH3Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 3);
     } else if (tag.equalsIgnoreCase("code")) {
       end(mSpannableStringBuilder, Code.class, new EditorInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -869,9 +883,9 @@ class HtmlToSpannedConverter implements ContentHandler {
     List l = getLast(text, List.class);
     if (l != null) {
       if (l.mType.equals("ol")) {
-        setListSpanFromMark(text, l, new EditorOrderedListSpan(l.mIndex, style));
+        setParagraphSpanFromMark(text, l, new EditorOrderedListSpan(l.mIndex, style));
       } else {
-        setListSpanFromMark(text, l, new EditorUnorderedListSpan(style));
+        setParagraphSpanFromMark(text, l, new EditorUnorderedListSpan(style));
       }
     }
 
@@ -885,34 +899,58 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static void endBlockquote(Editable text, RichTextStyle style) {
     endBlockElement(text);
-    end(text, Blockquote.class, new EditorBlockQuoteSpan(style));
+    Blockquote last = getLast(text, Blockquote.class);
+    setParagraphSpanFromMark(text, last, new EditorBlockQuoteSpan(style));
   }
 
   private void startCodeBlock(Editable text, Attributes attributes) {
     startBlockElement(text, attributes, getMarginBlockquote());
     start(text, new CodeBlock());
-    ;
   }
 
   private static void endCodeBlock(Editable text, RichTextStyle style) {
     endBlockElement(text);
-    end(text, CodeBlock.class, new EditorCodeBlockSpan(style));
+    CodeBlock last = getLast(text, CodeBlock.class);
+    setParagraphSpanFromMark(text, last, new EditorCodeBlockSpan(style));
   }
 
   private void startHeading(Editable text, Attributes attributes, int level) {
     startBlockElement(text, attributes, getMarginHeading());
-    start(text, new Heading(level));
+
+    switch (level) {
+      case 1:
+        start(text, new H1());
+        break;
+      case 2:
+        start(text, new H2());
+        break;
+      case 3:
+        start(text, new H3());
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported heading level: " + level);
+    }
   }
 
-  private static void endHeading(Editable text, RichTextStyle style) {
-    // RelativeSizeSpan and StyleSpan are CharacterStyles
-    // Their ranges should not include the newlines at the end
-    Heading h = getLast(text, Heading.class);
-    if (h != null) {
-      setSpanFromMark(text, h, new RelativeSizeSpan(HEADING_SIZES[h.mLevel]),
-        new EditorBoldSpan(style));
-    }
+  private static void endHeading(Editable text, RichTextStyle style, int level) {
     endBlockElement(text);
+
+    switch (level) {
+      case 1:
+        H1 lastH1 = getLast(text, H1.class);
+        setParagraphSpanFromMark(text, lastH1, new EditorH1Span(style));
+        break;
+      case 2:
+        H2 lastH2 = getLast(text, H2.class);
+        setParagraphSpanFromMark(text, lastH2, new EditorH2Span(style));
+        break;
+      case 3:
+        H3 lastH3 = getLast(text, H3.class);
+        setParagraphSpanFromMark(text, lastH3, new EditorH3Span(style));
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported heading level: " + level);
+    }
   }
 
   private static <T> T getLast(Spanned text, Class<T> kind) {
@@ -939,7 +977,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void setListSpanFromMark(Spannable text, Object mark, Object... spans) {
+  private static void setParagraphSpanFromMark(Spannable text, Object mark, Object... spans) {
     int where = text.getSpanStart(mark);
     text.removeSpan(mark);
     int len = text.length();
@@ -1250,14 +1288,6 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     public Background(int backgroundColor) {
       mBackgroundColor = backgroundColor;
-    }
-  }
-
-  private static class Heading {
-    private final int mLevel;
-
-    public Heading(int level) {
-      mLevel = level;
     }
   }
 

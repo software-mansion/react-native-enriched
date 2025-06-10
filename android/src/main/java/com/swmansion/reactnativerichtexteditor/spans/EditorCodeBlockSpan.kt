@@ -8,9 +8,10 @@ import android.text.TextPaint
 import android.text.style.CharacterStyle
 import android.text.style.LineBackgroundSpan
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorCodeBlockSpan(private val richTextStyle: RichTextStyle) : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan {
+class EditorCodeBlockSpan(private val richTextStyle: RichTextStyle) : CharacterStyle(), LineBackgroundSpan, EditorParagraphSpan, EditorZeroWidthSpaceSpan {
   override fun updateDrawState(paint: TextPaint?) {
     paint?.typeface = Typeface.MONOSPACE
     paint?.color = richTextStyle.codeBlockColor
