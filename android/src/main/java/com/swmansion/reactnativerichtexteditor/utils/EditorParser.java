@@ -12,7 +12,6 @@ import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ParagraphStyle;
-import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
 
 import com.swmansion.reactnativerichtexteditor.spans.EditorBlockQuoteSpan;
@@ -700,11 +699,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("strike")) {
       start(mSpannableStringBuilder, new Strikethrough());
     } else if (tag.equalsIgnoreCase("h1")) {
-      start(mSpannableStringBuilder, new H1());
+      startHeading(mSpannableStringBuilder, attributes, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      start(mSpannableStringBuilder, new H2());
+      startHeading(mSpannableStringBuilder, attributes, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      start(mSpannableStringBuilder, new H3());
+      startHeading(mSpannableStringBuilder, attributes, 3);
     } else if (tag.equalsIgnoreCase("img")) {
       startImg(mSpannableStringBuilder, attributes, mImageGetter, mStyle);
     } else if (tag.equalsIgnoreCase("code")) {
@@ -747,11 +746,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("s")) {
       end(mSpannableStringBuilder, Strikethrough.class, new EditorStrikeThroughSpan(mStyle));
     } else if (tag.equalsIgnoreCase("h1")) {
-      end(mSpannableStringBuilder, H1.class, new EditorH1Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      end(mSpannableStringBuilder, H2.class, new EditorH2Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      end(mSpannableStringBuilder, H3.class, new EditorH3Span(mStyle));
+      endHeading(mSpannableStringBuilder, mStyle, 3);
     } else if (tag.equalsIgnoreCase("code")) {
       end(mSpannableStringBuilder, Code.class, new EditorInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -902,18 +901,41 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private void startHeading(Editable text, Attributes attributes, int level) {
     startBlockElement(text, attributes, getMarginHeading());
-    start(text, new Heading(level));
+
+    switch (level) {
+      case 1:
+        start(text, new H1());
+        break;
+      case 2:
+        start(text, new H2());
+        break;
+      case 3:
+        start(text, new H3());
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported heading level: " + level);
+    }
   }
 
-  private static void endHeading(Editable text, RichTextStyle style) {
-    // RelativeSizeSpan and StyleSpan are CharacterStyles
-    // Their ranges should not include the newlines at the end
-    Heading h = getLast(text, Heading.class);
-    if (h != null) {
-      setSpanFromMark(text, h, new RelativeSizeSpan(HEADING_SIZES[h.mLevel]),
-        new EditorBoldSpan(style));
-    }
+  private static void endHeading(Editable text, RichTextStyle style, int level) {
     endBlockElement(text);
+
+    switch (level) {
+      case 1:
+        H1 lastH1 = getLast(text, H1.class);
+        setParagraphSpanFromMark(text, lastH1, new EditorH1Span(style));
+        break;
+      case 2:
+        H2 lastH2 = getLast(text, H2.class);
+        setParagraphSpanFromMark(text, lastH2, new EditorH2Span(style));
+        break;
+      case 3:
+        H3 lastH3 = getLast(text, H3.class);
+        setParagraphSpanFromMark(text, lastH3, new EditorH3Span(style));
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported heading level: " + level);
+    }
   }
 
   private static <T> T getLast(Spanned text, Class<T> kind) {
@@ -1251,14 +1273,6 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     public Background(int backgroundColor) {
       mBackgroundColor = backgroundColor;
-    }
-  }
-
-  private static class Heading {
-    private final int mLevel;
-
-    public Heading(int level) {
-      mLevel = level;
     }
   }
 
