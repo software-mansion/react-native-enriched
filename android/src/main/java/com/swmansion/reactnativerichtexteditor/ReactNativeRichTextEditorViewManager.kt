@@ -1,6 +1,7 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
+import android.text.Spannable
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -262,7 +263,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     heightMode: YogaMeasureMode?,
     attachmentsPositions: FloatArray?
   ): Long {
-    val size = this.view?.measureSize(width)
+    val size = this.view?.layoutManager?.getMeasuredSize(width)
 
     if (size != null) {
       return YogaMeasureOutput.make(size.first, size.second)

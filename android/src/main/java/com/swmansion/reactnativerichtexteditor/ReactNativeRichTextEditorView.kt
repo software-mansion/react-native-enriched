@@ -6,6 +6,7 @@ import android.graphics.BlendModeColorFilter
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
+import android.text.Editable
 import android.text.Spannable
 import android.text.StaticLayout
 import android.util.AttributeSet
@@ -53,6 +54,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var richTextStyle: RichTextStyle = RichTextStyle(this, null)
   var spanWatcher: EditorSpanWatcher? = null
+  var layoutManager: ReactNativeRichTextEditorViewLayoutManager? =
+    ReactNativeRichTextEditorViewLayoutManager(this)
 
   var fontSize: Float? = null
   private var autoFocus = false
@@ -65,6 +68,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var forceHeightRecalculationCounter: Int = 0
 
   private var inputMethodManager: InputMethodManager? = null
+
+  private var maxWidth: Float = 0f
+  private var currentMeasureSize: Pair<Float, Float> = Pair(0f, 0f)
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -274,25 +280,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     return false
   }
 
-  fun measureSize(maxWidth: Float): Pair<Float, Float> {
-    Log.d("ReactNativeRichTextEditorView", "measureSize called with maxWidth: $maxWidth")
-
-    val paint = this.paint
-    val spannable = text as Spannable
-    val spannableLength = spannable.length
-
-    val staticLayout = StaticLayout.Builder
-      .obtain(spannable, 0, spannableLength, paint, maxWidth.toInt())
-      .setIncludePad(true)
-      .setLineSpacing(0f, 1f)
-      .build()
-
-    val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat())
-    val widthInSP = PixelUtil.toDIPFromPixel(maxWidth)
-
-    return Pair(widthInSP, heightInSP)
-  }
-
   fun updateTypeface() {
     if (!typefaceDirty) return
     typefaceDirty = false
@@ -386,10 +373,11 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
   // Update shadow node's state in order to recalculate layout
   fun updateYogaState() {
+    layoutManager?.measureSize(text ?: "")
+
     val counter = forceHeightRecalculationCounter
     forceHeightRecalculationCounter++
     val state = Arguments.createMap()
-
     state.putInt("forceHeightRecalculationCounter", counter)
     stateWrapper?.updateState(state)
   }
