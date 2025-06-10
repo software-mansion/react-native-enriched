@@ -6,9 +6,7 @@ import android.graphics.BlendModeColorFilter
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
-import android.text.Editable
 import android.text.Spannable
-import android.text.StaticLayout
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -68,9 +66,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var forceHeightRecalculationCounter: Int = 0
 
   private var inputMethodManager: InputMethodManager? = null
-
-  private var maxWidth: Float = 0f
-  private var currentMeasureSize: Pair<Float, Float> = Pair(0f, 0f)
 
   constructor(context: Context) : super(context) {
     prepareComponent()
