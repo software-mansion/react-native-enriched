@@ -42,11 +42,13 @@ export interface OnLinkDetected {
 
 export interface OnMentionDetectedInternal {
   text: string;
+  indicator: string;
   payload: string;
 }
 
 export interface OnMentionDetected {
   text: string;
+  indicator: string;
   attributes: Record<string, string>;
 }
 
