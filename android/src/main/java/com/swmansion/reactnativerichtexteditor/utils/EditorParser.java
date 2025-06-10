@@ -31,6 +31,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorUnderlineSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan;
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan;
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle;
 
 import org.ccil.cowan.tagsoup.HTMLSchema;
@@ -522,7 +523,10 @@ public class EditorParser {
                                   int start, int end) {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
-      if (c == '<') {
+      if (c == '\u200B') {
+        // Do not output zero-width space characters.
+        continue;
+      } else if (c == '<') {
         out.append("&lt;");
       } else if (c == '>') {
         out.append("&gt;");
@@ -657,6 +661,17 @@ class HtmlToSpannedConverter implements ContentHandler {
         mSpannableStringBuilder.setSpan(obj[i], start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
       }
     }
+
+    // Assign zero-width space character to the proper spans.
+    EditorZeroWidthSpaceSpan[] zeroWidthSpaceSpans = mSpannableStringBuilder.getSpans(0, mSpannableStringBuilder.length(), EditorZeroWidthSpaceSpan.class);
+    for (EditorZeroWidthSpaceSpan zeroWidthSpaceSpan : zeroWidthSpaceSpans) {
+      int start = mSpannableStringBuilder.getSpanStart(zeroWidthSpaceSpan);
+      int end = mSpannableStringBuilder.getSpanEnd(zeroWidthSpaceSpan);
+      mSpannableStringBuilder.insert(start, "\u200B");
+      mSpannableStringBuilder.removeSpan(zeroWidthSpaceSpan);
+      mSpannableStringBuilder.setSpan(zeroWidthSpaceSpan, start, end + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
     return mSpannableStringBuilder;
   }
 
