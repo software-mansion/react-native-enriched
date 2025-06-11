@@ -202,7 +202,10 @@ public class EditorParser {
     StringBuilder out = new StringBuilder();
     withinHtml(out, text, option);
     String outString = out.toString();
-    return "<html>\n" + outString + "</html>";
+    // Codeblocks and blockquotes appends a newline character by default, so we have to remove it
+    String normalizedCodeBlock = outString.replaceAll("</codeblock>\\n<br>", "</codeblock>");
+    String normalizedBlockQuote = normalizedCodeBlock.replaceAll("</blockquote>\\n<br>", "</blockquote>");
+    return "<html>\n" + normalizedBlockQuote + "</html>";
   }
   /**
    * Returns an HTML escaped representation of the given plain text.
@@ -261,8 +264,14 @@ public class EditorParser {
         tag = blocks[0] instanceof EditorCodeBlockSpan ? "codeblock" : "blockquote";
       }
 
+      // Each block appends a newline by default.
+      // If we set up a new block, we have to remove the last  character.
+      if (out.length() >= 5 && out.substring(out.length() - 5).equals("<br>\n")) {
+        out.replace(out.length() - 5, out.length(), "");
+      }
+
       for (EditorParagraphSpan ignored : blocks) {
-        out.append("<").append(tag).append(">");
+        out.append("<").append(tag).append(">\n");
       }
       withinBlock(out, text, i, next, option);
       for (EditorParagraphSpan ignored : blocks) {
