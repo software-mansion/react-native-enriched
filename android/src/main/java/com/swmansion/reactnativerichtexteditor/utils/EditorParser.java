@@ -1,6 +1,5 @@
 package com.swmansion.reactnativerichtexteditor.utils;
 
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
@@ -9,10 +8,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.ParagraphStyle;
-import android.text.style.TypefaceSpan;
 
 import com.swmansion.reactnativerichtexteditor.spans.EditorBlockQuoteSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorBoldSpan;
@@ -48,10 +44,7 @@ import org.xml.sax.XMLReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Most of the code in this file is copied from the Android source code and adjusted to our needs.
@@ -127,11 +120,6 @@ public class EditorParser {
    * texts with one newline character by default.
    */
   public static final int FROM_HTML_SEPARATOR_LINE_BREAK_BLOCKQUOTE = 0x00000020;
-  /**
-   * Flag indicating that CSS color values should be used instead of those defined in
-   * {@link Color}.
-   */
-  public static final int FROM_HTML_OPTION_USE_CSS_COLORS = 0x00000100;
   /**
    * Flags for {@link #fromHtml(String, int, RichTextStyle, ImageGetter, TagHandler)}: Separate block-level
    * elements with line breaks (single newline character) in between. This inverts the
@@ -213,42 +201,7 @@ public class EditorParser {
     return out.toString();
   }
   private static void withinHtml(StringBuilder out, Spanned text, int option) {
-    if ((option & TO_HTML_PARAGRAPH_FLAG) == TO_HTML_PARAGRAPH_LINES_CONSECUTIVE) {
-      encodeTextAlignmentByDiv(out, text, option);
-      return;
-    }
     withinDiv(out, text, 0, text.length(), option);
-  }
-  private static void encodeTextAlignmentByDiv(StringBuilder out, Spanned text, int option) {
-    int len = text.length();
-    int next;
-    for (int i = 0; i < len; i = next) {
-      next = text.nextSpanTransition(i, len, ParagraphStyle.class);
-      ParagraphStyle[] style = text.getSpans(i, next, ParagraphStyle.class);
-      String elements = " ";
-      boolean needDiv = false;
-      for(int j = 0; j < style.length; j++) {
-        if (style[j] instanceof AlignmentSpan) {
-          Layout.Alignment align =
-            ((AlignmentSpan) style[j]).getAlignment();
-          needDiv = true;
-          if (align == Layout.Alignment.ALIGN_CENTER) {
-            elements = "align=\"center\" " + elements;
-          } else if (align == Layout.Alignment.ALIGN_OPPOSITE) {
-            elements = "align=\"right\" " + elements;
-          } else {
-            elements = "align=\"left\" " + elements;
-          }
-        }
-      }
-      if (needDiv) {
-        out.append("<div ").append(elements).append(">");
-      }
-      withinDiv(out, text, i, next, option);
-      if (needDiv) {
-        out.append("</div>");
-      }
-    }
   }
   private static void withinDiv(StringBuilder out, Spanned text, int start, int end,
                                 int option) {
@@ -269,44 +222,6 @@ public class EditorParser {
         out.append("</").append(tag).append(">\n");
       }
     }
-  }
-  private static String getTextStyles(Spanned text, int start, int end,
-                                      boolean forceNoVerticalMargin, boolean includeTextAlign) {
-    String margin = null;
-    String textAlign = null;
-    if (forceNoVerticalMargin) {
-      margin = "margin-top:0; margin-bottom:0;";
-    }
-    if (includeTextAlign) {
-      final AlignmentSpan[] alignmentSpans = text.getSpans(start, end, AlignmentSpan.class);
-      // Only use the last AlignmentSpan with flag SPAN_PARAGRAPH
-      for (int i = alignmentSpans.length - 1; i >= 0; i--) {
-        AlignmentSpan s = alignmentSpans[i];
-        if ((text.getSpanFlags(s) & Spanned.SPAN_PARAGRAPH) == Spanned.SPAN_PARAGRAPH) {
-          final Layout.Alignment alignment = s.getAlignment();
-          if (alignment == Layout.Alignment.ALIGN_NORMAL) {
-            textAlign = "text-align:start;";
-          } else if (alignment == Layout.Alignment.ALIGN_CENTER) {
-            textAlign = "text-align:center;";
-          } else if (alignment == Layout.Alignment.ALIGN_OPPOSITE) {
-            textAlign = "text-align:end;";
-          }
-          break;
-        }
-      }
-    }
-    if (margin == null && textAlign == null) {
-      return "";
-    }
-    final StringBuilder style = new StringBuilder(" style=\"");
-    if (margin != null && textAlign != null) {
-      style.append(margin).append(" ").append(textAlign);
-    } else if (margin != null) {
-      style.append(margin);
-    } else {
-      style.append(textAlign);
-    }
-    return style.append("\"").toString();
   }
   private static void withinBlock(StringBuilder out, Spanned text, int start, int end,
                                   int option) {
@@ -556,9 +471,6 @@ public class EditorParser {
   }
 }
 class HtmlToSpannedConverter implements ContentHandler {
-  private static final float[] HEADING_SIZES = {
-    1.5f, 1.4f, 1.3f, 1.2f, 1.1f, 1f,
-  };
   private final RichTextStyle mStyle;
   private final String mSource;
   private final XMLReader mReader;
@@ -566,59 +478,8 @@ class HtmlToSpannedConverter implements ContentHandler {
   private final EditorParser.ImageGetter mImageGetter;
   private final EditorParser.TagHandler mTagHandler;
   private final int mFlags;
-  private static Pattern sTextAlignPattern;
-  private static Pattern sForegroundColorPattern;
-  private static Pattern sBackgroundColorPattern;
-  private static Pattern sTextDecorationPattern;
-  /**
-   * Name-value mapping of HTML/CSS colors which have different values in {@link Color}.
-   */
-  private static final Map<String, Integer> sColorMap;
-
   private static Integer currentOrderedListItemIndex = 0;
   private static Boolean isInOrderedList = false;
-
-  static {
-    sColorMap = new HashMap<>();
-    sColorMap.put("darkgray", 0xFFA9A9A9);
-    sColorMap.put("gray", 0xFF808080);
-    sColorMap.put("lightgray", 0xFFD3D3D3);
-    sColorMap.put("darkgrey", 0xFFA9A9A9);
-    sColorMap.put("grey", 0xFF808080);
-    sColorMap.put("lightgrey", 0xFFD3D3D3);
-    sColorMap.put("green", 0xFF008000);
-  }
-
-  private static Pattern getTextAlignPattern() {
-    if (sTextAlignPattern == null) {
-      sTextAlignPattern = Pattern.compile("(?:\\s+|\\A)text-align\\s*:\\s*(\\S*)\\b");
-    }
-    return sTextAlignPattern;
-  }
-
-  private static Pattern getForegroundColorPattern() {
-    if (sForegroundColorPattern == null) {
-      sForegroundColorPattern = Pattern.compile(
-        "(?:\\s+|\\A)color\\s*:\\s*(\\S*)\\b");
-    }
-    return sForegroundColorPattern;
-  }
-
-  private static Pattern getBackgroundColorPattern() {
-    if (sBackgroundColorPattern == null) {
-      sBackgroundColorPattern = Pattern.compile(
-        "(?:\\s+|\\A)background(?:-color)?\\s*:\\s*(\\S*)\\b");
-    }
-    return sBackgroundColorPattern;
-  }
-
-  private static Pattern getTextDecorationPattern() {
-    if (sTextDecorationPattern == null) {
-      sTextDecorationPattern = Pattern.compile(
-        "(?:\\s+|\\A)text-decoration\\s*:\\s*(\\S*)\\b");
-    }
-    return sTextDecorationPattern;
-  }
 
   public HtmlToSpannedConverter(String source, RichTextStyle style, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, Parser parser, int flags) {
     mStyle = style;
@@ -681,7 +542,6 @@ class HtmlToSpannedConverter implements ContentHandler {
       // so we can safely emit the linebreaks when we handle the close tag.
     } else if (tag.equalsIgnoreCase("p")) {
       startBlockElement(mSpannableStringBuilder, attributes, getMarginParagraph());
-      startCssStyle(mSpannableStringBuilder, attributes, mStyle);
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
       startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
@@ -691,16 +551,10 @@ class HtmlToSpannedConverter implements ContentHandler {
       startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
     } else if (tag.equalsIgnoreCase("li")) {
       startLi(mSpannableStringBuilder, attributes);
-    } else if (tag.equalsIgnoreCase("div")) {
-      startBlockElement(mSpannableStringBuilder, attributes, getMarginDiv());
-    } else if (tag.equalsIgnoreCase("span")) {
-      startCssStyle(mSpannableStringBuilder, attributes, mStyle);
     } else if (tag.equalsIgnoreCase("b")) {
       start(mSpannableStringBuilder, new Bold());
     } else if (tag.equalsIgnoreCase("i")) {
       start(mSpannableStringBuilder, new Italic());
-    } else if (tag.equalsIgnoreCase("font")) {
-      startFont(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("blockquote")) {
       startBlockquote(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("codeblock")) {
@@ -734,22 +588,15 @@ class HtmlToSpannedConverter implements ContentHandler {
     if (tag.equalsIgnoreCase("br")) {
       handleBr(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("p")) {
-      endCssStyle(mSpannableStringBuilder, mStyle);
       endBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ul")) {
       endBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("li")) {
       endLi(mSpannableStringBuilder, mStyle);
-    } else if (tag.equalsIgnoreCase("div")) {
-      endBlockElement(mSpannableStringBuilder);
-    } else if (tag.equalsIgnoreCase("span")) {
-      endCssStyle(mSpannableStringBuilder, mStyle);
     } else if (tag.equalsIgnoreCase("b")) {
       end(mSpannableStringBuilder, Bold.class, new EditorBoldSpan(mStyle));
     } else if (tag.equalsIgnoreCase("i")) {
       end(mSpannableStringBuilder, Italic.class, new EditorItalicSpan(mStyle));
-    } else if (tag.equalsIgnoreCase("font")) {
-      endFont(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("blockquote")) {
       endBlockquote(mSpannableStringBuilder, mStyle);
     } else if (tag.equalsIgnoreCase("codeblock")) {
@@ -831,20 +678,6 @@ class HtmlToSpannedConverter implements ContentHandler {
       appendNewlines(text, margin);
       start(text, new Newline(margin));
     }
-    String style = attributes.getValue("", "style");
-    if (style != null) {
-      Matcher m = getTextAlignPattern().matcher(style);
-      if (m.find()) {
-        String alignment = m.group(1);
-        if (alignment.equalsIgnoreCase("start")) {
-          start(text, new Alignment(Layout.Alignment.ALIGN_NORMAL));
-        } else if (alignment.equalsIgnoreCase("center")) {
-          start(text, new Alignment(Layout.Alignment.ALIGN_CENTER));
-        } else if (alignment.equalsIgnoreCase("end")) {
-          start(text, new Alignment(Layout.Alignment.ALIGN_OPPOSITE));
-        }
-      }
-    }
   }
 
   private static void endBlockElement(Editable text) {
@@ -872,12 +705,9 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else {
       start(text, new List("ul", 0));
     }
-
-    startCssStyle(text, attributes, mStyle);
   }
 
   private static void endLi(Editable text, RichTextStyle style) {
-    endCssStyle(text, style);
     endBlockElement(text);
 
     List l = getLast(text, List.class);
@@ -1006,48 +836,6 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private void startCssStyle(Editable text, Attributes attributes, RichTextStyle richTextStyle) {
-    String style = attributes.getValue("", "style");
-    if (style != null) {
-      Matcher m = getForegroundColorPattern().matcher(style);
-      if (m.find()) {
-        int c = getHtmlColor(m.group(1));
-        if (c != -1) {
-          start(text, new Foreground(c | 0xFF000000));
-        }
-      }
-      m = getBackgroundColorPattern().matcher(style);
-      if (m.find()) {
-        int c = getHtmlColor(m.group(1));
-        if (c != -1) {
-          start(text, new Background(c | 0xFF000000));
-        }
-      }
-      m = getTextDecorationPattern().matcher(style);
-      if (m.find()) {
-        String textDecoration = m.group(1);
-        if (textDecoration.equalsIgnoreCase("line-through")) {
-          start(text, new EditorStrikeThroughSpan(richTextStyle));
-        }
-      }
-    }
-  }
-
-  private static void endCssStyle(Editable text, RichTextStyle style) {
-    Strikethrough s = getLast(text, Strikethrough.class);
-    if (s != null) {
-      setSpanFromMark(text, s, new EditorStrikeThroughSpan(style));
-    }
-    Background b = getLast(text, Background.class);
-    if (b != null) {
-      setSpanFromMark(text, b, new BackgroundColorSpan(b.mBackgroundColor));
-    }
-    Foreground f = getLast(text, Foreground.class);
-    if (f != null) {
-      setSpanFromMark(text, f, new ForegroundColorSpan(f.mForegroundColor));
-    }
-  }
-
   private static void startImg(Editable text, Attributes attributes, EditorParser.ImageGetter img, RichTextStyle style) {
     String src = attributes.getValue("", "src");
     Drawable d = null;
@@ -1062,32 +850,6 @@ class HtmlToSpannedConverter implements ContentHandler {
     int len = text.length();
     text.append("￼");
     text.setSpan(new EditorImageSpan(d, src, style), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-  }
-
-  private void startFont(Editable text, Attributes attributes) {
-    String color = attributes.getValue("", "color");
-    String face = attributes.getValue("", "face");
-    if (!TextUtils.isEmpty(color)) {
-      int c = getHtmlColor(color);
-      if (c != -1) {
-        start(text, new Foreground(c | 0xFF000000));
-      }
-    }
-    if (!TextUtils.isEmpty(face)) {
-      start(text, new Font(face));
-    }
-  }
-
-  private static void endFont(Editable text) {
-    Font font = getLast(text, Font.class);
-    if (font != null) {
-      setSpanFromMark(text, font, new TypefaceSpan(font.mFace));
-    }
-    Foreground foreground = getLast(text, Foreground.class);
-    if (foreground != null) {
-      setSpanFromMark(text, foreground,
-        new ForegroundColorSpan(foreground.mForegroundColor));
-    }
   }
 
   private static void startA(Editable text, Attributes attributes) {
@@ -1127,21 +889,6 @@ class HtmlToSpannedConverter implements ContentHandler {
     if (m.mText == null) return;
 
     setSpanFromMark(text, m, new EditorMentionSpan(m.mText, m.mIndicator, m.mAttributes, style));
-  }
-
-  private int getHtmlColor(String color) {
-    if ((mFlags & EditorParser.FROM_HTML_OPTION_USE_CSS_COLORS)
-      == EditorParser.FROM_HTML_OPTION_USE_CSS_COLORS) {
-      Integer i = sColorMap.get(color.toLowerCase(Locale.US));
-      if (i != null) {
-        return i;
-      }
-    }
-    try {
-      return Color.parseColor(color);
-    } catch (IllegalArgumentException e) {
-      return -1;
-    }
   }
 
   public void setDocumentLocator(Locator locator) {
@@ -1259,35 +1006,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static class Font {
-    public String mFace;
-
-    public Font(String face) {
-      mFace = face;
-    }
-  }
-
   private static class Href {
     public String mHref;
 
     public Href(String href) {
       mHref = href;
-    }
-  }
-
-  private static class Foreground {
-    private final int mForegroundColor;
-
-    public Foreground(int foregroundColor) {
-      mForegroundColor = foregroundColor;
-    }
-  }
-
-  private static class Background {
-    private final int mBackgroundColor;
-
-    public Background(int backgroundColor) {
-      mBackgroundColor = backgroundColor;
     }
   }
 
