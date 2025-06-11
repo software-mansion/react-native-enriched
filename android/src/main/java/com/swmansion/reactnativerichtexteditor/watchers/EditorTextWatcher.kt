@@ -22,9 +22,10 @@ class EditorTextWatcher(private val editorView: ReactNativeRichTextEditorView) :
   }
 
   override fun afterTextChanged(s: Editable?) {
-    if (s == null || editorView.isSettingValue) return
-
+    if (s == null) return
     emitEvents(s)
+
+    if (editorView.isSettingValue) return
     applyStyles(s)
   }
 
