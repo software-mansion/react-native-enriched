@@ -104,6 +104,11 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       endPosition++
     }
 
+    if (startPosition >= endPosition) {
+      // If the start position is equal or greater than the end position, return the same position
+      startPosition = endPosition
+    }
+
     return Pair(startPosition, endPosition)
   }
 
@@ -226,16 +231,22 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   private fun emitMentionDetectedEvent(spannable: Spannable, span: EditorMentionSpan?, start: Int, end: Int) {
     val text = spannable.substring(start, end)
     val attributes = span?.getAttributes() ?: emptyMap()
+    val indicator = span?.getIndicator() ?: ""
     val payload = JSONObject(attributes).toString()
 
-    if (text == previousMentionDetectedEvent["text"] && payload == previousMentionDetectedEvent["payload"]) return
+    val previousText = previousMentionDetectedEvent["text"] ?: ""
+    val previousPayload = previousMentionDetectedEvent["payload"] ?: ""
+    val previousIndicator = previousMentionDetectedEvent["indicator"] ?: ""
+
+    if (text == previousText && payload == previousPayload && indicator == previousIndicator) return
 
     previousMentionDetectedEvent.put("text", text)
     previousMentionDetectedEvent.put("payload", payload)
+    previousMentionDetectedEvent.put("indicator", indicator)
 
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, editorView.id, text, payload))
+    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, editorView.id, text, indicator, payload))
   }
 }

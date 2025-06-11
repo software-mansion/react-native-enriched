@@ -303,9 +303,9 @@ export const RichTextInput = ({
   const handleMentionDetected = (
     e: NativeSyntheticEvent<OnMentionDetectedInternal>
   ) => {
-    const { text, payload } = e.nativeEvent;
-    const parsedAttributes = JSON.parse(payload) as Record<string, string>;
-    onMentionDetected?.({ text, attributes: parsedAttributes });
+    const { text, indicator, payload } = e.nativeEvent;
+    const attributes = JSON.parse(payload) as Record<string, string>;
+    onMentionDetected?.({ text, indicator, attributes });
   };
 
   return (
