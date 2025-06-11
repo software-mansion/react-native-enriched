@@ -304,11 +304,9 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   if ([fullRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
     regexPassedUrl = word;
   } else if ([wwwRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
-    NSString *httpWord = [NSString stringWithFormat:@"https://%@", word];
-    regexPassedUrl = httpWord;
+    regexPassedUrl = word;
   } else if ([bareRegex numberOfMatchesInString:word options:0 range:NSMakeRange(0, word.length)]) {
-    NSString *httpWwwWord = [NSString stringWithFormat:@"https://www.%@", word];
-    regexPassedUrl = httpWwwWord;
+    regexPassedUrl = word;
   } else if ([self anyOccurence:wordRange]) {
     // there was some automatic link (because anyOccurence is true and we are sure there are no manual links)
     // still, it didn't pass any regex - needs to be removed

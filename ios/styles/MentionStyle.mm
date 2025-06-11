@@ -145,6 +145,19 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   _blockMentionEditing = NO;
 }
 
+- (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params {
+  _blockMentionEditing = YES;
+  
+  NSDictionary<NSAttributedStringKey, id> *newAttrs = @{
+    MentionAttributeName: params,
+    NSBackgroundColorAttributeName: [[UIColor systemBlueColor] colorWithAlphaComponent:0.6], // TODO: mentions style config
+    NSForegroundColorAttributeName: [UIColor systemBlueColor] // TODO: mentions style config
+  };
+  [_editor->textView.textStorage addAttributes:newAttrs range:range];
+  
+  _blockMentionEditing = NO;
+}
+
 - (void)startMentionWithIndicator:(NSString *)indicator {
   NSRange currentRange = _editor->textView.selectedRange;
   
