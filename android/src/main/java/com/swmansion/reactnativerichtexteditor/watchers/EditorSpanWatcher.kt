@@ -53,10 +53,10 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
 
   fun emitEvent(s: Spannable, what: Any?) {
     // Emit event only if we change one of ours spans
-    if (what != null && what !is EditorSpan) return;
+    if (what != null && what !is EditorSpan) return
 
-    val html = EditorParser.toHtml(s, EditorParser.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-    if (html == previousHtml) return;
+    val html = EditorParser.toHtml(s)
+    if (html == previousHtml) return
 
     previousHtml = html
     val context = editorView.context as ReactContext

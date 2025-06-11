@@ -67,87 +67,7 @@ public class EditorParser {
     Drawable getDrawable(String source);
   }
 
-  /**
-   * Is notified when HTML tags are encountered that the parser does
-   * not know how to interpret.
-   */
-  public interface TagHandler {
-    /**
-     * This method will be called whenn the HTML parser encounters
-     * a tag that it does not know how to interpret.
-     */
-    void handleTag(boolean opening, String tag,
-                   Editable output, XMLReader xmlReader);
-  }
-  /**
-   * Option for {@link #toHtml(Spanned, int)}: Wrap consecutive lines of text delimited by '\n'
-   * inside &lt;p&gt; elements. {@link EditorUnorderedListSpan}s are ignored.
-   */
-  public static final int TO_HTML_PARAGRAPH_LINES_CONSECUTIVE = 0x00000000;
-  /**
-   * Option for {@link #toHtml(Spanned, int)}: Wrap each line of text delimited by '\n' inside a
-   * &lt;p&gt; or a &lt;li&gt; element. This allows {@link ParagraphStyle}s attached to be
-   * encoded as CSS styles within the corresponding &lt;p&gt; or &lt;li&gt; element.
-   */
-  public static final int TO_HTML_PARAGRAPH_LINES_INDIVIDUAL = 0x00000001;
-  /**
-   * Flag indicating that texts inside &lt;p&gt; elements will be separated from other texts with
-   * one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH = 0x00000001;
-  /**
-   * Flag indicating that texts inside &lt;h1&gt;~&lt;h6&gt; elements will be separated from
-   * other texts with one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_HEADING = 0x00000002;
-  /**
-   * Flag indicating that texts inside &lt;li&gt; elements will be separated from other texts
-   * with one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_LIST_ITEM = 0x00000004;
-  /**
-   * Flag indicating that texts inside &lt;ul&gt; elements will be separated from other texts
-   * with one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_LIST = 0x00000008;
-  /**
-   * Flag indicating that texts inside &lt;div&gt; elements will be separated from other texts
-   * with one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_DIV = 0x00000010;
-  /**
-   * Flag indicating that texts inside &lt;blockquote&gt; elements will be separated from other
-   * texts with one newline character by default.
-   */
-  public static final int FROM_HTML_SEPARATOR_LINE_BREAK_BLOCKQUOTE = 0x00000020;
-  /**
-   * Flags for {@link #fromHtml(String, int, RichTextStyle, ImageGetter, TagHandler)}: Separate block-level
-   * elements with line breaks (single newline character) in between. This inverts the
-   * {@link Spanned} to HTML string conversion done with the option
-   * {@link #TO_HTML_PARAGRAPH_LINES_INDIVIDUAL}.
-   */
-  public static final int FROM_HTML_MODE_COMPACT =
-    FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH
-      | FROM_HTML_SEPARATOR_LINE_BREAK_HEADING
-      | FROM_HTML_SEPARATOR_LINE_BREAK_LIST_ITEM
-      | FROM_HTML_SEPARATOR_LINE_BREAK_LIST
-      | FROM_HTML_SEPARATOR_LINE_BREAK_DIV
-      | FROM_HTML_SEPARATOR_LINE_BREAK_BLOCKQUOTE;
-  /**
-   * The bit which indicates if lines delimited by '\n' will be grouped into &lt;p&gt; elements.
-   */
-  private static final int TO_HTML_PARAGRAPH_FLAG = 0x00000001;
   private EditorParser() { }
-  /**
-   * Returns displayable styled text from the provided HTML string. Any &lt;img&gt; tags in the
-   * HTML will display as a generic replacement image which your program can then go through and
-   * replace with real images.
-   *
-   * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
-   */
-  public static Spanned fromHtml(String source, int flags) {
-    return fromHtml(source, flags, null, null, null);
-  }
   /**
    * Lazy initialization holder for HTML parser. This class will
    * a) be preloaded by the zygote, or b) not loaded until absolutely
@@ -164,7 +84,7 @@ public class EditorParser {
    *
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
-  public static Spanned fromHtml(String source, int flags, RichTextStyle style, ImageGetter imageGetter, TagHandler tagHandler) {
+  public static Spanned fromHtml(String source, RichTextStyle style, ImageGetter imageGetter) {
     Parser parser = new Parser();
     try {
       parser.setProperty(Parser.schemaProperty, HtmlParser.schema);
@@ -172,23 +92,12 @@ public class EditorParser {
       // Should not happen.
       throw new RuntimeException(e);
     }
-    HtmlToSpannedConverter converter =
-      new HtmlToSpannedConverter(source, style, imageGetter, tagHandler, parser, flags);
+    HtmlToSpannedConverter converter = new HtmlToSpannedConverter(source, style, imageGetter, parser);
     return converter.convert();
   }
-  /**
-   * Returns an HTML representation of the provided Spanned text. A best effort is
-   * made to add HTML tags corresponding to spans. Also note that HTML metacharacters
-   * (such as "&lt;" and "&amp;") within the input text are escaped.
-   *
-   * @param text input text to convert
-   * @param option one of {@link #TO_HTML_PARAGRAPH_LINES_CONSECUTIVE} or
-   *     {@link #TO_HTML_PARAGRAPH_LINES_INDIVIDUAL}
-   * @return string containing input converted to HTML
-   */
-  public static String toHtml(Spanned text, int option) {
+  public static String toHtml(Spanned text) {
     StringBuilder out = new StringBuilder();
-    withinHtml(out, text, option);
+    withinHtml(out, text);
     String outString = out.toString();
     return "<html>\n" + outString + "</html>";
   }
@@ -200,11 +109,10 @@ public class EditorParser {
     withinStyle(out, text, 0, text.length());
     return out.toString();
   }
-  private static void withinHtml(StringBuilder out, Spanned text, int option) {
-    withinDiv(out, text, 0, text.length(), option);
+  private static void withinHtml(StringBuilder out, Spanned text) {
+    withinDiv(out, text, 0, text.length());
   }
-  private static void withinDiv(StringBuilder out, Spanned text, int start, int end,
-                                int option) {
+  private static void withinDiv(StringBuilder out, Spanned text, int start, int end) {
     int next;
     for (int i = start; i < end; i = next) {
       next = text.nextSpanTransition(i, end, EditorParagraphSpan.class);
@@ -217,22 +125,13 @@ public class EditorParser {
       for (EditorParagraphSpan ignored : blocks) {
         out.append("<").append(tag).append(">");
       }
-      withinBlock(out, text, i, next, option);
+      withinBlock(out, text, i, next);
       for (EditorParagraphSpan ignored : blocks) {
         out.append("</").append(tag).append(">\n");
       }
     }
   }
-  private static void withinBlock(StringBuilder out, Spanned text, int start, int end,
-                                  int option) {
-    if ((option & TO_HTML_PARAGRAPH_FLAG) == TO_HTML_PARAGRAPH_LINES_CONSECUTIVE) {
-      withinBlockConsecutive(out, text, start, end);
-    } else {
-      withinBlockIndividual(out, text, start, end);
-    }
-  }
-  private static void withinBlockIndividual(StringBuilder out, Spanned text, int start,
-                                            int end) {
+  private static void withinBlock(StringBuilder out, Spanned text, int start, int end) {
     boolean isInUlList = false;
     boolean isInOlList = false;
     int next;
@@ -304,36 +203,6 @@ public class EditorParser {
       }
       next++;
     }
-  }
-  private static void withinBlockConsecutive(StringBuilder out, Spanned text, int start,
-                                             int end) {
-    out.append("<p>");
-    int next;
-    for (int i = start; i < end; i = next) {
-      next = TextUtils.indexOf(text, '\n', i, end);
-      if (next < 0) {
-        next = end;
-      }
-      int nl = 0;
-      while (next < end && text.charAt(next) == '\n') {
-        nl++;
-        next++;
-      }
-      withinParagraph(out, text, i, next - nl);
-      if (nl == 1) {
-        out.append("<br>\n");
-      } else {
-        for (int j = 2; j < nl; j++) {
-          out.append("<br>");
-        }
-        if (next != end) {
-          /* Paragraph should be closed and reopened */
-          out.append("</p>\n");
-          out.append("<p>");
-        }
-      }
-    }
-    out.append("</p>\n");
   }
   private static void withinParagraph(StringBuilder out, Spanned text, int start, int end) {
     int next;
@@ -433,7 +302,6 @@ public class EditorParser {
       }
     }
   }
-
   private static void withinStyle(StringBuilder out, CharSequence text,
                                   int start, int end) {
     for (int i = start; i < end; i++) {
@@ -476,19 +344,15 @@ class HtmlToSpannedConverter implements ContentHandler {
   private final XMLReader mReader;
   private final SpannableStringBuilder mSpannableStringBuilder;
   private final EditorParser.ImageGetter mImageGetter;
-  private final EditorParser.TagHandler mTagHandler;
-  private final int mFlags;
   private static Integer currentOrderedListItemIndex = 0;
   private static Boolean isInOrderedList = false;
 
-  public HtmlToSpannedConverter(String source, RichTextStyle style, EditorParser.ImageGetter imageGetter, EditorParser.TagHandler tagHandler, Parser parser, int flags) {
+  public HtmlToSpannedConverter(String source, RichTextStyle style, EditorParser.ImageGetter imageGetter, Parser parser) {
     mStyle = style;
     mSource = source;
     mSpannableStringBuilder = new SpannableStringBuilder();
     mImageGetter = imageGetter;
-    mTagHandler = tagHandler;
     mReader = parser;
-    mFlags = flags;
   }
 
   public Spanned convert() {
@@ -541,24 +405,24 @@ class HtmlToSpannedConverter implements ContentHandler {
       // We don't need to handle this. TagSoup will ensure that there's a </br> for each <br>
       // so we can safely emit the linebreaks when we handle the close tag.
     } else if (tag.equalsIgnoreCase("p")) {
-      startBlockElement(mSpannableStringBuilder, attributes, getMarginParagraph());
+      startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
-      startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
+      startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ol")) {
       isInOrderedList = true;
       currentOrderedListItemIndex = 0;
-      startBlockElement(mSpannableStringBuilder, attributes, getMarginList());
+      startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("li")) {
-      startLi(mSpannableStringBuilder, attributes);
+      startLi(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("b")) {
       start(mSpannableStringBuilder, new Bold());
     } else if (tag.equalsIgnoreCase("i")) {
       start(mSpannableStringBuilder, new Italic());
     } else if (tag.equalsIgnoreCase("blockquote")) {
-      startBlockquote(mSpannableStringBuilder, attributes);
+      startBlockquote(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("codeblock")) {
-      startCodeBlock(mSpannableStringBuilder, attributes);
+      startCodeBlock(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("a")) {
       startA(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("u")) {
@@ -568,19 +432,17 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("strike")) {
       start(mSpannableStringBuilder, new Strikethrough());
     } else if (tag.equalsIgnoreCase("h1")) {
-      startHeading(mSpannableStringBuilder, attributes, 1);
+      startHeading(mSpannableStringBuilder, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      startHeading(mSpannableStringBuilder, attributes, 2);
+      startHeading(mSpannableStringBuilder, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      startHeading(mSpannableStringBuilder, attributes, 3);
+      startHeading(mSpannableStringBuilder, 3);
     } else if (tag.equalsIgnoreCase("img")) {
       startImg(mSpannableStringBuilder, attributes, mImageGetter, mStyle);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
       startMention(mSpannableStringBuilder, attributes);
-    } else if (mTagHandler != null) {
-      mTagHandler.handleTag(true, tag, mSpannableStringBuilder, mReader);
     }
   }
 
@@ -617,46 +479,7 @@ class HtmlToSpannedConverter implements ContentHandler {
       end(mSpannableStringBuilder, Code.class, new EditorInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
       endMention(mSpannableStringBuilder, mStyle);
-    } else if (mTagHandler != null) {
-      mTagHandler.handleTag(false, tag, mSpannableStringBuilder, mReader);
     }
-  }
-
-  private int getMarginParagraph() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH);
-  }
-
-  private int getMarginHeading() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_HEADING);
-  }
-
-  private int getMarginListItem() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_LIST_ITEM);
-  }
-
-  private int getMarginList() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_LIST);
-  }
-
-  private int getMarginDiv() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_DIV);
-  }
-
-  private int getMarginBlockquote() {
-    return getMargin(EditorParser.FROM_HTML_SEPARATOR_LINE_BREAK_BLOCKQUOTE);
-  }
-
-  /**
-   * Returns the minimum number of newline characters needed before and after a given block-level
-   * element.
-   *
-   * @param flag the corresponding option flag defined in {@link EditorParser} of a block-level element
-   */
-  private int getMargin(int flag) {
-    if ((flag & mFlags) != 0) {
-      return 1;
-    }
-    return 2;
   }
 
   private static void appendNewlines(Editable text, int minNewline) {
@@ -673,11 +496,9 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void startBlockElement(Editable text, Attributes attributes, int margin) {
-    if (margin > 0) {
-      appendNewlines(text, margin);
-      start(text, new Newline(margin));
-    }
+  private static void startBlockElement(Editable text) {
+      appendNewlines(text, 1);
+      start(text, new Newline(1));
   }
 
   private static void endBlockElement(Editable text) {
@@ -696,8 +517,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     text.append('\n');
   }
 
-  private void startLi(Editable text, Attributes attributes) {
-    startBlockElement(text, attributes, getMarginListItem());
+  private void startLi(Editable text) {
+    startBlockElement(text);
 
     if (isInOrderedList) {
       currentOrderedListItemIndex++;
@@ -722,8 +543,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     endBlockElement(text);
   }
 
-  private void startBlockquote(Editable text, Attributes attributes) {
-    startBlockElement(text, attributes, getMarginBlockquote());
+  private void startBlockquote(Editable text) {
+    startBlockElement(text);
     start(text, new Blockquote());
   }
 
@@ -733,8 +554,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     setParagraphSpanFromMark(text, last, new EditorBlockQuoteSpan(style));
   }
 
-  private void startCodeBlock(Editable text, Attributes attributes) {
-    startBlockElement(text, attributes, getMarginBlockquote());
+  private void startCodeBlock(Editable text) {
+    startBlockElement(text);
     start(text, new CodeBlock());
   }
 
@@ -744,8 +565,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     setParagraphSpanFromMark(text, last, new EditorCodeBlockSpan(style));
   }
 
-  private void startHeading(Editable text, Attributes attributes, int level) {
-    startBlockElement(text, attributes, getMarginHeading());
+  private void startHeading(Editable text, int level) {
+    startBlockElement(text);
 
     switch (level) {
       case 1:
