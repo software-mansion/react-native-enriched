@@ -147,6 +147,10 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   [self manageLinkTypingAttributes];
+  
+  // emit onTextChange and onHtmlChange if needed
+  [_editor tryEmittingOnChangeTextEvent];
+  [_editor tryEmittingOnChangeHtmlEvent];
 }
 
 // get exact link data at the given location if it exists
