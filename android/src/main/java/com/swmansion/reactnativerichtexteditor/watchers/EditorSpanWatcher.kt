@@ -59,6 +59,7 @@ class EditorSpanWatcher(private val editorView: ReactNativeRichTextEditorView) :
     if (html == previousHtml) return;
 
     previousHtml = html
+    editorView.layoutManager.invalidateLayout(editorView.text)
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)

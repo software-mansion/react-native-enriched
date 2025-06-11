@@ -1,7 +1,6 @@
 package com.swmansion.reactnativerichtexteditor
 
 import android.content.Context
-import android.text.Spannable
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -60,7 +59,7 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     props: ReactStylesDiffMap?,
     stateWrapper: StateWrapper?
   ): Any? {
-    view.setStateWrapper(stateWrapper)
+    view.stateWrapper = stateWrapper
     return super.updateState(view, props, stateWrapper)
   }
 

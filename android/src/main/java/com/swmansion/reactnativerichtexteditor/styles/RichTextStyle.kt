@@ -49,7 +49,7 @@ class RichTextStyle {
 
   var mentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
 
-  constructor(editorView: ReactNativeRichTextEditorView, style: ReadableMap?) {
+  constructor(editorView: ReactNativeRichTextEditorView?, style: ReadableMap?) {
     this.editorView = editorView
     this.style = style
 
