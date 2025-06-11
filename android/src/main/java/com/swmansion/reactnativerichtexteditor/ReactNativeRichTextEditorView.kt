@@ -166,7 +166,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
     if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, richTextStyle, null, null)
+      val parsed = EditorParser.fromHtml(value, richTextStyle, null)
       val withoutLastNewLine = parsed.trimEnd('\n')
       setText(withoutLastNewLine)
     } else {
