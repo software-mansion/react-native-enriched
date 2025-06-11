@@ -119,7 +119,7 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
 
     val isBackspace = previousTextLength > s.length
     val isNewLine = cursorPosition > 0 && s[cursorPosition - 1] == '\n'
-    val isShortcut = s.substring(start, cursorPosition).endsWith(config.shortcut)
+    val isShortcut = s.substring(start, cursorPosition) == config.shortcut
 
     val spans = s.getSpans(start, end, config.clazz)
 
