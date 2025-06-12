@@ -199,19 +199,21 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   // placeholderTextColor
-  if(newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor && isColorMeaningful(newViewProps.placeholderTextColor)) {
-    _placeholderColor = RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
-    if(defaultTypingAttributes != nullptr) {
+  if(newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor) {
+    // some real color
+    if(isColorMeaningful(newViewProps.placeholderTextColor)) {
+      _placeholderColor = RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
       [self refreshPlaceholderLabelStyles];
+    } else {
+      _placeholderColor = nullptr;
     }
   }
   
   // placeholder
   if(newViewProps.placeholder != oldViewProps.placeholder) {
     _placeholderLabel.text = [NSString fromCppString:newViewProps.placeholder];
-    if(defaultTypingAttributes != nullptr) {
-      [self refreshPlaceholderLabelStyles];
-    }
+    [self refreshPlaceholderLabelStyles];
+    // additionally show placeholder on first mount if it should be there
     if(isFirstMount && textView.text.length == 0) {
       [self setPlaceholderLabelShown:YES];
     }
@@ -230,6 +232,15 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       }
     }
     [config setMentionIndicators:newIndicators];
+  }
+  
+  // selection color sets both selection and cursor on iOS (just as in RN)
+  if(newViewProps.selectionColor != oldViewProps.selectionColor) {
+    if(isColorMeaningful(newViewProps.selectionColor)) {
+      textView.tintColor = RCTUIColorFromSharedColor(newViewProps.selectionColor);
+    } else {
+      textView.tintColor = nullptr;
+    }
   }
   
   // isOnChangeHtmlSet
