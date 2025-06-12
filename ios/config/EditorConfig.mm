@@ -27,33 +27,27 @@
 }
 
 - (void)setPrimaryColor:(UIColor *)newValue {
-  if(![newValue isEqual:_primaryColor]) {
-    _primaryColor = newValue;
-  }
+  _primaryColor = newValue;
 }
 
 - (NSNumber *)primaryFontSize {
-  return _primaryFontSize;
+  return _primaryFontSize != nullptr ? _primaryFontSize : @(14);
 }
 
 - (void)setPrimaryFontSize:(NSNumber *)newValue {
-  if(![_primaryFontSize isEqualToNumber:newValue]) {
-    _primaryFontSize = newValue;
-    _primaryFontNeedsRecreation = YES;
-    _monospacedFontNeedsRecreation = YES;
-  }
+  _primaryFontSize = newValue;
+  _primaryFontNeedsRecreation = YES;
+  _monospacedFontNeedsRecreation = YES;
 }
 
 - (NSString *)primaryFontWeight {
-  return _primaryFontWeight;
+  return _primaryFontWeight != nullptr ? _primaryFontWeight : [NSString stringWithFormat:@"%@", @(UIFontWeightRegular)];
 }
 
 - (void)setPrimaryFontWeight:(NSString *)newValue {
-  if(![_primaryFontWeight isEqualToString:newValue]) {
-    _primaryFontWeight = newValue;
-    _primaryFontNeedsRecreation = YES;
-    _monospacedFontNeedsRecreation = YES;
-  }
+  _primaryFontWeight = newValue;
+  _primaryFontNeedsRecreation = YES;
+  _monospacedFontNeedsRecreation = YES;
 }
 
 - (NSString *)primaryFontFamily {
@@ -61,10 +55,8 @@
 }
 
 - (void)setPrimaryFontFamily:(NSString *)newValue {
-  if(![_primaryFontFamily isEqualToString:newValue]) {
-    _primaryFontFamily = newValue;
-    _primaryFontNeedsRecreation = YES;
-  }
+  _primaryFontFamily = newValue;
+  _primaryFontNeedsRecreation = YES;
 }
 
 - (UIFont *)primaryFont {

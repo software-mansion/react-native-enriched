@@ -77,6 +77,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyEmittedHtml = @"";
   _emitHtml = NO;
   
+  defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
+  
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
     @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
@@ -139,40 +141,74 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
   BOOL isFirstMount = NO;
+  BOOL stylePropChanged = NO;
   
   // initial config
-  // TODO: handle reacting to config props when styles are relatively working
   if(config == nullptr) {
     isFirstMount = YES;
-    EditorConfig *newConfig = [[EditorConfig alloc] init];
+    config = [[EditorConfig alloc] init];
+  }
   
-    if(newViewProps.color) {
+  // style props:
+  
+  if(newViewProps.color != oldViewProps.color) {
+    if(isColorMeaningful(newViewProps.color)) {
       UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
-      [newConfig setPrimaryColor:uiColor];
+      [config setPrimaryColor:uiColor];
+    } else {
+      [config setPrimaryColor:nullptr];
     }
-    
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.fontSize != oldViewProps.fontSize) {
     if(newViewProps.fontSize) {
       NSNumber* fontSize = @(newViewProps.fontSize);
-      [newConfig setPrimaryFontSize: fontSize];
+      [config setPrimaryFontSize:fontSize];
+    } else {
+      [config setPrimaryFontSize:nullptr];
     }
-    
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.fontWeight != oldViewProps.fontWeight) {
     if(!newViewProps.fontWeight.empty()) {
-      [newConfig setPrimaryFontWeight: [NSString fromCppString:newViewProps.fontWeight]];
+      [config setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
+    } else {
+      [config setPrimaryFontWeight:nullptr];
     }
+    stylePropChanged = YES;
+  }
     
+  if(newViewProps.fontFamily != oldViewProps.fontFamily) {
     if(!newViewProps.fontFamily.empty()) {
-      [newConfig setPrimaryFontFamily: [NSString fromCppString:newViewProps.fontFamily]];
+      [config setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
+    } else {
+      [config setPrimaryFontFamily:nullptr];
     }
+    stylePropChanged = YES;
+  }
     
-    // set the config
-    config = newConfig;
-    // fill the typing attributes
-    defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-    defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
-    defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
-    defaultTypingAttributes[NSUnderlineColorAttributeName] = [newConfig primaryColor];
-    defaultTypingAttributes[NSStrikethroughColorAttributeName] = [newConfig primaryColor];
-    textView.typingAttributes = defaultTypingAttributes;
+  // fill the typing attributes with style props
+  defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
+  defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
+  defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
+  defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
+  textView.typingAttributes = defaultTypingAttributes;
+  
+  if(stylePropChanged) {
+    // all the text needs to be rebuilt
+    // we get the current html and replace whole text parsing it back into the input
+    // this way, the newest config attributes are being used!
+    NSString *currentHtml = [_editorParser parseToHtml];
+    
+    // we don't want to emit these html changes in here
+    _emitHtml = NO;
+    [_editorParser replaceWholeFromHtml:currentHtml];
+    _emitHtml = YES;
+    
+    // update the placeholder as well
+    [self refreshPlaceholderLabelStyles];
   }
   
   // editable
@@ -180,7 +216,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     textView.editable = newViewProps.editable;
   }
   
-  // default value - must be sete before placeholder to make sure it correctly shows on first mount
+  // default value - must be set before placeholder to make sure it correctly shows on first mount
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
     NSString *newDefaultValue = [NSString fromCppString:newViewProps.defaultValue];
     if(newDefaultValue.length >= 13) {
