@@ -12,13 +12,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ReactNativeRichTextEditorView : RCTViewComponentView {
   @public UITextView *textView;
   @public EditorConfig *config;
+  @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
-  @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
-  @public NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
+- (void)tryEmittingOnChangeTextEvent;
+- (void)tryEmittingOnChangeHtmlEvent;
+- (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
 @end
 
 NS_ASSUME_NONNULL_END

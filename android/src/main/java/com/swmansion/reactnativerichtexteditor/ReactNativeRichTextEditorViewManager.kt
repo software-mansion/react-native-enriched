@@ -174,6 +174,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     view?.setPadding(left, top, right, bottom)
   }
 
+  override fun setIsOnChangeHtmlSet(view: ReactNativeRichTextEditorView?, value: Boolean) {
+    // this prop isn't used on Android as of now, but the setter must be present
+  }
+
   override fun focus(view: ReactNativeRichTextEditorView?) {
     view?.requestFocusProgrammatically()
   }

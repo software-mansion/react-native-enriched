@@ -12,6 +12,7 @@
 #import <React/RCTConversions.h>
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
+#import "EditorParser.h"
 
 using namespace facebook::react;
 
@@ -22,15 +23,19 @@ using namespace facebook::react;
 @implementation ReactNativeRichTextEditorView {
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
-  NSMutableDictionary<NSAttributedStringKey, id> *_defaultTypingAttributes;
   NSMutableSet<NSNumber *> *_activeStyles;
   NSArray<NSDictionary *> *_modifiedWords;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSRange _recentlyChangedRange;
   NSString *_recentlyEmittedString;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
+  EditorParser *_editorParser;
+  NSString *_recentlyEmittedHtml;
+  BOOL _emitHtml;
 }
 
 // MARK: - Component utils
@@ -67,6 +72,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   _recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
+  _recentlyEmittedHtml = @"";
+  _emitHtml = NO;
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -78,7 +85,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self]
   };
   
-  conflictingStyles = @{
+  _conflictingStyles = @{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -88,7 +95,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])]
   };
   
-  blockingStyles = @{
+  _blockingStyles = @{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -97,6 +104,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([LinkStyle getStyleType]): @[],
     @([MentionStyle getStyleType]): @[],
   };
+  
+  _editorParser = [[EditorParser alloc] initWithEditor:self];
 }
 
 - (void)setupTextView {
@@ -142,12 +151,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // set the config
     config = newConfig;
     // fill the typing attributes
-    _defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-    _defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
-    _defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
-    _defaultTypingAttributes[NSUnderlineColorAttributeName] = [newConfig primaryColor];
-    _defaultTypingAttributes[NSStrikethroughColorAttributeName] = [newConfig primaryColor];
-    textView.typingAttributes = _defaultTypingAttributes;
+    defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
+    defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
+    defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
+    defaultTypingAttributes[NSUnderlineColorAttributeName] = [newConfig primaryColor];
+    defaultTypingAttributes[NSStrikethroughColorAttributeName] = [newConfig primaryColor];
+    textView.typingAttributes = defaultTypingAttributes;
   }
   
   // default value
@@ -171,6 +180,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
   
+  // isOnChangeHtmlSet
+  _emitHtml = newViewProps.isOnChangeHtmlSet;
+  
   [super updateProps:props oldProps:oldProps];
   
   if(heightUpdateNeeded) {
@@ -192,14 +204,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // edge case: empty input should still be of a height of a single line, so we add a mock "I" character
   if([currentStr length] == 0 ) {
     [currentStr appendAttributedString:
-       [[NSAttributedString alloc] initWithString:@"I" attributes:_defaultTypingAttributes]
+       [[NSAttributedString alloc] initWithString:@"I" attributes:defaultTypingAttributes]
     ];
   }
   
   // edge case: trailing newlines aren't counted towards height calculations, so we add a mock "I" character
   if([currentStr length] > 0 && [[currentStr.string substringFromIndex:[currentStr length] - 1] isEqualToString:@"\n"]) {
     [currentStr appendAttributedString:
-       [[NSAttributedString alloc] initWithString:@"I" attributes:_defaultTypingAttributes]
+       [[NSAttributedString alloc] initWithString:@"I" attributes:defaultTypingAttributes]
     ];
   }
 
@@ -354,6 +366,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
   }
+  
+  // emit onChangeHtml event if needed
+  [self tryEmittingOnChangeHtmlEvent];
 }
 
 // MARK: - Native commands
@@ -446,6 +461,36 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
+- (void)tryEmittingOnChangeTextEvent {
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    // emit the event only when the values differ
+    if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+      _recentlyEmittedString = [textView.textStorage.string copy];
+      emitter->onChangeText({
+        .value = [textView.textStorage.string toCppString]
+      });
+    }
+  }
+}
+
+- (void)tryEmittingOnChangeHtmlEvent {
+  if(!_emitHtml) {
+    return;
+  }
+  auto emitter = [self getEventEmitter];
+  if(emitter != nullptr) {
+    NSString *htmlOutput = [_editorParser parseToHtml];
+    // make sure html really changed
+    if(![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
+      _recentlyEmittedHtml = htmlOutput;
+      emitter->onChangeHtml({
+        .value = [htmlOutput toCppString]
+      });
+    }
+  }
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -493,13 +538,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
   // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: blockingStyles[@(type)]];
+  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)]];
   if(blocking.count != 0) {
     return NO;
   }
   
   // handle conflicting styles: all of their occurences have to be removed
-  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: conflictingStyles[@(type)]];
+  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)]];
   if(conflicting.count != 0) {
     for(NSNumber *style in conflicting) {
       id<BaseStyleProtocol> styleClass = stylesDict[style];
@@ -626,7 +671,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)textViewDidChange:(UITextView *)textView {
   // revert typing attributes to the defaults if field is empty
   if(textView.textStorage.length == 0) {
-    textView.typingAttributes = _defaultTypingAttributes;
+    textView.typingAttributes = defaultTypingAttributes;
   }
 
   // fix the marked text issues
@@ -637,17 +682,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   } else {
     // normally compute modified words
     _modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:_recentlyChangedRange];
-    
-    // emit the event only when the values differ
-    if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-      _recentlyEmittedString = [textView.textStorage.string copy];
-      auto emitter = [self getEventEmitter];
-      if(emitter != nullptr) {
-        emitter->onChangeText({
-          .value = [textView.textStorage.string toCppString]
-        });
-      }
-    }
+    // emit onChangeText if possible
+    [self tryEmittingOnChangeTextEvent];
   }
   
   // handle modified words

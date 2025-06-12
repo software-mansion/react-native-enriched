@@ -29,6 +29,7 @@
 
 @interface MentionStyle : NSObject<BaseStyleProtocol>
 - (void)addMention:(NSString *)indicator text:(NSString *)text attributes:(NSString *)attributes;
+- (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params;
 - (void)startMentionWithIndicator:(NSString *)indicator;
 - (void)handleExistingMentions;
 - (void)manageMentionEditing;
