@@ -2,6 +2,7 @@ package com.swmansion.reactnativerichtexteditor.styles
 
 import android.text.Editable
 import android.text.Spannable
+import android.util.Log
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
@@ -95,6 +96,7 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
       val spans = s.getSpans(start, end, config.clazz)
 
       for (span in spans) {
+        end = s.getSpanEnd(span).coerceAtLeast(end)
         s.removeSpan(span)
       }
 
