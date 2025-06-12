@@ -138,7 +138,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
-  BOOL heightUpdateNeeded = NO;
   BOOL isFirstMount = NO;
   
   // initial config
@@ -181,10 +180,22 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     textView.editable = newViewProps.editable;
   }
   
-  // default value
+  // default value - must be sete before placeholder to make sure it correctly shows on first mount
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
-    textView.text = [NSString fromCppString:newViewProps.defaultValue];
-    heightUpdateNeeded = YES;
+    NSString *newDefaultValue = [NSString fromCppString:newViewProps.defaultValue];
+    if(newDefaultValue.length >= 13) {
+      NSString *firstSix = [newDefaultValue substringWithRange:NSMakeRange(0, 6)];
+      NSString *lastSeven = [newDefaultValue substringWithRange:NSMakeRange(newDefaultValue.length - 7, 7)];
+      
+      if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
+        // we've got some seemingly proper html
+        [_editorParser replaceWholeFromHtml:newDefaultValue];
+      } else {
+        textView.text = newDefaultValue;
+      }
+    } else {
+      textView.text = newDefaultValue;
+    }
   }
   
   // placeholderTextColor
@@ -224,13 +235,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // onChangeHtmlSet
   _emitHtml = newViewProps.onChangeHtmlSet;
   
+  // update the props
   [super updateProps:props oldProps:oldProps];
+  // mandatory text and height checks
+  [self anyTextMayHaveBeenModified];
+  [self tryUpdatingHeight];
   
-  if(heightUpdateNeeded) {
-    [self tryUpdatingHeight];
-  }
-  
-  // needs to be done at the very end
+  // autofocus - needs to be done at the very end
   if(isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
