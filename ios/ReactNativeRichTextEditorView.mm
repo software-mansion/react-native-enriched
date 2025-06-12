@@ -361,7 +361,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if(detectedMentionParams != nullptr) {
     // emit onMentionDetected event
-    [self emitOnMentionDetectedEvent:detectedMentionParams.text attributes:detectedMentionParams.attributes];
+    [self emitOnMentionDetectedEvent:detectedMentionParams.text indicator:detectedMentionParams.indicator attributes:detectedMentionParams.attributes];
     
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
@@ -432,11 +432,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
-- (void)emitOnMentionDetectedEvent:(NSString *)text attributes:(NSString *)attributes {
+- (void)emitOnMentionDetectedEvent:(NSString *)text indicator:(NSString *)indicator attributes:(NSString *)attributes {
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
     emitter->onMentionDetected({
       .text = [text toCppString],
+      .indicator = [indicator toCppString],
       .payload = [attributes toCppString]
     });
   }
