@@ -149,7 +149,7 @@ export interface NativeProps extends ViewProps {
   fontStyle?: string;
 
   // Used for onChangeHtml event performance optimization
-  onChangeHtmlSet: boolean;
+  isOnChangeHtmlSet: boolean;
 }
 
 type ComponentType = HostComponent<NativeProps>;

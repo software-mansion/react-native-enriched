@@ -232,10 +232,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
   
-  // onChangeHtmlSet
-  _emitHtml = newViewProps.onChangeHtmlSet;
+  // isOnChangeHtmlSet
+  _emitHtml = newViewProps.isOnChangeHtmlSet;
   
-  // update the props
   [super updateProps:props oldProps:oldProps];
   // mandatory text and height checks
   [self anyTextMayHaveBeenModified];
