@@ -195,9 +195,8 @@
   
   // re-apply the styles
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:0];
-  // events need to be emitted because they get naturally sent only with user-made changes
-  [_editor tryEmittingOnChangeTextEvent];
-  [_editor tryEmittingOnChangeHtmlEvent];
+  // run the editor changes callback
+  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)replaceRangeFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
@@ -209,8 +208,7 @@
   [TextInsertionUtils replaceText:plainText inView:_editor->textView at:range additionalAttributes:nil];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
-  [_editor tryEmittingOnChangeTextEvent];
-  [_editor tryEmittingOnChangeHtmlEvent];
+  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)insertFromHtml:(NSString * _Nonnull)html location:(NSInteger)location {
@@ -222,8 +220,7 @@
   [TextInsertionUtils insertText:plainText inView:_editor->textView at:location additionalAttributes:nil];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
-  [_editor tryEmittingOnChangeTextEvent];
-  [_editor tryEmittingOnChangeHtmlEvent];
+  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles offsetFromBeginning:(NSInteger)offset {
