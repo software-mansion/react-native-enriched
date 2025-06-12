@@ -1,11 +1,29 @@
 package com.swmansion.reactnativerichtexteditor
 
+import android.text.Editable
 import android.text.StaticLayout
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.uimanager.PixelUtil
 
 class ReactNativeRichTextEditorViewLayoutManager(private val editorView: ReactNativeRichTextEditorView) {
   private var cachedSize: Pair<Float, Float> = Pair(0f, 0f)
   private var cachedYogaWidth: Float = 0f
+  private var forceHeightRecalculationCounter: Int = 0
+
+  fun cleanup() {
+    forceHeightRecalculationCounter = 0
+  }
+
+  // Update shadow node's state in order to recalculate layout
+  fun invalidateLayout(text: Editable?) {
+    measureSize(text ?: "")
+
+    val counter = forceHeightRecalculationCounter
+    forceHeightRecalculationCounter++
+    val state = Arguments.createMap()
+    state.putInt("forceHeightRecalculationCounter", counter)
+    editorView.stateWrapper?.updateState(state)
+  }
 
   fun getMeasuredSize(maxWidth: Float): Pair<Float, Float> {
     if (maxWidth == cachedYogaWidth) {

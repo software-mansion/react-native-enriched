@@ -15,7 +15,8 @@ class OnChangeTextEvent(surfaceId: Int, viewId: Int, private val editable: Edita
   override fun getEventData(): WritableMap {
     val eventData: WritableMap = Arguments.createMap()
     val text = editable.toString()
-    eventData.putString("value", text)
+    val normalizedText = text.replace(Regex("\\u200B"), "")
+    eventData.putString("value", normalizedText)
     return eventData
   }
 

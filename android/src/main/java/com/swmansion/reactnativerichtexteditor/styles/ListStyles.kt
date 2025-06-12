@@ -119,9 +119,14 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
 
     val isBackspace = previousTextLength > s.length
     val isNewLine = cursorPosition > 0 && s[cursorPosition - 1] == '\n'
-    val isShortcut = s.substring(start, cursorPosition).endsWith(config.shortcut)
-
+    val isShortcut = s.substring(start, end).startsWith(config.shortcut)
     val spans = s.getSpans(start, end, config.clazz)
+
+    // Remove spans if cursor is at the start of the paragraph and spans exist
+    if (isBackspace && start == cursorPosition && spans.isNotEmpty()) {
+      removeSpansForRange(s, start, end, config.clazz)
+      return
+    }
 
     if (!isBackspace && isShortcut) {
       s.replace(start, cursorPosition, "\u200B")

@@ -13,7 +13,6 @@ import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
@@ -40,7 +39,7 @@ import kotlin.math.ceil
 
 
 class ReactNativeRichTextEditorView : AppCompatEditText {
-  private var stateWrapper: StateWrapper? = null
+  var stateWrapper: StateWrapper? = null
   val selection: EditorSelection? = EditorSelection(this)
   val spanState: EditorSpanState? = EditorSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
@@ -52,7 +51,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var richTextStyle: RichTextStyle = RichTextStyle(this, null)
   var spanWatcher: EditorSpanWatcher? = null
-  var layoutManager: ReactNativeRichTextEditorViewLayoutManager? =
+  var layoutManager: ReactNativeRichTextEditorViewLayoutManager =
     ReactNativeRichTextEditorViewLayoutManager(this)
 
   var fontSize: Float? = null
@@ -63,7 +62,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
-  private var forceHeightRecalculationCounter: Int = 0
 
   private var inputMethodManager: InputMethodManager? = null
 
@@ -150,10 +148,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
   }
 
-  fun setStateWrapper(sw: StateWrapper?) {
-    stateWrapper = sw
-  }
-
   fun requestFocusProgrammatically() {
     requestFocus()
     inputMethodManager?.showSoftInput(this, 0)
@@ -166,7 +160,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
     if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, EditorParser.FROM_HTML_MODE_COMPACT, richTextStyle, null, null)
+      val parsed = EditorParser.fromHtml(value, richTextStyle, null)
       val withoutLastNewLine = parsed.trimEnd('\n')
       setText(withoutLastNewLine)
     } else {
@@ -237,7 +231,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     // This ensured that newly created spans will take the new font size into account
     richTextStyle.invalidateStyles()
-    updateYogaState()
+    layoutManager.invalidateLayout(text)
   }
 
   fun setFontFamily(family: String?) {
@@ -283,7 +277,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     typeface = newTypeface
     paint.typeface = newTypeface
 
-    updateYogaState()
+    layoutManager.invalidateLayout(text)
   }
 
   private fun toggleStyle(name: String) {
@@ -302,6 +296,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.UNORDERED_LIST)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
+
+    layoutManager.invalidateLayout(text)
   }
 
   private fun verifyStyle(name: String): Boolean {
@@ -366,17 +362,6 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     parametrizedStyles?.setMentionSpan(text, indicator, attributes)
   }
 
-  // Update shadow node's state in order to recalculate layout
-  fun updateYogaState() {
-    layoutManager?.measureSize(text ?: "")
-
-    val counter = forceHeightRecalculationCounter
-    forceHeightRecalculationCounter++
-    val state = Arguments.createMap()
-    state.putInt("forceHeightRecalculationCounter", counter)
-    stateWrapper?.updateState(state)
-  }
-
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
 
@@ -388,8 +373,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   override fun onDetachedFromWindow() {
-    forceHeightRecalculationCounter = 0
-
+    layoutManager.cleanup()
     super.onDetachedFromWindow()
   }
 }
