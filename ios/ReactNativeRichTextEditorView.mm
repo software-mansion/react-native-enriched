@@ -239,10 +239,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // some real color
     if(isColorMeaningful(newViewProps.placeholderTextColor)) {
       _placeholderColor = RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
-      [self refreshPlaceholderLabelStyles];
     } else {
       _placeholderColor = nullptr;
     }
+    [self refreshPlaceholderLabelStyles];
   }
   
   // placeholder
