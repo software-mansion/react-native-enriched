@@ -2,7 +2,6 @@ package com.swmansion.reactnativerichtexteditor.styles
 
 import android.text.Editable
 import android.text.Spannable
-import android.util.Log
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
