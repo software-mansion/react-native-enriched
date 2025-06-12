@@ -180,8 +180,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
   
-  // onChangeHtmlSet
-  _emitHtml = newViewProps.onChangeHtmlSet;
+  // isOnChangeHtmlSet
+  _emitHtml = newViewProps.isOnChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
   
