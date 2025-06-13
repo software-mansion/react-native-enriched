@@ -5,12 +5,11 @@ import android.graphics.Paint
 import android.text.Layout
 import android.text.Spanned
 import android.text.style.LeadingMarginSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan, EditorZeroWidthSpaceSpan {
+class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan {
   override fun getLeadingMargin(p0: Boolean): Int {
     return richTextStyle.ulBulletSize + richTextStyle.ulGapWidth + richTextStyle.ulMarginLeft
   }
