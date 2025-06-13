@@ -24,7 +24,6 @@ using namespace facebook::react;
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSArray<NSDictionary *> *_modifiedWords;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
@@ -36,6 +35,8 @@ using namespace facebook::react;
   EditorParser *_editorParser;
   NSString *_recentlyEmittedHtml;
   BOOL _emitHtml;
+  UILabel *_placeholderLabel;
+  UIColor *_placeholderColor;
 }
 
 // MARK: - Component utils
@@ -60,6 +61,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
+    [self setupPlaceholderLabel];
     self.contentView = textView;
   }
   return self;
@@ -74,6 +76,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
   _emitHtml = NO;
+  
+  defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
   
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
@@ -116,53 +120,139 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.delegate = self;
 }
 
+- (void)setupPlaceholderLabel {
+  _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [textView addSubview:_placeholderLabel];
+  [NSLayoutConstraint activateConstraints: @[
+    [_placeholderLabel.leadingAnchor constraintEqualToAnchor:textView.leadingAnchor],
+    [_placeholderLabel.widthAnchor constraintEqualToAnchor:textView.widthAnchor],
+    [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor],
+    [_placeholderLabel.bottomAnchor constraintEqualToAnchor:textView.bottomAnchor]
+  ]];
+  _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+  _placeholderLabel.text = @"";
+  _placeholderLabel.hidden = YES;
+}
+
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
-  BOOL heightUpdateNeeded = NO;
   BOOL isFirstMount = NO;
+  BOOL stylePropChanged = NO;
   
   // initial config
-  // TODO: handle reacting to config props when styles are relatively working
   if(config == nullptr) {
     isFirstMount = YES;
-    EditorConfig *newConfig = [[EditorConfig alloc] init];
-  
-    if(newViewProps.color) {
-      UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
-      [newConfig setPrimaryColor:uiColor];
-    }
-    
-    if(newViewProps.fontSize) {
-      NSNumber* fontSize = @(newViewProps.fontSize);
-      [newConfig setPrimaryFontSize: fontSize];
-    }
-    
-    if(!newViewProps.fontWeight.empty()) {
-      [newConfig setPrimaryFontWeight: [NSString fromCppString:newViewProps.fontWeight]];
-    }
-    
-    if(!newViewProps.fontFamily.empty()) {
-      [newConfig setPrimaryFontFamily: [NSString fromCppString:newViewProps.fontFamily]];
-    }
-    
-    // set the config
-    config = newConfig;
-    // fill the typing attributes
-    defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-    defaultTypingAttributes[NSForegroundColorAttributeName] = [newConfig primaryColor];
-    defaultTypingAttributes[NSFontAttributeName] = [newConfig primaryFont];
-    defaultTypingAttributes[NSUnderlineColorAttributeName] = [newConfig primaryColor];
-    defaultTypingAttributes[NSStrikethroughColorAttributeName] = [newConfig primaryColor];
-    textView.typingAttributes = defaultTypingAttributes;
+    config = [[EditorConfig alloc] init];
   }
   
-  // default value
+  // style props:
+  
+  if(newViewProps.color != oldViewProps.color) {
+    if(isColorMeaningful(newViewProps.color)) {
+      UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
+      [config setPrimaryColor:uiColor];
+    } else {
+      [config setPrimaryColor:nullptr];
+    }
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.fontSize != oldViewProps.fontSize) {
+    if(newViewProps.fontSize) {
+      NSNumber* fontSize = @(newViewProps.fontSize);
+      [config setPrimaryFontSize:fontSize];
+    } else {
+      [config setPrimaryFontSize:nullptr];
+    }
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.fontWeight != oldViewProps.fontWeight) {
+    if(!newViewProps.fontWeight.empty()) {
+      [config setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
+    } else {
+      [config setPrimaryFontWeight:nullptr];
+    }
+    stylePropChanged = YES;
+  }
+    
+  if(newViewProps.fontFamily != oldViewProps.fontFamily) {
+    if(!newViewProps.fontFamily.empty()) {
+      [config setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
+    } else {
+      [config setPrimaryFontFamily:nullptr];
+    }
+    stylePropChanged = YES;
+  }
+    
+  // fill the typing attributes with style props
+  defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
+  defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
+  defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
+  defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
+  textView.typingAttributes = defaultTypingAttributes;
+  
+  if(stylePropChanged) {
+    // all the text needs to be rebuilt
+    // we get the current html and replace whole text parsing it back into the input
+    // this way, the newest config attributes are being used!
+    NSString *currentHtml = [_editorParser parseToHtml];
+    
+    // we don't want to emit these html changes in here
+    _emitHtml = NO;
+    [_editorParser replaceWholeFromHtml:currentHtml];
+    _emitHtml = YES;
+    
+    // update the placeholder as well
+    [self refreshPlaceholderLabelStyles];
+  }
+  
+  // editable
+  if(newViewProps.editable != oldViewProps.editable) {
+    textView.editable = newViewProps.editable;
+  }
+  
+  // default value - must be set before placeholder to make sure it correctly shows on first mount
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
-    textView.text = [NSString fromCppString:newViewProps.defaultValue];
-    heightUpdateNeeded = YES;
+    NSString *newDefaultValue = [NSString fromCppString:newViewProps.defaultValue];
+    if(newDefaultValue.length >= 13) {
+      NSString *firstSix = [newDefaultValue substringWithRange:NSMakeRange(0, 6)];
+      NSString *lastSeven = [newDefaultValue substringWithRange:NSMakeRange(newDefaultValue.length - 7, 7)];
+      
+      if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
+        // we've got some seemingly proper html
+        [_editorParser replaceWholeFromHtml:newDefaultValue];
+      } else {
+        textView.text = newDefaultValue;
+      }
+    } else {
+      textView.text = newDefaultValue;
+    }
+  }
+  
+  // placeholderTextColor
+  if(newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor) {
+    // some real color
+    if(isColorMeaningful(newViewProps.placeholderTextColor)) {
+      _placeholderColor = RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
+    } else {
+      _placeholderColor = nullptr;
+    }
+    [self refreshPlaceholderLabelStyles];
+  }
+  
+  // placeholder
+  if(newViewProps.placeholder != oldViewProps.placeholder) {
+    _placeholderLabel.text = [NSString fromCppString:newViewProps.placeholder];
+    [self refreshPlaceholderLabelStyles];
+    // additionally show placeholder on first mount if it should be there
+    if(isFirstMount && textView.text.length == 0) {
+      [self setPlaceholderLabelShown:YES];
+    }
   }
   
   // mention indicators
@@ -180,19 +270,45 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
   
+  // selection color sets both selection and cursor on iOS (just as in RN)
+  if(newViewProps.selectionColor != oldViewProps.selectionColor) {
+    if(isColorMeaningful(newViewProps.selectionColor)) {
+      textView.tintColor = RCTUIColorFromSharedColor(newViewProps.selectionColor);
+    } else {
+      textView.tintColor = nullptr;
+    }
+  }
+  
   // isOnChangeHtmlSet
   _emitHtml = newViewProps.isOnChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
+  // mandatory text and height checks
+  [self anyTextMayHaveBeenModified];
+  [self tryUpdatingHeight];
   
-  if(heightUpdateNeeded) {
-    [self tryUpdatingHeight];
-  }
-  
-  // needs to be done at the very end
+  // autofocus - needs to be done at the very end
   if(isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
+}
+
+- (void)setPlaceholderLabelShown:(BOOL)shown {
+  if(shown) {
+    [self refreshPlaceholderLabelStyles];
+    _placeholderLabel.hidden = NO;
+  } else {
+    _placeholderLabel.hidden = YES;
+  }
+}
+
+- (void)refreshPlaceholderLabelStyles {
+  NSMutableDictionary *newAttrs = [defaultTypingAttributes mutableCopy];
+  if(_placeholderColor != nullptr) {
+    newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
+  }
+  NSAttributedString *newAttrStr = [[NSAttributedString alloc] initWithString:_placeholderLabel.text attributes: newAttrs];
+  _placeholderLabel.attributedText = newAttrStr;
 }
 
 // MARK: - Measuring and states
@@ -371,7 +487,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self tryEmittingOnChangeHtmlEvent];
 }
 
-// MARK: - Native commands
+// MARK: - Native commands and events
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
   if([commandName isEqualToString:@"focus"]) {
@@ -462,21 +578,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
-- (void)tryEmittingOnChangeTextEvent {
-  auto emitter = [self getEventEmitter];
-  if(emitter != nullptr) {
-    // emit the event only when the values differ
-    if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-      _recentlyEmittedString = [textView.textStorage.string copy];
-      emitter->onChangeText({
-        .value = [textView.textStorage.string toCppString]
-      });
-    }
-  }
-}
-
 - (void)tryEmittingOnChangeHtmlEvent {
-  if(!_emitHtml) {
+  if(!_emitHtml || textView.markedTextRange != nullptr) {
     return;
   }
   auto emitter = [self getEventEmitter];
@@ -615,6 +718,57 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
+- (void)anyTextMayHaveBeenModified {
+  // we don't do no text changes when working with iOS marked text
+  if(textView.markedTextRange != nullptr) {
+    return;
+  }
+
+  // do all the stuff only if the text really changed
+  if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+    
+    // placholder management
+    if(_recentlyEmittedString.length == 0 && textView.textStorage.string.length > 0) {
+      [self setPlaceholderLabelShown:NO];
+    } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
+      [self setPlaceholderLabelShown:YES];
+      // also typing attributes get reset when emptying the input
+      textView.typingAttributes = defaultTypingAttributes;
+    }
+    
+    // modified words handling
+    NSArray *modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:_recentlyChangedRange];
+    if(modifiedWords != nullptr) {
+      for(NSDictionary *wordDict in modifiedWords) {
+        NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
+        NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+        
+        if(wordText == nullptr || wordRange == nullptr) {
+          continue;
+        }
+        
+        [self handleWordModificationBasedChanges:wordText inRange:[wordRange rangeValue]];
+      }
+    }
+  
+    // emit onChangeText event
+    auto emitter = [self getEventEmitter];
+    if(emitter != nullptr) {
+      emitter->onChangeText({
+        .value = [textView.textStorage.string toCppString]
+      });
+    }
+    
+    // set the recently emitted string
+    _recentlyEmittedString = [textView.textStorage.string copy];
+    
+    // update height on each character change
+    [self tryUpdatingHeight];
+    // update active styles as well
+    [self tryUpdatingActiveStyles];
+  }
+}
+
 // MARK: - UITextView delegate methods
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
@@ -669,42 +823,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self tryUpdatingActiveStyles];
 }
 
+// this function isn't called always when some text changes (for example setting link or starting mention with indicator doesn't fire it)
+// so all the logic is in anyTextMayHaveBeenModified
 - (void)textViewDidChange:(UITextView *)textView {
-  // revert typing attributes to the defaults if field is empty
-  if(textView.textStorage.length == 0) {
-    textView.typingAttributes = defaultTypingAttributes;
-  }
-
-  // fix the marked text issues
-  if(textView.markedTextRange != nullptr) {
-    // when there is some sort of system marking, we don't process modified words
-    // and no text event is emitted
-    _modifiedWords = nullptr;
-  } else {
-    // normally compute modified words
-    _modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:_recentlyChangedRange];
-    // emit onChangeText if possible
-    [self tryEmittingOnChangeTextEvent];
-  }
-  
-  // handle modified words
-  if(_modifiedWords != nullptr) {
-    for(NSDictionary *wordDict in _modifiedWords) {
-      NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
-      NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
-      
-      if(wordText == nullptr || wordRange == nullptr) {
-        continue;
-      }
-      
-      [self handleWordModificationBasedChanges:wordText inRange:[wordRange rangeValue]];
-    }
-  }
-  
-  // update height on each character change
-  [self tryUpdatingHeight];
-  // for safety: update active styles as well
-  [self tryUpdatingActiveStyles];
+  [self anyTextMayHaveBeenModified];
 }
 
 @end
