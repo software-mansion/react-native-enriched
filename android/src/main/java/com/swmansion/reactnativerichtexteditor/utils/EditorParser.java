@@ -25,6 +25,7 @@ import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorStrikeThroughSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnderlineSpan;
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan;
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorBlockSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan;
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan;
@@ -118,8 +119,8 @@ public class EditorParser {
   private static void withinDiv(StringBuilder out, Spanned text, int start, int end) {
     int next;
     for (int i = start; i < end; i = next) {
-      next = text.nextSpanTransition(i, end, EditorParagraphSpan.class);
-      EditorParagraphSpan[] blocks = text.getSpans(i, next, EditorParagraphSpan.class);
+      next = text.nextSpanTransition(i, end, EditorBlockSpan.class);
+      EditorBlockSpan[] blocks = text.getSpans(i, next, EditorBlockSpan.class);
       String tag = "unknown";
       if (blocks.length > 0){
         tag = blocks[0] instanceof EditorCodeBlockSpan ? "codeblock" : "blockquote";
@@ -131,14 +132,31 @@ public class EditorParser {
         out.replace(out.length() - 5, out.length(), "");
       }
 
-      for (EditorParagraphSpan ignored : blocks) {
+      for (EditorBlockSpan ignored : blocks) {
         out.append("<").append(tag).append(">\n");
       }
       withinBlock(out, text, i, next);
-      for (EditorParagraphSpan ignored : blocks) {
+      for (EditorBlockSpan ignored : blocks) {
         out.append("</").append(tag).append(">\n");
       }
     }
+  }
+  private static String getBlockTag(EditorParagraphSpan[] spans) {
+    for (EditorParagraphSpan span : spans) {
+      if (span instanceof EditorUnorderedListSpan) {
+        return "ul";
+      } else if (span instanceof EditorOrderedListSpan) {
+        return "ol";
+      } else if (span instanceof EditorH1Span) {
+        return "h1";
+      } else if (span instanceof EditorH2Span) {
+        return "h2";
+      } else if (span instanceof EditorH3Span) {
+        return "h3";
+      }
+    }
+
+    return "p";
   }
   private static void withinBlock(StringBuilder out, Spanned text, int start, int end) {
     boolean isInUlList = false;
@@ -161,18 +179,11 @@ public class EditorParser {
         }
         out.append("<br>\n");
       } else {
-        boolean isUlListItem = false;
-        boolean isOlListItem = false;
-        ParagraphStyle[] paragraphStyles = text.getSpans(i, next, ParagraphStyle.class);
-        for (ParagraphStyle paragraphStyle : paragraphStyles) {
-          if (paragraphStyle instanceof EditorUnorderedListSpan) {
-            isUlListItem = true;
-            break;
-          } else if (paragraphStyle instanceof EditorOrderedListSpan) {
-            isOlListItem = true;
-            break;
-          }
-        }
+        EditorParagraphSpan[] paragraphStyles = text.getSpans(i, next, EditorParagraphSpan.class);
+        String tag = getBlockTag(paragraphStyles);
+        boolean isUlListItem = tag.equals("ul");
+        boolean isOlListItem = tag.equals("ol");
+
         if (isUlListItem && !isInUlList) {
           // Current paragraph is the first item in a list
           isInUlList = true;
@@ -192,7 +203,7 @@ public class EditorParser {
           out.append("</ol>\n");
         }
         boolean isList = isUlListItem || isOlListItem;
-        String tagType = isList ? "li" : "p";
+        String tagType = isList ? "li" : tag;
         out.append("<");
 
         out.append(tagType);
@@ -230,15 +241,6 @@ public class EditorParser {
         }
         if (style[j] instanceof EditorInlineCodeSpan) {
           out.append("<code>");
-        }
-        if (style[j] instanceof EditorH1Span) {
-          out.append("<h1>");
-        }
-        if (style[j] instanceof EditorH2Span) {
-          out.append("<h2>");
-        }
-        if (style[j] instanceof EditorH3Span) {
-          out.append("<h3>");
         }
         if (style[j] instanceof EditorStrikeThroughSpan) {
           out.append("<s>");
@@ -292,15 +294,6 @@ public class EditorParser {
         }
         if (style[j] instanceof EditorInlineCodeSpan) {
           out.append("</code>");
-        }
-        if (style[j] instanceof EditorH1Span) {
-          out.append("</h1>");
-        }
-        if (style[j] instanceof EditorH2Span) {
-          out.append("</h2>");
-        }
-        if (style[j] instanceof EditorH3Span) {
-          out.append("</h3>");
         }
         if (style[j] instanceof EditorBoldSpan) {
           out.append("</b>");
