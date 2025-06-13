@@ -1,5 +1,7 @@
 package com.swmansion.reactnativerichtexteditor
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
@@ -146,6 +148,51 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     } else {
       dispatcher?.dispatchEvent(OnInputBlurEvent(surfaceId, id))
     }
+  }
+
+  override fun onTextContextMenuItem(id: Int): Boolean {
+    when (id) {
+      android.R.id.copy -> {
+        handleCustomCopy()
+        return true
+      }
+      android.R.id.paste -> {
+        handleCustomPaste()
+        return true
+      }
+    }
+    return super.onTextContextMenuItem(id)
+  }
+
+  private fun handleCustomCopy() {
+    val start = selectionStart
+    val end = selectionEnd
+    val spannable = text as Spannable
+
+    if (start < end) {
+      val selectedText = spannable.subSequence(start, end) as Spannable
+      val selectedHtml = EditorParser.toHtml(selectedText)
+
+      val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      clipboard.setPrimaryClip(clip)
+    }
+  }
+
+  private fun handleCustomPaste() {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    if (!clipboard.hasPrimaryClip()) return
+
+    val clip = clipboard.primaryClip
+    val item = clip?.getItemAt(0)
+    val htmlText = item?.htmlText
+
+    if (htmlText != null) {
+      setValue(htmlText)
+      return
+    }
+
+    setValue(item?.text.toString())
   }
 
   fun requestFocusProgrammatically() {
@@ -375,5 +422,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   override fun onDetachedFromWindow() {
     layoutManager.cleanup()
     super.onDetachedFromWindow()
+  }
+
+  companion object {
+    const val CLIPBOARD_TAG = "react-native-rich-text-editor-clipboard"
   }
 }
