@@ -179,12 +179,10 @@ public class EditorParser {
         }
         out.append("<br>\n");
       } else {
-        boolean isUlListItem;
-        boolean isOlListItem;
         EditorParagraphSpan[] paragraphStyles = text.getSpans(i, next, EditorParagraphSpan.class);
         String tag = getBlockTag(paragraphStyles);
-        isUlListItem = tag.equals("ul");
-        isOlListItem = tag.equals("ol");
+        boolean isUlListItem = tag.equals("ul");
+        boolean isOlListItem = tag.equals("ol");
 
         if (isUlListItem && !isInUlList) {
           // Current paragraph is the first item in a list
