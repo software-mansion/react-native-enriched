@@ -186,9 +186,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val clip = clipboard.primaryClip
     val item = clip?.getItemAt(0)
     val htmlText = item?.htmlText
-    val label = clip?.description?.label.toString()
 
-    if (htmlText != null && label == CLIPBOARD_TAG) {
+    if (htmlText != null) {
       setValue(htmlText)
       return
     }
