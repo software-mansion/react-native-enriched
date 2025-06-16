@@ -62,10 +62,19 @@
 - (UIFont *)primaryFont {
   if(_primaryFontNeedsRecreation) {
     _primaryFontNeedsRecreation = NO;
+    
+    NSString *newFontWeight = [self primaryFontWeight];
+    // fix RCTFontWeight conversion warnings:
+    // sometimes changing font family comes with weight '0' if not specified
+    // RCTConvert doesn't recognize this value so we just nullify it and it gets a default value
+    if([newFontWeight isEqualToString:@"0"]) {
+      newFontWeight = nullptr;
+    }
+    
     _primaryFont = [RCTFont updateFont:nullptr
       withFamily:[self primaryFontFamily]
       size:[self primaryFontSize]
-      weight:[self primaryFontWeight]
+      weight:newFontWeight
       style:nullptr
       variant:nullptr
       scaleMultiplier: 1];
