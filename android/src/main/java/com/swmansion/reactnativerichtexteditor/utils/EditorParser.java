@@ -184,15 +184,6 @@ public class EditorParser {
         boolean isUlListItem = tag.equals("ul");
         boolean isOlListItem = tag.equals("ol");
 
-        if (isUlListItem && !isInUlList) {
-          // Current paragraph is the first item in a list
-          isInUlList = true;
-          out.append("<ul").append(">\n");
-        } else if (isOlListItem && !isInOlList) {
-          // Current paragraph is the first item in a list
-          isInOlList = true;
-          out.append("<ol").append(">\n");
-        }
         if (isInUlList && !isUlListItem) {
           // Current paragraph is no longer a list item; close the previously opened list
           isInUlList = false;
@@ -202,6 +193,17 @@ public class EditorParser {
           isInOlList = false;
           out.append("</ol>\n");
         }
+
+        if (isUlListItem && !isInUlList) {
+          // Current paragraph is the first item in a list
+          isInUlList = true;
+          out.append("<ul").append(">\n");
+        } else if (isOlListItem && !isInOlList) {
+          // Current paragraph is the first item in a list
+          isInOlList = true;
+          out.append("<ol").append(">\n");
+        }
+
         boolean isList = isUlListItem || isOlListItem;
         String tagType = isList ? "li" : tag;
         out.append("<");
