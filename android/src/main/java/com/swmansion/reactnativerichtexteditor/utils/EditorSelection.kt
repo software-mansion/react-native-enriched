@@ -33,10 +33,30 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       shouldValidateStyles = true
     }
 
+    if (isZeroWidthSelection()) {
+      editorView.setSelection(start + 1)
+      return
+    }
+
     if (!shouldValidateStyles) return
 
     validateStyles()
     emitSelectionChangeEvent(editorView.text, start, end)
+  }
+
+  private fun isZeroWidthSelection(): Boolean {
+    if (start != end) {
+      return editorView.text?.substring(start, end) == "\u200B"
+    }
+
+    val isNewLine = if (start > 0 ) editorView.text?.substring(start - 1, start) == "\n" else true
+    val isNextCharacterZeroWidth = if (start < (editorView.text?.length ?: 0)) {
+      editorView.text?.substring(start, start + 1) == "\u200B"
+    } else {
+      false
+    }
+
+    return isNewLine && isNextCharacterZeroWidth
   }
 
   fun validateStyles() {
