@@ -4,12 +4,11 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorBlockSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/QuoteSpan.java
-class EditorBlockQuoteSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan, EditorZeroWidthSpaceSpan {
+class EditorBlockQuoteSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorBlockSpan {
   override fun getLeadingMargin(p0: Boolean): Int {
     return richTextStyle.blockquoteStripeWidth + richTextStyle.blockquoteGapWidth
   }

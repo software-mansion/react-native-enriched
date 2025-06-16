@@ -4,11 +4,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorInlineSpan
-import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorZeroWidthSpaceSpan
+import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorParagraphSpan
 import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 
-class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorInlineSpan, EditorZeroWidthSpaceSpan {
+class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan {
   override fun getLeadingMargin(first: Boolean): Int {
     return richTextStyle.olMarginLeft + richTextStyle.olGapWidth
   }

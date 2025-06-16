@@ -95,10 +95,10 @@ object EditorSpans {
       conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE),
     ),
     UNORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
     ),
     ORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
     ),
     LINK to StylesMergingConfig(
       blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, MENTION)

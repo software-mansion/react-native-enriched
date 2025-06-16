@@ -1,11 +1,14 @@
 package com.swmansion.reactnativerichtexteditor
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
+import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
@@ -148,6 +151,51 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
   }
 
+  override fun onTextContextMenuItem(id: Int): Boolean {
+    when (id) {
+      android.R.id.copy -> {
+        handleCustomCopy()
+        return true
+      }
+      android.R.id.paste -> {
+        handleCustomPaste()
+        return true
+      }
+    }
+    return super.onTextContextMenuItem(id)
+  }
+
+  private fun handleCustomCopy() {
+    val start = selectionStart
+    val end = selectionEnd
+    val spannable = text as Spannable
+
+    if (start < end) {
+      val selectedText = spannable.subSequence(start, end) as Spannable
+      val selectedHtml = EditorParser.toHtml(selectedText)
+
+      val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      clipboard.setPrimaryClip(clip)
+    }
+  }
+
+  private fun handleCustomPaste() {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    if (!clipboard.hasPrimaryClip()) return
+
+    val clip = clipboard.primaryClip
+    val item = clip?.getItemAt(0)
+    val htmlText = item?.htmlText
+
+    if (htmlText != null) {
+      setValue(htmlText)
+      return
+    }
+
+    setValue(item?.text.toString())
+  }
+
   fun requestFocusProgrammatically() {
     requestFocus()
     inputMethodManager?.showSoftInput(this, 0)
@@ -259,6 +307,22 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
   }
 
+  fun setAutoCapitalize(flagName: String?) {
+    val flag = when (flagName) {
+      "none" -> InputType.TYPE_NULL
+      "sentences" -> InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+      "words" -> InputType.TYPE_TEXT_FLAG_CAP_WORDS
+      "characters" -> InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+      else -> InputType.TYPE_NULL
+    }
+
+    inputType = (inputType and
+      InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS.inv() and
+      InputType.TYPE_TEXT_FLAG_CAP_WORDS.inv() and
+      InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
+      ) or if (flag == InputType.TYPE_NULL) 0 else flag
+  }
+
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
   // After the text changes inside an EditText, TextView checks if a layout() has been requested.
   // If it has, it will not scroll the text to the end of the new text inserted, but wait for the
@@ -314,7 +378,21 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     for (style in conflictingStyles) {
       if (spanState?.getStart(style) != null) {
+        val start = selection?.start ?: 0
+        val end = selection?.end ?: 0
+        val lengthBefore = text?.length ?: 0
+
         toggleStyle(style)
+
+        val lengthAfter = text?.length ?: 0
+        val charactersRemoved = lengthBefore - lengthAfter
+        val finalEnd = if (charactersRemoved > 0 && end > start) {
+          end - charactersRemoved
+        } else {
+          end
+        }
+
+        selection?.onSelection(start, finalEnd)
       }
     }
 
@@ -375,5 +453,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   override fun onDetachedFromWindow() {
     layoutManager.cleanup()
     super.onDetachedFromWindow()
+  }
+
+  companion object {
+    const val CLIPBOARD_TAG = "react-native-rich-text-editor-clipboard"
   }
 }

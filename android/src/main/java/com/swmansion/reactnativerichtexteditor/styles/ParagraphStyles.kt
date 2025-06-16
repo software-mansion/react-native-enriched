@@ -166,7 +166,7 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
       currentStart = currentEnd + 1
     }
 
-    editorView.spanState?.setStart(name, currentStart - 1)
+    editorView.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
   }
 }
