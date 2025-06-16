@@ -361,7 +361,21 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     for (style in conflictingStyles) {
       if (spanState?.getStart(style) != null) {
+        val start = selection?.start ?: 0
+        val end = selection?.end ?: 0
+        val lengthBefore = text?.length ?: 0
+
         toggleStyle(style)
+
+        val lengthAfter = text?.length ?: 0
+        val charactersRemoved = lengthBefore - lengthAfter
+        val finalEnd = if (charactersRemoved > 0 && end > start) {
+          end - charactersRemoved
+        } else {
+          end
+        }
+
+        selection?.onSelection(start, finalEnd)
       }
     }
 
