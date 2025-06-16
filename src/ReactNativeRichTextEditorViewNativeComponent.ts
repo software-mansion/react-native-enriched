@@ -127,6 +127,7 @@ export interface NativeProps extends ViewProps {
   mentionIndicators: string[];
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  autoCapitalize?: string;
   richTextStyle?: RichTextStyleInternal;
 
   // event callbacks

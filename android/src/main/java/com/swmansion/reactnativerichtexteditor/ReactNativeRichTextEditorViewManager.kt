@@ -178,6 +178,10 @@ class ReactNativeRichTextEditorViewManager : SimpleViewManager<ReactNativeRichTe
     // this prop isn't used on Android as of now, but the setter must be present
   }
 
+  override fun setAutoCapitalize(view: ReactNativeRichTextEditorView?, flag: String?) {
+    view?.setAutoCapitalize(flag)
+  }
+
   override fun focus(view: ReactNativeRichTextEditorView?) {
     view?.requestFocusProgrammatically()
   }

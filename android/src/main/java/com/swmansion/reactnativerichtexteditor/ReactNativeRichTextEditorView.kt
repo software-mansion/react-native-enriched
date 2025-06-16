@@ -8,6 +8,7 @@ import android.graphics.BlendModeColorFilter
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
+import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
@@ -304,6 +305,22 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       this.fontStyle = fontStyle
       typefaceDirty = true
     }
+  }
+
+  fun setAutoCapitalize(flagName: String?) {
+    val flag = when (flagName) {
+      "none" -> InputType.TYPE_NULL
+      "sentences" -> InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+      "words" -> InputType.TYPE_TEXT_FLAG_CAP_WORDS
+      "characters" -> InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+      else -> InputType.TYPE_NULL
+    }
+
+    inputType = (inputType and
+      InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS.inv() and
+      InputType.TYPE_TEXT_FLAG_CAP_WORDS.inv() and
+      InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
+      ) or if (flag == InputType.TYPE_NULL) 0 else flag
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
