@@ -3,7 +3,6 @@
 #pragma once
 
 @interface UIFont (FontExtension)
-
 - (BOOL)isBold;
 - (UIFont *)setBold;
 - (UIFont *)removeBold;
@@ -12,5 +11,5 @@
 - (UIFont *)removeItalic;
 - (BOOL)isMonospace:(EditorConfig *)withConfig;
 - (UIFont *)withFontTraits:(UIFont *)from;
-
+- (UIFont *)setSize:(CGFloat)size;
 @end

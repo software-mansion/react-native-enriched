@@ -82,4 +82,14 @@
   return newFont;
 }
 
+- (UIFont *)setSize:(CGFloat)size {
+  UIFontDescriptor *newFontDescriptor = [self.fontDescriptor fontDescriptorWithSize:size];
+  if(newFontDescriptor != nullptr) {
+    return [UIFont fontWithDescriptor:newFontDescriptor size:0];
+  } else {
+    RCTLogWarn(@"[RichTextEditor]: Couldn't apply heading style to the font.");
+    return self;
+  }
+}
+
 @end

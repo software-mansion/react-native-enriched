@@ -38,3 +38,16 @@
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location;
 - (NSValue *)getActiveMentionRange;
 @end
+
+@interface HeadingStyleBase : NSObject<BaseStyleProtocol>
+- (CGFloat)getHeadingFontSize;
+@end
+
+@interface H1Style : HeadingStyleBase
+@end
+
+@interface H2Style : HeadingStyleBase
+@end
+
+@interface H3Style : HeadingStyleBase
+@end

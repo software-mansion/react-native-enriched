@@ -86,7 +86,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self],
     @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self],
     @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithEditor:self],
-    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self]
+    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self],
+    @([H1Style getStyleType]): [[H1Style alloc] initWithEditor:self],
+    @([H2Style getStyleType]): [[H2Style alloc] initWithEditor:self],
+    @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self]
   };
   
   _conflictingStyles = @{
@@ -96,7 +99,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([StrikethroughStyle getStyleType]) : @[],
     @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])]
+    @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
+    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType])],
+    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType])],
+    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType])]
   };
   
   _blockingStyles = @{
@@ -107,6 +113,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([InlineCodeStyle getStyleType]) : @[],
     @([LinkStyle getStyleType]): @[],
     @([MentionStyle getStyleType]): @[],
+    @([H1Style getStyleType]): @[],
+    @([H2Style getStyleType]): @[],
+    @([H3Style getStyleType]): @[]
   };
   
   _editorParser = [[EditorParser alloc] initWithEditor:self];
@@ -320,15 +329,18 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // edge case: empty input should still be of a height of a single line, so we add a mock "I" character
   if([currentStr length] == 0 ) {
     [currentStr appendAttributedString:
-       [[NSAttributedString alloc] initWithString:@"I" attributes:defaultTypingAttributes]
+       [[NSAttributedString alloc] initWithString:@"I" attributes:textView.typingAttributes]
     ];
   }
   
   // edge case: trailing newlines aren't counted towards height calculations, so we add a mock "I" character
-  if([currentStr length] > 0 && [[currentStr.string substringFromIndex:[currentStr length] - 1] isEqualToString:@"\n"]) {
-    [currentStr appendAttributedString:
-       [[NSAttributedString alloc] initWithString:@"I" attributes:defaultTypingAttributes]
-    ];
+  if(currentStr.length > 0) {
+    unichar lastChar = [currentStr.string characterAtIndex:currentStr.length-1];
+    if([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
+      [currentStr appendAttributedString:
+        [[NSAttributedString alloc] initWithString:@"I" attributes:textView.typingAttributes]
+      ];
+    }
   }
 
   CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)currentStr);
@@ -455,9 +467,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         .isInlineCode = [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
         .isLink = [_activeStyles containsObject: @([LinkStyle getStyleType])],
         .isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
-        .isH1 = NO, // [_activeStyles containsObject: @([H1Style getStyleType])],
-        .isH2 = NO, // [_activeStyles containsObject: @([H2Style getStyleType])],
-        .isH3 = NO, // [_activeStyles containsObject: @([H3Style getStyleType])],
+        .isH1 = [_activeStyles containsObject: @([H1Style getStyleType])],
+        .isH2 = [_activeStyles containsObject: @([H2Style getStyleType])],
+        .isH3 = [_activeStyles containsObject: @([H3Style getStyleType])],
         .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
         .isBlockQuote = NO, // [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
         .isUnorderedList = NO, // [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
@@ -518,6 +530,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   } else if([commandName isEqualToString:@"startMention"]) {
     NSString *indicator = (NSString *)args[0];
     [self startMentionWithIndicator:indicator];
+  } else if([commandName isEqualToString:@"toggleH1"]) {
+    [self toggleParagraphStyle:[H1Style getStyleType]];
+  } else if([commandName isEqualToString:@"toggleH2"]) {
+    [self toggleParagraphStyle:[H2Style getStyleType]];
+  } else if([commandName isEqualToString:@"toggleH3"]) {
+    [self toggleParagraphStyle:[H3Style getStyleType]];
   }
 }
 
@@ -602,6 +620,19 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
     [styleClass applyStyle:textView.selectedRange];
+    [self tryUpdatingActiveStyles];
+  }
+}
+
+- (void)toggleParagraphStyle:(StyleType)type {
+  id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
+  // we always pass whole paragraph/s range to these styles
+  NSRange paragraphRange = [textView.textStorage.string paragraphRangeForRange:textView.selectedRange];
+  
+  if([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
+    [styleClass applyStyle:paragraphRange];
+    // height needs to be checked as well with paragraph styles
+    [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
 }
