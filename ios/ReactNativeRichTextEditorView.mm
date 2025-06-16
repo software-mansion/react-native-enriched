@@ -307,10 +307,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
     
     // textView needs to be refocused on autocapitalization type change and we don't want to emit these events
-    _emitFocusBlur = NO;
-    [textView reactBlur];
-    [textView reactFocus];
-    _emitFocusBlur = YES;
+    if([textView isFirstResponder]) {
+      _emitFocusBlur = NO;
+      [textView reactBlur];
+      [textView reactFocus];
+      _emitFocusBlur = YES;
+    }
   }
   
   // isOnChangeHtmlSet
