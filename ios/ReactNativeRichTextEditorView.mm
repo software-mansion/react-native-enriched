@@ -37,6 +37,7 @@ using namespace facebook::react;
   BOOL _emitHtml;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
+  BOOL _emitFocusBlur;
 }
 
 // MARK: - Component utils
@@ -76,6 +77,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
   _emitHtml = NO;
+  _emitFocusBlur = YES;
   
   defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
   
@@ -286,6 +288,29 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     } else {
       textView.tintColor = nullptr;
     }
+  }
+  
+  // autoCapitalize
+  if(newViewProps.autoCapitalize != oldViewProps.autoCapitalize) {
+    NSString *str = [NSString fromCppString:newViewProps.autoCapitalize];
+    if([str isEqualToString: @"none"]) {
+      textView.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    } else if([str isEqualToString: @"sentences"]) {
+      textView.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+    } else if([str isEqualToString: @"words"]) {
+      textView.autocapitalizationType = UITextAutocapitalizationTypeWords;
+    } else if([str isEqualToString: @"characters"]) {
+      textView.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+    } else {
+      // default value
+      textView.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+    }
+    
+    // textView needs to be refocused on autocapitalization type change and we don't want to emit these events
+    _emitFocusBlur = NO;
+    [textView reactBlur];
+    [textView reactFocus];
+    _emitFocusBlur = YES;
   }
   
   // isOnChangeHtmlSet
@@ -805,8 +830,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (void)textViewDidBeginEditing:(UITextView *)textView {
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
-    //send onFocus event
-    emitter->onInputFocus({});
+    //send onFocus event if allowed
+    if(_emitFocusBlur) {
+      emitter->onInputFocus({});
+    }
     
     NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: textView.selectedRange];
     emitter->onChangeSelection({
@@ -821,7 +848,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
   auto emitter = [self getEventEmitter];
-  if(emitter != nullptr) {
+  if(emitter != nullptr && _emitFocusBlur) {
     //send onBlur event
     emitter->onInputBlur({});
   }
