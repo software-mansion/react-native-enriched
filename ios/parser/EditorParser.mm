@@ -177,6 +177,12 @@
     } else {
       return @"mention";
     }
+  } else if([style isEqualToNumber:@([H1Style getStyleType])]) {
+    return @"h1";
+  } else if([style isEqualToNumber:@([H2Style getStyleType])]) {
+    return @"h2";
+  } else if([style isEqualToNumber:@([H3Style getStyleType])]) {
+    return @"h3";
   }
   return @"";
 }
@@ -364,7 +370,7 @@
       [styleArr addObject:@([InlineCodeStyle getStyleType])];
     } else if([tagName isEqualToString:@"a"]) {
       [styleArr addObject:@([LinkStyle getStyleType])];
-      // cut only url from the href="..." string
+      // cut only the url from the href="..." string
       NSString *url = [params substringWithRange:NSMakeRange(6, params.length - 7)];
       stylePair.styleValue = url;
     } else if([tagName isEqualToString:@"mention"]) {
@@ -395,6 +401,14 @@
       mentionParams.attributes = formattedAttrsString;
       
       stylePair.styleValue = mentionParams;
+    } else if([[tagName substringWithRange:NSMakeRange(0, 1)] isEqualToString: @"h"]) {
+      if([tagName isEqualToString:@"h1"]) {
+        [styleArr addObject:@([H1Style getStyleType])];
+      } else if([tagName isEqualToString:@"h2"]) {
+        [styleArr addObject:@([H2Style getStyleType])];
+      } else if([tagName isEqualToString:@"h3"]) {
+        [styleArr addObject:@([H3Style getStyleType])];
+      }
     }
     
     stylePair.rangeValue = tagRangeValue;
