@@ -121,6 +121,7 @@ export interface RichTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  autocapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   richTextStyle?: RichTextStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
@@ -163,6 +164,7 @@ export const RichTextInput = ({
   cursorColor,
   selectionColor,
   style,
+  autocapitalize = 'sentences',
   richTextStyle = {},
   onFocus,
   onBlur,
@@ -320,6 +322,7 @@ export const RichTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
+      autoCapitalize={autocapitalize}
       richTextStyle={normalizedRichTextStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
