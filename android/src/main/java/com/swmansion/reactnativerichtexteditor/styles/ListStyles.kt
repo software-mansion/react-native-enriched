@@ -157,4 +157,14 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
     handleAfterTextChanged(s, EditorSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EditorSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
   }
+
+  fun getStyleRange(): Pair<Int, Int> {
+    return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
+  }
+
+  fun removeStyle(name: String, start: Int, end: Int) {
+    val config = EditorSpans.listSpans[name] ?: return
+    val spannable = editorView.text as Spannable
+    removeSpansForRange(spannable, start, end, config.clazz)
+  }
 }
