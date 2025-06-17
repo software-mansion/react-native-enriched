@@ -13,6 +13,7 @@ import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
@@ -92,8 +93,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     isSingleLine = false
     isHorizontalScrollBarEnabled = false
     isVerticalScrollBarEnabled = true
-    gravity = android.view.Gravity.TOP or android.view.Gravity.START
-    inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+    gravity = Gravity.TOP or Gravity.START
+    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
@@ -364,10 +365,50 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     layoutManager.invalidateLayout(text)
   }
 
+  private fun removeStyle(name: String, start: Int, end: Int) {
+    when (name) {
+      EditorSpans.BOLD -> inlineStyles?.removeStyle(EditorSpans.BOLD, start, end)
+      EditorSpans.ITALIC -> inlineStyles?.removeStyle(EditorSpans.ITALIC, start, end)
+      EditorSpans.UNDERLINE -> inlineStyles?.removeStyle(EditorSpans.UNDERLINE, start, end)
+      EditorSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EditorSpans.STRIKETHROUGH, start, end)
+      EditorSpans.INLINE_CODE -> inlineStyles?.removeStyle(EditorSpans.INLINE_CODE, start, end)
+      EditorSpans.H1 -> paragraphStyles?.removeStyle(EditorSpans.H1, start, end)
+      EditorSpans.H2 -> paragraphStyles?.removeStyle(EditorSpans.H2, start, end)
+      EditorSpans.H3 -> paragraphStyles?.removeStyle(EditorSpans.H3, start, end)
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EditorSpans.CODE_BLOCK, start, end)
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EditorSpans.BLOCK_QUOTE, start, end)
+      EditorSpans.ORDERED_LIST -> listStyles?.removeStyle(EditorSpans.ORDERED_LIST, start, end)
+      EditorSpans.UNORDERED_LIST -> listStyles?.removeStyle(EditorSpans.UNORDERED_LIST, start, end)
+      else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
+    }
+  }
+
+  private fun getTargetRange(name: String): Pair<Int, Int> {
+    val result = when (name) {
+      EditorSpans.BOLD -> inlineStyles?.getStyleRange()
+      EditorSpans.ITALIC -> inlineStyles?.getStyleRange()
+      EditorSpans.UNDERLINE -> inlineStyles?.getStyleRange()
+      EditorSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
+      EditorSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
+      EditorSpans.H1 -> paragraphStyles?.getStyleRange()
+      EditorSpans.H2 -> paragraphStyles?.getStyleRange()
+      EditorSpans.H3 -> paragraphStyles?.getStyleRange()
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
+      EditorSpans.ORDERED_LIST -> listStyles?.getStyleRange()
+      EditorSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+      else -> Pair(0, 0)
+    }
+
+    return result ?: Pair(0, 0)
+  }
+
   private fun verifyStyle(name: String): Boolean {
     val mergingConfig = EditorSpans.mergingConfig[name] ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
+    val isEnabling = spanState?.getStart(name) == null
+    if (!isEnabling) return true
 
     for (style in blockingStyles) {
       if (spanState?.getStart(style) != null) {
@@ -377,23 +418,22 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
 
     for (style in conflictingStyles) {
-      if (spanState?.getStart(style) != null) {
-        val start = selection?.start ?: 0
-        val end = selection?.end ?: 0
-        val lengthBefore = text?.length ?: 0
+      val start = selection?.start ?: 0
+      val end = selection?.end ?: 0
+      val lengthBefore = text?.length ?: 0
 
-        toggleStyle(style)
+      val targetRange = getTargetRange(name)
+      removeStyle(style, targetRange.first, targetRange.second)
 
-        val lengthAfter = text?.length ?: 0
-        val charactersRemoved = lengthBefore - lengthAfter
-        val finalEnd = if (charactersRemoved > 0 && end > start) {
-          end - charactersRemoved
-        } else {
-          end
-        }
-
-        selection?.onSelection(start, finalEnd)
+      val lengthAfter = text?.length ?: 0
+      val charactersRemoved = lengthBefore - lengthAfter
+      val finalEnd = if (charactersRemoved > 0 && end > start) {
+        end - charactersRemoved
+      } else {
+        end
       }
+
+      selection?.onSelection(start, finalEnd)
     }
 
     return true

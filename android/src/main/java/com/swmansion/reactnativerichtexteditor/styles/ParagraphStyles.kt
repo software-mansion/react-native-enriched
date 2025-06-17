@@ -169,4 +169,17 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
     editorView.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
   }
+
+  fun getStyleRange(): Pair<Int, Int> {
+    return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
+  }
+
+  fun removeStyle(name: String, start: Int, end: Int) {
+    val config = EditorSpans.paragraphSpans[name] ?: return
+    val spannable = editorView.text as Spannable
+    val spans = spannable.getSpans(start, end, config.clazz)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+  }
 }
