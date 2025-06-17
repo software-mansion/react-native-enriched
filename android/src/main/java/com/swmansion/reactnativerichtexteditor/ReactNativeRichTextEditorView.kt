@@ -379,6 +379,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EditorSpans.BLOCK_QUOTE, start, end)
       EditorSpans.ORDERED_LIST -> listStyles?.removeStyle(EditorSpans.ORDERED_LIST, start, end)
       EditorSpans.UNORDERED_LIST -> listStyles?.removeStyle(EditorSpans.UNORDERED_LIST, start, end)
+      EditorSpans.LINK -> parametrizedStyles?.removeStyle(EditorSpans.LINK, start, end)
+      EditorSpans.IMAGE -> parametrizedStyles?.removeStyle(EditorSpans.IMAGE, start, end)
+      EditorSpans.MENTION -> parametrizedStyles?.removeStyle(EditorSpans.MENTION, start, end)
       else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
     }
   }
@@ -397,6 +400,9 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
       EditorSpans.ORDERED_LIST -> listStyles?.getStyleRange()
       EditorSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+      EditorSpans.LINK -> parametrizedStyles?.getStyleRange()
+      EditorSpans.IMAGE -> parametrizedStyles?.getStyleRange()
+      EditorSpans.MENTION -> parametrizedStyles?.getStyleRange()
       else -> Pair(0, 0)
     }
 

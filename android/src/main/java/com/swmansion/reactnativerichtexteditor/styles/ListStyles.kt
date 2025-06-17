@@ -165,9 +165,6 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
   fun removeStyle(name: String, start: Int, end: Int) {
     val config = EditorSpans.listSpans[name] ?: return
     val spannable = editorView.text as Spannable
-    val spans = spannable.getSpans(start, end, config.clazz)
-    for (span in spans) {
-      spannable.removeSpan(span)
-    }
+    removeSpansForRange(spannable, start, end, config.clazz)
   }
 }
