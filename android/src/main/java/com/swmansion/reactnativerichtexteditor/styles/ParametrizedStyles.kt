@@ -184,7 +184,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   fun removeStyle(name: String, start: Int, end: Int) {
-    val config = EditorSpans.paragraphSpans[name] ?: return
+    val config = EditorSpans.parametrizedStyles[name] ?: return
     val spannable = editorView.text as Spannable
     removeSpansForRange(spannable, start, end, config.clazz)
   }
