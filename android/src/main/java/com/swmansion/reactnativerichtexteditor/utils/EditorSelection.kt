@@ -33,7 +33,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       shouldValidateStyles = true
     }
 
-    if (isZeroWidthSelection()) {
+    if (isZeroWidthSelection() && !editorView.isSettingValue) {
       editorView.setSelection(start + 1)
       return
     }
