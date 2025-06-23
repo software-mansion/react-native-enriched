@@ -55,6 +55,27 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     afterTextChangedMentions(result)
   }
 
+  fun detectAllLinks() {
+    val spannable = editorView.text as Spannable
+
+    // TODO: Consider using more reliable regex, this one matches almost anything
+    val urlPattern = android.util.Patterns.WEB_URL.matcher(spannable)
+
+    val spans = spannable.getSpans(0, spannable.length, EditorLinkSpan::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+
+    while (urlPattern.find()) {
+      val word = urlPattern.group()
+      val start = urlPattern.start()
+      val end = urlPattern.end()
+      val span = EditorLinkSpan(word, editorView.richTextStyle)
+      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
+  }
+
   private fun getWordAtIndex(s: Editable, index: Int): Triple<String, Int, Int>? {
     if (index < 0 ) return null
 
