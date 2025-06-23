@@ -203,6 +203,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
     val finalText = currentText.replaceRange(start, end, item?.text.toString())
     setValue(finalText)
+    parametrizedStyles?.detectAllLinks()
   }
 
   fun requestFocusProgrammatically() {
