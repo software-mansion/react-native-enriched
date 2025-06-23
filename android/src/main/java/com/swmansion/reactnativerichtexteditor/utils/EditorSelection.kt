@@ -35,7 +35,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
 
     if (isZeroWidthSelection() && !editorView.isSettingValue) {
       editorView.setSelection(start + 1)
-      return
+      shouldValidateStyles = false
     }
 
     if (!shouldValidateStyles) return
@@ -62,8 +62,15 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   fun validateStyles() {
     val state = editorView.spanState ?: return
 
-    for ((style, config) in EditorSpans.inlineSpans) {
-      state.setStart(style, getInlineStyleStart(config.clazz))
+    // We don't validate inline styles when removing many characters at once
+    // We don't want to remove styles on auto-correction
+    // If user removes many characters at once, we want to keep the styles config
+    if (!editorView.isRemovingMany) {
+      for ((style, config) in EditorSpans.inlineSpans) {
+        state.setStart(style, getInlineStyleStart(config.clazz))
+      }
+    } else {
+      editorView.isRemovingMany = false
     }
 
     for ((style, config) in EditorSpans.paragraphSpans) {
