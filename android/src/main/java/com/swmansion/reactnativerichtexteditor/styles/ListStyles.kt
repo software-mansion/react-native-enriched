@@ -8,14 +8,14 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorOrderedListSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.spans.EditorUnorderedListSpan
+import com.swmansion.reactnativerichtexteditor.utils.getParagraphBounds
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
   private fun <T>getPreviousParagraphSpan(spannable: Spannable, s: Int, type: Class<T>): T? {
     if (s <= 0) return null
-    val selection = editorView.selection ?: return null
 
-    val (previousParagraphStart, previousParagraphEnd) = selection.getParagraphBounds(spannable, s - 1)
+    val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(s - 1)
     val spans = spannable.getSpans(previousParagraphStart, previousParagraphEnd, type)
 
     if (spans.isNotEmpty()) {
@@ -112,10 +112,9 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
   }
 
   private fun handleAfterTextChanged(s: Editable, name: String, endCursorPosition: Int, previousTextLength: Int) {
-    val selection = editorView.selection ?: return
     val config = EditorSpans.listSpans[name] ?: return
     val cursorPosition = endCursorPosition.coerceAtMost(s.length)
-    val (start, end) = selection.getParagraphBounds(s, cursorPosition)
+    val (start, end) = s.getParagraphBounds(cursorPosition)
 
     val isBackspace = previousTextLength > s.length
     val isNewLine = cursorPosition > 0 && s[cursorPosition - 1] == '\n'
@@ -132,7 +131,7 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
       s.replace(start, cursorPosition, "\u200B")
       setSpan(s, name, start, start + 1)
       // Inform that new span has been added
-      editorView.selection.validateStyles()
+      editorView.selection?.validateStyles()
       return
     }
 
@@ -140,7 +139,7 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
       s.insert(cursorPosition, "\u200B")
       setSpan(s, name, start, end + 1)
       // Inform that new span has been added
-      editorView.selection.validateStyles()
+      editorView.selection?.validateStyles()
       return
     }
 

@@ -37,6 +37,7 @@ import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
+import com.swmansion.reactnativerichtexteditor.utils.mergeSpannables
 import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
@@ -188,13 +189,19 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val clip = clipboard.primaryClip
     val item = clip?.getItemAt(0)
     val htmlText = item?.htmlText
+    val currentText = text as Spannable
+    val start = selection?.start ?: 0
+    val end = selection?.end ?: 0
 
     if (htmlText != null) {
-      setValue(htmlText)
+      val parsedText = parseText(htmlText) as Spannable
+      val finalText = currentText.mergeSpannables(start, end, parsedText)
+      setValue(finalText)
       return
     }
 
-    setValue(item?.text.toString())
+    val finalText = currentText.replaceRange(start, end, item?.text.toString())
+    setValue(finalText)
   }
 
   fun requestFocusProgrammatically() {
@@ -203,18 +210,21 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  fun setValue(value: String?) {
+  private fun parseText(text: CharSequence): CharSequence {
+    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
+    if (!isHtml) return text
+
+    val parsed = EditorParser.fromHtml(text.toString(), richTextStyle, null)
+    val withoutLastNewLine = parsed.trimEnd('\n')
+    return withoutLastNewLine
+  }
+
+  fun setValue(value: CharSequence?) {
     if (value == null) return
     isSettingValue = true
 
-    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
-    if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, richTextStyle, null)
-      val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine)
-    } else {
-      setText(value)
-    }
+    val newText = parseText(value)
+    setText(newText)
 
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
