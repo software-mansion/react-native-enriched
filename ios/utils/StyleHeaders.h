@@ -51,3 +51,7 @@
 
 @interface H3Style : HeadingStyleBase
 @end
+
+@interface UnorderedListStyle : NSObject<BaseStyleProtocol>
+- (void)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@end
