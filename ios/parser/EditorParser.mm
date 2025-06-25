@@ -22,6 +22,7 @@
   NSMutableString *result = [[NSMutableString alloc] initWithString: @"<html>"];
   NSSet<NSNumber *>*previousActiveStyles = [[NSSet<NSNumber *> alloc]init];
   BOOL newLine = YES;
+  BOOL inUnorderedList = NO;
   unichar lastCharacter = 0;
   
   for(int i = 0; i < _editor->textView.textStorage.length; i++) {
@@ -58,7 +59,15 @@
       }
       
       // append closing paragraph tag
-      [result appendString:@"</p>"];
+      if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
+         [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
+         [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
+         [previousActiveStyles containsObject:@([H3Style getStyleType])]
+      ) {
+        // do nothing, proper closing paragraph tags have been already appended
+      } else {
+        [result appendString:@"</p>"];
+      }
       
       // clear the previous styles
       previousActiveStyles = [[NSSet<NSNumber *> alloc]init];
@@ -69,7 +78,29 @@
       // new line - open the paragraph
       if(newLine) {
         newLine = NO;
-        [result appendString:@"\n<p>"];
+        
+        // handle ending lists
+        if(inUnorderedList && ![currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
+          inUnorderedList = NO;
+          [result appendString:@"\n</ul>"];
+        }
+        
+        // handle starting lists
+        if(!inUnorderedList && [currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
+          inUnorderedList = YES;
+          [result appendString:@"\n<ul>"];
+        }
+        
+        // don't add the <p> tag if paragraph styles are present
+        if([currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
+           [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
+           [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
+           [currentActiveStyles containsObject:@([H3Style getStyleType])]
+        ) {
+          [result appendString:@"\n"];
+        } else {
+          [result appendString:@"\n<p>"];
+        }
       }
     
       // get styles that have ended: they are sorted in an ascending manner
@@ -117,7 +148,18 @@
     }
     
     // finish the paragraph
-    [result appendString:@"</p>"];
+    // handle ending paragraph styles
+    if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
+      [result appendString:@"\n</ul>"];
+    } else if(
+      [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
+      [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
+      [previousActiveStyles containsObject:@([H3Style getStyleType])]
+    ) {
+      // do nothing, heading closing tag has already ben appended
+    } else {
+      [result appendString:@"</p>"];
+    }
   }
   
   [result appendString: @"\n</html>"];
@@ -183,6 +225,8 @@
     return @"h2";
   } else if([style isEqualToNumber:@([H3Style getStyleType])]) {
     return @"h3";
+  } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])]) {
+    return @"li";
   }
   return @"";
 }
@@ -289,7 +333,7 @@
       gettingTagName = NO;
       gettingTagParams = NO;
       
-      if([currentTagName isEqualToString:@"p"] || [currentTagName isEqualToString:@"br"]) {
+      if([currentTagName isEqualToString:@"p"] || [currentTagName isEqualToString:@"br"] || [currentTagName isEqualToString:@"li"]) {
         // do nothing, we don't include these tags in styles
       } else if(!closingTag) {
         // we finish opening tag - get its location and optionally params and put them under tag name key in ongoingTags
@@ -299,8 +343,19 @@
           [tagArr addObject:[currentTagParams copy]];
         }
         ongoingTags[currentTagName] = tagArr;
+        
+        // skip one newline after lists' opening tags
+        if([currentTagName isEqualToString:@"ul"]) {
+          i += 1;
+        }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
+        
+        // skip one newline that was added before lists' closing tags
+        if([currentTagName isEqualToString:@"ul"]) {
+          plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
+        }
+        
         NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
       
         NSArray *tagData = ongoingTags[currentTagName];
@@ -409,6 +464,8 @@
       } else if([tagName isEqualToString:@"h3"]) {
         [styleArr addObject:@([H3Style getStyleType])];
       }
+    } else if([tagName isEqualToString:@"ul"]) {
+      [styleArr addObject:@([UnorderedListStyle getStyleType])];
     }
     
     stylePair.rangeValue = tagRangeValue;

@@ -1,21 +1,22 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
+// the order is aligned with the order of tags in parser
 typedef NS_ENUM(NSInteger, StyleType) {
-  None,
+  BlockQuote,
+  CodeBlock,
+  UnorderedList,
+  OrderedList,
+  H1,
+  H2,
+  H3,
+  Link,
+  Mention,
+  Image,
+  InlineCode,
   Bold,
   Italic,
   Underline,
   Strikethrough,
-  InlineCode,
-  Link,
-  Mention,
-  H1,
-  H2,
-  H3,
-  CodeBlock,
-  BlockQuote,
-  UnorderedList,
-  OrderedList,
-  Image,
+  None,
 };
