@@ -34,7 +34,6 @@ using namespace facebook::react;
   NSRange _recentlyActiveMentionRange;
   EditorParser *_editorParser;
   NSString *_recentlyEmittedHtml;
-  BOOL _emitHtml;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
@@ -76,7 +75,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
-  _emitHtml = NO;
+  emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
   
@@ -222,9 +221,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     NSString *currentHtml = [_editorParser parseToHtml];
     
     // we don't want to emit these html changes in here
-    _emitHtml = NO;
+    BOOL prevEmitHtml = emitHtml;
+    if(prevEmitHtml) {
+      emitHtml = NO;
+    }
     [_editorParser replaceWholeFromHtml:currentHtml];
-    _emitHtml = YES;
+    if(prevEmitHtml) {
+      emitHtml = YES;
+    }
     
     // update the placeholder as well
     [self refreshPlaceholderLabelStyles];
@@ -321,7 +325,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   // isOnChangeHtmlSet
-  _emitHtml = newViewProps.isOnChangeHtmlSet;
+  emitHtml = newViewProps.isOnChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
   // mandatory text and height checks
@@ -633,7 +637,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (void)tryEmittingOnChangeHtmlEvent {
-  if(!_emitHtml || textView.markedTextRange != nullptr) {
+  if(!emitHtml || textView.markedTextRange != nullptr) {
     return;
   }
   auto emitter = [self getEventEmitter];

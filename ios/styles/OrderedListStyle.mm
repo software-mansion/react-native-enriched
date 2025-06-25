@@ -147,8 +147,19 @@
     if(charBefore == '1') {
       // we got a match - add a list if possible
       if([_editor handleStyleBlocksAndConflicts:[[self class] getStyleType] range:paragraphRange]) {
+        // don't emit some html updates during the replacing
+        BOOL prevEmitHtml = _editor->emitHtml;
+        if(prevEmitHtml) {
+          _editor->emitHtml = NO;
+        }
+        
         // remove the number
         [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr];
+        
+        if(prevEmitHtml) {
+          _editor->emitHtml = YES;
+        }
+        
         // add attributes on the paragraph
         [self addAttributes:NSMakeRange(paragraphRange.location, paragraphRange.length - 1)];
         return YES;

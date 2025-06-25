@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
   @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
   @public BOOL blockEmitting;
+  @public BOOL emitHtml;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url;
