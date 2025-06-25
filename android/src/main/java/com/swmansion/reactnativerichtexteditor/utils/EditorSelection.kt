@@ -33,9 +33,9 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
       shouldValidateStyles = true
     }
 
-    if (isZeroWidthSelection()) {
+    if (isZeroWidthSelection() && !editorView.isSettingValue) {
       editorView.setSelection(start + 1)
-      return
+      shouldValidateStyles = false
     }
 
     if (!shouldValidateStyles) return
@@ -62,8 +62,15 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
   fun validateStyles() {
     val state = editorView.spanState ?: return
 
-    for ((style, config) in EditorSpans.inlineSpans) {
-      state.setStart(style, getInlineStyleStart(config.clazz))
+    // We don't validate inline styles when removing many characters at once
+    // We don't want to remove styles on auto-correction
+    // If user removes many characters at once, we want to keep the styles config
+    if (!editorView.isRemovingMany) {
+      for ((style, config) in EditorSpans.inlineSpans) {
+        state.setStart(style, getInlineStyleStart(config.clazz))
+      }
+    } else {
+      editorView.isRemovingMany = false
     }
 
     for ((style, config) in EditorSpans.paragraphSpans) {
@@ -106,36 +113,10 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     return styleStart
   }
 
-  fun getParagraphBounds(spannable: Spannable, index: Int): Pair<Int, Int> {
-    return getParagraphBounds(spannable, index, index)
-  }
-
-  fun getParagraphBounds(spannable: Spannable, start: Int, end: Int): Pair<Int, Int> {
-    var startPosition = start.coerceAtLeast(0).coerceAtMost(spannable.length)
-    var endPosition = end.coerceAtLeast(0).coerceAtMost(spannable.length)
-
-    // Find the start of the paragraph
-    while (startPosition > 0 && spannable[startPosition - 1] != '\n') {
-      startPosition--
-    }
-
-    // Find the end of the paragraph
-    while (endPosition < spannable.length && spannable[endPosition] != '\n') {
-      endPosition++
-    }
-
-    if (startPosition >= endPosition) {
-      // If the start position is equal or greater than the end position, return the same position
-      startPosition = endPosition
-    }
-
-    return Pair(startPosition, endPosition)
-  }
-
   fun getParagraphSelection(): Pair<Int, Int> {
     val (currentStart, currentEnd) = getInlineSelection()
     val spannable = editorView.text as Spannable
-    return getParagraphBounds(spannable, currentStart, currentEnd)
+    return spannable.getParagraphBounds(currentStart, currentEnd)
   }
 
   private fun <T>getParagraphStyleStart(type: Class<T>): Int? {

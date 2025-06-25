@@ -13,6 +13,7 @@ import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
@@ -36,6 +37,7 @@ import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
 import com.swmansion.reactnativerichtexteditor.utils.EditorParser
 import com.swmansion.reactnativerichtexteditor.utils.EditorSelection
 import com.swmansion.reactnativerichtexteditor.utils.EditorSpanState
+import com.swmansion.reactnativerichtexteditor.utils.mergeSpannables
 import com.swmansion.reactnativerichtexteditor.watchers.EditorSpanWatcher
 import com.swmansion.reactnativerichtexteditor.watchers.EditorTextWatcher
 import kotlin.math.ceil
@@ -50,6 +52,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isSettingValue: Boolean = false
+  var isRemovingMany: Boolean = false
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var richTextStyle: RichTextStyle = RichTextStyle(this, null)
@@ -92,8 +95,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     isSingleLine = false
     isHorizontalScrollBarEnabled = false
     isVerticalScrollBarEnabled = true
-    gravity = android.view.Gravity.TOP or android.view.Gravity.START
-    inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+    gravity = Gravity.TOP or Gravity.START
+    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
@@ -187,13 +190,20 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     val clip = clipboard.primaryClip
     val item = clip?.getItemAt(0)
     val htmlText = item?.htmlText
+    val currentText = text as Spannable
+    val start = selection?.start ?: 0
+    val end = selection?.end ?: 0
 
     if (htmlText != null) {
-      setValue(htmlText)
+      val parsedText = parseText(htmlText) as Spannable
+      val finalText = currentText.mergeSpannables(start, end, parsedText)
+      setValue(finalText)
       return
     }
 
-    setValue(item?.text.toString())
+    val finalText = currentText.replaceRange(start, end, item?.text.toString())
+    setValue(finalText)
+    parametrizedStyles?.detectAllLinks()
   }
 
   fun requestFocusProgrammatically() {
@@ -202,18 +212,21 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  fun setValue(value: String?) {
+  private fun parseText(text: CharSequence): CharSequence {
+    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
+    if (!isHtml) return text
+
+    val parsed = EditorParser.fromHtml(text.toString(), richTextStyle, null)
+    val withoutLastNewLine = parsed.trimEnd('\n')
+    return withoutLastNewLine
+  }
+
+  fun setValue(value: CharSequence?) {
     if (value == null) return
     isSettingValue = true
 
-    val isHtml = value.startsWith("<html>") && value.endsWith("</html>")
-    if (isHtml) {
-      val parsed = EditorParser.fromHtml(value, richTextStyle, null)
-      val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine)
-    } else {
-      setText(value)
-    }
+    val newText = parseText(value)
+    setText(newText)
 
     // Assign SpanWatcher one more time as our previous spannable has been replaced
     addSpanWatcher(EditorSpanWatcher(this))
@@ -364,10 +377,56 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     layoutManager.invalidateLayout(text)
   }
 
+  private fun removeStyle(name: String, start: Int, end: Int) {
+    when (name) {
+      EditorSpans.BOLD -> inlineStyles?.removeStyle(EditorSpans.BOLD, start, end)
+      EditorSpans.ITALIC -> inlineStyles?.removeStyle(EditorSpans.ITALIC, start, end)
+      EditorSpans.UNDERLINE -> inlineStyles?.removeStyle(EditorSpans.UNDERLINE, start, end)
+      EditorSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EditorSpans.STRIKETHROUGH, start, end)
+      EditorSpans.INLINE_CODE -> inlineStyles?.removeStyle(EditorSpans.INLINE_CODE, start, end)
+      EditorSpans.H1 -> paragraphStyles?.removeStyle(EditorSpans.H1, start, end)
+      EditorSpans.H2 -> paragraphStyles?.removeStyle(EditorSpans.H2, start, end)
+      EditorSpans.H3 -> paragraphStyles?.removeStyle(EditorSpans.H3, start, end)
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EditorSpans.CODE_BLOCK, start, end)
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EditorSpans.BLOCK_QUOTE, start, end)
+      EditorSpans.ORDERED_LIST -> listStyles?.removeStyle(EditorSpans.ORDERED_LIST, start, end)
+      EditorSpans.UNORDERED_LIST -> listStyles?.removeStyle(EditorSpans.UNORDERED_LIST, start, end)
+      EditorSpans.LINK -> parametrizedStyles?.removeStyle(EditorSpans.LINK, start, end)
+      EditorSpans.IMAGE -> parametrizedStyles?.removeStyle(EditorSpans.IMAGE, start, end)
+      EditorSpans.MENTION -> parametrizedStyles?.removeStyle(EditorSpans.MENTION, start, end)
+      else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
+    }
+  }
+
+  private fun getTargetRange(name: String): Pair<Int, Int> {
+    val result = when (name) {
+      EditorSpans.BOLD -> inlineStyles?.getStyleRange()
+      EditorSpans.ITALIC -> inlineStyles?.getStyleRange()
+      EditorSpans.UNDERLINE -> inlineStyles?.getStyleRange()
+      EditorSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
+      EditorSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
+      EditorSpans.H1 -> paragraphStyles?.getStyleRange()
+      EditorSpans.H2 -> paragraphStyles?.getStyleRange()
+      EditorSpans.H3 -> paragraphStyles?.getStyleRange()
+      EditorSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
+      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
+      EditorSpans.ORDERED_LIST -> listStyles?.getStyleRange()
+      EditorSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+      EditorSpans.LINK -> parametrizedStyles?.getStyleRange()
+      EditorSpans.IMAGE -> parametrizedStyles?.getStyleRange()
+      EditorSpans.MENTION -> parametrizedStyles?.getStyleRange()
+      else -> Pair(0, 0)
+    }
+
+    return result ?: Pair(0, 0)
+  }
+
   private fun verifyStyle(name: String): Boolean {
     val mergingConfig = EditorSpans.mergingConfig[name] ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
+    val isEnabling = spanState?.getStart(name) == null
+    if (!isEnabling) return true
 
     for (style in blockingStyles) {
       if (spanState?.getStart(style) != null) {
@@ -377,23 +436,22 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     }
 
     for (style in conflictingStyles) {
-      if (spanState?.getStart(style) != null) {
-        val start = selection?.start ?: 0
-        val end = selection?.end ?: 0
-        val lengthBefore = text?.length ?: 0
+      val start = selection?.start ?: 0
+      val end = selection?.end ?: 0
+      val lengthBefore = text?.length ?: 0
 
-        toggleStyle(style)
+      val targetRange = getTargetRange(name)
+      removeStyle(style, targetRange.first, targetRange.second)
 
-        val lengthAfter = text?.length ?: 0
-        val charactersRemoved = lengthBefore - lengthAfter
-        val finalEnd = if (charactersRemoved > 0 && end > start) {
-          end - charactersRemoved
-        } else {
-          end
-        }
-
-        selection?.onSelection(start, finalEnd)
+      val lengthAfter = text?.length ?: 0
+      val charactersRemoved = lengthBefore - lengthAfter
+      val finalEnd = if (charactersRemoved > 0 && end > start) {
+        end - charactersRemoved
+      } else {
+        end
       }
+
+      selection?.onSelection(start, finalEnd)
     }
 
     return true

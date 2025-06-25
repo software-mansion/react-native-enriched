@@ -9,12 +9,23 @@ import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorImageSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorLinkSpan
 import com.swmansion.reactnativerichtexteditor.spans.EditorMentionSpan
+import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 import java.io.File
 
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
   private var mentionStart: Int? = null
   var mentionIndicators: Array<String> = emptyArray<String>()
+
+  fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>) {
+    val ssb = spannable as SpannableStringBuilder
+    ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
+
+    val spans = ssb.getSpans(start, end, clazz)
+    for (span in spans) {
+      ssb.removeSpan(span)
+    }
+  }
 
   fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
     val spannable = editorView.text as SpannableStringBuilder
@@ -42,6 +53,27 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
 
     afterTextChangedLinks(result)
     afterTextChangedMentions(result)
+  }
+
+  fun detectAllLinks() {
+    val spannable = editorView.text as Spannable
+
+    // TODO: Consider using more reliable regex, this one matches almost anything
+    val urlPattern = android.util.Patterns.WEB_URL.matcher(spannable)
+
+    val spans = spannable.getSpans(0, spannable.length, EditorLinkSpan::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+
+    while (urlPattern.find()) {
+      val word = urlPattern.group()
+      val start = urlPattern.start()
+      val end = urlPattern.end()
+      val span = EditorLinkSpan(word, editorView.richTextStyle)
+      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
   }
 
   private fun getWordAtIndex(s: Editable, index: Int): Triple<String, Int, Int>? {
@@ -166,5 +198,15 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
     editorView.selection.validateStyles()
+  }
+
+  fun getStyleRange(): Pair<Int, Int> {
+    return editorView.selection?.getInlineSelection() ?: Pair(0, 0)
+  }
+
+  fun removeStyle(name: String, start: Int, end: Int) {
+    val config = EditorSpans.parametrizedStyles[name] ?: return
+    val spannable = editorView.text as Spannable
+    removeSpansForRange(spannable, start, end, config.clazz)
   }
 }

@@ -18,6 +18,7 @@ class EditorTextWatcher(private val editorView: ReactNativeRichTextEditorView) :
   override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
     endCursorPosition = start + count
     editorView.layoutManager.measureSize(s ?: "")
+    editorView.isRemovingMany = !editorView.isSettingValue && before > count + 1
   }
 
   override fun afterTextChanged(s: Editable?) {

@@ -5,6 +5,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import com.swmansion.reactnativerichtexteditor.spans.EditorSpans
+import com.swmansion.reactnativerichtexteditor.utils.getParagraphBounds
 import com.swmansion.reactnativerichtexteditor.utils.getSafeSpanBoundaries
 
 class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
@@ -90,7 +91,6 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
   }
 
   fun afterTextChanged(s: Editable, endPosition: Int, previousTextLength: Int) {
-    val selection = editorView.selection ?: return
     var endCursorPosition = endPosition
     val isBackspace = s.length < previousTextLength
     val isNewLine = endCursorPosition == 0 || endCursorPosition > 0 && s[endCursorPosition - 1] == '\n'
@@ -114,7 +114,7 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
         }
       }
 
-      var (start, end) = selection.getParagraphBounds(s, styleStart, endCursorPosition)
+      var (start, end) = s.getParagraphBounds(styleStart, endCursorPosition)
       val isNotEndLineSpan = isSpanEnabledInNextLine(s, end, config.clazz)
       val spans = s.getSpans(start, end, config.clazz)
 
@@ -168,5 +168,15 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
 
     editorView.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
+  }
+
+  fun getStyleRange(): Pair<Int, Int> {
+    return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
+  }
+
+  fun removeStyle(name: String, start: Int, end: Int) {
+    val config = EditorSpans.paragraphSpans[name] ?: return
+    val spannable = editorView.text as Spannable
+    removeSpansForRange(spannable, start, end, config.clazz)
   }
 }
