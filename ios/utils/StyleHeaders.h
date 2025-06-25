@@ -53,6 +53,11 @@
 @end
 
 @interface UnorderedListStyle : NSObject<BaseStyleProtocol>
-- (void)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
+@end
+
+@interface OrderedListStyle : NSObject<BaseStyleProtocol>
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
 @end

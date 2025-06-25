@@ -93,7 +93,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([H1Style getStyleType]): [[H1Style alloc] initWithEditor:self],
     @([H2Style getStyleType]): [[H2Style alloc] initWithEditor:self],
     @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self],
-    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithEditor:self]
+    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithEditor:self],
+    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithEditor:self]
   };
   
   _conflictingStyles = @{
@@ -104,10 +105,11 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType])],
-    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType])],
+    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
+    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
+    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
+    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType])],
+    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
   };
   
   _blockingStyles = @{
@@ -122,6 +124,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([H2Style getStyleType]): @[],
     @([H3Style getStyleType]): @[],
     @([UnorderedListStyle getStyleType]): @[],
+    @([OrderedListStyle getStyleType]): @[],
   };
   
   _editorParser = [[EditorParser alloc] initWithEditor:self];
@@ -502,8 +505,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
         .isBlockQuote = NO, // [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
         .isUnorderedList = [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
-        .isOrderedList = NO, // [_activeStyles containsObject: @([OrderedListStyle getStyleType]]],
-        .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]]],
+        .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
+        .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]])],
       });
     }
   }
@@ -567,6 +570,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self toggleParagraphStyle:[H3Style getStyleType]];
   } else if([commandName isEqualToString:@"toggleUnorderedList"]) {
     [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleOrderedList"]) {
+    [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   }
 }
 
@@ -869,18 +874,37 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
   
+  BOOL rejectTextChanges = NO;
+  
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   if(uStyle != nullptr) {
     // removing first line list fix
-    [uStyle handleBackspaceInRange:range replacementText:text];
+    BOOL removedFirstLineList = [uStyle handleBackspaceInRange:range replacementText:text];
+    
     // creating unordered list from "- "
-    if([uStyle tryHandlingListShorcutInRange:range replacementText:text]) {
-      // we successfully added a list -> so we reject the text change
-      return NO;
-    }
+    BOOL addedShortcutList = [uStyle tryHandlingListShorcutInRange:range replacementText:text];
+    
+    // any of these changes make us reject text changes
+    rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
   }
   
-  return YES;
+  OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+  if(oStyle != nullptr) {
+    // removing first line list fix
+    BOOL removedFirstLineList = [oStyle handleBackspaceInRange:range replacementText:text];
+    
+    // creating ordered list from "1."
+    BOOL addedShortcutList = [oStyle tryHandlingListShorcutInRange:range replacementText:text];
+    
+    // any of these changes make us reject text changes
+    rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
+  }
+  
+  if(rejectTextChanges) {
+    [self anyTextMayHaveBeenModified];
+  }
+  
+  return !rejectTextChanges;
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
