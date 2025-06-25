@@ -301,9 +301,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       textView.autocapitalizationType = UITextAutocapitalizationTypeWords;
     } else if([str isEqualToString: @"characters"]) {
       textView.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
-    } else {
-      // default value
-      textView.autocapitalizationType = UITextAutocapitalizationTypeSentences;
     }
     
     // textView needs to be refocused on autocapitalization type change and we don't want to emit these events
