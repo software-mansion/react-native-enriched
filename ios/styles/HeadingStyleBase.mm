@@ -41,6 +41,9 @@
     }
   ];
   [_editor->textView.textStorage endEditing];
+  
+  // also toggle typing attributes
+  [self addTypingAttributes];
 }
 
 // will always be called on empty paragraphs so only typing attributes can be changed
