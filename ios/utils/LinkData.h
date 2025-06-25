@@ -1,5 +1,5 @@
 #pragma once
-#import <UIkit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 @interface LinkData : NSObject
 

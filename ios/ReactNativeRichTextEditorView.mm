@@ -77,6 +77,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
   _emitHtml = NO;
+  blockEmitting = NO;
   _emitFocusBlur = YES;
   
   defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
@@ -91,7 +92,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self],
     @([H1Style getStyleType]): [[H1Style alloc] initWithEditor:self],
     @([H2Style getStyleType]): [[H2Style alloc] initWithEditor:self],
-    @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self]
+    @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self],
+    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithEditor:self]
   };
   
   _conflictingStyles = @{
@@ -102,9 +104,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType])]
+    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
+    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
+    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType])],
+    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType])],
   };
   
   _blockingStyles = @{
@@ -117,7 +120,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([MentionStyle getStyleType]): @[],
     @([H1Style getStyleType]): @[],
     @([H2Style getStyleType]): @[],
-    @([H3Style getStyleType]): @[]
+    @([H3Style getStyleType]): @[],
+    @([UnorderedListStyle getStyleType]): @[],
   };
   
   _editorParser = [[EditorParser alloc] initWithEditor:self];
@@ -205,6 +209,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
   defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
   defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
+  defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
   textView.typingAttributes = defaultTypingAttributes;
   
   if(stylePropChanged) {
@@ -496,7 +501,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         .isH3 = [_activeStyles containsObject: @([H3Style getStyleType])],
         .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
         .isBlockQuote = NO, // [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
-        .isUnorderedList = NO, // [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
+        .isUnorderedList = [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
         .isOrderedList = NO, // [_activeStyles containsObject: @([OrderedListStyle getStyleType]]],
         .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]]],
       });
@@ -560,11 +565,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self toggleParagraphStyle:[H2Style getStyleType]];
   } else if([commandName isEqualToString:@"toggleH3"]) {
     [self toggleParagraphStyle:[H3Style getStyleType]];
+  } else if([commandName isEqualToString:@"toggleUnorderedList"]) {
+    [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
   }
 }
 
 - (std::shared_ptr<ReactNativeRichTextEditorViewEventEmitter>)getEventEmitter {
-  if(_eventEmitter != nullptr) {
+  if(_eventEmitter != nullptr && !blockEmitting) {
     auto emitter = static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter);
     return std::make_shared<ReactNativeRichTextEditorViewEventEmitter>(emitter);
   } else {
@@ -644,6 +651,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
     [styleClass applyStyle:textView.selectedRange];
+    [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -655,7 +663,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
     [styleClass applyStyle:paragraphRange];
-    // height needs to be checked as well with paragraph styles
     [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
@@ -669,6 +676,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
     [linkStyleClass addLink:text url:url range:linkRange manual:YES];
+    [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -680,6 +688,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
+    [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -690,6 +699,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass startMentionWithIndicator:indicator];
+    [self tryUpdatingHeight];
     [self tryUpdatingActiveStyles];
   }
 }
@@ -781,14 +791,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
   // do all the stuff only if the text really changed
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+    // emptying input
+    if(textView.textStorage.string.length == 0) {
+      // reset typing attribtues
+      textView.typingAttributes = defaultTypingAttributes;
+    }
     
     // placholder management
     if(_recentlyEmittedString.length == 0 && textView.textStorage.string.length > 0) {
       [self setPlaceholderLabelShown:NO];
     } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
       [self setPlaceholderLabelShown:YES];
-      // also typing attributes get reset when emptying the input
-      textView.typingAttributes = defaultTypingAttributes;
     }
     
     // modified words handling
@@ -816,12 +829,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     
     // set the recently emitted string
     _recentlyEmittedString = [textView.textStorage.string copy];
-    
-    // update height on each character change
-    [self tryUpdatingHeight];
-    // update active styles as well
-    [self tryUpdatingActiveStyles];
   }
+  
+  // update height on each character change
+  [self tryUpdatingHeight];
+  // update active styles as well
+  [self tryUpdatingActiveStyles];
 }
 
 // MARK: - UITextView delegate methods
@@ -855,7 +868,19 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
-  return true;
+  
+  UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
+  if(uStyle != nullptr) {
+    // removing first line list fix
+    [uStyle handleBackspaceInRange:range replacementText:text];
+    // creating unordered list from "- "
+    if([uStyle tryHandlingListShorcutInRange:range replacementText:text]) {
+      // we successfully added a list -> so we reject the text change
+      return NO;
+    }
+  }
+  
+  return YES;
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
