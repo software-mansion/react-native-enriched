@@ -843,12 +843,18 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   _recentlyChangedRange = NSMakeRange(range.location, text.length);
   
-  // removing lists fix
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   if(uStyle != nullptr) {
+    // removing first line list fix
     [uStyle handleBackspaceInRange:range replacementText:text];
+    // creating unordered list from "- "
+    if([uStyle tryHandlingListShorcutInRange:range replacementText:text]) {
+      // we successfully added a list -> so we reject the text change
+      return NO;
+    }
   }
-  return true;
+  
+  return YES;
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {

@@ -130,6 +130,26 @@
   }
 }
 
+//
+- (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text {
+  NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
+  // space was added - check if we are both at the paragraph beginning + 1 character (which we want to be a dash)
+  if([text isEqualToString:@" "] && range.location - 1 == paragraphRange.location) {
+    unichar charBefore = [_editor->textView.textStorage.string characterAtIndex:range.location - 1];
+    if(charBefore == '-') {
+      // we got a match - add a list if possible
+      if([_editor handleStyleBlocksAndConflicts:[[self class] getStyleType] range:paragraphRange]) {
+        // remove the dash
+        [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr];
+        // add attributes on the dashless paragraph
+        [self addAttributes:NSMakeRange(paragraphRange.location, paragraphRange.length - 1)];
+        return YES;
+      }
+    }
+  }
+  return NO;
+}
+
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
   return paragraph != nullptr && paragraph.textLists.count > 0;
