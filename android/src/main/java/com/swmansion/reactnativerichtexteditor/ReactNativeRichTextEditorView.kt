@@ -201,7 +201,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       return
     }
 
-    val finalText = currentText.replaceRange(start, end, item?.text.toString())
+    val finalText = currentText.mergeSpannables(start, end, item?.text.toString())
     setValue(finalText)
     parametrizedStyles?.detectAllLinks()
   }

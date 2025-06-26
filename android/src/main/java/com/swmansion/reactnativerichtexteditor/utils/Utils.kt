@@ -1,6 +1,7 @@
 package com.swmansion.reactnativerichtexteditor.utils
 
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.Log
 import com.swmansion.reactnativerichtexteditor.spans.interfaces.EditorBlockSpan
@@ -55,6 +56,10 @@ fun Spannable.getParagraphBounds(start: Int, end: Int): Pair<Int, Int> {
 
 fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> {
   return this.getParagraphBounds(index, index)
+}
+
+fun Spannable.mergeSpannables(start: Int, end: Int, string: String): Spannable {
+  return this.mergeSpannables(start, end, SpannableString(string))
 }
 
 fun Spannable.mergeSpannables(start: Int, end: Int, spannable: Spannable): Spannable {
