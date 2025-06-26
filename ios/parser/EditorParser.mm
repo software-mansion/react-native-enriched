@@ -23,6 +23,7 @@
   NSSet<NSNumber *>*previousActiveStyles = [[NSSet<NSNumber *> alloc]init];
   BOOL newLine = YES;
   BOOL inUnorderedList = NO;
+  BOOL inOrderedList = NO;
   unichar lastCharacter = 0;
   
   for(int i = 0; i < _editor->textView.textStorage.length; i++) {
@@ -60,6 +61,7 @@
       
       // append closing paragraph tag
       if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
+         [previousActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
          [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
          [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
          [previousActiveStyles containsObject:@([H3Style getStyleType])]
@@ -79,20 +81,31 @@
       if(newLine) {
         newLine = NO;
         
-        // handle ending lists
+        // handle ending unordered list
         if(inUnorderedList && ![currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
           inUnorderedList = NO;
           [result appendString:@"\n</ul>"];
         }
+        // handle ending ordered list
+        if(inOrderedList && ![currentActiveStyles containsObject:@([OrderedListStyle getStyleType])]) {
+          inOrderedList = NO;
+          [result appendString:@"\n</ol>"];
+        }
         
-        // handle starting lists
+        // handle starting unordered list
         if(!inUnorderedList && [currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
           inUnorderedList = YES;
           [result appendString:@"\n<ul>"];
         }
+        // handle starting ordered list
+        if(!inOrderedList && [currentActiveStyles containsObject:@([OrderedListStyle getStyleType])]) {
+          inOrderedList = YES;
+          [result appendString:@"\n<ol>"];
+        }
         
         // don't add the <p> tag if paragraph styles are present
         if([currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
+           [currentActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H3Style getStyleType])]
@@ -151,6 +164,8 @@
     // handle ending paragraph styles
     if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
       [result appendString:@"\n</ul>"];
+    } else if([previousActiveStyles containsObject:@([OrderedListStyle getStyleType])]) {
+      [result appendString:@"\n</ol>"];
     } else if(
       [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
       [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
@@ -225,7 +240,7 @@
     return @"h2";
   } else if([style isEqualToNumber:@([H3Style getStyleType])]) {
     return @"h3";
-  } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])]) {
+  } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])] || [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
   }
   return @"";
@@ -345,14 +360,14 @@
         ongoingTags[currentTagName] = tagArr;
         
         // skip one newline after lists' opening tags
-        if([currentTagName isEqualToString:@"ul"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"]) {
           i += 1;
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
         
         // skip one newline that was added before lists' closing tags
-        if([currentTagName isEqualToString:@"ul"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"]) {
           plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
         }
         
@@ -466,6 +481,8 @@
       }
     } else if([tagName isEqualToString:@"ul"]) {
       [styleArr addObject:@([UnorderedListStyle getStyleType])];
+    } else if([tagName isEqualToString:@"ol"]) {
+      [styleArr addObject:@([OrderedListStyle getStyleType])];
     }
     
     stylePair.rangeValue = tagRangeValue;

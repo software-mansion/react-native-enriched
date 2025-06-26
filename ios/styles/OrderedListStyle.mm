@@ -5,11 +5,11 @@
 #import "ParagraphsUtils.h"
 #import "TextInsertionUtils.h"
 
-@implementation UnorderedListStyle {
+@implementation OrderedListStyle {
   ReactNativeRichTextEditorView *_editor;
 }
 
-+ (StyleType)getStyleType { return UnorderedList; }
++ (StyleType)getStyleType { return OrderedList; }
 
 - (instancetype)initWithEditor:(id)editor {
   self = [super init];
@@ -28,7 +28,8 @@
 
 // we assume correct paragraph range is already given
 - (void)addAttributes:(NSRange)range {
-  NSTextList *bullet = [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDisc options:0];
+  NSTextList *numberBullet = [[NSTextList alloc] initWithMarkerFormat:@"{decimal}." options:0];
+
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:range];
   // if we fill empty lines with spaces, we need to offset later ranges
   NSInteger offset = 0;
@@ -51,7 +52,7 @@
     [_editor->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:fixedRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
-        pStyle.textLists = @[bullet];
+        pStyle.textLists = @[numberBullet];
         [_editor->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
@@ -71,7 +72,7 @@
   // also add typing attributes
   NSMutableDictionary *typingAttrs = [_editor->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-  pStyle.textLists = @[bullet];
+  pStyle.textLists = @[numberBullet];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
     
@@ -140,10 +141,10 @@
 //
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text {
   NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
-  // space was added - check if we are both at the paragraph beginning + 1 character (which we want to be a dash)
-  if([text isEqualToString:@" "] && range.location - 1 == paragraphRange.location) {
+  // a dot was added - check if we are both at the paragraph beginning + 1 character (which we want to be a dash)
+  if([text isEqualToString:@"."] && range.location - 1 == paragraphRange.location) {
     unichar charBefore = [_editor->textView.textStorage.string characterAtIndex:range.location - 1];
-    if(charBefore == '-') {
+    if(charBefore == '1') {
       // we got a match - add a list if possible
       if([_editor handleStyleBlocksAndConflicts:[[self class] getStyleType] range:paragraphRange]) {
         // don't emit some html updates during the replacing
@@ -152,14 +153,14 @@
           _editor->emitHtml = NO;
         }
         
-        // remove the dash
+        // remove the number
         [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr];
         
         if(prevEmitHtml) {
           _editor->emitHtml = YES;
         }
         
-        // add attributes on the dashless paragraph
+        // add attributes on the paragraph
         [self addAttributes:NSMakeRange(paragraphRange.location, paragraphRange.length - 1)];
         return YES;
       }
@@ -170,7 +171,7 @@
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
-  return paragraph != nullptr && paragraph.textLists.count == 1 && paragraph.textLists.firstObject.markerFormat == NSTextListMarkerDisc;
+  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat isEqualToString:@"{decimal}."];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
