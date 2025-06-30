@@ -61,3 +61,6 @@
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
 @end
+
+@interface BlockQuoteStyle : NSObject<BaseStyleProtocol>
+@end
