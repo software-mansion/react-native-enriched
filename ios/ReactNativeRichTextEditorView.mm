@@ -13,6 +13,7 @@
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 #import "EditorParser.h"
+#import "EditorManager.h"
 #import "LayoutManagerExtension.h"
 
 using namespace facebook::react;
@@ -65,6 +66,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self setupPlaceholderLabel];
     self.contentView = textView;
   }
+  [EditorManager sharedManager].currentEditor = self;
   return self;
 }
 
@@ -138,7 +140,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.backgroundColor = UIColor.clearColor;
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
-  [textView.layoutManager setEditor:self];
   textView.delegate = self;
 }
 
@@ -791,12 +792,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [linkStyle handleManualLinks:word inRange:range];
     [linkStyle handleAutomaticLinks:word inRange:range];
   }
-  
-  // mentions removal in case of some invalid modifications
-  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-  if(mentionStyleClass != nullptr) {
-    [mentionStyleClass handleExistingMentions];
-  }
 }
 
 - (void)anyTextMayHaveBeenModified {
@@ -818,6 +813,22 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       [self setPlaceholderLabelShown:NO];
     } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
       [self setPlaceholderLabelShown:YES];
+    }
+    
+    // list item all characters removal fix
+    UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
+    if(uStyle != nullptr) {
+      [uStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+    OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+    if(oStyle != nullptr) {
+      [oStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+      
+    // mentions removal management
+    MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+    if(mentionStyleClass != nullptr) {
+      [mentionStyleClass handleExistingMentions];
     }
     
     // modified words handling
@@ -851,6 +862,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  // update drawing
+  NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+  [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:nullptr];
+  [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
 }
 
 // MARK: - UITextView delegate methods

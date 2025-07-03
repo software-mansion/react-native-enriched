@@ -17,8 +17,8 @@
 }
 
 - (CGFloat)getHeadIndent {
-  // gap + rectangle width + gap between rect and text
-  return 16 + 4 + 4; // TODO: blockquote style config?
+  // rectangle width + gap
+  return 4 + 16; // TODO: blockquote style config?
 }
 
 // the range will already be the full paragraph/s range
@@ -97,7 +97,7 @@
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
-  return pStyle != nullptr && pStyle.headIndent == [self getHeadIndent] && pStyle.firstLineHeadIndent == [self getHeadIndent];
+  return pStyle != nullptr && pStyle.headIndent == [self getHeadIndent] && pStyle.firstLineHeadIndent == [self getHeadIndent] && pStyle.textLists.count == 0;
 }
 
 - (BOOL)detectStyle:(NSRange)range {
