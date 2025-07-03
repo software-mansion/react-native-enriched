@@ -24,6 +24,7 @@
   BOOL newLine = YES;
   BOOL inUnorderedList = NO;
   BOOL inOrderedList = NO;
+  BOOL inBlockQuote = NO;
   unichar lastCharacter = 0;
   
   for(int i = 0; i < _editor->textView.textStorage.length; i++) {
@@ -45,7 +46,13 @@
       // just an empty line - only br tag and no style tags
       if(newLine) {
         // keep the newLine at YES
-        [result appendString:@"\n<br>"];
+        
+        // br is not a valid child of lists:
+        if(inOrderedList || inUnorderedList) {
+          [result appendString:@"\n<li></li>"];
+        } else {
+          [result appendString:@"\n<br>"];
+        }
         continue;
       }
     
@@ -64,7 +71,8 @@
          [previousActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
          [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
          [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
-         [previousActiveStyles containsObject:@([H3Style getStyleType])]
+         [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
+         [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
       ) {
         // do nothing, proper closing paragraph tags have been already appended
       } else {
@@ -91,6 +99,11 @@
           inOrderedList = NO;
           [result appendString:@"\n</ol>"];
         }
+        // handle ending blockquotes
+        if(inBlockQuote && ![currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]) {
+          inBlockQuote = NO;
+          [result appendString:@"\n</blockquote>"];
+        }
         
         // handle starting unordered list
         if(!inUnorderedList && [currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
@@ -102,13 +115,19 @@
           inOrderedList = YES;
           [result appendString:@"\n<ol>"];
         }
+        // handle starting blockquotes
+        if(!inBlockQuote && [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]) {
+          inBlockQuote = YES;
+          [result appendString:@"\n<blockquote>"];
+        }
         
-        // don't add the <p> tag if paragraph styles are present
+        // don't add the <p> tag if some paragraph styles are present
         if([currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
            [currentActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
-           [currentActiveStyles containsObject:@([H3Style getStyleType])]
+           [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
+           [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
         ) {
           [result appendString:@"\n"];
         } else {
@@ -149,8 +168,8 @@
     lastCharacter = currentCharacterChar;
   }
   
-  // not-newline character was last - finish the paragraph
   if(![[NSCharacterSet newlineCharacterSet] characterIsMember:lastCharacter]) {
+    // not-newline character was last - finish the paragraph
     // close all pending tags
     NSArray<NSNumber*> *sortedEndedStyles = [previousActiveStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
       
@@ -161,11 +180,13 @@
     }
     
     // finish the paragraph
-    // handle ending paragraph styles
+    // handle ending of some paragraph styles
     if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
       [result appendString:@"\n</ul>"];
     } else if([previousActiveStyles containsObject:@([OrderedListStyle getStyleType])]) {
       [result appendString:@"\n</ol>"];
+    } else if([previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]) {
+      [result appendString:@"\n</blockquote>"];
     } else if(
       [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
       [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
@@ -174,6 +195,20 @@
       // do nothing, heading closing tag has already ben appended
     } else {
       [result appendString:@"</p>"];
+    }
+  } else {
+    // newline character was last - some paragraph styles need to be closed
+    if(inUnorderedList) {
+      inUnorderedList = NO;
+      [result appendString:@"\n</ul>"];
+    }
+    if(inOrderedList) {
+      inOrderedList = NO;
+      [result appendString:@"\n</ol>"];
+    }
+    if(inBlockQuote) {
+      inBlockQuote = NO;
+      [result appendString:@"\n</blockquote>"];
     }
   }
   
@@ -242,6 +277,9 @@
     return @"h3";
   } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])] || [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
+  } else if([style isEqualToNumber:@([BlockQuoteStyle getStyleType])]) {
+    // blockquotes use <p> tags the same way lists use <li>
+    return @"p";
   }
   return @"";
 }
@@ -359,15 +397,15 @@
         }
         ongoingTags[currentTagName] = tagArr;
         
-        // skip one newline after lists' opening tags
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"]) {
+        // skip one newline after opening tags that are in separate lines intentionally
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
           i += 1;
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
         
-        // skip one newline that was added before lists' closing tags
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"]) {
+        // skip one newline that was added before some closing tags that are in separate lines
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
           plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
         }
         
@@ -483,6 +521,8 @@
       [styleArr addObject:@([UnorderedListStyle getStyleType])];
     } else if([tagName isEqualToString:@"ol"]) {
       [styleArr addObject:@([OrderedListStyle getStyleType])];
+    } else if([tagName isEqualToString:@"blockquote"]) {
+      [styleArr addObject:@([BlockQuoteStyle getStyleType])];
     }
     
     stylePair.rangeValue = tagRangeValue;

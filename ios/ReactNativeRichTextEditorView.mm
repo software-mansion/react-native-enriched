@@ -13,6 +13,8 @@
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 #import "EditorParser.h"
+#import "EditorManager.h"
+#import "LayoutManagerExtension.h"
 
 using namespace facebook::react;
 
@@ -64,6 +66,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self setupPlaceholderLabel];
     self.contentView = textView;
   }
+  [EditorManager sharedManager].currentEditor = self;
   return self;
 }
 
@@ -93,7 +96,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([H2Style getStyleType]): [[H2Style alloc] initWithEditor:self],
     @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self],
     @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithEditor:self],
-    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithEditor:self]
+    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithEditor:self],
+    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithEditor:self]
   };
   
   _conflictingStyles = @{
@@ -104,11 +108,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
-    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType])],
-    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType])],
+    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
+    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
+    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
+    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
+    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
+    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
   };
   
   _blockingStyles = @{
@@ -124,6 +129,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([H3Style getStyleType]): @[],
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
+    @([BlockQuoteStyle getStyleType]): @[],
   };
   
   _editorParser = [[EditorParser alloc] initWithEditor:self];
@@ -506,10 +512,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         .isH1 = [_activeStyles containsObject: @([H1Style getStyleType])],
         .isH2 = [_activeStyles containsObject: @([H2Style getStyleType])],
         .isH3 = [_activeStyles containsObject: @([H3Style getStyleType])],
-        .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
-        .isBlockQuote = NO, // [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
         .isUnorderedList = [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
         .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
+        .isBlockQuote = [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
+        .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
         .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]])],
       });
     }
@@ -576,6 +582,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleBlockQuote"]) {
+    [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
   }
 }
 
@@ -784,12 +792,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [linkStyle handleManualLinks:word inRange:range];
     [linkStyle handleAutomaticLinks:word inRange:range];
   }
-  
-  // mentions removal in case of some invalid modifications
-  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-  if(mentionStyleClass != nullptr) {
-    [mentionStyleClass handleExistingMentions];
-  }
 }
 
 - (void)anyTextMayHaveBeenModified {
@@ -811,6 +813,22 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       [self setPlaceholderLabelShown:NO];
     } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
       [self setPlaceholderLabelShown:YES];
+    }
+    
+    // list item all characters removal fix
+    UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
+    if(uStyle != nullptr) {
+      [uStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+    OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+    if(oStyle != nullptr) {
+      [oStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+      
+    // mentions removal management
+    MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+    if(mentionStyleClass != nullptr) {
+      [mentionStyleClass handleExistingMentions];
     }
     
     // modified words handling
@@ -844,6 +862,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  // update drawing
+  NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+  [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:nullptr];
+  [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
 }
 
 // MARK: - UITextView delegate methods

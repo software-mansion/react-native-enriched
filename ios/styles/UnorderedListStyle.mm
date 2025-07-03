@@ -11,6 +11,11 @@
 
 + (StyleType)getStyleType { return UnorderedList; }
 
+// we draw lists manually
+- (CGFloat)getHeadIndent {
+  return 48; // TODO: style config setup
+}
+
 - (instancetype)initWithEditor:(id)editor {
   self = [super init];
   _editor = (ReactNativeRichTextEditorView *) editor;
@@ -52,6 +57,8 @@
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
         pStyle.textLists = @[bullet];
+        pStyle.headIndent = [self getHeadIndent];
+        pStyle.firstLineHeadIndent = [self getHeadIndent];
         [_editor->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
@@ -72,6 +79,8 @@
   NSMutableDictionary *typingAttrs = [_editor->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
   pStyle.textLists = @[bullet];
+  pStyle.headIndent = [self getHeadIndent];
+  pStyle.firstLineHeadIndent = [self getHeadIndent];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
     
@@ -95,6 +104,8 @@
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
         pStyle.textLists = @[];
+        pStyle.headIndent = 0;
+        pStyle.firstLineHeadIndent = 0;
         [_editor->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
@@ -106,6 +117,8 @@
   NSMutableDictionary *typingAttrs = [_editor->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
   pStyle.textLists = @[];
+  pStyle.headIndent = 0;
+  pStyle.firstLineHeadIndent = 0;
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
     
@@ -137,7 +150,6 @@
   return NO;
 }
 
-//
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text {
   NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
   // space was added - check if we are both at the paragraph beginning + 1 character (which we want to be a dash)
@@ -166,6 +178,13 @@
     }
   }
   return NO;
+}
+
+- (void)handleListItemWithChangeRange:(NSRange)range {
+  NSRange changedParagraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
+  if(changedParagraphRange.length == 0 && [self detectStyle:changedParagraphRange]) {
+    [self removeAttributes:changedParagraphRange];
+  }
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
