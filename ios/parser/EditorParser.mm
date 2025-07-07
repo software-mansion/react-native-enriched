@@ -14,9 +14,12 @@
   return self;
 }
 
-- (NSString *)parseToHtml {
-  if(_editor->textView.textStorage.string.length == 0) {
-    return @"";
+- (NSString *)parseToHtmlFromRange:(NSRange)range {
+  NSInteger offset = range.location;
+  NSString *text = [_editor->textView.textStorage.string substringWithRange:range];
+
+  if(text.length == 0) {
+    return @"<html>\n<p></p>\n</html>";
   }
 
   NSMutableString *result = [[NSMutableString alloc] initWithString: @"<html>"];
@@ -27,8 +30,8 @@
   BOOL inBlockQuote = NO;
   unichar lastCharacter = 0;
   
-  for(int i = 0; i < _editor->textView.textStorage.length; i++) {
-    NSRange currentRange = NSMakeRange(i, 1);
+  for(int i = 0; i < text.length; i++) {
+    NSRange currentRange = NSMakeRange(offset + i, 1);
     NSMutableSet<NSNumber *>*currentActiveStyles = [[NSMutableSet<NSNumber *> alloc]init];
     
     // check each existing style existence
@@ -302,7 +305,7 @@
   [_editor anyTextMayHaveBeenModified];
 }
 
-- (void)replaceRangeFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
+- (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
@@ -353,14 +356,35 @@
   }
 }
 
-- (NSArray *)getTextAndStylesFromHtml:(NSString *)html {
-  NSString *fixedHtml = [html copy];
-  if(html.length > 0) {
-    // we want to get the string without <html> and </html> and their newlines
-    // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
-    fixedHtml = [html substringWithRange: NSMakeRange(7, html.length-15)];
+- (NSString * _Nullable)initiallyProcessHtml:(NSString * _Nonnull)html {
+  NSString *fixedHtml = nullptr;
+  
+  if(html.length >= 15) {
+    NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
+    NSString *lastSeven = [html substringWithRange:NSMakeRange(html.length-7, 7)];
+    
+    if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
+      // looks like our format
+      // we want to get the string without <html> and </html> and their newlines
+      // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
+      fixedHtml = [html substringWithRange: NSMakeRange(7, html.length - 15)];
+    } else {
+      // in other case we are most likely working with some external html - try getting the styles from between body tags
+      NSRange openingBodyRange = [html rangeOfString:@"<body>"];
+      NSRange closingBodyRange = [html rangeOfString:@"</body>"];
+      
+      if(openingBodyRange.length != 0 && closingBodyRange.length != 0) {
+        NSInteger newStart = openingBodyRange.location + 7;
+        NSInteger newEnd = closingBodyRange.location - 1;
+        fixedHtml = [html substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
+      }
+    }
   }
   
+  return fixedHtml;
+}
+
+- (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
   NSMutableString *plainText = [[NSMutableString alloc] initWithString: @""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
@@ -523,6 +547,9 @@
       [styleArr addObject:@([OrderedListStyle getStyleType])];
     } else if([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
+    } else {
+    // some other external tags like span just don't get put into the processed styles
+      continue;
     }
     
     stylePair.rangeValue = tagRangeValue;
