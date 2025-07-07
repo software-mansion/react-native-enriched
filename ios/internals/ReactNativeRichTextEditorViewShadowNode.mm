@@ -43,7 +43,17 @@ Size ReactNativeRichTextEditorViewShadowNode::measureContent(const LayoutContext
     ReactNativeRichTextEditorView *typedComponentObject = (ReactNativeRichTextEditorView *) componentObject;
     
     if(typedComponentObject != nullptr) {
-      CGSize estimatedSize = [typedComponentObject measureSize:layoutConstraints.maximumSize.width];
+      __block CGSize estimatedSize;
+      
+      // synchronously dispatch to main thread if needed
+      if([NSThread isMainThread]) {
+        estimatedSize = [typedComponentObject measureSize:layoutConstraints.maximumSize.width];
+      } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+          estimatedSize = [typedComponentObject measureSize:layoutConstraints.maximumSize.width];
+        });
+      }
+      
       return {estimatedSize.width, estimatedSize.height};
     }
   }
