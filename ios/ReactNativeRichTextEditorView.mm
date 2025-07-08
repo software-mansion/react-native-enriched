@@ -12,9 +12,9 @@
 #import <React/RCTConversions.h>
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
-#import "EditorParser.h"
 #import "EditorManager.h"
 #import "LayoutManagerExtension.h"
+#import "EditorTextView.h"
 
 using namespace facebook::react;
 
@@ -34,7 +34,6 @@ using namespace facebook::react;
   NSString *_recentlyEmittedString;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
-  EditorParser *_editorParser;
   NSString *_recentlyEmittedHtml;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
@@ -132,11 +131,11 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([BlockQuoteStyle getStyleType]): @[],
   };
   
-  _editorParser = [[EditorParser alloc] initWithEditor:self];
+  parser = [[EditorParser alloc] initWithEditor:self];
 }
 
 - (void)setupTextView {
-  textView = [[UITextView alloc] init];
+  textView = [[EditorTextView alloc] init];
   textView.backgroundColor = UIColor.clearColor;
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
@@ -224,14 +223,20 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // all the text needs to be rebuilt
     // we get the current html and replace whole text parsing it back into the input
     // this way, the newest config attributes are being used!
-    NSString *currentHtml = [_editorParser parseToHtml];
+    NSString *currentHtml = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
     
     // we don't want to emit these html changes in here
     BOOL prevEmitHtml = emitHtml;
     if(prevEmitHtml) {
       emitHtml = NO;
     }
-    [_editorParser replaceWholeFromHtml:currentHtml];
+    
+    // make sure everything is sound in the html
+    NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:currentHtml];
+    if(initiallyProcessedHtml != nullptr) {
+      [parser replaceWholeFromHtml:initiallyProcessedHtml];
+    }
+    
     if(prevEmitHtml) {
       emitHtml = YES;
     }
@@ -248,18 +253,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   // default value - must be set before placeholder to make sure it correctly shows on first mount
   if(newViewProps.defaultValue != oldViewProps.defaultValue) {
     NSString *newDefaultValue = [NSString fromCppString:newViewProps.defaultValue];
-    if(newDefaultValue.length >= 13) {
-      NSString *firstSix = [newDefaultValue substringWithRange:NSMakeRange(0, 6)];
-      NSString *lastSeven = [newDefaultValue substringWithRange:NSMakeRange(newDefaultValue.length - 7, 7)];
-      
-      if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
-        // we've got some seemingly proper html
-        [_editorParser replaceWholeFromHtml:newDefaultValue];
-      } else {
-        textView.text = newDefaultValue;
-      }
-    } else {
+    
+    NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:newDefaultValue];
+    if(initiallyProcessedHtml == nullptr) {
+      // just plain text
       textView.text = newDefaultValue;
+    } else {
+      // we've got some seemingly proper html
+      [parser replaceWholeFromHtml:initiallyProcessedHtml];
     }
   }
   
@@ -650,7 +651,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
-    NSString *htmlOutput = [_editorParser parseToHtml];
+    NSString *htmlOutput = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
     // make sure html really changed
     if(![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
       _recentlyEmittedHtml = htmlOutput;

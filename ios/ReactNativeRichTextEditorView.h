@@ -2,6 +2,7 @@
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
 #import "EditorConfig.h"
+#import "EditorParser.h"
 #import "BaseStyleProtocol.h"
 
 #ifndef ReactNativeRichTextEditorViewNativeComponent_h
@@ -12,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ReactNativeRichTextEditorView : RCTViewComponentView {
   @public UITextView *textView;
   @public EditorConfig *config;
+  @public EditorParser *parser;
   @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
   @public BOOL blockEmitting;
