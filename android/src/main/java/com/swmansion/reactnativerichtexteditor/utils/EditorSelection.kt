@@ -2,7 +2,6 @@ package com.swmansion.reactnativerichtexteditor.utils
 
 import android.text.Editable
 import android.text.Spannable
-import android.util.Log
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
@@ -49,8 +48,6 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val text = editorView.text ?: return false
     val start = this.start.coerceAtLeast(0).coerceAtMost(text.length)
     val end = this.end.coerceAtLeast(0).coerceAtMost(text.length)
-
-    Log.d("EditorSelection", "Checking zero-width selection: start=$start, end=$end, text=${text}, text.length=${text.length}")
 
     if (start != end) {
       return text.substring(start, end) == "\u200B"
