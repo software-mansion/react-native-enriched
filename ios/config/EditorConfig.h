@@ -31,4 +31,9 @@
 - (void)setInlineCodeFgColor:(UIColor *)newValue;
 - (UIColor *)inlineCodeBgColor;
 - (void)setInlineCodeBgColor:(UIColor *)newValue;
+- (CGFloat)orderedListGapWidth;
+- (void)setOrderedListGapWidth:(CGFloat)newValue;
+- (CGFloat)orderedListMarginLeft;
+- (void)setOrderedListMarginLeft:(CGFloat)newValue;
+- (CGFloat)orderedListMarkerWidth;
 @end

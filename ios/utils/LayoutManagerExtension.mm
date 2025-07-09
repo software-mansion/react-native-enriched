@@ -90,16 +90,8 @@
       usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
         NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] editor:typedEditor];
         
+        CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
         CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-        CGFloat gapWidth = 16; // TODO: styling config
-        
-        CGFloat maxMarkerWidth = [@"99" sizeWithAttributes:markerAttributes].width; // TODO: styling config
-        if(markerWidth > maxMarkerWidth) {
-          // TODO: change some config variable to new maxMarkerWidth
-          // TODO: force reload whole document to layout ordered lists with new gaps
-          // the lists head indent should be config's marginLeft + gapWidth + maxMarkerWidth
-        }
-        
         CGFloat rightEdge = usedRect.origin.x - gapWidth;
         CGFloat numberX = rightEdge - markerWidth;
         

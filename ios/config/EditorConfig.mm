@@ -19,6 +19,8 @@
   CGFloat _blockquoteGapWidth;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
+  CGFloat _orderedListGapWidth;
+  CGFloat _orderedListMarginLeft;
 }
 
 - (instancetype) init {
@@ -47,6 +49,8 @@
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
   copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
   copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
+  copy->_orderedListGapWidth = _orderedListGapWidth;
+  copy->_orderedListMarginLeft = _orderedListMarginLeft;
   return copy;
 }
 
@@ -189,6 +193,31 @@
 
 - (void)setInlineCodeBgColor:(UIColor *)newValue {
   _inlineCodeBgColor = newValue;
+}
+
+- (CGFloat)orderedListGapWidth {
+  return _orderedListGapWidth;
+}
+
+- (void)setOrderedListGapWidth:(CGFloat)newValue {
+  _orderedListGapWidth = newValue;
+}
+
+- (CGFloat)orderedListMarginLeft {
+  return _orderedListMarginLeft;
+}
+
+- (void)setOrderedListMarginLeft:(CGFloat)newValue {
+  _orderedListMarginLeft = newValue;
+}
+
+- (CGFloat)orderedListMarkerWidth {
+  NSDictionary *markerAttributes = @{
+    NSFontAttributeName: [self primaryFont],
+    NSForegroundColorAttributeName: [self primaryColor]
+  };
+  // TODO: marker widths could be dynamic, for now we settle with (usually) the widest 2-digit marker
+  return [@"88." sizeWithAttributes:markerAttributes].width;
 }
 
 @end

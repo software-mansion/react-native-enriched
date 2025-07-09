@@ -262,6 +262,16 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
   }
   
+  if(newViewProps.richTextStyle.ol.gapWidth != oldViewProps.richTextStyle.ol.gapWidth) {
+    [newConfig setOrderedListGapWidth:newViewProps.richTextStyle.ol.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ol.marginLeft != oldViewProps.richTextStyle.ol.marginLeft) {
+    [newConfig setOrderedListMarginLeft:newViewProps.richTextStyle.ol.marginLeft];
+    stylePropChanged = YES;
+  }
+  
   if(stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html and replace whole text parsing it back into the input
