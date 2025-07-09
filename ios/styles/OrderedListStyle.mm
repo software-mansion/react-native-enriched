@@ -13,7 +13,7 @@
 
 - (CGFloat)getHeadIndent {
   // lists are drawn manually
-  // margin before marker + width needed for marker (dynamically changes when wider marker arrives) + gap between marker and paragraph
+  // margin before marker + marker width + gap between marker and paragraph
   return [_editor->config orderedListMarginLeft] + [_editor->config orderedListMarkerWidth] + [_editor->config orderedListGapWidth];
 }
 

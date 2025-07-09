@@ -21,6 +21,10 @@
   UIColor *_inlineCodeBgColor;
   CGFloat _orderedListGapWidth;
   CGFloat _orderedListMarginLeft;
+  UIColor *_unorderedListBulletColor;
+  CGFloat _unorderedListBulletSize;
+  CGFloat _unorderedListGapWidth;
+  CGFloat _unorderedListMarginLeft;
 }
 
 - (instancetype) init {
@@ -51,6 +55,10 @@
   copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
   copy->_orderedListGapWidth = _orderedListGapWidth;
   copy->_orderedListMarginLeft = _orderedListMarginLeft;
+  copy->_unorderedListBulletColor = [_unorderedListBulletColor copy];
+  copy->_unorderedListBulletSize = _unorderedListBulletSize;
+  copy->_unorderedListGapWidth = _unorderedListGapWidth;
+  copy->_unorderedListMarginLeft = _unorderedListMarginLeft;
   return copy;
 }
 
@@ -218,6 +226,38 @@
   };
   // TODO: marker widths could be dynamic, for now we settle with (usually) the widest 2-digit marker
   return [@"88." sizeWithAttributes:markerAttributes].width;
+}
+
+- (UIColor *)unorderedListBulletColor {
+  return _unorderedListBulletColor;
+}
+
+- (void)setUnorderedListBulletColor:(UIColor *)newValue {
+  _unorderedListBulletColor = newValue;
+}
+
+- (CGFloat)unorderedListBulletSize {
+  return _unorderedListBulletSize;
+}
+
+- (void)setUnorderedListBulletSize:(CGFloat)newValue {
+  _unorderedListBulletSize = newValue;
+}
+
+- (CGFloat)unorderedListGapWidth {
+  return _unorderedListGapWidth;
+}
+
+- (void)setUnorderedListGapWidth:(CGFloat)newValue {
+  _unorderedListGapWidth = newValue;
+}
+
+- (CGFloat)unorderedListMarginLeft {
+  return _unorderedListMarginLeft;
+}
+
+- (void)setUnorderedListMarginLeft:(CGFloat)newValue {
+  _unorderedListMarginLeft = newValue;
 }
 
 @end

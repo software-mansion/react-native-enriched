@@ -36,4 +36,12 @@
 - (CGFloat)orderedListMarginLeft;
 - (void)setOrderedListMarginLeft:(CGFloat)newValue;
 - (CGFloat)orderedListMarkerWidth;
+- (UIColor *)unorderedListBulletColor;
+- (void)setUnorderedListBulletColor:(UIColor *)newValue;
+- (CGFloat)unorderedListBulletSize;
+- (void)setUnorderedListBulletSize:(CGFloat)newValue;
+- (CGFloat)unorderedListGapWidth;
+- (void)setUnorderedListGapWidth:(CGFloat)newValue;
+- (CGFloat)unorderedListMarginLeft;
+- (void)setUnorderedListMarginLeft:(CGFloat)newValue;
 @end

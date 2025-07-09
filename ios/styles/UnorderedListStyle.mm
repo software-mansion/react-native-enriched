@@ -11,9 +11,10 @@
 
 + (StyleType)getStyleType { return UnorderedList; }
 
-// we draw lists manually
 - (CGFloat)getHeadIndent {
-  return 48; // TODO: style config setup
+  // lists are drawn manually
+  // margin before bullet + bullet size + gap between bullet and paragraph
+  return [_editor->config unorderedListMarginLeft] + [_editor->config unorderedListBulletSize] + [_editor->config unorderedListGapWidth];
 }
 
 - (instancetype)initWithEditor:(id)editor {

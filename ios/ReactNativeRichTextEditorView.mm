@@ -272,6 +272,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.richTextStyle.ul.bulletColor != oldViewProps.richTextStyle.ul.bulletColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.ul.bulletColor)) {
+      [newConfig setUnorderedListBulletColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ul.bulletColor)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.ul.bulletSize != oldViewProps.richTextStyle.ul.bulletSize) {
+    [newConfig setUnorderedListBulletSize:newViewProps.richTextStyle.ul.bulletSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ul.gapWidth != oldViewProps.richTextStyle.ul.gapWidth) {
+    [newConfig setUnorderedListGapWidth:newViewProps.richTextStyle.ul.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ul.marginLeft != oldViewProps.richTextStyle.ul.marginLeft) {
+    [newConfig setUnorderedListMarginLeft:newViewProps.richTextStyle.ul.marginLeft];
+    stylePropChanged = YES;
+  }
+  
   if(stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html and replace whole text parsing it back into the input

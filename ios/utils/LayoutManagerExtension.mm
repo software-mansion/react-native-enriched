@@ -90,12 +90,27 @@
       usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
         NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] editor:typedEditor];
         
-        CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
-        CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-        CGFloat rightEdge = usedRect.origin.x - gapWidth;
-        CGFloat numberX = rightEdge - markerWidth;
-        
-        [marker drawAtPoint:CGPointMake(numberX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
+        if(pStyle.textLists.firstObject.markerFormat == NSTextListMarkerDecimal) {
+          CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
+          CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
+          CGFloat rightEdge = usedRect.origin.x - gapWidth;
+          CGFloat numberX = rightEdge - markerWidth;
+          
+          [marker drawAtPoint:CGPointMake(numberX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
+        } else {
+          CGFloat gapWidth = [typedEditor->config unorderedListGapWidth];
+          CGFloat bulletSize = [typedEditor->config unorderedListBulletSize];
+          CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize;
+          CGFloat centerY = CGRectGetMidY(usedRect);
+          
+          CGContextRef context = UIGraphicsGetCurrentContext();
+          CGContextSaveGState(context); {
+            [[typedEditor->config unorderedListBulletColor] setFill];
+            CGContextAddArc(context, bulletX, centerY, bulletSize/2, 0, 2 * M_PI, YES);
+            CGContextFillPath(context);
+          }
+          CGContextRestoreGState(context);
+        }
       }
     ];
   }
