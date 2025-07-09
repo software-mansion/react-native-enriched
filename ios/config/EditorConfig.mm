@@ -14,6 +14,9 @@
   CGFloat _h1FontSize;
   CGFloat _h2FontSize;
   CGFloat _h3FontSize;
+  UIColor *_blockquoteColor;
+  CGFloat _blockquoteWidth;
+  CGFloat _blockquoteGapWidth;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
 }
@@ -39,6 +42,9 @@
   copy->_h3FontSize = _h3FontSize;
   copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
   copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
+  copy->_blockquoteColor = [_blockquoteColor copy];
+  copy->_blockquoteWidth = _blockquoteWidth;
+  copy->_blockquoteGapWidth = _blockquoteGapWidth;
   return copy;
 }
 
@@ -140,6 +146,31 @@
 
 - (void)setH3FontSize:(CGFloat)newValue {
   _h3FontSize = newValue;
+}
+
+- (UIColor *)blockquoteColor {
+  return _blockquoteColor;
+}
+
+- (void)setBlockquoteColor:(UIColor *)newValue {
+  _blockquoteColor = newValue;
+}
+
+- (CGFloat)blockquoteWidth {
+  return _blockquoteWidth;
+}
+
+- (void)setBlockquoteWidth:(CGFloat)newValue {
+  _blockquoteWidth = newValue;
+}
+
+
+- (CGFloat)blockquoteGapWidth {
+  return _blockquoteGapWidth;
+}
+
+- (void)setBlockquoteGapWidth:(CGFloat)newValue {
+  _blockquoteGapWidth = newValue;
 }
 
 - (UIColor *)inlineCodeFgColor {

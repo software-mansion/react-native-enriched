@@ -231,6 +231,23 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.richTextStyle.blockquote.borderColor != oldViewProps.richTextStyle.blockquote.borderColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.blockquote.borderColor)) {
+      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
+    }
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.blockquote.borderWidth != oldViewProps.richTextStyle.blockquote.borderWidth) {
+    [newConfig setBlockquoteWidth:newViewProps.richTextStyle.blockquote.borderWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.blockquote.gapWidth != oldViewProps.richTextStyle.blockquote.gapWidth) {
+    [newConfig setBlockquoteGapWidth:newViewProps.richTextStyle.blockquote.gapWidth];
+    stylePropChanged = YES;
+  }
+  
   if(stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html and replace whole text parsing it back into the input

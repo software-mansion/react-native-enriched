@@ -57,11 +57,11 @@
         CGFloat paddingTop = origin.y;
         CGFloat x = paddingLeft;
         CGFloat y = paddingTop + rect.origin.y;
-        CGFloat width = 4; // TODO: blockquote style config
+        CGFloat width = [typedEditor->config blockquoteWidth];
         CGFloat height = rect.size.height;
         
         CGRect lineRect = CGRectMake(x, y, width, height);
-        [[UIColor blueColor] setFill];
+        [[typedEditor->config blockquoteColor] setFill];
         UIRectFill(lineRect);
       }
     ];

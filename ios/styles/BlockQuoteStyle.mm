@@ -18,7 +18,7 @@
 
 - (CGFloat)getHeadIndent {
   // rectangle width + gap
-  return 4 + 16; // TODO: blockquote style config?
+  return [_editor->config blockquoteWidth] + [_editor->config blockquoteGapWidth];
 }
 
 // the range will already be the full paragraph/s range

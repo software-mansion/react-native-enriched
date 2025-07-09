@@ -21,6 +21,12 @@
 - (void)setH2FontSize:(CGFloat)newValue;
 - (CGFloat)h3FontSize;
 - (void)setH3FontSize:(CGFloat)newValue;
+- (UIColor *)blockquoteColor;
+- (void)setBlockquoteColor:(UIColor *)newValue;
+- (CGFloat)blockquoteWidth;
+- (void)setBlockquoteWidth:(CGFloat)newValue;
+- (CGFloat)blockquoteGapWidth;
+- (void)setBlockquoteGapWidth:(CGFloat)newValue;
 
 - (UIColor *)inlineCodeFgColor;
 - (void)setInlineCodeFgColor:(UIColor *)newValue;
