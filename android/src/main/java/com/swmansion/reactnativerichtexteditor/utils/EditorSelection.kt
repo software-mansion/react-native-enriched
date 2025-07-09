@@ -46,8 +46,8 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
 
   private fun isZeroWidthSelection(): Boolean {
     val text = editorView.text ?: return false
-    val start = this.start.coerceAtLeast(0)
-    val end = this.end.coerceAtMost(text.length)
+    val start = this.start.coerceAtLeast(0).coerceAtMost(text.length)
+    val end = this.end.coerceAtLeast(0).coerceAtMost(text.length)
 
     if (start != end) {
       return text.substring(start, end) == "\u200B"
@@ -55,7 +55,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
 
     val isNewLine = if (start > 0 ) text.substring(start - 1, start) == "\n" else true
     val isNextCharacterZeroWidth = if (start < text.length) {
-     text.substring(start, start + 1) == "\u200B"
+      text.substring(start, start + 1) == "\u200B"
     } else {
       false
     }

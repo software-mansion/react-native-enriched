@@ -445,13 +445,14 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter
-      val finalEnd = if (charactersRemoved > 0 && end > start) {
-        end - charactersRemoved
+      val finalEnd = if (charactersRemoved > 0) {
+        (end - charactersRemoved).coerceAtLeast(0)
       } else {
         end
       }
 
-      selection?.onSelection(start, finalEnd)
+      val finalStart = start.coerceAtLeast(0).coerceAtMost(finalEnd)
+      selection?.onSelection(finalStart, finalEnd)
     }
 
     return true
