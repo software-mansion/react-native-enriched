@@ -45,6 +45,8 @@
   copy->_blockquoteColor = [_blockquoteColor copy];
   copy->_blockquoteWidth = _blockquoteWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
+  copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
+  copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
   return copy;
 }
 
@@ -174,23 +176,19 @@
 }
 
 - (UIColor *)inlineCodeFgColor {
-  return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor orangeColor];
+  return _inlineCodeFgColor;
 }
 
 - (void)setInlineCodeFgColor:(UIColor *)newValue {
-  if(![newValue isEqual:_inlineCodeFgColor]) {
-    _inlineCodeFgColor = newValue;
-  }
+  _inlineCodeFgColor = newValue;
 }
 
 - (UIColor *)inlineCodeBgColor {
-  return _inlineCodeBgColor != nullptr ? _inlineCodeBgColor : [[UIColor systemGrayColor] colorWithAlphaComponent:0.6];
+  return _inlineCodeBgColor;
 }
 
 - (void)setInlineCodeBgColor:(UIColor *)newValue {
-  if(![newValue isEqual:_inlineCodeBgColor]) {
-    _inlineCodeBgColor = newValue;
-  }
+  _inlineCodeBgColor = newValue;
 }
 
 @end

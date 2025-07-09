@@ -16,6 +16,7 @@
 @end
 
 @interface InlineCodeStyle : NSObject <BaseStyleProtocol>
+- (void)handleNewlines;
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>

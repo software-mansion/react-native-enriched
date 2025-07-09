@@ -27,7 +27,6 @@
 - (void)setBlockquoteWidth:(CGFloat)newValue;
 - (CGFloat)blockquoteGapWidth;
 - (void)setBlockquoteGapWidth:(CGFloat)newValue;
-
 - (UIColor *)inlineCodeFgColor;
 - (void)setInlineCodeFgColor:(UIColor *)newValue;
 - (UIColor *)inlineCodeBgColor;

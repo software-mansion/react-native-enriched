@@ -234,8 +234,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(newViewProps.richTextStyle.blockquote.borderColor != oldViewProps.richTextStyle.blockquote.borderColor) {
     if(isColorMeaningful(newViewProps.richTextStyle.blockquote.borderColor)) {
       [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
+      stylePropChanged = YES;
     }
-    stylePropChanged = YES;
   }
   
   if(newViewProps.richTextStyle.blockquote.borderWidth != oldViewProps.richTextStyle.blockquote.borderWidth) {
@@ -246,6 +246,20 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(newViewProps.richTextStyle.blockquote.gapWidth != oldViewProps.richTextStyle.blockquote.gapWidth) {
     [newConfig setBlockquoteGapWidth:newViewProps.richTextStyle.blockquote.gapWidth];
     stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.code.color != oldViewProps.richTextStyle.code.color) {
+    if(isColorMeaningful(newViewProps.richTextStyle.code.color)) {
+      [newConfig setInlineCodeFgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.color)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.code.backgroundColor != oldViewProps.richTextStyle.code.backgroundColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.code.backgroundColor)) {
+      [newConfig setInlineCodeBgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.backgroundColor)];
+      stylePropChanged = YES;
+    }
   }
   
   if(stylePropChanged) {
@@ -867,6 +881,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
     if(oStyle != nullptr) {
       [oStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+    
+    // inline code on newlines fix
+    InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
+    if(codeStyle != nullptr) {
+      [codeStyle handleNewlines];
     }
       
     // mentions removal management
