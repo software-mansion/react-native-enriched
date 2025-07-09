@@ -1,7 +1,7 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@interface EditorConfig: NSObject
+@interface EditorConfig: NSObject<NSCopying>
 - (instancetype) init;
 - (UIColor *)primaryColor;
 - (void)setPrimaryColor:(UIColor *)newValue;
@@ -13,10 +13,17 @@
 - (void)setPrimaryFontFamily:(NSString *)newValue;
 - (UIFont *)primaryFont;
 - (UIFont *)monospacedFont;
+- (NSSet<NSNumber*>*)mentionIndicators;
+- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue;
+- (CGFloat)h1FontSize;
+- (void)setH1FontSize:(CGFloat)newValue;
+- (CGFloat)h2FontSize;
+- (void)setH2FontSize:(CGFloat)newValue;
+- (CGFloat)h3FontSize;
+- (void)setH3FontSize:(CGFloat)newValue;
+
 - (UIColor *)inlineCodeFgColor;
 - (void)setInlineCodeFgColor:(UIColor *)newValue;
 - (UIColor *)inlineCodeBgColor;
 - (void)setInlineCodeBgColor:(UIColor *)newValue;
-- (NSSet<NSNumber*>*)mentionIndicators;
-- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue;
 @end

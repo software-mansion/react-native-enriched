@@ -10,9 +10,12 @@
   UIFont *_monospacedFont;
   BOOL _primaryFontNeedsRecreation;
   BOOL _monospacedFontNeedsRecreation;
+  NSSet<NSNumber*> *_mentionIndicators;
+  CGFloat _h1FontSize;
+  CGFloat _h2FontSize;
+  CGFloat _h3FontSize;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
-  NSSet<NSNumber*> *_mentionIndicators;
 }
 
 - (instancetype) init {
@@ -20,6 +23,23 @@
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
   return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+  EditorConfig *copy = [[[self class] allocWithZone:zone] init];
+  copy->_primaryColor = [_primaryColor copy];
+  copy->_primaryFontSize = [_primaryFontSize copy];
+  copy->_primaryFontWeight = [_primaryFontWeight copy];
+  copy->_primaryFontFamily = [_primaryFontFamily copy];
+  copy->_primaryFont = [_primaryFont copy];
+  copy->_monospacedFont = [_monospacedFont copy];
+  copy->_mentionIndicators = [_mentionIndicators copy];
+  copy->_h1FontSize = _h1FontSize;
+  copy->_h2FontSize = _h2FontSize;
+  copy->_h3FontSize = _h3FontSize;
+  copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
+  copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
+  return copy;
 }
 
 - (UIColor *)primaryColor {
@@ -90,6 +110,38 @@
   return _monospacedFont;
 }
 
+- (NSSet<NSNumber*>*)mentionIndicators {
+  return _mentionIndicators != nullptr ? _mentionIndicators : [[NSSet alloc] init];
+}
+
+- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue {
+  _mentionIndicators = newValue;
+}
+
+- (CGFloat)h1FontSize {
+  return _h1FontSize;
+}
+
+- (void)setH1FontSize:(CGFloat)newValue {
+  _h1FontSize = newValue;
+}
+
+- (CGFloat)h2FontSize {
+  return _h2FontSize;
+}
+
+- (void)setH2FontSize:(CGFloat)newValue {
+  _h2FontSize = newValue;
+}
+
+- (CGFloat)h3FontSize {
+  return _h3FontSize;
+}
+
+- (void)setH3FontSize:(CGFloat)newValue {
+  _h3FontSize = newValue;
+}
+
 - (UIColor *)inlineCodeFgColor {
   return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor orangeColor];
 }
@@ -108,14 +160,6 @@
   if(![newValue isEqual:_inlineCodeBgColor]) {
     _inlineCodeBgColor = newValue;
   }
-}
-
-- (NSSet<NSNumber*>*)mentionIndicators {
-  return _mentionIndicators != nullptr ? _mentionIndicators : [[NSSet alloc] init];
-}
-
-- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue {
-  _mentionIndicators = newValue;
 }
 
 @end

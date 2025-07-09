@@ -171,14 +171,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     config = [[EditorConfig alloc] init];
   }
   
-  // style props:
+  // any style prop changes:
+  // firstly we create the new config for the changes
+  
+  EditorConfig *newConfig = [config copy];
   
   if(newViewProps.color != oldViewProps.color) {
     if(isColorMeaningful(newViewProps.color)) {
       UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
-      [config setPrimaryColor:uiColor];
+      [newConfig setPrimaryColor:uiColor];
     } else {
-      [config setPrimaryColor:nullptr];
+      [newConfig setPrimaryColor:nullptr];
     }
     stylePropChanged = YES;
   }
@@ -186,44 +189,59 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(newViewProps.fontSize != oldViewProps.fontSize) {
     if(newViewProps.fontSize) {
       NSNumber* fontSize = @(newViewProps.fontSize);
-      [config setPrimaryFontSize:fontSize];
+      [newConfig setPrimaryFontSize:fontSize];
     } else {
-      [config setPrimaryFontSize:nullptr];
+      [newConfig setPrimaryFontSize:nullptr];
     }
     stylePropChanged = YES;
   }
   
   if(newViewProps.fontWeight != oldViewProps.fontWeight) {
     if(!newViewProps.fontWeight.empty()) {
-      [config setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
+      [newConfig setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
     } else {
-      [config setPrimaryFontWeight:nullptr];
+      [newConfig setPrimaryFontWeight:nullptr];
     }
     stylePropChanged = YES;
   }
     
   if(newViewProps.fontFamily != oldViewProps.fontFamily) {
     if(!newViewProps.fontFamily.empty()) {
-      [config setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
+      [newConfig setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
     } else {
-      [config setPrimaryFontFamily:nullptr];
+      [newConfig setPrimaryFontFamily:nullptr];
     }
     stylePropChanged = YES;
   }
-    
-  // fill the typing attributes with style props
-  defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
-  defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
-  textView.typingAttributes = defaultTypingAttributes;
+  
+  // rich text style
+  
+  if(newViewProps.richTextStyle.h1.fontSize != oldViewProps.richTextStyle.h1.fontSize) {
+    [newConfig setH1FontSize:newViewProps.richTextStyle.h1.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.h2.fontSize != oldViewProps.richTextStyle.h2.fontSize) {
+    [newConfig setH2FontSize:newViewProps.richTextStyle.h2.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.h3.fontSize != oldViewProps.richTextStyle.h3.fontSize) {
+    [newConfig setH3FontSize:newViewProps.richTextStyle.h3.fontSize];
+    stylePropChanged = YES;
+  }
   
   if(stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html and replace whole text parsing it back into the input
     // this way, the newest config attributes are being used!
+    
+    
+    // the html needs to be generated using the old config
     NSString *currentHtml = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
+    
+    // now set the new config
+    config = newConfig;
     
     // we don't want to emit these html changes in here
     BOOL prevEmitHtml = emitHtml;
@@ -240,6 +258,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     if(prevEmitHtml) {
       emitHtml = YES;
     }
+    
+    // fill the typing attributes with style props
+    defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
+    defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
+    textView.typingAttributes = defaultTypingAttributes;
     
     // update the placeholder as well
     [self refreshPlaceholderLabelStyles];
