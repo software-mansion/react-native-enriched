@@ -26,8 +26,8 @@ using namespace facebook::react;
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSRange _recentlyChangedRange;
@@ -99,7 +99,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithEditor:self]
   };
   
-  _conflictingStyles = @{
+  _conflictingStyles = [@{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -113,9 +113,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
-  };
+  } mutableCopy];
   
-  _blockingStyles = @{
+  _blockingStyles = [@{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -129,7 +129,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
-  };
+  } mutableCopy];
   
   parser = [[EditorParser alloc] initWithEditor:self];
 }
@@ -294,11 +294,42 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.richTextStyle.a.color != oldViewProps.richTextStyle.a.color) {
+    if(isColorMeaningful(newViewProps.richTextStyle.a.color)) {
+      [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.a.color)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.a.textDecorationLine != oldViewProps.richTextStyle.a.textDecorationLine) {
+    NSString *objcString = [NSString fromCppString:newViewProps.richTextStyle.a.textDecorationLine];
+    if([objcString isEqualToString:DecorationUnderline]) {
+      [newConfig setLinkDecorationLine:DecorationUnderline];
+      
+      // underline is being blocked by links now
+      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
+      if(![blocking containsObject:@([LinkStyle getStyleType])]) {
+        [blocking addObject:@([LinkStyle getStyleType])];
+      }
+      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
+    } else {
+      // both DecorationNone and a different, wrong value gets a DecorationNone here
+      [newConfig setLinkDecorationLine:DecorationNone];
+      
+      // underline is not being blocked by links anymore
+      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
+      if([blocking containsObject:@([LinkStyle getStyleType])]) {
+        [blocking removeObject:@([LinkStyle getStyleType])];
+      }
+      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
+    }
+    stylePropChanged = YES;
+  }
+  
   if(stylePropChanged) {
     // all the text needs to be rebuilt
-    // we get the current html and replace whole text parsing it back into the input
+    // we get the current html using old config, then switch to new config and replace text using the html
     // this way, the newest config attributes are being used!
-    
     
     // the html needs to be generated using the old config
     NSString *currentHtml = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
@@ -814,13 +845,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
   // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)]];
+  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)] range:range];
   if(blocking.count != 0) {
     return NO;
   }
   
   // handle conflicting styles: all of their occurences have to be removed
-  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)]];
+  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)] range:range];
   if(conflicting.count != 0) {
     for(NSNumber *style in conflicting) {
       id<BaseStyleProtocol> styleClass = stylesDict[style];
@@ -841,17 +872,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   return YES;
 }
 
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types {
+- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types range:(NSRange)range {
   NSMutableArray<NSNumber *> *resultArray = [[NSMutableArray<NSNumber *> alloc] init];
   for(NSNumber *type in types) {
     id<BaseStyleProtocol> styleClass = stylesDict[type];
     
-    if(textView.selectedRange.length >= 1) {
-      if([styleClass anyOccurence:textView.selectedRange]) {
+    if(range.length >= 1) {
+      if([styleClass anyOccurence:range]) {
         [resultArray addObject:type];
       }
     } else {
-      if([styleClass detectStyle:textView.selectedRange]) {
+      if([styleClass detectStyle:range]) {
         [resultArray addObject:type];
       }
     }

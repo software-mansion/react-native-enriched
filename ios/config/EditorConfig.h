@@ -1,5 +1,6 @@
 #pragma once
 #import <UIKit/UIKit.h>
+#import "TextDecorationLineEnum.h"
 
 @interface EditorConfig: NSObject<NSCopying>
 - (instancetype) init;
@@ -44,4 +45,8 @@
 - (void)setUnorderedListGapWidth:(CGFloat)newValue;
 - (CGFloat)unorderedListMarginLeft;
 - (void)setUnorderedListMarginLeft:(CGFloat)newValue;
+- (UIColor *)linkColor;
+- (void)setLinkColor:(UIColor *)newValue;
+- (TextDecorationLineEnum)linkDecorationLine;
+- (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue;
 @end

@@ -43,9 +43,20 @@
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
+- (BOOL)underlinedLinkConflictsInRange:(NSRange)range {
+  BOOL conflicted = NO;
+  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    LinkStyle *linkStyle = _editor->stylesDict[@([LinkStyle getStyleType])];
+    conflicted = range.length > 0
+      ? [linkStyle anyOccurence:range]
+      : [linkStyle detectStyle:range];
+  }
+  return conflicted;
+}
+
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSNumber *underlineStyle = (NSNumber *)value;
-  return underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone;
+  return underlineStyle != nullptr && [underlineStyle intValue] != NSUnderlineStyleNone && ![self underlinedLinkConflictsInRange:range];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -57,7 +68,7 @@
     ];
   } else {
     NSNumber *currentUnderlineAttr = (NSNumber *)_editor->textView.typingAttributes[NSUnderlineStyleAttributeName];
-    return currentUnderlineAttr != nullptr;
+    return [self styleCondition:currentUnderlineAttr :range];
   }
 }
 

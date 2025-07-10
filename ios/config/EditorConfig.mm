@@ -25,6 +25,8 @@
   CGFloat _unorderedListBulletSize;
   CGFloat _unorderedListGapWidth;
   CGFloat _unorderedListMarginLeft;
+  UIColor *_linkColor;
+  TextDecorationLineEnum _linkDecorationLine;
 }
 
 - (instancetype) init {
@@ -59,6 +61,8 @@
   copy->_unorderedListBulletSize = _unorderedListBulletSize;
   copy->_unorderedListGapWidth = _unorderedListGapWidth;
   copy->_unorderedListMarginLeft = _unorderedListMarginLeft;
+  copy->_linkColor = [_linkColor copy];
+  copy->_linkDecorationLine = [_linkDecorationLine copy];
   return copy;
 }
 
@@ -258,6 +262,22 @@
 
 - (void)setUnorderedListMarginLeft:(CGFloat)newValue {
   _unorderedListMarginLeft = newValue;
+}
+
+- (UIColor *)linkColor {
+  return _linkColor;
+}
+
+- (void)setLinkColor:(UIColor *)newValue {
+  _linkColor = newValue;
+}
+
+- (TextDecorationLineEnum)linkDecorationLine {
+  return _linkDecorationLine;
+}
+
+- (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue {
+  _linkDecorationLine = newValue;
 }
 
 @end
