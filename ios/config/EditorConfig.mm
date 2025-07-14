@@ -49,8 +49,6 @@
   copy->_h1FontSize = _h1FontSize;
   copy->_h2FontSize = _h2FontSize;
   copy->_h3FontSize = _h3FontSize;
-  copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
-  copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
   copy->_blockquoteColor = [_blockquoteColor copy];
   copy->_blockquoteWidth = _blockquoteWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
