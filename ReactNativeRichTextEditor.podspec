@@ -24,9 +24,4 @@ else
   s.dependency "React-Core"
 end
 
-s.subspec "customInternals" do |ss|
-  ss.source_files = ["ios/**/*.{cpp,h}"]
-  ss.header_dir = "ReactNativeRichTextEditor"
-  ss.pod_target_xcconfig = {"HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/customInternals\"" }
-end
 end
