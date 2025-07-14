@@ -49,6 +49,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     [_editor->textView.textStorage removeAttribute:MentionAttributeName range:mentionRange];
     [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
     [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
+    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
     [_editor->textView.textStorage removeAttribute:NSBackgroundColorAttributeName range:mentionRange];
     
     if([self stylePropsWithParams:pair.styleValue].decorationLine == DecorationUnderline) {
@@ -62,6 +63,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
   if(someMentionHadUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
@@ -76,6 +78,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   [_editor->textView.textStorage removeAttribute:MentionAttributeName range:mentionRange];
   [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
   [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
+  [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
   [_editor->textView.textStorage removeAttribute:NSBackgroundColorAttributeName range:mentionRange];
   
   MentionParams *params = [self getMentionParamsAt:mentionRange.location];
@@ -88,6 +91,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
   if([self stylePropsWithParams:params].decorationLine == DecorationUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
@@ -149,6 +153,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     MentionAttributeName: params,
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
+    NSStrikethroughColorAttributeName: styleProps.color,
     NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
   } mutableCopy];
   
@@ -183,6 +188,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     MentionAttributeName: params,
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
+    NSStrikethroughColorAttributeName: styleProps.color,
     NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
   } mutableCopy];
   
@@ -375,6 +381,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
     newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
     newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+    newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
     [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
     if([self stylePropsWithParams:params].decorationLine == DecorationUnderline) {
       [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
