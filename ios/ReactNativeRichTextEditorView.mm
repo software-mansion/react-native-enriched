@@ -326,6 +326,32 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  folly::dynamic oldMentionStyle = oldViewProps.richTextStyle.mention;
+  folly::dynamic newMentionStyle = newViewProps.richTextStyle.mention;
+  if(oldMentionStyle != newMentionStyle) {
+    bool newSingleProps = NO;
+    
+    for(const auto& obj : newMentionStyle.items()) {
+      if(obj.second.isInt() || obj.second.isString()) {
+        // we are in just a single MentionStyleProps object
+        newSingleProps = YES;
+        break;
+      } else if(obj.second.isObject()) {
+        // we are in map of indicators to MentionStyleProps
+        newSingleProps = NO;
+        break;
+      }
+    }
+    
+    if(newSingleProps) {
+      [newConfig setMentionStyleProps:[MentionStyleProps getSinglePropsFromFollyDynamic:newMentionStyle]];
+    } else {
+      [newConfig setMentionStyleProps:[MentionStyleProps getComplexPropsFromFollyDynamic:newMentionStyle]];
+    }
+    
+    stylePropChanged = YES;
+  }
+  
   if(stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html using old config, then switch to new config and replace text using the html

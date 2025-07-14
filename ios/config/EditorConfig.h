@@ -1,6 +1,7 @@
 #pragma once
 #import <UIKit/UIKit.h>
 #import "TextDecorationLineEnum.h"
+#import "MentionStyleProps.h"
 
 @interface EditorConfig: NSObject<NSCopying>
 - (instancetype) init;
@@ -49,4 +50,6 @@
 - (void)setLinkColor:(UIColor *)newValue;
 - (TextDecorationLineEnum)linkDecorationLine;
 - (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue;
+- (void)setMentionStyleProps:(NSDictionary *)newValue;
+- (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator;
 @end

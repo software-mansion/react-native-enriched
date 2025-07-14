@@ -40,6 +40,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 
 // we have to make sure all mentions get removed properly
 - (void)removeAttributes:(NSRange)range {
+  BOOL someMentionHadUnderline = NO;
+
   NSArray<StylePair *> *mentions = [self findAllOccurences:range];
   [_editor->textView.textStorage beginEditing];
   for(StylePair *pair in mentions) {
@@ -48,6 +50,11 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
     [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
     [_editor->textView.textStorage removeAttribute:NSBackgroundColorAttributeName range:mentionRange];
+    
+    if([self stylePropsWithParams:pair.styleValue].decorationLine == DecorationUnderline) {
+      [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:mentionRange];
+      someMentionHadUnderline = YES;
+    }
   }
   [_editor->textView.textStorage endEditing];
   
@@ -56,6 +63,9 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
+  if(someMentionHadUnderline) {
+    [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+  }
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -67,6 +77,11 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
   [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:mentionRange];
   [_editor->textView.textStorage removeAttribute:NSBackgroundColorAttributeName range:mentionRange];
+  
+  MentionParams *params = [self getMentionParamsAt:mentionRange.location];
+  if([self stylePropsWithParams:params].decorationLine == DecorationUnderline) {
+    [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:mentionRange];
+  }
   [_editor->textView.textStorage endEditing];
   
   // remove typing attributes as well
@@ -74,6 +89,9 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
+  if([self stylePropsWithParams:params].decorationLine == DecorationUnderline) {
+    [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+  }
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -124,11 +142,19 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   params.text = text;
   params.indicator = indicator;
   params.attributes = attributes;
-  NSDictionary<NSAttributedStringKey, id> *newAttrs = @{
+  
+  MentionStyleProps *styleProps = [_editor->config mentionStylePropsForIndicator:indicator];
+  
+  NSMutableDictionary *newAttrs = [@{
     MentionAttributeName: params,
-    NSBackgroundColorAttributeName: [[UIColor systemBlueColor] colorWithAlphaComponent:0.6], // TODO: mentions style config
-    NSForegroundColorAttributeName: [UIColor systemBlueColor] // TODO: mentions style config
-  };
+    NSForegroundColorAttributeName: styleProps.color,
+    NSUnderlineColorAttributeName: styleProps.color,
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.6],
+  } mutableCopy];
+  
+  if(styleProps.decorationLine == DecorationUnderline) {
+    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+  }
   
   // add a single space after the mention
   NSString *newText = [NSString stringWithFormat:@"%@ ", text];
@@ -151,11 +177,19 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 - (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params {
   _blockMentionEditing = YES;
   
-  NSDictionary<NSAttributedStringKey, id> *newAttrs = @{
+  MentionStyleProps *styleProps = [_editor->config mentionStylePropsForIndicator:params.indicator];
+  
+  NSMutableDictionary *newAttrs = [@{
     MentionAttributeName: params,
-    NSBackgroundColorAttributeName: [[UIColor systemBlueColor] colorWithAlphaComponent:0.6], // TODO: mentions style config
-    NSForegroundColorAttributeName: [UIColor systemBlueColor] // TODO: mentions style config
-  };
+    NSForegroundColorAttributeName: styleProps.color,
+    NSUnderlineColorAttributeName: styleProps.color,
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.6],
+  } mutableCopy];
+  
+  if(styleProps.decorationLine == DecorationUnderline) {
+    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+  }
+  
   [_editor->textView.textStorage addAttributes:newAttrs range:range];
   
   _blockMentionEditing = NO;
@@ -314,18 +348,21 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 - (void)manageMentionTypingAttributes {
   // same as with links, mentions' typing attributes need to be constantly removed whenever we are somewhere near
   BOOL removeAttrs = NO;
+  MentionParams *params;
   
   if(_editor->textView.selectedRange.length == 0) {
     // check before
     if(_editor->textView.selectedRange.location >= 1) {
       if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location - 1, 1)]) {
         removeAttrs = YES;
+        params = [self getMentionParamsAt:_editor->textView.selectedRange.location - 1];
       }
     }
     // check after
     if(_editor->textView.selectedRange.location < _editor->textView.textStorage.length) {
       if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location, 1)]) {
         removeAttrs = YES;
+        params = [self getMentionParamsAt:_editor->textView.selectedRange.location];
       }
     }
   } else {
@@ -339,6 +376,9 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
     newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
     [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
+    if([self stylePropsWithParams:params].decorationLine == DecorationUnderline) {
+      [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+    }
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -392,6 +432,10 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 }
 
 // MARK: - Private non-standard methods
+
+- (MentionStyleProps *)stylePropsWithParams:(MentionParams *)params {
+  return [_editor->config mentionStylePropsForIndicator:params.indicator];
+}
 
 // both used for setting the active mention range + indicator and fires proper onMention event
 - (void)setActiveMentionRange:(NSRange)range text:(NSString *)text {

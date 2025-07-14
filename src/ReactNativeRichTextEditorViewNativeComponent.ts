@@ -100,7 +100,7 @@ export interface RichTextStyleInternal {
   // This is a workaround for the fact that codegen does not support Records.
   // Instead, we pass an empty object as a type.
   // However, this object is not empty in practice, and will become ReadableMap on the native side
-  mention?: {};
+  mention?: UnsafeMixed;
   img?: {
     width?: Float;
     height?: Float;

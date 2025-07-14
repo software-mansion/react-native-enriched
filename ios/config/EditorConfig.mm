@@ -27,6 +27,7 @@
   CGFloat _unorderedListMarginLeft;
   UIColor *_linkColor;
   TextDecorationLineEnum _linkDecorationLine;
+  NSDictionary *_mentionProperties;
 }
 
 - (instancetype) init {
@@ -63,6 +64,7 @@
   copy->_unorderedListMarginLeft = _unorderedListMarginLeft;
   copy->_linkColor = [_linkColor copy];
   copy->_linkDecorationLine = [_linkDecorationLine copy];
+  copy->_mentionProperties = [_mentionProperties mutableCopy];
   return copy;
 }
 
@@ -278,6 +280,24 @@
 
 - (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue {
   _linkDecorationLine = newValue;
+}
+
+- (void)setMentionStyleProps:(NSDictionary *)newValue {
+  _mentionProperties = [newValue mutableCopy];
+}
+
+- (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator {
+  if(_mentionProperties.count == 1 && _mentionProperties[@"all"] != nullptr) {
+    // single props for all the indicators
+    return _mentionProperties[@"all"];
+  } else if(_mentionProperties[indicator] != nullptr) {
+    return _mentionProperties[indicator];
+  }
+  MentionStyleProps *fallbackProps = [[MentionStyleProps alloc] init];
+  fallbackProps.color = [UIColor blueColor];
+  fallbackProps.backgroundColor = [UIColor yellowColor];
+  fallbackProps.decorationLine = DecorationUnderline;
+  return fallbackProps;
 }
 
 @end
