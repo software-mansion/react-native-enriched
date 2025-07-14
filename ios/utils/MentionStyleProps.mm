@@ -1,18 +1,34 @@
 #import "MentionStyleProps.h"
 #import <React/RCTConversions.h>
 #import "StringExtension.h"
+#import "EditorManager.h"
+#import "ReactNativeRichTextEditorView.h"
 
 @implementation MentionStyleProps
 
 + (MentionStyleProps *)getSingleMentionStylePropsFromFollyDynamic:(folly::dynamic)folly {
-  facebook::react::SharedColor color = facebook::react::SharedColor(facebook::react::Color(folly["color"].asInt()));
-  facebook::react::SharedColor bgColor = facebook::react::SharedColor(facebook::react::Color(folly["backgroundColor"].asInt()));
-  std::string textDecorationLine = folly["textDecorationLine"].asString();
-  
   MentionStyleProps *nativeProps = [[MentionStyleProps alloc] init];
-  nativeProps.color = RCTUIColorFromSharedColor(color);
-  nativeProps.backgroundColor = RCTUIColorFromSharedColor(bgColor);
-  nativeProps.decorationLine = [[NSString fromCppString:textDecorationLine] isEqualToString:DecorationUnderline] ? DecorationUnderline : DecorationNone;
+  
+  if(folly["color"].isNumber()) {
+    facebook::react::SharedColor color = facebook::react::SharedColor(facebook::react::Color(folly["color"].asInt()));
+    nativeProps.color = RCTUIColorFromSharedColor(color);
+  } else {
+    nativeProps.color = [UIColor blueColor];
+  }
+  
+  if(folly["backgroundColor"].isNumber()) {
+    facebook::react::SharedColor bgColor = facebook::react::SharedColor(facebook::react::Color(folly["backgroundColor"].asInt()));
+    nativeProps.backgroundColor = RCTUIColorFromSharedColor(bgColor);
+  } else {
+    nativeProps.backgroundColor = [UIColor yellowColor];
+  }
+  
+  if(folly["textDecorationLine"].isString()) {
+    std::string textDecorationLine = folly["textDecorationLine"].asString();
+    nativeProps.decorationLine = [[NSString fromCppString:textDecorationLine] isEqualToString:DecorationUnderline] ? DecorationUnderline : DecorationNone;
+  } else {
+    nativeProps.decorationLine = DecorationUnderline;
+  }
   
   return nativeProps;
 }

@@ -105,7 +105,7 @@ const assignDefaultValues = (
   for (const key in style) {
     if (key === 'mention') {
       merged[key] = {
-        ...style.mention,
+        ...(style.mention as object),
       };
 
       continue;
@@ -113,7 +113,7 @@ const assignDefaultValues = (
 
     merged[key] = {
       ...defaultStyle[key as keyof RichTextStyle],
-      ...style[key as keyof RichTextStyle],
+      ...(style[key as keyof RichTextStyle] as object),
     };
   }
 

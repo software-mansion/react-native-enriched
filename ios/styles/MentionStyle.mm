@@ -149,7 +149,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     MentionAttributeName: params,
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
-    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.6],
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
   } mutableCopy];
   
   if(styleProps.decorationLine == DecorationUnderline) {
@@ -183,7 +183,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     MentionAttributeName: params,
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
-    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.6],
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
   } mutableCopy];
   
   if(styleProps.decorationLine == DecorationUnderline) {

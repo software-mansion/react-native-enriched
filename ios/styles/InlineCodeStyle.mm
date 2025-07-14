@@ -34,7 +34,7 @@
     NSRange currentRange = [value rangeValue];
     [_editor->textView.textStorage beginEditing];
 
-    [_editor->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.6] range:currentRange];
+    [_editor->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.4] range:currentRange];
     [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
     [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
     [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
@@ -54,7 +54,7 @@
 
 - (void)addTypingAttributes {
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSBackgroundColorAttributeName] = [[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.6];
+  newTypingAttrs[NSBackgroundColorAttributeName] = [[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.4];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config inlineCodeFgColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config inlineCodeFgColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config inlineCodeFgColor];
