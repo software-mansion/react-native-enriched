@@ -127,15 +127,17 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
     editorView.selection.validateStyles()
   }
 
-  fun removeStyle(name: String, start: Int, end: Int) {
-    val config = EditorSpans.inlineSpans[name] ?: return
+  fun removeStyle(name: String, start: Int, end: Int): Boolean {
+    val config = EditorSpans.inlineSpans[name] ?: return false
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, config.clazz)
-    if (spans.isEmpty()) return
+    if (spans.isEmpty()) return false
 
     for (span in spans) {
       spannable.removeSpan(span)
     }
+
+    return true
   }
 
   fun getStyleRange(): Pair<Int, Int> {

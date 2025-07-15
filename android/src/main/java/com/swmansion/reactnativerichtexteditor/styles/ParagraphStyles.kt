@@ -15,21 +15,23 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
-  private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>) {
+  private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>): Boolean {
     val ssb = spannable as SpannableStringBuilder
     var finalStart = start
     var finalEnd = end
 
     val spans = ssb.getSpans(start, end, clazz)
-    if (spans.isEmpty()) return
+    if (spans.isEmpty()) return false
 
     for (span in spans) {
       finalStart = ssb.getSpanStart(span).coerceAtMost(finalStart)
       finalEnd = ssb.getSpanEnd(span).coerceAtLeast(finalEnd)
+
       ssb.removeSpan(span)
     }
 
     ssb.replace(finalStart, finalEnd, ssb.substring(finalStart, finalEnd).replace("\u200B", ""))
+    return true
   }
 
   private fun <T>setAndMergeSpans(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
@@ -176,9 +178,9 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
     return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
   }
 
-  fun removeStyle(name: String, start: Int, end: Int) {
-    val config = EditorSpans.paragraphSpans[name] ?: return
+  fun removeStyle(name: String, start: Int, end: Int): Boolean {
+    val config = EditorSpans.paragraphSpans[name] ?: return false
     val spannable = editorView.text as Spannable
-    removeSpansForRange(spannable, start, end, config.clazz)
+    return removeSpansForRange(spannable, start, end, config.clazz)
   }
 }
