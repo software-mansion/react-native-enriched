@@ -442,12 +442,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       val end = selection?.end ?: 0
       val lengthBefore = text?.length ?: 0
 
+      isSettingValue = true
       val targetRange = getTargetRange(name)
-
       val removed = removeStyle(style, targetRange.first, targetRange.second)
       if (removed) {
         spanState?.setStart(style, null)
       }
+      isSettingValue = false
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter
