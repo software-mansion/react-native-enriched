@@ -33,12 +33,19 @@
   for(int i = 0; i < text.length; i++) {
     NSRange currentRange = NSMakeRange(offset + i, 1);
     NSMutableSet<NSNumber *>*currentActiveStyles = [[NSMutableSet<NSNumber *> alloc]init];
+    NSMutableDictionary *currentActiveStylesBeginning = [[NSMutableDictionary alloc] init];
     
     // check each existing style existence
     for(NSNumber* type in _editor->stylesDict) {
       id<BaseStyleProtocol> style = _editor->stylesDict[type];
       if([style detectStyle:currentRange]) {
-        [currentActiveStyles addObject: type];
+        [currentActiveStyles addObject:type];
+        
+        if(![previousActiveStyles member:type]) {
+          currentActiveStylesBeginning[type] = [NSNumber numberWithInt:i];
+        }
+      } else if([previousActiveStyles member:type]) {
+        [currentActiveStylesBeginning removeObjectForKey:type];
       }
     }
     
@@ -138,10 +145,32 @@
         }
       }
     
-      // get styles that have ended: they are sorted in an ascending manner
+      // get styles that have ended
       NSMutableSet<NSNumber *> *endedStyles = [previousActiveStyles mutableCopy];
       [endedStyles minusSet: currentActiveStyles];
-      NSArray<NSNumber*> *sortedEndedStyles = [endedStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
+      
+      // also finish styles that should be ended becasue they are nested in a style that ended
+      NSMutableSet *fixedEndedStyles = [endedStyles copy];
+      NSMutableSet *stylesToBeReAdded = [[NSMutableSet alloc] init];
+      
+      for(NSNumber *style in endedStyles) {
+        NSInteger styleBeginning = [currentActiveStylesBeginning[style] integerValue];
+        
+        for(NSNumber *activeStyle in currentActiveStyles) {
+          NSInteger activeStyleBeginning = [currentActiveStylesBeginning[activeStyle] integerValue];
+          // we end the styles that began after the currently ended style
+          // also the ones that ended in the exact same place but are "inner" in relation to them due to StyleTypeEnum integer values
+          // "activeStylesBeginning < i" is needed, so that we don't remove styles that have been freshly added now
+          if((activeStyleBeginning > styleBeginning) ||
+             (activeStyleBeginning == styleBeginning && activeStyleBeginning < i && [activeStyle integerValue]  > [style integerValue])) {
+            [fixedEndedStyles addObject:activeStyle];
+            [stylesToBeReAdded addObject:activeStyle];
+          }
+        }
+      }
+      
+      // they are sorted in a descending order
+      NSArray<NSNumber*> *sortedEndedStyles = [fixedEndedStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
       
       // append closing tags
       for(NSNumber *style in sortedEndedStyles) {
@@ -149,9 +178,10 @@
         [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
       }
       
-      // get styles that have begun: they are sorted in a descending manner to properly keep tags' FILO order
+      // get styles that have begun: they are sorted in a ascending manner to properly keep tags' FILO order
       NSMutableSet<NSNumber *> *newStyles = [currentActiveStyles mutableCopy];
       [newStyles minusSet: previousActiveStyles];
+      [newStyles unionSet: stylesToBeReAdded];
       NSArray<NSNumber*> *sortedNewStyles = [newStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:YES]]];
       
       // append opening tags
