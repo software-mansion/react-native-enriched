@@ -26,8 +26,8 @@ using namespace facebook::react;
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
-  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSRange _recentlyChangedRange;
@@ -99,7 +99,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithEditor:self]
   };
   
-  _conflictingStyles = [@{
+  _conflictingStyles = @{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -113,9 +113,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
-  } mutableCopy];
+  };
   
-  _blockingStyles = [@{
+  _blockingStyles = @{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -129,7 +129,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
-  } mutableCopy];
+  };
   
   parser = [[EditorParser alloc] initWithEditor:self];
 }
@@ -305,23 +305,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     NSString *objcString = [NSString fromCppString:newViewProps.richTextStyle.a.textDecorationLine];
     if([objcString isEqualToString:DecorationUnderline]) {
       [newConfig setLinkDecorationLine:DecorationUnderline];
-      
-      // underline is being blocked by links now
-      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
-      if(![blocking containsObject:@([LinkStyle getStyleType])]) {
-        [blocking addObject:@([LinkStyle getStyleType])];
-      }
-      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
     } else {
       // both DecorationNone and a different, wrong value gets a DecorationNone here
       [newConfig setLinkDecorationLine:DecorationNone];
-      
-      // underline is not being blocked by links anymore
-      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
-      if([blocking containsObject:@([LinkStyle getStyleType])]) {
-        [blocking removeObject:@([LinkStyle getStyleType])];
-      }
-      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
     }
     stylePropChanged = YES;
   }
