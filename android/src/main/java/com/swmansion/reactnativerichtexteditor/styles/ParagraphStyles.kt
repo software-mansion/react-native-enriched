@@ -21,6 +21,8 @@ class ParagraphStyles(private val editorView: ReactNativeRichTextEditorView) {
     var finalEnd = end
 
     val spans = ssb.getSpans(start, end, clazz)
+    if (spans.isEmpty()) return
+
     for (span in spans) {
       finalStart = ssb.getSpanStart(span).coerceAtMost(finalStart)
       finalEnd = ssb.getSpanEnd(span).coerceAtLeast(finalEnd)

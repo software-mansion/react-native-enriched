@@ -88,7 +88,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   init {
-      inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
   }
 
   private fun prepareComponent() {

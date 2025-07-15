@@ -55,9 +55,11 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
 
   private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>) {
     val ssb = spannable as SpannableStringBuilder
+    val spans = ssb.getSpans(start, end, clazz)
+    if (spans.isEmpty()) return
+
     ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
 
-    val spans = ssb.getSpans(start, end, clazz)
     for (span in spans) {
       ssb.removeSpan(span)
     }

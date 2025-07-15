@@ -131,6 +131,8 @@ class InlineStyles(private val editorView: ReactNativeRichTextEditorView) {
     val config = EditorSpans.inlineSpans[name] ?: return
     val spannable = editorView.text as Spannable
     val spans = spannable.getSpans(start, end, config.clazz)
+    if (spans.isEmpty()) return
+
     for (span in spans) {
       spannable.removeSpan(span)
     }
