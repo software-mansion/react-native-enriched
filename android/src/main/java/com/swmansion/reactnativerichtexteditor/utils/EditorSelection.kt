@@ -22,32 +22,38 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
 
   fun onSelection(selStart: Int, selEnd: Int) {
     var shouldValidateStyles = false
+    var newStart = start
+    var newEnd = end
 
-    if (selStart != -1 && selStart != start) {
-      start = selStart
+    if (selStart != -1 && selStart != newStart) {
+      newStart = selStart
       shouldValidateStyles = true
     }
 
-    if (selEnd != -1 && selEnd != end) {
-      end = selEnd
+    if (selEnd != -1 && selEnd != newEnd) {
+      newEnd = selEnd
       shouldValidateStyles = true
     }
 
-    if (isZeroWidthSelection() && !editorView.isSettingValue) {
-      editorView.setSelection(start + 1)
+    val textLength = editorView.text?.length ?: 0
+    val finalStart = newStart.coerceAtMost(newEnd).coerceAtLeast(0).coerceAtMost(textLength)
+    val finalEnd = newEnd.coerceAtLeast(newStart).coerceAtLeast(0).coerceAtMost(textLength)
+
+    if (isZeroWidthSelection(finalStart, finalEnd) && !editorView.isSettingValue) {
+      editorView.setSelection(finalStart + 1)
       shouldValidateStyles = false
     }
 
     if (!shouldValidateStyles) return
 
+    start = finalStart
+    end = finalEnd
     validateStyles()
-    emitSelectionChangeEvent(editorView.text, start, end)
+    emitSelectionChangeEvent(editorView.text, finalStart, finalEnd)
   }
 
-  private fun isZeroWidthSelection(): Boolean {
+  private fun isZeroWidthSelection(start: Int, end: Int): Boolean {
     val text = editorView.text ?: return false
-    val start = this.start.coerceAtLeast(0).coerceAtMost(text.length)
-    val end = this.end.coerceAtLeast(0).coerceAtMost(text.length)
 
     if (start != end) {
       return text.substring(start, end) == "\u200B"
