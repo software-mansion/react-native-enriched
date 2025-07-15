@@ -53,14 +53,18 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
     }
   }
 
-  private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>) {
+  private fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>): Boolean {
     val ssb = spannable as SpannableStringBuilder
+    val spans = ssb.getSpans(start, end, clazz)
+    if (spans.isEmpty()) return false
+
     ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
 
-    val spans = ssb.getSpans(start, end, clazz)
     for (span in spans) {
       ssb.removeSpan(span)
     }
+
+    return true
   }
 
   fun updateOrderedListIndexes(text: Spannable, position: Int) {
@@ -161,9 +165,9 @@ class ListStyles(private val editorView: ReactNativeRichTextEditorView) {
     return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
   }
 
-  fun removeStyle(name: String, start: Int, end: Int) {
-    val config = EditorSpans.listSpans[name] ?: return
+  fun removeStyle(name: String, start: Int, end: Int): Boolean {
+    val config = EditorSpans.listSpans[name] ?: return false
     val spannable = editorView.text as Spannable
-    removeSpansForRange(spannable, start, end, config.clazz)
+    return removeSpansForRange(spannable, start, end, config.clazz)
   }
 }

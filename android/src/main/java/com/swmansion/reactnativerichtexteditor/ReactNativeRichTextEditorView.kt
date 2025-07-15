@@ -88,7 +88,7 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
   }
 
   init {
-      inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
   }
 
   private fun prepareComponent() {
@@ -377,8 +377,8 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
     layoutManager.invalidateLayout(text)
   }
 
-  private fun removeStyle(name: String, start: Int, end: Int) {
-    when (name) {
+  private fun removeStyle(name: String, start: Int, end: Int): Boolean {
+    val removed = when (name) {
       EditorSpans.BOLD -> inlineStyles?.removeStyle(EditorSpans.BOLD, start, end)
       EditorSpans.ITALIC -> inlineStyles?.removeStyle(EditorSpans.ITALIC, start, end)
       EditorSpans.UNDERLINE -> inlineStyles?.removeStyle(EditorSpans.UNDERLINE, start, end)
@@ -394,8 +394,10 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       EditorSpans.LINK -> parametrizedStyles?.removeStyle(EditorSpans.LINK, start, end)
       EditorSpans.IMAGE -> parametrizedStyles?.removeStyle(EditorSpans.IMAGE, start, end)
       EditorSpans.MENTION -> parametrizedStyles?.removeStyle(EditorSpans.MENTION, start, end)
-      else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
+      else -> false
     }
+
+    return removed == true
   }
 
   private fun getTargetRange(name: String): Pair<Int, Int> {
@@ -440,8 +442,13 @@ class ReactNativeRichTextEditorView : AppCompatEditText {
       val end = selection?.end ?: 0
       val lengthBefore = text?.length ?: 0
 
+      isSettingValue = true
       val targetRange = getTargetRange(name)
-      removeStyle(style, targetRange.first, targetRange.second)
+      val removed = removeStyle(style, targetRange.first, targetRange.second)
+      if (removed) {
+        spanState?.setStart(style, null)
+      }
+      isSettingValue = false
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter
