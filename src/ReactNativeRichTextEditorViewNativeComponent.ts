@@ -98,9 +98,8 @@ export interface RichTextStyleInternal {
     textDecorationLine?: string;
   };
   // This is a workaround for the fact that codegen does not support Records.
-  // Instead, we pass an empty object as a type.
-  // However, this object is not empty in practice, and will become ReadableMap on the native side
-  mention?: {};
+  // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.
+  mention?: UnsafeMixed;
   img?: {
     width?: Float;
     height?: Float;

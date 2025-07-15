@@ -2,6 +2,8 @@
 #import "ReactNativeRichTextEditorView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
+#import "ParagraphsUtils.h"
+#import "TextInsertionUtils.h"
 
 @implementation InlineCodeStyle {
   ReactNativeRichTextEditorView *_editor;
@@ -25,28 +27,34 @@
 }
 
 - (void)addAttributes:(NSRange)range {
-  [_editor->textView.textStorage beginEditing];
-
-  [_editor->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[_editor->config inlineCodeBgColor] range:range];
-  [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config inlineCodeFgColor] range:range];
-  [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config inlineCodeFgColor] range:range];
-  [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config inlineCodeFgColor] range:range];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
-    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr) {
-        UIFont *newFont = [[_editor->config monospacedFont] withFontTraits:font];
-        [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }
-  ];
+  // we don't want to apply inline code to newline characters, it looks bad
+  NSArray *nonNewlineRanges = [ParagraphsUtils getNonNewlineRangesIn:_editor->textView range:range];
   
-  [_editor->textView.textStorage endEditing];
+  for(NSValue *value in nonNewlineRanges) {
+    NSRange currentRange = [value rangeValue];
+    [_editor->textView.textStorage beginEditing];
+
+    [_editor->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.4] range:currentRange];
+    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
+    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
+    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config inlineCodeFgColor] range:currentRange];
+    [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:currentRange options:0
+      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIFont *font = (UIFont *)value;
+        if(font != nullptr) {
+          UIFont *newFont = [[_editor->config monospacedFont] withFontTraits:font];
+          [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+        }
+      }
+    ];
+    
+    [_editor->textView.textStorage endEditing];
+  }
 }
 
 - (void)addTypingAttributes {
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSBackgroundColorAttributeName] = [_editor->config inlineCodeBgColor];
+  newTypingAttrs[NSBackgroundColorAttributeName] = [[_editor->config inlineCodeBgColor] colorWithAlphaComponent:0.4];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config inlineCodeFgColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config inlineCodeFgColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config inlineCodeFgColor];
@@ -90,6 +98,20 @@
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
+// making sure no newlines get inline code style, it looks bad
+- (void)handleNewlines {
+  for(int i = 0; i < _editor->textView.textStorage.string.length; i++) {
+    if([[NSCharacterSet newlineCharacterSet] characterIsMember:[_editor->textView.textStorage.string characterAtIndex:i]]) {
+      NSRange mockRange = NSMakeRange(0, 0);
+      // can't use detect style because it intentionally doesn't take newlines into consideration
+      UIFont *font = [_editor->textView.textStorage attribute:NSFontAttributeName atIndex:i effectiveRange:&mockRange];
+      if([self styleCondition:font :NSMakeRange(i, 1)]) {
+        [self removeAttributes:NSMakeRange(i, 1)];
+      }
+    }
+  }
+}
+
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   UIFont *font = (UIFont *)value;
   return font != nullptr && [font isMonospace:_editor->config];
@@ -97,11 +119,24 @@
 
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    return [OccurenceUtils detect:NSFontAttributeName withEditor:_editor inRange:range
-      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-        return [self styleCondition:value :range];
-      }
-    ];
+    // detect only in non-newline characters
+    NSArray *nonNewlineRanges = [ParagraphsUtils getNonNewlineRangesIn:_editor->textView range:range];
+    if(nonNewlineRanges.count == 0) {
+      return NO;
+    }
+    
+    BOOL detected = YES;
+    for(NSValue *value in nonNewlineRanges) {
+      NSRange currentRange = [value rangeValue];
+      BOOL currentDetected = [OccurenceUtils detect:NSFontAttributeName withEditor:_editor inRange:currentRange
+        withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+          return [self styleCondition:value :range];
+        }
+      ];
+      detected = detected && currentDetected;
+    }
+  
+    return detected;
   } else {
     UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
     if(currentFontAttr == nullptr) {

@@ -41,8 +41,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     NSRange linkRange = [self getFullLinkRangeAt:[pair.rangeValue rangeValue].location];
     [_editor->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
     [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
-    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:range];
-    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:range];
+    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+    if([_editor->config linkDecorationLine] == DecorationUnderline) {
+      [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
+    }
   }
   [_editor->textView.textStorage endEditing];
   
@@ -50,6 +54,10 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
+  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+  }
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -61,12 +69,20 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
   [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:linkRange];
   [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+  [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:linkRange];
+  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
+  }
   [_editor->textView.textStorage endEditing];
   
   // adjust typing attributes as well
   NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
+  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+  }
   _editor->textView.typingAttributes = newTypingAttrs;
 }
 
@@ -110,8 +126,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   NSString *currentText = [_editor->textView.textStorage.string substringWithRange:range];
   
   NSMutableDictionary<NSAttributedStringKey, id> *newAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-  newAttrs[NSForegroundColorAttributeName] = [UIColor systemBlueColor]; // TODO: LINK APPEARANCE CONFIG
-  newAttrs[NSUnderlineColorAttributeName] = [UIColor systemBlueColor]; // TODO: LINK APPEARANCE CONFIG
+  newAttrs[NSForegroundColorAttributeName] = [_editor->config linkColor];
+  newAttrs[NSUnderlineColorAttributeName] = [_editor->config linkColor];
+  newAttrs[NSStrikethroughColorAttributeName] = [_editor->config linkColor];
+  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+  }
   if(manual) {
     newAttrs[ManualLinkAttributeName] = [url copy];
   } else {
@@ -249,6 +269,10 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
     newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
     newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
+    newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
+    if([_editor->config linkDecorationLine] == DecorationUnderline) {
+      [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
+    }
     _editor->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -370,10 +394,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   // this way manual link gets "extended" only if some characters were added inside it
   if([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
     NSRange newRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
-     // TODO: LINK APPEARANCE CONFIG
-    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[UIColor systemBlueColor] range:newRange];
-     // TODO: LINK APPEARANCE CONFIG
-    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[UIColor systemBlueColor] range:newRange];
+    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config linkColor] range:newRange];
+    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config linkColor] range:newRange];
+    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config linkColor] range:newRange];
+    if([_editor->config linkDecorationLine] == DecorationUnderline) {
+      [_editor->textView.textStorage addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:newRange];
+    }
     [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newRange];
   }
     

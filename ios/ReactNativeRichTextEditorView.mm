@@ -26,8 +26,8 @@ using namespace facebook::react;
   ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSRange _recentlyChangedRange;
@@ -99,7 +99,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithEditor:self]
   };
   
-  _conflictingStyles = @{
+  _conflictingStyles = [@{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -113,9 +113,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
-  };
+  } mutableCopy];
   
-  _blockingStyles = @{
+  _blockingStyles = [@{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -129,7 +129,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
-  };
+  } mutableCopy];
   
   parser = [[EditorParser alloc] initWithEditor:self];
 }
@@ -171,14 +171,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     config = [[EditorConfig alloc] init];
   }
   
-  // style props:
+  // any style prop changes:
+  // firstly we create the new config for the changes
+  
+  EditorConfig *newConfig = [config copy];
   
   if(newViewProps.color != oldViewProps.color) {
     if(isColorMeaningful(newViewProps.color)) {
       UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
-      [config setPrimaryColor:uiColor];
+      [newConfig setPrimaryColor:uiColor];
     } else {
-      [config setPrimaryColor:nullptr];
+      [newConfig setPrimaryColor:nullptr];
     }
     stylePropChanged = YES;
   }
@@ -186,44 +189,179 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(newViewProps.fontSize != oldViewProps.fontSize) {
     if(newViewProps.fontSize) {
       NSNumber* fontSize = @(newViewProps.fontSize);
-      [config setPrimaryFontSize:fontSize];
+      [newConfig setPrimaryFontSize:fontSize];
     } else {
-      [config setPrimaryFontSize:nullptr];
+      [newConfig setPrimaryFontSize:nullptr];
     }
     stylePropChanged = YES;
   }
   
   if(newViewProps.fontWeight != oldViewProps.fontWeight) {
     if(!newViewProps.fontWeight.empty()) {
-      [config setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
+      [newConfig setPrimaryFontWeight:[NSString fromCppString:newViewProps.fontWeight]];
     } else {
-      [config setPrimaryFontWeight:nullptr];
+      [newConfig setPrimaryFontWeight:nullptr];
     }
     stylePropChanged = YES;
   }
     
   if(newViewProps.fontFamily != oldViewProps.fontFamily) {
     if(!newViewProps.fontFamily.empty()) {
-      [config setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
+      [newConfig setPrimaryFontFamily:[NSString fromCppString:newViewProps.fontFamily]];
     } else {
-      [config setPrimaryFontFamily:nullptr];
+      [newConfig setPrimaryFontFamily:nullptr];
     }
     stylePropChanged = YES;
   }
+  
+  // rich text style
+  
+  if(newViewProps.richTextStyle.h1.fontSize != oldViewProps.richTextStyle.h1.fontSize) {
+    [newConfig setH1FontSize:newViewProps.richTextStyle.h1.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.h2.fontSize != oldViewProps.richTextStyle.h2.fontSize) {
+    [newConfig setH2FontSize:newViewProps.richTextStyle.h2.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.h3.fontSize != oldViewProps.richTextStyle.h3.fontSize) {
+    [newConfig setH3FontSize:newViewProps.richTextStyle.h3.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.blockquote.borderColor != oldViewProps.richTextStyle.blockquote.borderColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.blockquote.borderColor)) {
+      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.blockquote.borderWidth != oldViewProps.richTextStyle.blockquote.borderWidth) {
+    [newConfig setBlockquoteWidth:newViewProps.richTextStyle.blockquote.borderWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.blockquote.gapWidth != oldViewProps.richTextStyle.blockquote.gapWidth) {
+    [newConfig setBlockquoteGapWidth:newViewProps.richTextStyle.blockquote.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.code.color != oldViewProps.richTextStyle.code.color) {
+    if(isColorMeaningful(newViewProps.richTextStyle.code.color)) {
+      [newConfig setInlineCodeFgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.color)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.code.backgroundColor != oldViewProps.richTextStyle.code.backgroundColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.code.backgroundColor)) {
+      [newConfig setInlineCodeBgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.backgroundColor)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.ol.gapWidth != oldViewProps.richTextStyle.ol.gapWidth) {
+    [newConfig setOrderedListGapWidth:newViewProps.richTextStyle.ol.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ol.marginLeft != oldViewProps.richTextStyle.ol.marginLeft) {
+    [newConfig setOrderedListMarginLeft:newViewProps.richTextStyle.ol.marginLeft];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ul.bulletColor != oldViewProps.richTextStyle.ul.bulletColor) {
+    if(isColorMeaningful(newViewProps.richTextStyle.ul.bulletColor)) {
+      [newConfig setUnorderedListBulletColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ul.bulletColor)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.ul.bulletSize != oldViewProps.richTextStyle.ul.bulletSize) {
+    [newConfig setUnorderedListBulletSize:newViewProps.richTextStyle.ul.bulletSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ul.gapWidth != oldViewProps.richTextStyle.ul.gapWidth) {
+    [newConfig setUnorderedListGapWidth:newViewProps.richTextStyle.ul.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.ul.marginLeft != oldViewProps.richTextStyle.ul.marginLeft) {
+    [newConfig setUnorderedListMarginLeft:newViewProps.richTextStyle.ul.marginLeft];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.a.color != oldViewProps.richTextStyle.a.color) {
+    if(isColorMeaningful(newViewProps.richTextStyle.a.color)) {
+      [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.a.color)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.richTextStyle.a.textDecorationLine != oldViewProps.richTextStyle.a.textDecorationLine) {
+    NSString *objcString = [NSString fromCppString:newViewProps.richTextStyle.a.textDecorationLine];
+    if([objcString isEqualToString:DecorationUnderline]) {
+      [newConfig setLinkDecorationLine:DecorationUnderline];
+      
+      // underline is being blocked by links now
+      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
+      if(![blocking containsObject:@([LinkStyle getStyleType])]) {
+        [blocking addObject:@([LinkStyle getStyleType])];
+      }
+      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
+    } else {
+      // both DecorationNone and a different, wrong value gets a DecorationNone here
+      [newConfig setLinkDecorationLine:DecorationNone];
+      
+      // underline is not being blocked by links anymore
+      NSMutableArray *blocking = [_blockingStyles[@([UnderlineStyle getStyleType])] mutableCopy];
+      if([blocking containsObject:@([LinkStyle getStyleType])]) {
+        [blocking removeObject:@([LinkStyle getStyleType])];
+      }
+      _blockingStyles[@([UnderlineStyle getStyleType])] = blocking;
+    }
+    stylePropChanged = YES;
+  }
+  
+  folly::dynamic oldMentionStyle = oldViewProps.richTextStyle.mention;
+  folly::dynamic newMentionStyle = newViewProps.richTextStyle.mention;
+  if(oldMentionStyle != newMentionStyle) {
+    bool newSingleProps = NO;
     
-  // fill the typing attributes with style props
-  defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
-  defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
-  defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
-  textView.typingAttributes = defaultTypingAttributes;
+    for(const auto& obj : newMentionStyle.items()) {
+      if(obj.second.isInt() || obj.second.isString()) {
+        // we are in just a single MentionStyleProps object
+        newSingleProps = YES;
+        break;
+      } else if(obj.second.isObject()) {
+        // we are in map of indicators to MentionStyleProps
+        newSingleProps = NO;
+        break;
+      }
+    }
+    
+    if(newSingleProps) {
+      [newConfig setMentionStyleProps:[MentionStyleProps getSinglePropsFromFollyDynamic:newMentionStyle]];
+    } else {
+      [newConfig setMentionStyleProps:[MentionStyleProps getComplexPropsFromFollyDynamic:newMentionStyle]];
+    }
+    
+    stylePropChanged = YES;
+  }
   
   if(stylePropChanged) {
     // all the text needs to be rebuilt
-    // we get the current html and replace whole text parsing it back into the input
+    // we get the current html using old config, then switch to new config and replace text using the html
     // this way, the newest config attributes are being used!
+    
+    // the html needs to be generated using the old config
     NSString *currentHtml = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
+    
+    // now set the new config
+    config = newConfig;
     
     // we don't want to emit these html changes in here
     BOOL prevEmitHtml = emitHtml;
@@ -240,6 +378,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     if(prevEmitHtml) {
       emitHtml = YES;
     }
+    
+    // fill the typing attributes with style props
+    defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
+    defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
+    textView.typingAttributes = defaultTypingAttributes;
     
     // update the placeholder as well
     [self refreshPlaceholderLabelStyles];
@@ -725,13 +871,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
   // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)]];
+  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)] range:range];
   if(blocking.count != 0) {
     return NO;
   }
   
   // handle conflicting styles: all of their occurences have to be removed
-  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)]];
+  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)] range:range];
   if(conflicting.count != 0) {
     for(NSNumber *style in conflicting) {
       id<BaseStyleProtocol> styleClass = stylesDict[style];
@@ -752,17 +898,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   return YES;
 }
 
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types {
+- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types range:(NSRange)range {
   NSMutableArray<NSNumber *> *resultArray = [[NSMutableArray<NSNumber *> alloc] init];
   for(NSNumber *type in types) {
     id<BaseStyleProtocol> styleClass = stylesDict[type];
     
-    if(textView.selectedRange.length >= 1) {
-      if([styleClass anyOccurence:textView.selectedRange]) {
+    if(range.length >= 1) {
+      if([styleClass anyOccurence:range]) {
         [resultArray addObject:type];
       }
     } else {
-      if([styleClass detectStyle:textView.selectedRange]) {
+      if([styleClass detectStyle:range]) {
         [resultArray addObject:type];
       }
     }
@@ -824,6 +970,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
     if(oStyle != nullptr) {
       [oStyle handleListItemWithChangeRange:_recentlyChangedRange];
+    }
+    
+    // inline code on newlines fix
+    InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
+    if(codeStyle != nullptr) {
+      [codeStyle handleNewlines];
     }
       
     // mentions removal management

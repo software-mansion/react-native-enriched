@@ -11,9 +11,10 @@
 
 + (StyleType)getStyleType { return OrderedList; }
 
-// we draw lists manually
 - (CGFloat)getHeadIndent {
-  return 48; // TODO: style config setup
+  // lists are drawn manually
+  // margin before marker + marker width + gap between marker and paragraph
+  return [_editor->config orderedListMarginLeft] + [_editor->config orderedListMarkerWidth] + [_editor->config orderedListGapWidth];
 }
 
 - (instancetype)initWithEditor:(id)editor {

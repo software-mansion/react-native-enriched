@@ -16,6 +16,7 @@
 @end
 
 @interface InlineCodeStyle : NSObject <BaseStyleProtocol>
+- (void)handleNewlines;
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>
@@ -39,7 +40,9 @@
 - (NSValue *)getActiveMentionRange;
 @end
 
-@interface HeadingStyleBase : NSObject<BaseStyleProtocol>
+@interface HeadingStyleBase : NSObject<BaseStyleProtocol> {
+  id editor;
+}
 - (CGFloat)getHeadingFontSize;
 @end
 

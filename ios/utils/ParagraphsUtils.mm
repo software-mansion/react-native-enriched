@@ -31,4 +31,24 @@
   return results;
 }
 
++ (NSArray *)getNonNewlineRangesIn:(UITextView *)textView range:(NSRange)range {
+  NSMutableArray *nonNewlineRanges = [[NSMutableArray alloc] init];
+  int lastRangeLocation = range.location;
+  
+  for(int i = range.location; i < range.location + range.length; i++) {
+    unichar currentChar = [textView.textStorage.string characterAtIndex:i];
+    if([[NSCharacterSet newlineCharacterSet] characterIsMember:currentChar]) {
+      if(i - lastRangeLocation > 0) {
+        [nonNewlineRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, i - lastRangeLocation)]];
+      }
+      lastRangeLocation = i+1;
+    }
+  }
+  if(lastRangeLocation < range.location + range.length) {
+    [nonNewlineRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, range.location + range.length - lastRangeLocation)]];
+  }
+  
+  return nonNewlineRanges;
+}
+
 @end

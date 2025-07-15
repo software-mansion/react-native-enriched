@@ -57,11 +57,11 @@
         CGFloat paddingTop = origin.y;
         CGFloat x = paddingLeft;
         CGFloat y = paddingTop + rect.origin.y;
-        CGFloat width = 4; // TODO: blockquote style config
+        CGFloat width = [typedEditor->config blockquoteWidth];
         CGFloat height = rect.size.height;
         
         CGRect lineRect = CGRectMake(x, y, width, height);
-        [[UIColor blueColor] setFill];
+        [[typedEditor->config blockquoteColor] setFill];
         UIRectFill(lineRect);
       }
     ];
@@ -90,20 +90,27 @@
       usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
         NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] editor:typedEditor];
         
-        CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-        CGFloat gapWidth = 16; // TODO: styling config
-        
-        CGFloat maxMarkerWidth = [@"99" sizeWithAttributes:markerAttributes].width; // TODO: styling config
-        if(markerWidth > maxMarkerWidth) {
-          // TODO: change some config variable to new maxMarkerWidth
-          // TODO: force reload whole document to layout ordered lists with new gaps
-          // the lists head indent should be config's marginLeft + gapWidth + maxMarkerWidth
+        if(pStyle.textLists.firstObject.markerFormat == NSTextListMarkerDecimal) {
+          CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
+          CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
+          CGFloat rightEdge = usedRect.origin.x - gapWidth;
+          CGFloat numberX = rightEdge - markerWidth;
+          
+          [marker drawAtPoint:CGPointMake(numberX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
+        } else {
+          CGFloat gapWidth = [typedEditor->config unorderedListGapWidth];
+          CGFloat bulletSize = [typedEditor->config unorderedListBulletSize];
+          CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize;
+          CGFloat centerY = CGRectGetMidY(usedRect);
+          
+          CGContextRef context = UIGraphicsGetCurrentContext();
+          CGContextSaveGState(context); {
+            [[typedEditor->config unorderedListBulletColor] setFill];
+            CGContextAddArc(context, bulletX, centerY, bulletSize/2, 0, 2 * M_PI, YES);
+            CGContextFillPath(context);
+          }
+          CGContextRestoreGState(context);
         }
-        
-        CGFloat rightEdge = usedRect.origin.x - gapWidth;
-        CGFloat numberX = rightEdge - markerWidth;
-        
-        [marker drawAtPoint:CGPointMake(numberX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
       }
     ];
   }

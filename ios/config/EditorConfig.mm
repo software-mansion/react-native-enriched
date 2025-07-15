@@ -10,9 +10,24 @@
   UIFont *_monospacedFont;
   BOOL _primaryFontNeedsRecreation;
   BOOL _monospacedFontNeedsRecreation;
+  NSSet<NSNumber*> *_mentionIndicators;
+  CGFloat _h1FontSize;
+  CGFloat _h2FontSize;
+  CGFloat _h3FontSize;
+  UIColor *_blockquoteColor;
+  CGFloat _blockquoteWidth;
+  CGFloat _blockquoteGapWidth;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
-  NSSet<NSNumber*> *_mentionIndicators;
+  CGFloat _orderedListGapWidth;
+  CGFloat _orderedListMarginLeft;
+  UIColor *_unorderedListBulletColor;
+  CGFloat _unorderedListBulletSize;
+  CGFloat _unorderedListGapWidth;
+  CGFloat _unorderedListMarginLeft;
+  UIColor *_linkColor;
+  TextDecorationLineEnum _linkDecorationLine;
+  NSDictionary *_mentionProperties;
 }
 
 - (instancetype) init {
@@ -20,6 +35,35 @@
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
   return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+  EditorConfig *copy = [[[self class] allocWithZone:zone] init];
+  copy->_primaryColor = [_primaryColor copy];
+  copy->_primaryFontSize = [_primaryFontSize copy];
+  copy->_primaryFontWeight = [_primaryFontWeight copy];
+  copy->_primaryFontFamily = [_primaryFontFamily copy];
+  copy->_primaryFont = [_primaryFont copy];
+  copy->_monospacedFont = [_monospacedFont copy];
+  copy->_mentionIndicators = [_mentionIndicators copy];
+  copy->_h1FontSize = _h1FontSize;
+  copy->_h2FontSize = _h2FontSize;
+  copy->_h3FontSize = _h3FontSize;
+  copy->_blockquoteColor = [_blockquoteColor copy];
+  copy->_blockquoteWidth = _blockquoteWidth;
+  copy->_blockquoteGapWidth = _blockquoteGapWidth;
+  copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
+  copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
+  copy->_orderedListGapWidth = _orderedListGapWidth;
+  copy->_orderedListMarginLeft = _orderedListMarginLeft;
+  copy->_unorderedListBulletColor = [_unorderedListBulletColor copy];
+  copy->_unorderedListBulletSize = _unorderedListBulletSize;
+  copy->_unorderedListGapWidth = _unorderedListGapWidth;
+  copy->_unorderedListMarginLeft = _unorderedListMarginLeft;
+  copy->_linkColor = [_linkColor copy];
+  copy->_linkDecorationLine = [_linkDecorationLine copy];
+  copy->_mentionProperties = [_mentionProperties mutableCopy];
+  return copy;
 }
 
 - (UIColor *)primaryColor {
@@ -90,32 +134,168 @@
   return _monospacedFont;
 }
 
-- (UIColor *)inlineCodeFgColor {
-  return _inlineCodeFgColor != nullptr ? _inlineCodeFgColor : [UIColor orangeColor];
-}
-
-- (void)setInlineCodeFgColor:(UIColor *)newValue {
-  if(![newValue isEqual:_inlineCodeFgColor]) {
-    _inlineCodeFgColor = newValue;
-  }
-}
-
-- (UIColor *)inlineCodeBgColor {
-  return _inlineCodeBgColor != nullptr ? _inlineCodeBgColor : [[UIColor systemGrayColor] colorWithAlphaComponent:0.6];
-}
-
-- (void)setInlineCodeBgColor:(UIColor *)newValue {
-  if(![newValue isEqual:_inlineCodeBgColor]) {
-    _inlineCodeBgColor = newValue;
-  }
-}
-
 - (NSSet<NSNumber*>*)mentionIndicators {
   return _mentionIndicators != nullptr ? _mentionIndicators : [[NSSet alloc] init];
 }
 
 - (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue {
   _mentionIndicators = newValue;
+}
+
+- (CGFloat)h1FontSize {
+  return _h1FontSize;
+}
+
+- (void)setH1FontSize:(CGFloat)newValue {
+  _h1FontSize = newValue;
+}
+
+- (CGFloat)h2FontSize {
+  return _h2FontSize;
+}
+
+- (void)setH2FontSize:(CGFloat)newValue {
+  _h2FontSize = newValue;
+}
+
+- (CGFloat)h3FontSize {
+  return _h3FontSize;
+}
+
+- (void)setH3FontSize:(CGFloat)newValue {
+  _h3FontSize = newValue;
+}
+
+- (UIColor *)blockquoteColor {
+  return _blockquoteColor;
+}
+
+- (void)setBlockquoteColor:(UIColor *)newValue {
+  _blockquoteColor = newValue;
+}
+
+- (CGFloat)blockquoteWidth {
+  return _blockquoteWidth;
+}
+
+- (void)setBlockquoteWidth:(CGFloat)newValue {
+  _blockquoteWidth = newValue;
+}
+
+
+- (CGFloat)blockquoteGapWidth {
+  return _blockquoteGapWidth;
+}
+
+- (void)setBlockquoteGapWidth:(CGFloat)newValue {
+  _blockquoteGapWidth = newValue;
+}
+
+- (UIColor *)inlineCodeFgColor {
+  return _inlineCodeFgColor;
+}
+
+- (void)setInlineCodeFgColor:(UIColor *)newValue {
+  _inlineCodeFgColor = newValue;
+}
+
+- (UIColor *)inlineCodeBgColor {
+  return _inlineCodeBgColor;
+}
+
+- (void)setInlineCodeBgColor:(UIColor *)newValue {
+  _inlineCodeBgColor = newValue;
+}
+
+- (CGFloat)orderedListGapWidth {
+  return _orderedListGapWidth;
+}
+
+- (void)setOrderedListGapWidth:(CGFloat)newValue {
+  _orderedListGapWidth = newValue;
+}
+
+- (CGFloat)orderedListMarginLeft {
+  return _orderedListMarginLeft;
+}
+
+- (void)setOrderedListMarginLeft:(CGFloat)newValue {
+  _orderedListMarginLeft = newValue;
+}
+
+- (CGFloat)orderedListMarkerWidth {
+  NSDictionary *markerAttributes = @{
+    NSFontAttributeName: [self primaryFont],
+    NSForegroundColorAttributeName: [self primaryColor]
+  };
+  // TODO: marker widths could be dynamic, for now we settle with (usually) the widest 2-digit marker
+  return [@"88." sizeWithAttributes:markerAttributes].width;
+}
+
+- (UIColor *)unorderedListBulletColor {
+  return _unorderedListBulletColor;
+}
+
+- (void)setUnorderedListBulletColor:(UIColor *)newValue {
+  _unorderedListBulletColor = newValue;
+}
+
+- (CGFloat)unorderedListBulletSize {
+  return _unorderedListBulletSize;
+}
+
+- (void)setUnorderedListBulletSize:(CGFloat)newValue {
+  _unorderedListBulletSize = newValue;
+}
+
+- (CGFloat)unorderedListGapWidth {
+  return _unorderedListGapWidth;
+}
+
+- (void)setUnorderedListGapWidth:(CGFloat)newValue {
+  _unorderedListGapWidth = newValue;
+}
+
+- (CGFloat)unorderedListMarginLeft {
+  return _unorderedListMarginLeft;
+}
+
+- (void)setUnorderedListMarginLeft:(CGFloat)newValue {
+  _unorderedListMarginLeft = newValue;
+}
+
+- (UIColor *)linkColor {
+  return _linkColor;
+}
+
+- (void)setLinkColor:(UIColor *)newValue {
+  _linkColor = newValue;
+}
+
+- (TextDecorationLineEnum)linkDecorationLine {
+  return _linkDecorationLine;
+}
+
+- (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue {
+  _linkDecorationLine = newValue;
+}
+
+- (void)setMentionStyleProps:(NSDictionary *)newValue {
+  _mentionProperties = [newValue mutableCopy];
+}
+
+- (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator {
+  if(_mentionProperties.count == 1 && _mentionProperties[@"all"] != nullptr) {
+    // single props for all the indicators
+    return _mentionProperties[@"all"];
+  } else if(_mentionProperties[indicator] != nullptr) {
+    return _mentionProperties[indicator];
+  }
+  MentionStyleProps *fallbackProps = [[MentionStyleProps alloc] init];
+  fallbackProps.color = [UIColor blueColor];
+  fallbackProps.backgroundColor = [UIColor yellowColor];
+  fallbackProps.decorationLine = DecorationUnderline;
+  return fallbackProps;
 }
 
 @end

@@ -2,4 +2,3 @@
 
 @implementation MentionParams
 @end
-
