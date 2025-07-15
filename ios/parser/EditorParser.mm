@@ -158,7 +158,7 @@
         
         for(NSNumber *activeStyle in currentActiveStyles) {
           NSInteger activeStyleBeginning = [currentActiveStylesBeginning[activeStyle] integerValue];
-          // we end the styled that began after the currently ended style
+          // we end the styles that began after the currently ended style
           // also the ones that ended in the exact same place but are "inner" in relation to them due to StyleTypeEnum integer values
           // "activeStylesBeginning < i" is needed, so that we don't remove styles that have been freshly added now
           if((activeStyleBeginning > styleBeginning) ||
