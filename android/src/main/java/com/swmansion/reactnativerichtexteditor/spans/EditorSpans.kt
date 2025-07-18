@@ -76,20 +76,20 @@ object EditorSpans {
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
     INLINE_CODE to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, MENTION, LINK),
+      conflictingStyles = arrayOf(MENTION, LINK),
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
     H1 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H2, H3, INLINE_CODE, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H2 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H3, INLINE_CODE, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H3 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, INLINE_CODE, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     BLOCK_QUOTE to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),
     ),
     CODE_BLOCK to StylesMergingConfig(
       conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE, INLINE_CODE),
