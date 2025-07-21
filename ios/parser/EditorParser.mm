@@ -150,7 +150,7 @@
       [endedStyles minusSet: currentActiveStyles];
       
       // also finish styles that should be ended becasue they are nested in a style that ended
-      NSMutableSet *fixedEndedStyles = [endedStyles copy];
+      NSMutableSet *fixedEndedStyles = [endedStyles mutableCopy];
       NSMutableSet *stylesToBeReAdded = [[NSMutableSet alloc] init];
       
       for(NSNumber *style in endedStyles) {
