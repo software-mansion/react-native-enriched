@@ -30,7 +30,6 @@ using namespace facebook::react;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
-  NSRange _recentlyChangedRange;
   NSString *_recentlyEmittedString;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
@@ -74,7 +73,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   _activeStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
-  _recentlyChangedRange = NSMakeRange(0, 0);
+  recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
   emitHtml = NO;
@@ -951,11 +950,11 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // list item all characters removal fix
     UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
     if(uStyle != nullptr) {
-      [uStyle handleListItemWithChangeRange:_recentlyChangedRange];
+      [uStyle handleListItemWithChangeRange:recentlyChangedRange];
     }
     OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
     if(oStyle != nullptr) {
-      [oStyle handleListItemWithChangeRange:_recentlyChangedRange];
+      [oStyle handleListItemWithChangeRange:recentlyChangedRange];
     }
     
     // inline code on newlines fix
@@ -971,7 +970,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
     
     // modified words handling
-    NSArray *modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:_recentlyChangedRange];
+    NSArray *modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:recentlyChangedRange];
     if(modifiedWords != nullptr) {
       for(NSDictionary *wordDict in modifiedWords) {
         NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
@@ -1037,7 +1036,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 }
 
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-  _recentlyChangedRange = NSMakeRange(range.location, text.length);
+  recentlyChangedRange = NSMakeRange(range.location, text.length);
   
   BOOL rejectTextChanges = NO;
   

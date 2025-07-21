@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ReactNativeRichTextEditorView : RCTViewComponentView {
   @public UITextView *textView;
+  @public NSRange recentlyChangedRange;
   @public EditorConfig *config;
   @public EditorParser *parser;
   @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
