@@ -680,6 +680,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self focus];
   } else if([commandName isEqualToString:@"blur"]) {
     [self blur];
+  } else if([commandName isEqualToString:@"setValue"]) {
+    NSString *value = (NSString *)args[0];
+    [self setValue:value];
   } else if([commandName isEqualToString:@"toggleBold"]) {
     [self toggleRegularStyle: [BoldStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleItalic"]) {
@@ -734,6 +737,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (void)focus {
   [textView reactFocus];
+}
+
+- (void)setValue:(NSString *)value {
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
+  if(initiallyProcessedHtml == nullptr) {
+    // just plain text
+    textView.text = value;
+  } else {
+    // we've got some seemingly proper html
+    [parser replaceWholeFromHtml:initiallyProcessedHtml];
+  }
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url {
