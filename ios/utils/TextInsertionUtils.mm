@@ -5,18 +5,7 @@
 
 @implementation TextInsertionUtils
 + (void)insertText:(NSString*)text inView:(UITextView*)textView at:(NSInteger)index additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs {
-  NSMutableDictionary<NSAttributedStringKey, id> *copiedAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc ] init];
-  if(index == textView.textStorage.length) {
-    if(index > 0) {
-      // if we are at the end of the text, we want to use previous style, but only if the index won't be -1 then
-      copiedAttrs = [textView.textStorage attributesAtIndex:index - 1 effectiveRange:nullptr].mutableCopy;
-    }
-  } else {
-      copiedAttrs = [textView.textStorage attributesAtIndex:index effectiveRange:nullptr].mutableCopy;
-  }
-  if([copiedAttrs count] == 0) {
-    copiedAttrs = textView.typingAttributes.mutableCopy;
-  }
+  NSMutableDictionary<NSAttributedStringKey, id> *copiedAttrs = [textView.typingAttributes mutableCopy];
   if(additionalAttrs != nullptr) {
     [copiedAttrs addEntriesFromDictionary: additionalAttrs];
   }
