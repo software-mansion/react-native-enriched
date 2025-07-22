@@ -182,6 +182,13 @@
 }
 
 - (void)handleListItemWithChangeRange:(NSRange)range {
+  if(range.location >= _editor->textView.textStorage.string.length) {
+    if(range.location == 0) {
+      range = NSMakeRange(0, 0);
+    } else {
+      range = NSMakeRange(_editor->textView.textStorage.string.length - 1, 1);
+    }
+  }
   NSRange changedParagraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
   if(changedParagraphRange.length == 0 && [self detectStyle:changedParagraphRange]) {
     [self removeAttributes:changedParagraphRange];
