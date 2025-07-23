@@ -748,6 +748,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     // we've got some seemingly proper html
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
   }
+  
+  // update the placeholder
+  [self setPlaceholderLabelShown:textView.textStorage.string.length == 0];
+  
+  // reset typing attribtues if the text was emptied
+  if(textView.textStorage.string.length == 0) {
+    textView.typingAttributes = defaultTypingAttributes;
+  }
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url {
