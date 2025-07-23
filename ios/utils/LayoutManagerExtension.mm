@@ -1,11 +1,25 @@
 #import "LayoutManagerExtension.h"
 #import <objc/runtime.h>
-#import "EditorManager.h"
 #import "ReactNativeRichTextEditorView.h"
 #import "StyleHeaders.h"
 #import "ParagraphsUtils.h"
 
 @implementation NSLayoutManager (LayoutManagerExtension)
+
+static void const *kEditorKey = &kEditorKey;
+
+- (id)editor {
+  return objc_getAssociatedObject(self, kEditorKey);
+}
+
+- (void)setEditor:(id)value {
+  objc_setAssociatedObject(
+    self,
+    kEditorKey,
+    value,
+    OBJC_ASSOCIATION_RETAIN_NONATOMIC
+  );
+}
 
 + (void)load {
   static dispatch_once_t onceToken;
@@ -35,10 +49,7 @@
 - (void)my_drawBackgroundForGlyphRange:(NSRange)glyphRange atPoint:(CGPoint)origin {
   [self my_drawBackgroundForGlyphRange:glyphRange atPoint:origin];
   
-  id editor = [EditorManager sharedManager].currentEditor;
-  if(editor == nullptr) { return; }
-  
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)editor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.editor;
   if(typedEditor == nullptr) { return; }
   
   BlockQuoteStyle *bqStyle = typedEditor->stylesDict[@([BlockQuoteStyle getStyleType])];
