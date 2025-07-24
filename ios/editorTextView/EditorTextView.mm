@@ -1,5 +1,4 @@
 #import "EditorTextView.h"
-#import "EditorManager.h"
 #import "ReactNativeRichTextEditorView.h"
 #import "StringExtension.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -8,7 +7,7 @@
 @implementation EditorTextView
 
 - (void)copy:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)[EditorManager sharedManager].currentEditor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
   if(typedEditor == nullptr) { return; }
   
   NSString *plainText = [typedEditor->textView.textStorage.string substringWithRange:typedEditor->textView.selectedRange];
@@ -28,7 +27,7 @@
 }
 
 - (void)paste:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)[EditorManager sharedManager].currentEditor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
   if(typedEditor == nullptr) { return; }
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
@@ -77,7 +76,7 @@
 }
 
 - (void)cut:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)[EditorManager sharedManager].currentEditor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
   if(typedEditor == nullptr) { return; }
   
   [self copy:sender];

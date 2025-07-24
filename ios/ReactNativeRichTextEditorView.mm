@@ -12,7 +12,6 @@
 #import <React/RCTConversions.h>
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
-#import "EditorManager.h"
 #import "LayoutManagerExtension.h"
 #import "EditorTextView.h"
 
@@ -64,7 +63,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self setupPlaceholderLabel];
     self.contentView = textView;
   }
-  [EditorManager sharedManager].currentEditor = self;
   return self;
 }
 
@@ -139,6 +137,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
+  textView.layoutManager.editor = self;
 }
 
 - (void)setupPlaceholderLabel {

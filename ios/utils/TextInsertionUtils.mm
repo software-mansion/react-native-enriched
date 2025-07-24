@@ -1,6 +1,5 @@
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
-#import "EditorManager.h"
 #import "ReactNativeRichTextEditorView.h"
 
 @implementation TextInsertionUtils
@@ -16,7 +15,7 @@
   [textView reactFocus];
   textView.selectedRange = NSMakeRange(index + text.length, 0);
   
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)[EditorManager sharedManager].currentEditor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)textView.delegate;
   if(typedEditor != nullptr) {
     typedEditor->recentlyChangedRange = NSMakeRange(index, text.length);
   }
@@ -31,7 +30,7 @@
   [textView reactFocus];
   textView.selectedRange = NSMakeRange(range.location + text.length, 0);
   
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)[EditorManager sharedManager].currentEditor;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)textView.delegate;
   if(typedEditor != nullptr) {
     typedEditor->recentlyChangedRange = NSMakeRange(range.location, text.length);
   }
