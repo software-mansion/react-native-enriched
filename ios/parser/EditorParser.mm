@@ -53,40 +53,53 @@
     unichar currentCharacterChar = [_editor->textView.textStorage.string characterAtIndex:currentRange.location];
     
     if([[NSCharacterSet newlineCharacterSet] characterIsMember:currentCharacterChar]) {
-      // just an empty line - only br tag and no style tags
       if(newLine) {
-        // keep the newLine at YES
-        
-        // br is not a valid child of lists:
-        if(inOrderedList || inUnorderedList) {
-          [result appendString:@"\n<li></li>"];
+        // we can either have an empty list item OR need to close the list and put a BR in such a situation
+        // the existence of the list must be checked on 0 length range, not on the newline character
+        if(inOrderedList) {
+          OrderedListStyle *oStyle = _editor->stylesDict[@(OrderedList)];
+          BOOL detected = [oStyle detectStyle: NSMakeRange(currentRange.location, 0)];
+          if(detected) {
+            [result appendString:@"\n<li></li>"];
+          } else {
+            [result appendString:@"\n</ol>\n<br>"];
+            inOrderedList = NO;
+          }
+        } else if(inUnorderedList) {
+          UnorderedListStyle *uStyle = _editor->stylesDict[@(UnorderedList)];
+          BOOL detected = [uStyle detectStyle: NSMakeRange(currentRange.location, 0)];
+          if(detected) {
+            [result appendString:@"\n<li></li>"];
+          } else {
+            [result appendString:@"\n</ul>\n<br>"];
+            inUnorderedList = NO;
+          }
         } else {
           [result appendString:@"\n<br>"];
         }
-        continue;
-      }
-    
-      // newline finishes a paragraph and all style tags need to be closed
-      // we use previous styles
-      NSArray<NSNumber*> *sortedEndedStyles = [previousActiveStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
-      
-      // append closing tags
-      for(NSNumber *style in sortedEndedStyles) {
-        NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
-        [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
-      }
-      
-      // append closing paragraph tag
-      if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
-         [previousActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
-         [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
-         [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
-         [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
-         [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
-      ) {
-        // do nothing, proper closing paragraph tags have been already appended
       } else {
-        [result appendString:@"</p>"];
+        // newline finishes a paragraph and all style tags need to be closed
+        // we use previous styles
+        NSArray<NSNumber*> *sortedEndedStyles = [previousActiveStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
+        
+        // append closing tags
+        for(NSNumber *style in sortedEndedStyles) {
+          NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
+          [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
+        }
+        
+        // append closing paragraph tag
+        if([previousActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
+           [previousActiveStyles containsObject:@([OrderedListStyle getStyleType])] ||
+           [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
+           [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
+           [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
+           [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
+        ) {
+          // do nothing, proper closing paragraph tags have been already appended
+        } else {
+          [result appendString:@"</p>"];
+        }
       }
       
       // clear the previous styles
@@ -392,12 +405,24 @@
   if(html.length >= 15) {
     NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven = [html substringWithRange:NSMakeRange(html.length-7, 7)];
+    NSInteger newlinesCount = [[html componentsSeparatedByString:@"\n"] count] - 1;
     
     if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
-      // looks like our format
-      // we want to get the string without <html> and </html> and their newlines
-      // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
-      fixedHtml = [html substringWithRange: NSMakeRange(7, html.length - 15)];
+      if(newlinesCount >= 2) {
+        // looks like our format
+        // we want to get the string without <html> and </html> and their newlines
+        // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
+        fixedHtml = [html substringWithRange: NSMakeRange(7, html.length - 15)];
+      } else {
+        // most likely a valid html but with some newline differences
+        fixedHtml = [html copy];
+        // firstly remove newlined html tags if any:
+        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n" withString:@""];
+        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</html>" withString:@""];
+        // fallback; remove html tags without their newlines
+        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>" withString:@""];
+        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>" withString:@""];
+      }
     } else {
       // in other case we are most likely working with some external html - try getting the styles from between body tags
       NSRange openingBodyRange = [html rangeOfString:@"<body>"];
@@ -411,7 +436,58 @@
     }
   }
   
+  // second processing - try fixing htmls with wrong newlines' setup
+  if(fixedHtml != nullptr) {
+    NSInteger newlinesCount = [[fixedHtml componentsSeparatedByString:@"/n"] count] - 1;
+    if(newlinesCount == 0) {
+      // add <br> tag wherever needed
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p></p>" withString:@"<br>"];
+      
+      // remove <p> tags inside of <li>
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<li><p>" withString:@"<li>"];
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</p></li>" withString:@"</li>"];
+      
+      // tags that have to be in separate lines
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<br>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<ul>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</ul>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<ol>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</ol>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<blockquote>" inString:fixedHtml leading:YES trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</blockquote>" inString:fixedHtml leading:YES trailing:YES];
+      
+      // line opening tags
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<p>" inString:fixedHtml leading:YES trailing:NO];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<li>" inString:fixedHtml leading:YES trailing:NO];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<h1>" inString:fixedHtml leading:YES trailing:NO];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<h2>" inString:fixedHtml leading:YES trailing:NO];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"<h3>" inString:fixedHtml leading:YES trailing:NO];
+      
+      // line closing tags
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</p>" inString:fixedHtml leading:NO trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</li>" inString:fixedHtml leading:NO trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</h1>" inString:fixedHtml leading:NO trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</h2>" inString:fixedHtml leading:NO trailing:YES];
+      fixedHtml = [self stringByAddingNewlinesToTag:@"</h3>" inString:fixedHtml leading:NO trailing:YES];
+    }
+  }
+  
   return fixedHtml;
+}
+
+- (NSString *)stringByAddingNewlinesToTag:(NSString *)tag inString:(NSString *)html leading:(BOOL)leading trailing:(BOOL)trailing {
+  NSString *str = [html copy];
+  if(leading) {
+    NSString *formattedTag = [NSString stringWithFormat:@">%@", tag];
+    NSString *formattedNewTag = [NSString stringWithFormat:@">\n%@", tag];
+    str = [str stringByReplacingOccurrencesOfString:formattedTag withString:formattedNewTag];
+  }
+  if(trailing) {
+    NSString *formattedTag = [NSString stringWithFormat:@"%@<", tag];
+    NSString *formattedNewTag = [NSString stringWithFormat:@"%@\n<", tag];
+    str = [str stringByReplacingOccurrencesOfString:formattedTag withString:formattedNewTag];
+  }
+  return str;
 }
 
 - (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
