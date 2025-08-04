@@ -654,7 +654,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if(detectedLinkData != nullptr) {
     // emit onLinkeDetected event
-    [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url];
+    [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url range:detectedLinkRange];
     
     _recentlyActiveLinkData = detectedLinkData;
     _recentlyActiveLinkRange = detectedLinkRange;
@@ -753,12 +753,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   [self anyTextMayHaveBeenModified];
 }
 
-- (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url {
+- (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
     emitter->onLinkDetected({
       .text = [text toCppString],
-      .url = [url toCppString]
+      .url = [url toCppString],
+      .start = static_cast<int>(range.location),
+      .end = static_cast<int>(range.location + range.length),
     });
   }
 }

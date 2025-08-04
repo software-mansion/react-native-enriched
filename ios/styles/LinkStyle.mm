@@ -354,7 +354,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   
     // emit onLinkDetected
-    [_editor emitOnLinkDetectedEvent:word url:regexPassedUrl];
+    [_editor emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
   }
 }
 
