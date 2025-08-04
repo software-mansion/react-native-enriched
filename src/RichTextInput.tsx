@@ -298,8 +298,8 @@ export const RichTextInput = ({
   };
 
   const handleLinkDetected = (e: NativeSyntheticEvent<OnLinkDetected>) => {
-    const { text, url } = e.nativeEvent;
-    onLinkDetected?.({ text, url });
+    const { text, url, start, end } = e.nativeEvent;
+    onLinkDetected?.({ text, url, start, end });
   };
 
   const handleMentionDetected = (

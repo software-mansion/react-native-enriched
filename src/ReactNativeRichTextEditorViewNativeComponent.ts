@@ -38,6 +38,8 @@ export interface OnChangeStateEvent {
 export interface OnLinkDetected {
   text: string;
   url: string;
+  start: Int32;
+  end: Int32;
 }
 
 export interface OnMentionDetectedInternal {

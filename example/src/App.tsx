@@ -57,6 +57,8 @@ const DEFAULT_STYLE: StylesState = {
 const DEFAULT_LINK_STATE = {
   text: '',
   url: '',
+  start: 0,
+  end: 0,
 };
 
 const DEBUG_SCROLLABLE = false;
@@ -196,6 +198,11 @@ export default function App() {
     console.log('Input blurred');
   };
 
+  const handleLinkDetected = (state: CurrentLinkState) => {
+    console.log(state);
+    setCurrentLink(state);
+  };
+
   const handleSelectionChangeEvent = (
     e: NativeSyntheticEvent<OnChangeSelectionEvent>
   ) => {
@@ -225,7 +232,7 @@ export default function App() {
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
-            onLinkDetected={setCurrentLink}
+            onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
             onChangeMention={handleChangeMention}

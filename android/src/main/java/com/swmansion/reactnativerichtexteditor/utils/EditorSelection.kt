@@ -236,7 +236,7 @@ class EditorSelection(private val editorView: ReactNativeRichTextEditorView) {
     val context = editorView.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url))
+    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url, start, end))
   }
 
   private fun emitMentionDetectedEvent(spannable: Spannable, span: EditorMentionSpan?, start: Int, end: Int) {

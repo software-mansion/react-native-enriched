@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
   @public BOOL emitHtml;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
-- (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url;
+- (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)anyTextMayHaveBeenModified;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
