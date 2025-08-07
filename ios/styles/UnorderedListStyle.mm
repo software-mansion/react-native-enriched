@@ -49,7 +49,7 @@
     NSRange fixedRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
     
     if(fixedRange.length == 0) {
-      [TextInsertionUtils insertText:@" " inView:_editor->textView at:fixedRange.location additionalAttributes:nullptr];
+      [TextInsertionUtils insertText:@" " inView:_editor->textView at:fixedRange.location additionalAttributes:nullptr editor:_editor];
       fixedRange = NSMakeRange(fixedRange.location, 1);
       offset += 1;
     }
@@ -144,7 +144,7 @@
     
     // if there is only a space left we should also remove it as it's apple's placholder for empty lists
     if([[_editor->textView.textStorage.string substringWithRange:paragraphRange] isEqualToString:@" "]) {
-      [TextInsertionUtils replaceText:@"" inView:_editor->textView at:paragraphRange additionalAttributes:nullptr];
+      [TextInsertionUtils replaceText:@"" inView:_editor->textView at:paragraphRange additionalAttributes:nullptr editor:_editor];
       return YES;
     }
   }
@@ -166,7 +166,7 @@
         }
         
         // remove the dash
-        [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr];
+        [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor];
         
         if(prevEmitHtml) {
           _editor->emitHtml = YES;

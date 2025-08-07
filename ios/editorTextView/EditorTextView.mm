@@ -7,7 +7,7 @@
 @implementation EditorTextView
 
 - (void)copy:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
   if(typedEditor == nullptr) { return; }
   
   NSString *plainText = [typedEditor->textView.textStorage.string substringWithRange:typedEditor->textView.selectedRange];
@@ -27,7 +27,7 @@
 }
 
 - (void)paste:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
   if(typedEditor == nullptr) { return; }
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
@@ -61,8 +61,8 @@
       if([pasteboardTypes containsObject:UTTypePlainText.identifier]) {
         NSString *plainString = [pasteboard valueForPasteboardType:UTTypePlainText.identifier];
         currentRange.length > 0
-          ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr]
-          : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr];
+        ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr editor:typedEditor]
+        : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr editor:typedEditor];
       }
     }
   } else if([pasteboardTypes containsObject:UTTypePlainText.identifier]) {
@@ -70,17 +70,17 @@
   
     NSString *plainString = [pasteboard valueForPasteboardType:UTTypePlainText.identifier];
     currentRange.length > 0
-      ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr]
-      : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr];
+    ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr editor:typedEditor]
+    : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr editor:typedEditor];
   }
 }
 
 - (void)cut:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.delegate;
+  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
   if(typedEditor == nullptr) { return; }
   
   [self copy:sender];
-  [TextInsertionUtils replaceText:@"" inView:typedEditor->textView at:typedEditor->textView.selectedRange additionalAttributes:nullptr];
+  [TextInsertionUtils replaceText:@"" inView:typedEditor->textView at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor];
 }
 
 @end

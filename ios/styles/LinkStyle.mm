@@ -140,7 +140,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   if(range.length == 0) {
     // insert link
-    [TextInsertionUtils insertText:text inView:_editor->textView at:range.location additionalAttributes:newAttrs];
+    [TextInsertionUtils insertText:text inView:_editor->textView at:range.location additionalAttributes:newAttrs editor:_editor];
   } else if([currentText isEqualToString:text]) {
     // apply link attributes
     [_editor->textView.textStorage addAttributes:newAttrs range:range];
@@ -152,7 +152,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   } else {
     // replace text with link
-    [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:newAttrs];
+    [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:newAttrs editor:_editor];
   }
   
   // mandatory connected links check
