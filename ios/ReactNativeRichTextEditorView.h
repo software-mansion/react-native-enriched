@@ -4,6 +4,7 @@
 #import "EditorConfig.h"
 #import "EditorParser.h"
 #import "BaseStyleProtocol.h"
+#import "EditorTextView.h"
 
 #ifndef ReactNativeRichTextEditorViewNativeComponent_h
 #define ReactNativeRichTextEditorViewNativeComponent_h
@@ -11,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ReactNativeRichTextEditorView : RCTViewComponentView {
-  @public UITextView *textView;
+  @public EditorTextView *textView;
   @public NSRange recentlyChangedRange;
   @public EditorConfig *config;
   @public EditorParser *parser;

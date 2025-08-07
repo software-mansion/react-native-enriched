@@ -13,7 +13,6 @@
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 #import "LayoutManagerExtension.h"
-#import "EditorTextView.h"
 
 using namespace facebook::react;
 
@@ -137,6 +136,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
+  textView.editor = self;
   textView.layoutManager.editor = self;
 }
 
