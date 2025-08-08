@@ -15,8 +15,9 @@ import java.io.File
 
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
   private var mentionStart: Int? = null
+  private var isSettingLinkSpan = false
+
   var mentionIndicators: Array<String> = emptyArray<String>()
-  var isSettingLinkSpan = false
 
   fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>): Boolean {
     val ssb = spannable as SpannableStringBuilder
