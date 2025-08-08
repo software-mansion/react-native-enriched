@@ -16,6 +16,7 @@ import java.io.File
 class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) {
   private var mentionStart: Int? = null
   var mentionIndicators: Array<String> = emptyArray<String>()
+  var isSettingLinkSpan = false
 
   fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>): Boolean {
     val ssb = spannable as SpannableStringBuilder
@@ -32,6 +33,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
+    isSettingLinkSpan = true
+
     val spannable = editorView.text as SpannableStringBuilder
     val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
     for (span in spans) {
@@ -50,6 +53,7 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
     editorView.selection?.validateStyles()
+    isSettingLinkSpan = false
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {
@@ -100,6 +104,8 @@ class ParametrizedStyles(private val editorView: ReactNativeRichTextEditorView) 
   }
 
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
+    // Do not detect link if it's applied manually
+    if (isSettingLinkSpan) return
     val spannable = editorView.text as Spannable
     val (word, start, end) = result
 
