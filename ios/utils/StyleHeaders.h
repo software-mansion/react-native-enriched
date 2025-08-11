@@ -26,6 +26,7 @@
 - (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
+- (BOOL)handleLeadingLinkReplacement:(NSRange)range replacementText:(NSString *)text;
 @end
 
 @interface MentionStyle : NSObject<BaseStyleProtocol>
@@ -35,6 +36,7 @@
 - (void)handleExistingMentions;
 - (void)manageMentionEditing;
 - (void)manageMentionTypingAttributes;
+- (BOOL)handleLeadingMentionReplacement:(NSRange)range replacementText:(NSString *)text;
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location;
 - (NSValue *)getActiveMentionRange;
