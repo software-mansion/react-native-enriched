@@ -1083,6 +1083,18 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
   }
   
+  LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
+  if(linkStyle != nullptr) {
+    BOOL fixedLeadingAttributes = [linkStyle handleLeadingLinkReplacement:range replacementText:text];
+    rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
+  }
+  
+  MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyle != nullptr) {
+    BOOL fixedLeadingAttributes = [mentionStyle handleLeadingMentionReplacement:range replacementText:text];
+    rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
+  }
+
   if(rejectTextChanges) {
     [self anyTextMayHaveBeenModified];
   }

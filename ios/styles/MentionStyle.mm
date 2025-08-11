@@ -390,6 +390,21 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   }
 }
 
+// replacing whole input (that starts with a mention) with a manually typed letter improperly applies mention's attributes to all the following text
+- (BOOL)handleLeadingMentionReplacement:(NSRange)range replacementText:(NSString *)text {
+  // whole textView range gets replaced with a single letter
+  if(_editor->textView.textStorage.string.length > 0 && NSEqualRanges(range, NSMakeRange(0, _editor->textView.textStorage.string.length)) && text.length == 1) {
+    // first character detection is enough for the removal to be done
+    if([self detectStyle:NSMakeRange(0, 1)]) {
+      [self removeAttributes:NSMakeRange(0, _editor->textView.textStorage.string.length)];
+      // do the replacing manually
+      [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:nullptr editor:_editor];
+      return YES;
+    }
+  }
+  return NO;
+}
+
 // returns mention params if it exists
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location {
   NSRange mentionRange = NSMakeRange(0, 0);
