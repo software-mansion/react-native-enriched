@@ -20,7 +20,7 @@
   
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   [pasteboard setItems:@[@{
-    UTTypePlainText.identifier : plainText,
+    UTTypeUTF8PlainText.identifier : plainText,
     UTTypeHTML.identifier : escapedHtml,
     UTTypeRTF.identifier : rtfData
   }]];
@@ -58,21 +58,41 @@
         : [typedEditor->parser insertFromHtml:initiallyProcessedHtml location:currentRange.location];
     } else {
       // fall back to plain text, otherwise do nothing
-      if([pasteboardTypes containsObject:UTTypePlainText.identifier]) {
-        NSString *plainString = [pasteboard valueForPasteboardType:UTTypePlainText.identifier];
-        currentRange.length > 0
-        ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr editor:typedEditor]
-        : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr editor:typedEditor];
-      }
+      [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange editor:typedEditor];
     }
-  } else if([pasteboardTypes containsObject:UTTypePlainText.identifier]) {
-    // just plain text
-  
-    NSString *plainString = [pasteboard valueForPasteboardType:UTTypePlainText.identifier];
-    currentRange.length > 0
-    ? [TextInsertionUtils replaceText:plainString inView:typedEditor->textView at:currentRange additionalAttributes:nullptr editor:typedEditor]
-    : [TextInsertionUtils insertText:plainString inView:typedEditor->textView at:currentRange.location additionalAttributes:nullptr editor:typedEditor];
+  } else {
+    [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange editor:typedEditor];
   }
+  
+  [typedEditor anyTextMayHaveBeenModified];
+}
+
+- (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard range:(NSRange)range editor:(ReactNativeRichTextEditorView *)editor {
+  NSArray *existingTypes = pasteboard.pasteboardTypes;
+  NSArray *handledTypes = @[UTTypeUTF8PlainText.identifier, UTTypePlainText.identifier];
+  NSString *plainText;
+  
+  for(NSString *type in handledTypes) {
+    if(![existingTypes containsObject:type]) {
+      continue;
+    }
+    
+    id value = [pasteboard valueForPasteboardType:type];
+    
+    if([value isKindOfClass:[NSData class]]) {
+      plainText = [[NSString alloc]initWithData:value encoding:NSUTF8StringEncoding];
+    } else if([value isKindOfClass:[NSString class]]) {
+      plainText = (NSString *)value;
+    }
+  }
+  
+  if(!plainText) {
+    return;
+  }
+  
+  range.length > 0
+    ? [TextInsertionUtils replaceText:plainText inView:editor->textView at:range additionalAttributes:nullptr editor:editor]
+    : [TextInsertionUtils insertText:plainText inView:editor->textView at:range.location additionalAttributes:nullptr editor:editor];
 }
 
 - (void)cut:(id)sender {
@@ -81,6 +101,8 @@
   
   [self copy:sender];
   [TextInsertionUtils replaceText:@"" inView:typedEditor->textView at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor];
+  
+  [typedEditor anyTextMayHaveBeenModified];
 }
 
 @end
