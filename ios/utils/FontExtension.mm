@@ -67,10 +67,6 @@
   }
 }
 
-- (BOOL)isMonospace:(EditorConfig *)withConfig {
-  return self.familyName == withConfig.monospacedFont.familyName;
-}
-
 - (UIFont *)withFontTraits:(UIFont *)from {
   UIFont* newFont = self;
   if([from isBold]) {
