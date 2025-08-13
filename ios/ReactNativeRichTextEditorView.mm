@@ -368,11 +368,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
     defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
-    // emoji cutoff fix: apple returns wrong estimates when calculating height of a text with emojis
-    // statically setting lineHeightMultiple to 110% appears to fix the issue without causing other problems
-    NSMutableParagraphStyle *pStyle = [[NSMutableParagraphStyle alloc] init];
-    pStyle.lineHeightMultiple = 1.1;
-    defaultTypingAttributes[NSParagraphStyleAttributeName] = pStyle;
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
     
     // update the placeholder as well
@@ -519,20 +515,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       ];
     }
   }
-
-  CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)currentStr);
   
-  const CGSize &suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
-    framesetter,
-    CFRangeMake(0, currentStr.length),
-    nullptr,
-    CGSizeMake(maxWidth, DBL_MAX),
-    nullptr
-  );
+  CGRect boundingBox = [currentStr boundingRectWithSize:
+    CGSizeMake(maxWidth, CGFLOAT_MAX)
+    options: NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+    context: nullptr
+  ];
   
-  CFRelease(framesetter);
-  
-  return CGSizeMake(maxWidth, suggestedSize.height);
+  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
 }
 
 // make sure the newest state is kept in _state property
