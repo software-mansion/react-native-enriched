@@ -9,7 +9,6 @@
 - (BOOL)isItalic;
 - (UIFont *)setItalic;
 - (UIFont *)removeItalic;
-- (BOOL)isMonospace:(EditorConfig *)withConfig;
 - (UIFont *)withFontTraits:(UIFont *)from;
 - (UIFont *)setSize:(CGFloat)size;
 @end

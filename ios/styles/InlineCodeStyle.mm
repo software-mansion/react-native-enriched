@@ -104,17 +104,19 @@
     if([[NSCharacterSet newlineCharacterSet] characterIsMember:[_editor->textView.textStorage.string characterAtIndex:i]]) {
       NSRange mockRange = NSMakeRange(0, 0);
       // can't use detect style because it intentionally doesn't take newlines into consideration
-      UIFont *font = [_editor->textView.textStorage attribute:NSFontAttributeName atIndex:i effectiveRange:&mockRange];
-      if([self styleCondition:font :NSMakeRange(i, 1)]) {
+      UIColor *bgColor = [_editor->textView.textStorage attribute:NSBackgroundColorAttributeName atIndex:i effectiveRange:&mockRange];
+      if([self styleCondition:bgColor :NSMakeRange(i, 1)]) {
         [self removeAttributes:NSMakeRange(i, 1)];
       }
     }
   }
 }
 
+// emojis don't retain monospace font attribute so we check for the background color if there is no mention
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
-  UIFont *font = (UIFont *)value;
-  return font != nullptr && [font isMonospace:_editor->config];
+  UIColor *bgColor = (UIColor *)value;
+  MentionStyle *mStyle = _editor->stylesDict[@([MentionStyle getStyleType])];
+  return bgColor != nullptr && mStyle != nullptr && ![mStyle detectStyle:range];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -128,7 +130,7 @@
     BOOL detected = YES;
     for(NSValue *value in nonNewlineRanges) {
       NSRange currentRange = [value rangeValue];
-      BOOL currentDetected = [OccurenceUtils detect:NSFontAttributeName withEditor:_editor inRange:currentRange
+      BOOL currentDetected = [OccurenceUtils detect:NSBackgroundColorAttributeName withEditor:_editor inRange:currentRange
         withCondition: ^BOOL(id  _Nullable value, NSRange range) {
           return [self styleCondition:value :range];
         }
@@ -138,16 +140,13 @@
   
     return detected;
   } else {
-    UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
-    if(currentFontAttr == nullptr) {
-      return false;
-    }
-    return [currentFontAttr isMonospace:_editor->config];
+    UIColor *currentBgColorAttr = (UIColor *)_editor->textView.typingAttributes[NSBackgroundColorAttributeName];
+    return [self styleCondition:currentBgColorAttr :range];
   }
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:NSFontAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils any:NSBackgroundColorAttributeName withEditor:_editor inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -155,7 +154,7 @@
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:NSFontAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils all:NSBackgroundColorAttributeName withEditor:_editor inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }

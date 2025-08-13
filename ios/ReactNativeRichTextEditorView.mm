@@ -515,18 +515,14 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       ];
     }
   }
-
-  CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)currentStr);
   
-  const CGSize &suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
-    framesetter,
-    CFRangeMake(0, currentStr.length),
-    nullptr,
-    CGSizeMake(maxWidth, DBL_MAX),
-    nullptr
-  );
+  CGRect boundingBox = [currentStr boundingRectWithSize:
+    CGSizeMake(maxWidth, CGFLOAT_MAX)
+    options: NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+    context: nullptr
+  ];
   
-  return CGSizeMake(maxWidth, suggestedSize.height);
+  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
 }
 
 // make sure the newest state is kept in _state property
