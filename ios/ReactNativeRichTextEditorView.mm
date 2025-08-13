@@ -368,7 +368,11 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
     defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
+    // emoji cutoff fix: apple returns wrong estimates when calculating height of a text with emojis
+    // statically setting lineHeightMultiple to 110% appears to fix the issue without causing other problems
+    NSMutableParagraphStyle *pStyle = [[NSMutableParagraphStyle alloc] init];
+    pStyle.lineHeightMultiple = 1.1;
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = pStyle;
     textView.typingAttributes = defaultTypingAttributes;
     
     // update the placeholder as well
@@ -525,6 +529,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     CGSizeMake(maxWidth, DBL_MAX),
     nullptr
   );
+  
+  CFRelease(framesetter);
   
   return CGSizeMake(maxWidth, suggestedSize.height);
 }
