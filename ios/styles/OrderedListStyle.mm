@@ -48,9 +48,13 @@
     // take previous offsets into consideration
     NSRange fixedRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
     
-    if(fixedRange.length == 0) {
+    // length 0 with first line, length 1 and newline with some empty lines in the middle
+    if(fixedRange.length == 0 ||
+      (fixedRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:fixedRange.location]])
+    ) {
       [TextInsertionUtils insertText:@" " inView:_editor->textView at:fixedRange.location additionalAttributes:nullptr editor:_editor];
-      fixedRange = NSMakeRange(fixedRange.location, 1);
+      fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
       offset += 1;
     }
     

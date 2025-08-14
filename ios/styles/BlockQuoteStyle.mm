@@ -43,9 +43,13 @@
   for(NSValue *value in paragraphs) {
     NSRange pRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
     
-    if(pRange.length == 0) {
+    // length 0 with first line, length 1 and newline with some empty lines in the middle
+    if(pRange.length == 0 ||
+      (pRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:pRange.location]])
+    ) {
       [TextInsertionUtils insertText:@" " inView:_editor->textView at:pRange.location additionalAttributes:nullptr editor:_editor];
-      pRange = NSMakeRange(pRange.location, 1);
+      pRange = NSMakeRange(pRange.location, pRange.length + 1);
       offset += 1;
     }
     
