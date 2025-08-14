@@ -962,16 +962,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
       [self setPlaceholderLabelShown:YES];
     }
     
-    // list item all characters removal fix
-    UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
-    if(uStyle != nullptr) {
-      [uStyle handleListItemWithChangeRange:recentlyChangedRange];
-    }
-    OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
-    if(oStyle != nullptr) {
-      [oStyle handleListItemWithChangeRange:recentlyChangedRange];
-    }
-    
     // inline code on newlines fix
     InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
     if(codeStyle != nullptr) {
@@ -1077,6 +1067,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     
     // any of these changes make us reject text changes
     rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
+  }
+  
+  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
+  if(bqStyle != nullptr) {
+    BOOL removedFirstLineQuote = [bqStyle handleBackspaceInRange:range replacementText:text];
+    rejectTextChanges = rejectTextChanges || removedFirstLineQuote;
   }
   
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];

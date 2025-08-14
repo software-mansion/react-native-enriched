@@ -33,9 +33,22 @@
 
 - (void)addAttributes:(NSRange)range {
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:range];
+  // if we fill empty lines with spaces, we need to offset later ranges
+  NSInteger offset = 0;
+  NSRange preModificationRange = _editor->textView.selectedRange;
+  
+  // to not emit any space filling selection/text changes
+  _editor->blockEmitting = YES;
   
   for(NSValue *value in paragraphs) {
-    NSRange pRange = [value rangeValue];
+    NSRange pRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
+    
+    if(pRange.length == 0) {
+      [TextInsertionUtils insertText:@" " inView:_editor->textView at:pRange.location additionalAttributes:nullptr editor:_editor];
+      pRange = NSMakeRange(pRange.location, 1);
+      offset += 1;
+    }
+    
     [_editor->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
@@ -44,6 +57,17 @@
         [_editor->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
+  }
+  
+  // back to emitting
+  _editor->blockEmitting = NO;
+  
+  if(preModificationRange.length == 0) {
+    // fix selection if only one line was possibly made a list and filled with a space
+    _editor->textView.selectedRange = preModificationRange;
+  } else {
+    // in other cases, fix the selection with newly made offsets
+    _editor->textView.selectedRange = NSMakeRange(preModificationRange.location, preModificationRange.length + offset);
   }
   
   // also add typing attributes
@@ -93,6 +117,25 @@
 // needed for the sake of style conflicts, needs to do exactly the same as removeAttribtues
 - (void)removeTypingAttributes {
   [self removeAttributes:_editor->textView.selectedRange];
+}
+
+// removing first quote line by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
+// so we try guessing that a point should be deleted here
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text {
+  if([self detectStyle:_editor->textView.selectedRange] &&
+     NSEqualRanges(_editor->textView.selectedRange, NSMakeRange(0, 0)) &&
+     [text isEqualToString:@""]
+  ) {
+    NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:_editor->textView.selectedRange];
+    [self removeAttributes:paragraphRange];
+    
+    // if there is only a space left we should also remove it as it's our placeholder for empty quotes
+    if([[_editor->textView.textStorage.string substringWithRange:paragraphRange] isEqualToString:@" "]) {
+      [TextInsertionUtils replaceText:@"" inView:_editor->textView at:paragraphRange additionalAttributes:nullptr editor:_editor];
+      return YES;
+    }
+  }
+  return NO;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
