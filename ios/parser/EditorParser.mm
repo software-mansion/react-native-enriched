@@ -344,8 +344,6 @@
   
   // re-apply the styles
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:0];
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
@@ -357,7 +355,6 @@
   [TextInsertionUtils replaceText:plainText inView:_editor->textView at:range additionalAttributes:nil editor:_editor];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)insertFromHtml:(NSString * _Nonnull)html location:(NSInteger)location {
@@ -369,7 +366,6 @@
   [TextInsertionUtils insertText:plainText inView:_editor->textView at:location additionalAttributes:nil editor:_editor];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles offsetFromBeginning:(NSInteger)offset {
@@ -397,6 +393,7 @@
       }
     }
   }
+  [_editor anyTextMayHaveBeenModified];
 }
 
 - (NSString * _Nullable)initiallyProcessHtml:(NSString * _Nonnull)html {

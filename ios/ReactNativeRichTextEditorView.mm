@@ -815,8 +815,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
     [styleClass applyStyle:textView.selectedRange];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -827,8 +826,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
     [styleClass applyStyle:paragraphRange];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -840,8 +838,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
     [linkStyleClass addLink:text url:url range:linkRange manual:YES];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -852,8 +849,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -863,8 +859,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass startMentionWithIndicator:indicator];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -1071,18 +1066,21 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
   if(bqStyle != nullptr) {
+    // removing first line quote fix
     BOOL removedFirstLineQuote = [bqStyle handleBackspaceInRange:range replacementText:text];
     rejectTextChanges = rejectTextChanges || removedFirstLineQuote;
   }
   
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
   if(linkStyle != nullptr) {
+    // persisting link attributes fix
     BOOL fixedLeadingAttributes = [linkStyle handleLeadingLinkReplacement:range replacementText:text];
     rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
   }
   
   MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyle != nullptr) {
+    // persisting mention attributes fix
     BOOL fixedLeadingAttributes = [mentionStyle handleLeadingMentionReplacement:range replacementText:text];
     rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
   }

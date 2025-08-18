@@ -88,9 +88,6 @@
   pStyle.firstLineHeadIndent = [self getHeadIndent];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-    
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // does pretty much the same as normal addAttributes, just need to get the range
@@ -126,9 +123,6 @@
   pStyle.firstLineHeadIndent = 0;
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-    
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // needed for the sake of style conflicts, needs to do exactly the same as removeAttribtues

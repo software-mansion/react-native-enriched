@@ -174,9 +174,6 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   
   // unlock editing
   _blockMentionEditing = NO;
-  
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params {
@@ -237,9 +234,6 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   
   [_editor->textView reactFocus];
   _editor->textView.selectedRange = newSelect;
-  
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // handles removing no longer valid mentions
