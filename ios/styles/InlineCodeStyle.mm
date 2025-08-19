@@ -3,7 +3,6 @@
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
 #import "ParagraphsUtils.h"
-#import "TextInsertionUtils.h"
 
 @implementation InlineCodeStyle {
   ReactNativeRichTextEditorView *_editor;

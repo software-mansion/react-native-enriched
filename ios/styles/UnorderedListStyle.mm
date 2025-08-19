@@ -36,7 +36,7 @@
 - (void)addAttributes:(NSRange)range {
   NSTextList *bullet = [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDisc options:0];
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:range];
-  // if we fill empty lines with spaces, we need to offset later ranges
+  // if we fill empty lines with zero width spaces, we need to offset later ranges
   NSInteger offset = 0;
   // needed for range adjustments
   NSRange preModificationRange = _editor->textView.selectedRange;
@@ -53,7 +53,7 @@
       (fixedRange.length == 1 &&
       [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:fixedRange.location]])
     ) {
-      [TextInsertionUtils insertText:@" " inView:_editor->textView at:fixedRange.location additionalAttributes:nullptr editor:_editor];
+      [TextInsertionUtils insertText:@"\u200B" at:fixedRange.location additionalAttributes:nullptr editor:_editor];
       fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
       offset += 1;
     }
@@ -139,12 +139,7 @@
   ) {
     NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:_editor->textView.selectedRange];
     [self removeAttributes:paragraphRange];
-    
-    // if there is only a space left we should also remove it as it's apple's placholder for empty lists
-    if([[_editor->textView.textStorage.string substringWithRange:paragraphRange] isEqualToString:@" "]) {
-      [TextInsertionUtils replaceText:@"" inView:_editor->textView at:paragraphRange additionalAttributes:nullptr editor:_editor];
-      return YES;
-    }
+    return YES;
   }
   return NO;
 }
@@ -164,7 +159,7 @@
         }
         
         // remove the dash
-        [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor];
+        [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor];
         
         if(prevEmitHtml) {
           _editor->emitHtml = YES;

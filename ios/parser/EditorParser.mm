@@ -260,6 +260,9 @@
   
   [result appendString: @"\n</html>"];
   
+  // remove zero width spaces in the very end
+  NSRange resultRange = NSMakeRange(0, result.length);
+  [result replaceOccurrencesOfString:@"\u200B" withString:@"" options:0 range:resultRange];
   return result;
 }
 
@@ -352,7 +355,7 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // we can use ready replace util
-  [TextInsertionUtils replaceText:plainText inView:_editor->textView at:range additionalAttributes:nil editor:_editor];
+  [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nil editor:_editor];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
 }
@@ -363,7 +366,7 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // same here, insertion utils got our back
-  [TextInsertionUtils insertText:plainText inView:_editor->textView at:location additionalAttributes:nil editor:_editor];
+  [TextInsertionUtils insertText:plainText at:location additionalAttributes:nil editor:_editor];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
 }

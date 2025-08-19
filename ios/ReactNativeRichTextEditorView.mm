@@ -13,6 +13,7 @@
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 #import "LayoutManagerExtension.h"
+#import "ZeroWidthSpaceUtils.h"
 
 using namespace facebook::react;
 
@@ -506,6 +507,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     ];
   }
   
+  // edge case: input with only a zero width space should still be of a height of a single line, so we add a mock "I" character
+  if([currentStr length] == 1 && [[currentStr.string substringWithRange:NSMakeRange(0, 1)] isEqualToString:@"\u200B"]) {
+    [currentStr appendAttributedString:
+       [[NSAttributedString alloc] initWithString:@"I" attributes:textView.typingAttributes]
+    ];
+  }
+  
   // edge case: trailing newlines aren't counted towards height calculations, so we add a mock "I" character
   if(currentStr.length > 0) {
     unichar lastChar = [currentStr.string characterAtIndex:currentStr.length-1];
@@ -941,28 +949,30 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(textView.markedTextRange != nullptr) {
     return;
   }
+  
+  // zero width space removal
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInEditor:self];
+  
+  // inline code on newlines fix
+  InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
+  if(codeStyle != nullptr) {
+    [codeStyle handleNewlines];
+  }
+  
+  // placholder management
+  if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
+    [self setPlaceholderLabelShown:NO];
+  } else if(textView.textStorage.string.length == 0 && _placeholderLabel.hidden) {
+    [self setPlaceholderLabelShown:YES];
+  }
+  
+  // emptying input typing attributes management
+  if(textView.textStorage.string.length == 0) {
+    // reset typing attribtues
+    textView.typingAttributes = defaultTypingAttributes;
+  }
 
-  // do all the stuff only if the text really changed
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-    // emptying input
-    if(textView.textStorage.string.length == 0) {
-      // reset typing attribtues
-      textView.typingAttributes = defaultTypingAttributes;
-    }
-    
-    // placholder management
-    if(_recentlyEmittedString.length == 0 && textView.textStorage.string.length > 0) {
-      [self setPlaceholderLabelShown:NO];
-    } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
-      [self setPlaceholderLabelShown:YES];
-    }
-    
-    // inline code on newlines fix
-    InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
-    if(codeStyle != nullptr) {
-      [codeStyle handleNewlines];
-    }
-      
     // mentions removal management
     MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
     if(mentionStyleClass != nullptr) {
@@ -983,17 +993,20 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         [self handleWordModificationBasedChanges:wordText inRange:[wordRange rangeValue]];
       }
     }
+    
+    // emit string without zero width spaces
+    NSString *stringToBeEmitted = [textView.textStorage.string stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
   
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if(emitter != nullptr) {
       emitter->onChangeText({
-        .value = [textView.textStorage.string toCppString]
+        .value = [stringToBeEmitted toCppString]
       });
     }
     
     // set the recently emitted string
-    _recentlyEmittedString = [textView.textStorage.string copy];
+    _recentlyEmittedString = stringToBeEmitted;
   }
   
   // update height on each character change
@@ -1084,6 +1097,9 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     BOOL fixedLeadingAttributes = [mentionStyle handleLeadingMentionReplacement:range replacementText:text];
     rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
   }
+  
+  // zero width space removal fix
+  rejectTextChanges = rejectTextChanges || [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text editor:self];
 
   if(rejectTextChanges) {
     [self anyTextMayHaveBeenModified];
