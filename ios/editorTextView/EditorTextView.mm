@@ -98,8 +98,8 @@
   }
   
   range.length > 0
-    ? [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nullptr editor:editor]
-    : [TextInsertionUtils insertText:plainText at:range.location additionalAttributes:nullptr editor:editor];
+    ? [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nullptr editor:editor withSelection:YES]
+    : [TextInsertionUtils insertText:plainText at:range.location additionalAttributes:nullptr editor:editor withSelection:YES];
 }
 
 - (void)cut:(id)sender {
@@ -107,7 +107,7 @@
   if(typedEditor == nullptr) { return; }
   
   [self copy:sender];
-  [TextInsertionUtils replaceText:@"" at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor];
+  [TextInsertionUtils replaceText:@"" at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor  withSelection:YES];
   
   [typedEditor anyTextMayHaveBeenModified];
 }

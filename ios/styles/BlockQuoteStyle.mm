@@ -48,7 +48,7 @@
       (pRange.length == 1 &&
       [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:pRange.location]])
     ) {
-      [TextInsertionUtils insertText:@"\u200B" at:pRange.location additionalAttributes:nullptr editor:_editor];
+      [TextInsertionUtils insertText:@"\u200B" at:pRange.location additionalAttributes:nullptr editor:_editor withSelection:NO];
       pRange = NSMakeRange(pRange.location, pRange.length + 1);
       offset += 1;
     }

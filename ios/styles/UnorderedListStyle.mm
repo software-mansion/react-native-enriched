@@ -53,7 +53,7 @@
       (fixedRange.length == 1 &&
       [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:fixedRange.location]])
     ) {
-      [TextInsertionUtils insertText:@"\u200B" at:fixedRange.location additionalAttributes:nullptr editor:_editor];
+      [TextInsertionUtils insertText:@"\u200B" at:fixedRange.location additionalAttributes:nullptr editor:_editor withSelection:NO];
       fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
       offset += 1;
     }
@@ -159,7 +159,7 @@
         }
         
         // remove the dash
-        [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor];
+        [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor withSelection:YES];
         
         if(prevEmitHtml) {
           _editor->emitHtml = YES;

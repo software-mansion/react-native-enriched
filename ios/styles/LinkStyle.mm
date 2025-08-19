@@ -140,7 +140,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   if(range.length == 0) {
     // insert link
-    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs editor:_editor];
+    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs editor:_editor withSelection:YES];
   } else if([currentText isEqualToString:text]) {
     // apply link attributes
     [_editor->textView.textStorage addAttributes:newAttrs range:range];
@@ -152,7 +152,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   } else {
     // replace text with link
-    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs editor:_editor];
+    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs editor:_editor withSelection:YES];
   }
   
   // mandatory connected links check
@@ -412,7 +412,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     if([self detectStyle:NSMakeRange(0, 1)]) {
       [self removeAttributes:NSMakeRange(0, _editor->textView.textStorage.string.length)];
       // do the replacing manually
-      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr editor:_editor];
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr editor:_editor withSelection:YES];
       return YES;
     }
   }

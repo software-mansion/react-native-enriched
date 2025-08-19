@@ -995,7 +995,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     }
     
     // emit string without zero width spaces
-    NSString *stringToBeEmitted = [textView.textStorage.string stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
+    NSString *stringToBeEmitted = [[textView.textStorage.string stringByReplacingOccurrencesOfString:@"\u200B" withString:@""] copy];
   
     // emit onChangeText event
     auto emitter = [self getEventEmitter];

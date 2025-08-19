@@ -2,6 +2,7 @@
 #import "ReactNativeRichTextEditorView.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
+#import "UIView+React.h"
 
 @implementation ZeroWidthSpaceUtils
 + (void)handleZeroWidthSpacesInEditor:(id)editor {
@@ -13,6 +14,9 @@
 }
 
 + (void)removeSpacesIfNeededInEditor:(ReactNativeRichTextEditorView *)editor {
+  NSMutableArray *indexesToBeRemoved = [[NSMutableArray alloc] init];
+  NSRange preRemoveSelection = editor->textView.selectedRange;
+
   for(int i = 0; i < editor->textView.textStorage.string.length; i++) {
     unichar character = [editor->textView.textStorage.string characterAtIndex:i];
     if(character == 0x200B) {
@@ -31,8 +35,8 @@
       }
       
       if(removeSpace) {
-        [TextInsertionUtils replaceText:@"" at:characterRange additionalAttributes:nullptr editor:editor];
-        return;
+        [indexesToBeRemoved addObject:@(characterRange.location)];
+        continue;
       }
       
       UnorderedListStyle *ulStyle = editor->stylesDict[@([UnorderedListStyle getStyleType])];
@@ -41,10 +45,26 @@
       
       // zero width spaces with no lists/blockquote styles on them get removed
       if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange]) {
-        [TextInsertionUtils replaceText:@"" at:characterRange additionalAttributes:nullptr editor:editor];
+        [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
   }
+  
+  // do the removing
+  NSInteger offset = 0;
+  NSInteger postRemoveOffset = 0;
+  for(NSNumber *index in indexesToBeRemoved) {
+    NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
+    [TextInsertionUtils replaceText:@"" at:replaceRange additionalAttributes:nullptr editor:editor withSelection:NO];
+    offset -= 1;
+    if([index integerValue] < preRemoveSelection.location) {
+      postRemoveOffset -= 1;
+    }
+  }
+  
+  // fix the selection
+  [editor->textView reactFocus];
+  editor->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveOffset, preRemoveSelection.length);
 }
 
 + (void)addSpacesIfNeededInEditor:(ReactNativeRichTextEditorView *)editor {
@@ -52,6 +72,7 @@
   OrderedListStyle *olStyle = editor->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = editor->stylesDict[@([BlockQuoteStyle getStyleType])];
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
+  NSRange preAddSelection = editor->textView.selectedRange;
   
   for(int i = 0; i < editor->textView.textStorage.string.length; i++) {
     unichar character = [editor->textView.textStorage.string characterAtIndex:i];
@@ -71,18 +92,26 @@
   
   // do the replacing
   NSInteger offset = 0;
+  NSInteger postAddOffset = 0;
   for(NSNumber *index in indexesToBeInserted) {
     NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
-    [TextInsertionUtils replaceText:@"\u200B\n" at:replaceRange additionalAttributes:nullptr editor:editor];
+    [TextInsertionUtils replaceText:@"\u200B\n" at:replaceRange additionalAttributes:nullptr editor:editor withSelection:NO];
     offset += 1;
+    if([index integerValue] < preAddSelection.location) {
+      postAddOffset += 1;
+    }
   }
   
   // additional check for last index of the input
   NSRange lastRange = NSMakeRange(editor->textView.textStorage.string.length, 0);
   NSRange lastParagraphRange = [editor->textView.textStorage.string paragraphRangeForRange:lastRange];
   if(lastParagraphRange.length == 0 && ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] || [bqStyle detectStyle:lastRange])) {
-    [TextInsertionUtils insertText:@"\u200B" at:lastRange.location additionalAttributes:nullptr editor:editor];
+    [TextInsertionUtils insertText:@"\u200B" at:lastRange.location additionalAttributes:nullptr editor:editor withSelection:NO];
   }
+  
+  // fix the selection
+  [editor->textView reactFocus];
+  editor->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddOffset, preAddSelection.length);
 }
 
 + (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text editor:(id)editor {
@@ -101,12 +130,13 @@
     NSRange styleRemovalRange = NSMakeRange(paragraphRange.location, 0);
     
     if([[NSCharacterSet newlineCharacterSet] characterIsMember:[typedEditor->textView.textStorage.string characterAtIndex:NSMaxRange(paragraphRange) - 1]]) {
+      // if endline is there, don't remove it
       removalRange = NSMakeRange(paragraphRange.location, paragraphRange.length - 1);
       // if endline is left then 1 length for style removal
       styleRemovalRange = NSMakeRange(paragraphRange.location, 1);
     }
     
-    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr editor:typedEditor];
+    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr editor:typedEditor withSelection:YES];
     
     // and then remove associated styling
     
