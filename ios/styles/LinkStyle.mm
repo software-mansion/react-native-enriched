@@ -167,6 +167,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   [self manageLinkTypingAttributes];
+  [_editor anyTextMayHaveBeenModified];
 }
 
 // get exact link data at the given location if it exists
