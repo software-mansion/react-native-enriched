@@ -60,14 +60,13 @@
 @interface UnorderedListStyle : NSObject<BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)handleListItemWithChangeRange:(NSRange)range;
 @end
 
 @interface OrderedListStyle : NSObject<BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)handleListItemWithChangeRange:(NSRange)range;
 @end
 
 @interface BlockQuoteStyle : NSObject<BaseStyleProtocol>
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end

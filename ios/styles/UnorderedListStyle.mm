@@ -36,7 +36,7 @@
 - (void)addAttributes:(NSRange)range {
   NSTextList *bullet = [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDisc options:0];
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:range];
-  // if we fill empty lines with spaces, we need to offset later ranges
+  // if we fill empty lines with zero width spaces, we need to offset later ranges
   NSInteger offset = 0;
   // needed for range adjustments
   NSRange preModificationRange = _editor->textView.selectedRange;
@@ -48,9 +48,13 @@
     // take previous offsets into consideration
     NSRange fixedRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
     
-    if(fixedRange.length == 0) {
-      [TextInsertionUtils insertText:@" " inView:_editor->textView at:fixedRange.location additionalAttributes:nullptr editor:_editor];
-      fixedRange = NSMakeRange(fixedRange.location, 1);
+    // length 0 with first line, length 1 and newline with some empty lines in the middle
+    if(fixedRange.length == 0 ||
+      (fixedRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:fixedRange.location]])
+    ) {
+      [TextInsertionUtils insertText:@"\u200B" at:fixedRange.location additionalAttributes:nullptr editor:_editor withSelection:NO];
+      fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
       offset += 1;
     }
     
@@ -84,9 +88,6 @@
   pStyle.firstLineHeadIndent = [self getHeadIndent];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-    
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // does pretty much the same as normal addAttributes, just need to get the range
@@ -122,9 +123,6 @@
   pStyle.firstLineHeadIndent = 0;
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-    
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // needed for the sake of style conflicts, needs to do exactly the same as removeAttribtues
@@ -141,12 +139,7 @@
   ) {
     NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:_editor->textView.selectedRange];
     [self removeAttributes:paragraphRange];
-    
-    // if there is only a space left we should also remove it as it's apple's placholder for empty lists
-    if([[_editor->textView.textStorage.string substringWithRange:paragraphRange] isEqualToString:@" "]) {
-      [TextInsertionUtils replaceText:@"" inView:_editor->textView at:paragraphRange additionalAttributes:nullptr editor:_editor];
-      return YES;
-    }
+    return YES;
   }
   return NO;
 }
@@ -166,7 +159,7 @@
         }
         
         // remove the dash
-        [TextInsertionUtils replaceText:@"" inView:_editor->textView at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor];
+        [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr editor:_editor withSelection:YES];
         
         if(prevEmitHtml) {
           _editor->emitHtml = YES;
@@ -179,20 +172,6 @@
     }
   }
   return NO;
-}
-
-- (void)handleListItemWithChangeRange:(NSRange)range {
-  if(range.location >= _editor->textView.textStorage.string.length) {
-    if(range.location == 0) {
-      range = NSMakeRange(0, 0);
-    } else {
-      range = NSMakeRange(_editor->textView.textStorage.string.length - 1, 1);
-    }
-  }
-  NSRange changedParagraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:range];
-  if(changedParagraphRange.length == 0 && [self detectStyle:changedParagraphRange]) {
-    [self removeAttributes:changedParagraphRange];
-  }
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {

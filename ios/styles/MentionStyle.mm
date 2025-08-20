@@ -164,7 +164,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   // add a single space after the mention
   NSString *newText = [NSString stringWithFormat:@"%@ ", text];
   NSRange rangeToBeReplaced = [_activeMentionRange rangeValue];
-  [TextInsertionUtils replaceText:newText inView: _editor->textView at:rangeToBeReplaced additionalAttributes:nullptr editor:_editor];
+  [TextInsertionUtils replaceText:newText at:rangeToBeReplaced additionalAttributes:nullptr editor:_editor withSelection:YES];
   
   // THEN, add the attributes to not apply them on the space
   [_editor->textView.textStorage addAttributes:newAttrs range:NSMakeRange(rangeToBeReplaced.location, text.length)];
@@ -174,9 +174,6 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   
   // unlock editing
   _blockMentionEditing = NO;
-  
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params {
@@ -230,16 +227,13 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   NSRange newSelect = NSMakeRange(currentRange.location + finalString.length + (addSpaceAfter ? -1 : 0), 0);
   
   if(currentRange.length == 0) {
-    [TextInsertionUtils insertText:finalString inView:_editor->textView at:currentRange.location additionalAttributes:nullptr editor:_editor];
+    [TextInsertionUtils insertText:finalString at:currentRange.location additionalAttributes:nullptr editor:_editor withSelection:NO];
   } else {
-    [TextInsertionUtils replaceText:finalString inView:_editor->textView at:currentRange additionalAttributes:nullptr editor:_editor];
+    [TextInsertionUtils replaceText:finalString at:currentRange additionalAttributes:nullptr editor:_editor withSelection:NO];
   }
   
   [_editor->textView reactFocus];
   _editor->textView.selectedRange = newSelect;
-  
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // handles removing no longer valid mentions
@@ -398,7 +392,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     if([self detectStyle:NSMakeRange(0, 1)]) {
       [self removeAttributes:NSMakeRange(0, _editor->textView.textStorage.string.length)];
       // do the replacing manually
-      [TextInsertionUtils replaceText:text inView:_editor->textView at:range additionalAttributes:nullptr editor:_editor];
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr editor:_editor withSelection:YES];
       return YES;
     }
   }

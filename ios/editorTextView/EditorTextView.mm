@@ -10,9 +10,16 @@
   ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
   if(typedEditor == nullptr) { return; }
   
+  // remove zero width spaces before copying the text
   NSString *plainText = [typedEditor->textView.textStorage.string substringWithRange:typedEditor->textView.selectedRange];
+  NSString *fixedPlainText = [plainText stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
+  
   NSString *escapedHtml = [NSString stringByEscapingHtml:[typedEditor->parser parseToHtmlFromRange:typedEditor->textView.selectedRange]];
-  NSAttributedString *attrStr = [typedEditor->textView.textStorage attributedSubstringFromRange:typedEditor->textView.selectedRange];
+  
+  NSMutableAttributedString *attrStr = [[typedEditor->textView.textStorage attributedSubstringFromRange:typedEditor->textView.selectedRange] mutableCopy];
+  NSRange fullAttrStrRange = NSMakeRange(0, attrStr.length);
+  [attrStr.mutableString replaceOccurrencesOfString:@"\u200B" withString:@"" options:0 range:fullAttrStrRange];
+  
   NSData *rtfData = [attrStr dataFromRange:NSMakeRange(0, attrStr.length)
     documentAttributes:@{NSDocumentTypeDocumentAttribute:NSRTFTextDocumentType}
     error:nullptr
@@ -20,7 +27,7 @@
   
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   [pasteboard setItems:@[@{
-    UTTypeUTF8PlainText.identifier : plainText,
+    UTTypeUTF8PlainText.identifier : fixedPlainText,
     UTTypeHTML.identifier : escapedHtml,
     UTTypeRTF.identifier : rtfData
   }]];
@@ -91,8 +98,8 @@
   }
   
   range.length > 0
-    ? [TextInsertionUtils replaceText:plainText inView:editor->textView at:range additionalAttributes:nullptr editor:editor]
-    : [TextInsertionUtils insertText:plainText inView:editor->textView at:range.location additionalAttributes:nullptr editor:editor];
+    ? [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nullptr editor:editor withSelection:YES]
+    : [TextInsertionUtils insertText:plainText at:range.location additionalAttributes:nullptr editor:editor withSelection:YES];
 }
 
 - (void)cut:(id)sender {
@@ -100,7 +107,7 @@
   if(typedEditor == nullptr) { return; }
   
   [self copy:sender];
-  [TextInsertionUtils replaceText:@"" inView:typedEditor->textView at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor];
+  [TextInsertionUtils replaceText:@"" at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor  withSelection:YES];
   
   [typedEditor anyTextMayHaveBeenModified];
 }

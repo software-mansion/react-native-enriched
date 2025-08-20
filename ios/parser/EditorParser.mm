@@ -260,6 +260,9 @@
   
   [result appendString: @"\n</html>"];
   
+  // remove zero width spaces in the very end
+  NSRange resultRange = NSMakeRange(0, result.length);
+  [result replaceOccurrencesOfString:@"\u200B" withString:@"" options:0 range:resultRange];
   return result;
 }
 
@@ -344,8 +347,6 @@
   
   // re-apply the styles
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:0];
-  // run the editor changes callback
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
@@ -354,10 +355,9 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // we can use ready replace util
-  [TextInsertionUtils replaceText:plainText inView:_editor->textView at:range additionalAttributes:nil editor:_editor];
+  [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nil editor:_editor withSelection:YES];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)insertFromHtml:(NSString * _Nonnull)html location:(NSInteger)location {
@@ -366,10 +366,9 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // same here, insertion utils got our back
-  [TextInsertionUtils insertText:plainText inView:_editor->textView at:location additionalAttributes:nil editor:_editor];
+  [TextInsertionUtils insertText:plainText at:location additionalAttributes:nil editor:_editor withSelection:YES];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
-  [_editor anyTextMayHaveBeenModified];
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles offsetFromBeginning:(NSInteger)offset {
@@ -397,6 +396,7 @@
       }
     }
   }
+  [_editor anyTextMayHaveBeenModified];
 }
 
 - (NSString * _Nullable)initiallyProcessHtml:(NSString * _Nonnull)html {

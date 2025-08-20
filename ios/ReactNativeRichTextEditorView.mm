@@ -13,6 +13,7 @@
 #import "StyleHeaders.h"
 #import "WordsUtils.h"
 #import "LayoutManagerExtension.h"
+#import "ZeroWidthSpaceUtils.h"
 
 using namespace facebook::react;
 
@@ -506,6 +507,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     ];
   }
   
+  // edge case: input with only a zero width space should still be of a height of a single line, so we add a mock "I" character
+  if([currentStr length] == 1 && [[currentStr.string substringWithRange:NSMakeRange(0, 1)] isEqualToString:@"\u200B"]) {
+    [currentStr appendAttributedString:
+       [[NSAttributedString alloc] initWithString:@"I" attributes:textView.typingAttributes]
+    ];
+  }
+  
   // edge case: trailing newlines aren't counted towards height calculations, so we add a mock "I" character
   if(currentStr.length > 0) {
     unichar lastChar = [currentStr.string characterAtIndex:currentStr.length-1];
@@ -815,8 +823,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
     [styleClass applyStyle:textView.selectedRange];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -827,8 +834,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
     [styleClass applyStyle:paragraphRange];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -840,8 +846,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
     [linkStyleClass addLink:text url:url range:linkRange manual:YES];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -852,8 +857,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -863,8 +867,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass startMentionWithIndicator:indicator];
-    [self tryUpdatingHeight];
-    [self tryUpdatingActiveStyles];
+    [self anyTextMayHaveBeenModified];
   }
 }
 
@@ -946,38 +949,30 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(textView.markedTextRange != nullptr) {
     return;
   }
+  
+  // zero width space removal
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInEditor:self];
+  
+  // inline code on newlines fix
+  InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
+  if(codeStyle != nullptr) {
+    [codeStyle handleNewlines];
+  }
+  
+  // placholder management
+  if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
+    [self setPlaceholderLabelShown:NO];
+  } else if(textView.textStorage.string.length == 0 && _placeholderLabel.hidden) {
+    [self setPlaceholderLabelShown:YES];
+  }
+  
+  // emptying input typing attributes management
+  if(textView.textStorage.string.length == 0) {
+    // reset typing attribtues
+    textView.typingAttributes = defaultTypingAttributes;
+  }
 
-  // do all the stuff only if the text really changed
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-    // emptying input
-    if(textView.textStorage.string.length == 0) {
-      // reset typing attribtues
-      textView.typingAttributes = defaultTypingAttributes;
-    }
-    
-    // placholder management
-    if(_recentlyEmittedString.length == 0 && textView.textStorage.string.length > 0) {
-      [self setPlaceholderLabelShown:NO];
-    } else if(_recentlyEmittedString.length > 0 && textView.textStorage.string.length == 0) {
-      [self setPlaceholderLabelShown:YES];
-    }
-    
-    // list item all characters removal fix
-    UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
-    if(uStyle != nullptr) {
-      [uStyle handleListItemWithChangeRange:recentlyChangedRange];
-    }
-    OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
-    if(oStyle != nullptr) {
-      [oStyle handleListItemWithChangeRange:recentlyChangedRange];
-    }
-    
-    // inline code on newlines fix
-    InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
-    if(codeStyle != nullptr) {
-      [codeStyle handleNewlines];
-    }
-      
     // mentions removal management
     MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
     if(mentionStyleClass != nullptr) {
@@ -998,17 +993,20 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
         [self handleWordModificationBasedChanges:wordText inRange:[wordRange rangeValue]];
       }
     }
+    
+    // emit string without zero width spaces
+    NSString *stringToBeEmitted = [[textView.textStorage.string stringByReplacingOccurrencesOfString:@"\u200B" withString:@""] copy];
   
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if(emitter != nullptr) {
       emitter->onChangeText({
-        .value = [textView.textStorage.string toCppString]
+        .value = [stringToBeEmitted toCppString]
       });
     }
     
     // set the recently emitted string
-    _recentlyEmittedString = [textView.textStorage.string copy];
+    _recentlyEmittedString = stringToBeEmitted;
   }
   
   // update height on each character change
@@ -1079,17 +1077,29 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
   }
   
+  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
+  if(bqStyle != nullptr) {
+    // removing first line quote fix
+    BOOL removedFirstLineQuote = [bqStyle handleBackspaceInRange:range replacementText:text];
+    rejectTextChanges = rejectTextChanges || removedFirstLineQuote;
+  }
+  
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
   if(linkStyle != nullptr) {
+    // persisting link attributes fix
     BOOL fixedLeadingAttributes = [linkStyle handleLeadingLinkReplacement:range replacementText:text];
     rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
   }
   
   MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyle != nullptr) {
+    // persisting mention attributes fix
     BOOL fixedLeadingAttributes = [mentionStyle handleLeadingMentionReplacement:range replacementText:text];
     rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
   }
+  
+  // zero width space removal fix
+  rejectTextChanges = rejectTextChanges || [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text editor:self];
 
   if(rejectTextChanges) {
     [self anyTextMayHaveBeenModified];

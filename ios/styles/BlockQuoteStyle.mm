@@ -33,9 +33,26 @@
 
 - (void)addAttributes:(NSRange)range {
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:range];
+  // if we fill empty lines with zero width spaces, we need to offset later ranges
+  NSInteger offset = 0;
+  NSRange preModificationRange = _editor->textView.selectedRange;
+  
+  // to not emit any space filling selection/text changes
+  _editor->blockEmitting = YES;
   
   for(NSValue *value in paragraphs) {
-    NSRange pRange = [value rangeValue];
+    NSRange pRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
+    
+    // length 0 with first line, length 1 and newline with some empty lines in the middle
+    if(pRange.length == 0 ||
+      (pRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_editor->textView.textStorage.string characterAtIndex:pRange.location]])
+    ) {
+      [TextInsertionUtils insertText:@"\u200B" at:pRange.location additionalAttributes:nullptr editor:_editor withSelection:NO];
+      pRange = NSMakeRange(pRange.location, pRange.length + 1);
+      offset += 1;
+    }
+    
     [_editor->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
@@ -46,6 +63,17 @@
     ];
   }
   
+  // back to emitting
+  _editor->blockEmitting = NO;
+  
+  if(preModificationRange.length == 0) {
+    // fix selection if only one line was possibly made a list and filled with a space
+    _editor->textView.selectedRange = preModificationRange;
+  } else {
+    // in other cases, fix the selection with newly made offsets
+    _editor->textView.selectedRange = NSMakeRange(preModificationRange.location, preModificationRange.length + offset);
+  }
+  
   // also add typing attributes
   NSMutableDictionary *typingAttrs = [_editor->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
@@ -53,9 +81,6 @@
   pStyle.firstLineHeadIndent = [self getHeadIndent];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-      
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // does pretty much the same as addAttributes
@@ -85,14 +110,25 @@
   pStyle.firstLineHeadIndent = 0;
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _editor->textView.typingAttributes = typingAttrs;
-    
-  // safety check
-  [_editor anyTextMayHaveBeenModified];
 }
 
 // needed for the sake of style conflicts, needs to do exactly the same as removeAttribtues
 - (void)removeTypingAttributes {
   [self removeAttributes:_editor->textView.selectedRange];
+}
+
+// removing first quote line by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
+// so we try guessing that a point should be deleted here
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text {
+  if([self detectStyle:_editor->textView.selectedRange] &&
+     NSEqualRanges(_editor->textView.selectedRange, NSMakeRange(0, 0)) &&
+     [text isEqualToString:@""]
+  ) {
+    NSRange paragraphRange = [_editor->textView.textStorage.string paragraphRangeForRange:_editor->textView.selectedRange];
+    [self removeAttributes:paragraphRange];
+    return YES;
+  }
+  return NO;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
