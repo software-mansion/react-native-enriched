@@ -8,17 +8,21 @@ import type {
 const defaultStyle: Required<RichTextStyle> = {
   h1: {
     fontSize: 32,
+    bold: false,
   },
   h2: {
     fontSize: 24,
+    bold: false,
   },
   h3: {
     fontSize: 20,
+    bold: false,
   },
   blockquote: {
     borderColor: 'darkgray',
     borderWidth: 4,
     gapWidth: 16,
+    color: undefined,
   },
   codeblock: {
     color: 'black',
@@ -45,6 +49,8 @@ const defaultStyle: Required<RichTextStyle> = {
   ol: {
     gapWidth: 16,
     marginLeft: 16,
+    markerFontWeight: undefined,
+    markerColor: undefined,
   },
   ul: {
     bulletColor: 'black',
@@ -76,7 +82,7 @@ const isMentionStyleRecord = (
   return false;
 };
 
-const assignMentionStyles = (
+const convertToRichTextStyleInternal = (
   style: RichTextStyle,
   mentionIndicators: string[]
 ): RichTextStyleInternal => {
@@ -91,9 +97,24 @@ const assignMentionStyles = (
     };
   });
 
+  let markerFontWeight: string | undefined;
+  if (style.ol?.markerFontWeight) {
+    if (typeof style.ol?.markerFontWeight === 'number') {
+      markerFontWeight = String(style.ol?.markerFontWeight);
+    } else if (typeof style.ol?.markerFontWeight === 'string') {
+      markerFontWeight = style.ol?.markerFontWeight;
+    }
+  }
+
+  const olStyles = {
+    ...style.ol,
+    markerFontWeight: markerFontWeight,
+  };
+
   return {
     ...style,
     mention: mentionStyles,
+    ol: olStyles,
   };
 };
 
@@ -163,7 +184,7 @@ export const normalizeRichTextStyle = (
   style: RichTextStyle,
   mentionIndicators: string[]
 ): RichTextStyleInternal => {
-  const withMentions = assignMentionStyles(style, mentionIndicators);
-  const withDefaults = assignDefaultValues(withMentions);
+  const converted = convertToRichTextStyleInternal(style, mentionIndicators);
+  const withDefaults = assignDefaultValues(converted);
   return parseColors(withDefaults);
 };

@@ -69,17 +69,21 @@ export interface OnChangeMentionEvent {
 export interface RichTextStyle {
   h1?: {
     fontSize?: number;
+    bold?: boolean;
   };
   h2?: {
     fontSize?: number;
+    bold?: boolean;
   };
   h3?: {
     fontSize?: number;
+    bold?: boolean;
   };
   blockquote?: {
     borderColor?: ColorValue;
     borderWidth?: number;
     gapWidth?: number;
+    color?: ColorValue;
   };
   codeblock?: {
     color?: ColorValue;
@@ -102,6 +106,8 @@ export interface RichTextStyle {
   ol?: {
     gapWidth?: number;
     marginLeft?: number;
+    markerFontWeight?: TextStyle['fontWeight'];
+    markerColor?: ColorValue;
   };
   ul?: {
     bulletColor?: ColorValue;
