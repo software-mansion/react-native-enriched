@@ -12,8 +12,11 @@
   BOOL _monospacedFontNeedsRecreation;
   NSSet<NSNumber*> *_mentionIndicators;
   CGFloat _h1FontSize;
+  BOOL _h1Bold;
   CGFloat _h2FontSize;
+  BOOL _h2Bold;
   CGFloat _h3FontSize;
+  BOOL _h3Bold;
   UIColor *_blockquoteBorderColor;
   CGFloat _blockquoteBorderWidth;
   CGFloat _blockquoteGapWidth;
@@ -53,8 +56,11 @@
   copy->_monospacedFont = [_monospacedFont copy];
   copy->_mentionIndicators = [_mentionIndicators copy];
   copy->_h1FontSize = _h1FontSize;
+  copy->_h1Bold = _h1Bold;
   copy->_h2FontSize = _h2FontSize;
+  copy->_h2Bold = _h2Bold;
   copy->_h3FontSize = _h3FontSize;
+  copy->_h3Bold = _h3Bold;
   copy->_blockquoteBorderColor = [_blockquoteBorderColor copy];
   copy->_blockquoteBorderWidth = _blockquoteBorderWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
@@ -162,6 +168,14 @@
   _h1FontSize = newValue;
 }
 
+- (BOOL)h1Bold {
+  return _h1Bold;
+}
+
+- (void)setH1Bold:(BOOL)newValue {
+  _h1Bold = newValue;
+}
+
 - (CGFloat)h2FontSize {
   return _h2FontSize;
 }
@@ -170,12 +184,28 @@
   _h2FontSize = newValue;
 }
 
+- (BOOL)h2Bold {
+  return _h2Bold;
+}
+
+- (void)setH2Bold:(BOOL)newValue {
+  _h2Bold = newValue;
+}
+
 - (CGFloat)h3FontSize {
   return _h3FontSize;
 }
 
 - (void)setH3FontSize:(CGFloat)newValue {
   _h3FontSize = newValue;
+}
+
+- (BOOL)h3Bold {
+  return _h3Bold;
+}
+
+- (void)setH3Bold:(BOOL)newValue {
+  _h3Bold = newValue;
 }
 
 - (UIColor *)blockquoteBorderColor {

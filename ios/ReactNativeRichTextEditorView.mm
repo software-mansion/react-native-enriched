@@ -220,13 +220,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.richTextStyle.h1.bold != oldViewProps.richTextStyle.h1.bold) {
+    [newConfig setH1Bold:newViewProps.richTextStyle.h1.bold];
+    stylePropChanged = YES;
+  }
+  
   if(newViewProps.richTextStyle.h2.fontSize != oldViewProps.richTextStyle.h2.fontSize) {
     [newConfig setH2FontSize:newViewProps.richTextStyle.h2.fontSize];
     stylePropChanged = YES;
   }
   
+  if(newViewProps.richTextStyle.h2.bold != oldViewProps.richTextStyle.h2.bold) {
+    [newConfig setH2Bold:newViewProps.richTextStyle.h2.bold];
+    stylePropChanged = YES;
+  }
+  
   if(newViewProps.richTextStyle.h3.fontSize != oldViewProps.richTextStyle.h3.fontSize) {
     [newConfig setH3FontSize:newViewProps.richTextStyle.h3.fontSize];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.richTextStyle.h3.bold != oldViewProps.richTextStyle.h3.bold) {
+    [newConfig setH3Bold:newViewProps.richTextStyle.h3.bold];
     stylePropChanged = YES;
   }
   

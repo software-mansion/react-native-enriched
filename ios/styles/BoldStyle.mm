@@ -70,9 +70,24 @@
   }
 }
 
+- (BOOL)boldHeadingConflictsInRange:(NSRange)range type:(StyleType)type {
+  if(type == H1) {
+    if(![_editor->config h1Bold]) { return NO; }
+  } else if(type == H2) {
+    if(![_editor->config h2Bold]) { return NO; }
+  } else if(type == H3) {
+    if(![_editor->config h3Bold]) { return NO; }
+  }
+  
+  id<BaseStyleProtocol> headingStyle = _editor->stylesDict[@(type)];
+  return range.length > 0
+    ? [headingStyle anyOccurence:range]
+    : [headingStyle detectStyle:range];
+}
+
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   UIFont *font = (UIFont *)value;
-  return font != nullptr && [font isBold];
+  return font != nullptr && [font isBold] && ![self boldHeadingConflictsInRange:range type:H1] && ![self boldHeadingConflictsInRange:range type:H2] && ![self boldHeadingConflictsInRange:range type:H3];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -84,10 +99,7 @@
     ];
   } else {
     UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
-    if(currentFontAttr == nullptr) {
-      return false;
-    }
-    return [currentFontAttr isBold];
+    return [self styleCondition:currentFontAttr :range];
   }
 }
 

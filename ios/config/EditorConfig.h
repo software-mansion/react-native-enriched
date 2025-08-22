@@ -19,10 +19,16 @@
 - (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue;
 - (CGFloat)h1FontSize;
 - (void)setH1FontSize:(CGFloat)newValue;
+- (BOOL)h1Bold;
+- (void)setH1Bold:(BOOL)newValue;
 - (CGFloat)h2FontSize;
 - (void)setH2FontSize:(CGFloat)newValue;
+- (BOOL)h2Bold;
+- (void)setH2Bold:(BOOL)newValue;
 - (CGFloat)h3FontSize;
 - (void)setH3FontSize:(CGFloat)newValue;
+- (BOOL)h3Bold;
+- (void)setH3Bold:(BOOL)newValue;
 - (UIColor *)blockquoteBorderColor;
 - (void)setBlockquoteBorderColor:(UIColor *)newValue;
 - (CGFloat)blockquoteBorderWidth;

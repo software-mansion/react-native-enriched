@@ -46,6 +46,7 @@
   id editor;
 }
 - (CGFloat)getHeadingFontSize;
+- (BOOL)isHeadingBold;
 @end
 
 @interface H1Style : HeadingStyleBase
