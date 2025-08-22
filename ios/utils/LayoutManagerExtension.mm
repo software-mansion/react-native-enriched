@@ -91,8 +91,8 @@ static void const *kEditorKey = &kEditorKey;
   for(StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
     NSDictionary *markerAttributes = @{
-      NSFontAttributeName: [typedEditor->config primaryFont],
-      NSForegroundColorAttributeName: [typedEditor->config primaryColor]
+      NSFontAttributeName: [typedEditor->config orderedListMarkerFont],
+      NSForegroundColorAttributeName: [typedEditor->config orderedListMarkerColor]
     };
     
     NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedEditor->textView range:[pair.rangeValue rangeValue]];

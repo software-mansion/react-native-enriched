@@ -271,6 +271,26 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
+  // since this prop defaults to undefined on JS side, we need to force set the value on first mount
+  if(newViewProps.richTextStyle.ol.markerFontWeight != oldViewProps.richTextStyle.ol.markerFontWeight || isFirstMount) {
+    if(!newViewProps.richTextStyle.ol.markerFontWeight.empty()) {
+      [newConfig setOrderedListMarkerFontWeight:[NSString fromCppString: newViewProps.richTextStyle.ol.markerFontWeight]];
+    } else {
+      [newConfig setOrderedListMarkerFontWeight:[newConfig primaryFontWeight]];
+    }
+    stylePropChanged = YES;
+  }
+  
+  // since this prop defaults to undefined on JS side, we need to force set the value on first mount
+  if(newViewProps.richTextStyle.ol.markerColor != oldViewProps.richTextStyle.ol.markerColor || isFirstMount) {
+    if(isColorMeaningful(newViewProps.richTextStyle.ol.markerColor)) {
+      [newConfig setOrderedListMarkerColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ol.markerColor)];
+    } else {
+      [newConfig setOrderedListMarkerColor:[newConfig primaryColor]];
+    }
+    stylePropChanged = YES;
+  }
+  
   if(newViewProps.richTextStyle.ul.bulletColor != oldViewProps.richTextStyle.ul.bulletColor) {
     if(isColorMeaningful(newViewProps.richTextStyle.ul.bulletColor)) {
       [newConfig setUnorderedListBulletColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ul.bulletColor)];

@@ -21,6 +21,10 @@
   UIColor *_inlineCodeBgColor;
   CGFloat _orderedListGapWidth;
   CGFloat _orderedListMarginLeft;
+  NSString *_orderedListMarkerFontWeight;
+  UIColor *_orderedListMarkerColor;
+  UIFont *_orderedListMarkerFont;
+  BOOL _olMarkerFontNeedsRecreation;
   UIColor *_unorderedListBulletColor;
   CGFloat _unorderedListBulletSize;
   CGFloat _unorderedListGapWidth;
@@ -34,6 +38,7 @@
   self = [super init];
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
   return self;
 }
 
@@ -56,6 +61,9 @@
   copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
   copy->_orderedListGapWidth = _orderedListGapWidth;
   copy->_orderedListMarginLeft = _orderedListMarginLeft;
+  copy->_orderedListMarkerFontWeight = [_orderedListMarkerFontWeight copy];
+  copy->_orderedListMarkerColor = [_orderedListMarkerColor copy];
+  copy->_orderedListMarkerFont = [_orderedListMarkerFont copy];
   copy->_unorderedListBulletColor = [_unorderedListBulletColor copy];
   copy->_unorderedListBulletSize = _unorderedListBulletSize;
   copy->_unorderedListGapWidth = _unorderedListGapWidth;
@@ -82,6 +90,7 @@
   _primaryFontSize = newValue;
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
 }
 
 - (NSString *)primaryFontWeight {
@@ -101,6 +110,7 @@
 - (void)setPrimaryFontFamily:(NSString *)newValue {
   _primaryFontFamily = newValue;
   _primaryFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
 }
 
 - (UIFont *)primaryFont {
@@ -221,6 +231,46 @@
 
 - (void)setOrderedListMarginLeft:(CGFloat)newValue {
   _orderedListMarginLeft = newValue;
+}
+
+- (NSString *)orderedListMarkerFontWeight {
+  return _orderedListMarkerFontWeight;
+}
+
+- (void)setOrderedListMarkerFontWeight:(NSString *)newValue {
+  _orderedListMarkerFontWeight = newValue;
+  _olMarkerFontNeedsRecreation = YES;
+}
+
+- (UIColor *)orderedListMarkerColor {
+  return _orderedListMarkerColor;
+}
+
+- (void)setOrderedListMarkerColor:(UIColor *)newValue {
+  _orderedListMarkerColor = newValue;
+}
+
+- (UIFont *)orderedListMarkerFont {
+  if(_olMarkerFontNeedsRecreation) {
+    _olMarkerFontNeedsRecreation = NO;
+    
+    NSString *newFontWeight = [self orderedListMarkerFontWeight];
+    // fix RCTFontWeight conversion warnings:
+    // sometimes changing font family comes with weight '0' if not specified
+    // RCTConvert doesn't recognize this value so we just nullify it and it gets a default value
+    if([newFontWeight isEqualToString:@"0"]) {
+      newFontWeight = nullptr;
+    }
+    
+    _orderedListMarkerFont = [RCTFont updateFont:nullptr
+      withFamily:[self primaryFontFamily]
+      size:[self primaryFontSize]
+      weight:newFontWeight
+      style:nullptr
+      variant:nullptr
+      scaleMultiplier: 1];
+  }
+  return _orderedListMarkerFont;
 }
 
 - (CGFloat)orderedListMarkerWidth {

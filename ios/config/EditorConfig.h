@@ -37,6 +37,11 @@
 - (void)setOrderedListGapWidth:(CGFloat)newValue;
 - (CGFloat)orderedListMarginLeft;
 - (void)setOrderedListMarginLeft:(CGFloat)newValue;
+- (NSString *)orderedListMarkerFontWeight;
+- (void)setOrderedListMarkerFontWeight:(NSString *)newValue;
+- (UIColor *)orderedListMarkerColor;
+- (void)setOrderedListMarkerColor:(UIColor *)newValue;
+- (UIFont *)orderedListMarkerFont;
 - (CGFloat)orderedListMarkerWidth;
 - (UIColor *)unorderedListBulletColor;
 - (void)setUnorderedListBulletColor:(UIColor *)newValue;
