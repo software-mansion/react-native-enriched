@@ -232,18 +232,28 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   if(newViewProps.richTextStyle.blockquote.borderColor != oldViewProps.richTextStyle.blockquote.borderColor) {
     if(isColorMeaningful(newViewProps.richTextStyle.blockquote.borderColor)) {
-      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
+      [newConfig setBlockquoteBorderColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
       stylePropChanged = YES;
     }
   }
   
   if(newViewProps.richTextStyle.blockquote.borderWidth != oldViewProps.richTextStyle.blockquote.borderWidth) {
-    [newConfig setBlockquoteWidth:newViewProps.richTextStyle.blockquote.borderWidth];
+    [newConfig setBlockquoteBorderWidth:newViewProps.richTextStyle.blockquote.borderWidth];
     stylePropChanged = YES;
   }
   
   if(newViewProps.richTextStyle.blockquote.gapWidth != oldViewProps.richTextStyle.blockquote.gapWidth) {
     [newConfig setBlockquoteGapWidth:newViewProps.richTextStyle.blockquote.gapWidth];
+    stylePropChanged = YES;
+  }
+  
+  // since this prop defaults to undefined on JS side, we need to force set the value on first mount
+  if(newViewProps.richTextStyle.blockquote.color != oldViewProps.richTextStyle.blockquote.color || isFirstMount) {
+    if(isColorMeaningful(newViewProps.richTextStyle.blockquote.color)) {
+      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.color)];
+    } else {
+      [newConfig setBlockquoteColor:[newConfig primaryColor]];
+    }
     stylePropChanged = YES;
   }
   
@@ -979,6 +989,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [codeStyle handleNewlines];
   }
   
+  // blockquote colors management
+  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
+  if(bqStyle != nullptr) {
+    [bqStyle manageBlockquoteColor];
+  }
+  
   // placholder management
   if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
     [self setPlaceholderLabelShown:NO];
@@ -986,13 +1002,13 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     [self setPlaceholderLabelShown:YES];
   }
   
-  // emptying input typing attributes management
-  if(textView.textStorage.string.length == 0) {
-    // reset typing attribtues
-    textView.typingAttributes = defaultTypingAttributes;
-  }
-
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+    // emptying input typing attributes management
+    if(textView.textStorage.string.length == 0) {
+      // reset typing attribtues
+      textView.typingAttributes = defaultTypingAttributes;
+    }
+  
     // mentions removal management
     MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
     if(mentionStyleClass != nullptr) {

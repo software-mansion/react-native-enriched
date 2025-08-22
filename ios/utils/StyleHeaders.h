@@ -69,4 +69,5 @@
 
 @interface BlockQuoteStyle : NSObject<BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)manageBlockquoteColor;
 @end

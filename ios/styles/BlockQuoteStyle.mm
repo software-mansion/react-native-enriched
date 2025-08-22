@@ -3,6 +3,7 @@
 #import "OccurenceUtils.h"
 #import "ParagraphsUtils.h"
 #import "TextInsertionUtils.h"
+#import "ColorExtension.h"
 
 @implementation BlockQuoteStyle {
   ReactNativeRichTextEditorView *_editor;
@@ -18,7 +19,7 @@
 
 - (CGFloat)getHeadIndent {
   // rectangle width + gap
-  return [_editor->config blockquoteWidth] + [_editor->config blockquoteGapWidth];
+  return [_editor->config blockquoteBorderWidth] + [_editor->config blockquoteGapWidth];
 }
 
 // the range will already be the full paragraph/s range
@@ -177,6 +178,71 @@
       return [self styleCondition:value :range];
     }
   ];
+}
+
+// gets ranges that aren't link, mention or inline code
+- (NSArray *)getProperColorRangesIn:(NSRange)range {
+  LinkStyle *linkStyle = _editor->stylesDict[@([LinkStyle getStyleType])];
+  MentionStyle *mentionStyle = _editor->stylesDict[@([MentionStyle getStyleType])];
+  InlineCodeStyle *codeStyle = _editor->stylesDict[@([InlineCodeStyle getStyleType])];
+  
+  NSMutableArray *newRanges = [[NSMutableArray alloc] init];
+  int lastRangeLocation = range.location;
+  
+  for(int i = range.location; i < range.location + range.length; i++) {
+    NSRange currentRange = NSMakeRange(i, 1);
+    if([linkStyle detectStyle:currentRange] || [mentionStyle detectStyle:currentRange] || [codeStyle detectStyle:currentRange]) {
+      if(i - lastRangeLocation > 0) {
+        [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, i - lastRangeLocation)]];
+      }
+      lastRangeLocation = i+1;
+    }
+  }
+  if(lastRangeLocation < range.location + range.length) {
+    [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, range.location + range.length - lastRangeLocation)]];
+  }
+  
+  return newRanges;
+}
+
+// general checkup correcting blockquote color
+// since links, mentions and inline code affects coloring, the checkup gets done only outside of them
+- (void)manageBlockquoteColor {
+  if([[_editor->config blockquoteColor] isEqualToColor:[_editor->config primaryColor]]) {
+    return;
+  }
+  
+  NSRange wholeRange = NSMakeRange(0, _editor->textView.textStorage.string.length);
+  
+  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_editor->textView range:wholeRange];
+  for(NSValue *pValue in paragraphs) {
+    NSRange paragraphRange = [pValue rangeValue];
+    NSArray *properRanges = [self getProperColorRangesIn:paragraphRange];
+    
+    for(NSValue *value in properRanges) {
+      NSRange currRange = [value rangeValue];
+      BOOL selfDetected = [self detectStyle:currRange];
+      
+      [_editor->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:currRange options:0
+        usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+          UIColor *newColor = nullptr;
+          BOOL colorApplied = [(UIColor *)value isEqualToColor:[_editor->config blockquoteColor]];
+          
+          if(colorApplied && !selfDetected) {
+            newColor = [_editor->config primaryColor];
+          } else if(!colorApplied && selfDetected) {
+            newColor = [_editor->config blockquoteColor];
+          }
+      
+          if(newColor != nullptr) {
+            [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:currRange];
+            [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:newColor range:currRange];
+            [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:newColor range:currRange];
+          }
+        }
+      ];
+    }
+  }
 }
 
 @end
