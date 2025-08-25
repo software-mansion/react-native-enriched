@@ -46,6 +46,7 @@
   id editor;
 }
 - (CGFloat)getHeadingFontSize;
+- (BOOL)isHeadingBold;
 @end
 
 @interface H1Style : HeadingStyleBase
@@ -69,4 +70,5 @@
 
 @interface BlockQuoteStyle : NSObject<BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)manageBlockquoteColor;
 @end

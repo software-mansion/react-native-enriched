@@ -12,15 +12,23 @@
   BOOL _monospacedFontNeedsRecreation;
   NSSet<NSNumber*> *_mentionIndicators;
   CGFloat _h1FontSize;
+  BOOL _h1Bold;
   CGFloat _h2FontSize;
+  BOOL _h2Bold;
   CGFloat _h3FontSize;
-  UIColor *_blockquoteColor;
-  CGFloat _blockquoteWidth;
+  BOOL _h3Bold;
+  UIColor *_blockquoteBorderColor;
+  CGFloat _blockquoteBorderWidth;
   CGFloat _blockquoteGapWidth;
+  UIColor *_blockquoteColor;
   UIColor *_inlineCodeFgColor;
   UIColor *_inlineCodeBgColor;
   CGFloat _orderedListGapWidth;
   CGFloat _orderedListMarginLeft;
+  NSString *_orderedListMarkerFontWeight;
+  UIColor *_orderedListMarkerColor;
+  UIFont *_orderedListMarkerFont;
+  BOOL _olMarkerFontNeedsRecreation;
   UIColor *_unorderedListBulletColor;
   CGFloat _unorderedListBulletSize;
   CGFloat _unorderedListGapWidth;
@@ -34,6 +42,7 @@
   self = [super init];
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
   return self;
 }
 
@@ -47,15 +56,22 @@
   copy->_monospacedFont = [_monospacedFont copy];
   copy->_mentionIndicators = [_mentionIndicators copy];
   copy->_h1FontSize = _h1FontSize;
+  copy->_h1Bold = _h1Bold;
   copy->_h2FontSize = _h2FontSize;
+  copy->_h2Bold = _h2Bold;
   copy->_h3FontSize = _h3FontSize;
-  copy->_blockquoteColor = [_blockquoteColor copy];
-  copy->_blockquoteWidth = _blockquoteWidth;
+  copy->_h3Bold = _h3Bold;
+  copy->_blockquoteBorderColor = [_blockquoteBorderColor copy];
+  copy->_blockquoteBorderWidth = _blockquoteBorderWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
+  copy->_blockquoteColor = [_blockquoteColor copy];
   copy->_inlineCodeFgColor = [_inlineCodeFgColor copy];
   copy->_inlineCodeBgColor = [_inlineCodeBgColor copy];
   copy->_orderedListGapWidth = _orderedListGapWidth;
   copy->_orderedListMarginLeft = _orderedListMarginLeft;
+  copy->_orderedListMarkerFontWeight = [_orderedListMarkerFontWeight copy];
+  copy->_orderedListMarkerColor = [_orderedListMarkerColor copy];
+  copy->_orderedListMarkerFont = [_orderedListMarkerFont copy];
   copy->_unorderedListBulletColor = [_unorderedListBulletColor copy];
   copy->_unorderedListBulletSize = _unorderedListBulletSize;
   copy->_unorderedListGapWidth = _unorderedListGapWidth;
@@ -82,6 +98,7 @@
   _primaryFontSize = newValue;
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
 }
 
 - (NSString *)primaryFontWeight {
@@ -101,6 +118,7 @@
 - (void)setPrimaryFontFamily:(NSString *)newValue {
   _primaryFontFamily = newValue;
   _primaryFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
 }
 
 - (UIFont *)primaryFont {
@@ -150,12 +168,28 @@
   _h1FontSize = newValue;
 }
 
+- (BOOL)h1Bold {
+  return _h1Bold;
+}
+
+- (void)setH1Bold:(BOOL)newValue {
+  _h1Bold = newValue;
+}
+
 - (CGFloat)h2FontSize {
   return _h2FontSize;
 }
 
 - (void)setH2FontSize:(CGFloat)newValue {
   _h2FontSize = newValue;
+}
+
+- (BOOL)h2Bold {
+  return _h2Bold;
+}
+
+- (void)setH2Bold:(BOOL)newValue {
+  _h2Bold = newValue;
 }
 
 - (CGFloat)h3FontSize {
@@ -166,20 +200,28 @@
   _h3FontSize = newValue;
 }
 
-- (UIColor *)blockquoteColor {
-  return _blockquoteColor;
+- (BOOL)h3Bold {
+  return _h3Bold;
 }
 
-- (void)setBlockquoteColor:(UIColor *)newValue {
-  _blockquoteColor = newValue;
+- (void)setH3Bold:(BOOL)newValue {
+  _h3Bold = newValue;
 }
 
-- (CGFloat)blockquoteWidth {
-  return _blockquoteWidth;
+- (UIColor *)blockquoteBorderColor {
+  return _blockquoteBorderColor;
 }
 
-- (void)setBlockquoteWidth:(CGFloat)newValue {
-  _blockquoteWidth = newValue;
+- (void)setBlockquoteBorderColor:(UIColor *)newValue {
+  _blockquoteBorderColor = newValue;
+}
+
+- (CGFloat)blockquoteBorderWidth {
+  return _blockquoteBorderWidth;
+}
+
+- (void)setBlockquoteBorderWidth:(CGFloat)newValue {
+  _blockquoteBorderWidth = newValue;
 }
 
 
@@ -189,6 +231,14 @@
 
 - (void)setBlockquoteGapWidth:(CGFloat)newValue {
   _blockquoteGapWidth = newValue;
+}
+
+- (UIColor *)blockquoteColor {
+  return _blockquoteColor;
+}
+
+- (void)setBlockquoteColor:(UIColor *)newValue {
+  _blockquoteColor = newValue;
 }
 
 - (UIColor *)inlineCodeFgColor {
@@ -221,6 +271,46 @@
 
 - (void)setOrderedListMarginLeft:(CGFloat)newValue {
   _orderedListMarginLeft = newValue;
+}
+
+- (NSString *)orderedListMarkerFontWeight {
+  return _orderedListMarkerFontWeight;
+}
+
+- (void)setOrderedListMarkerFontWeight:(NSString *)newValue {
+  _orderedListMarkerFontWeight = newValue;
+  _olMarkerFontNeedsRecreation = YES;
+}
+
+- (UIColor *)orderedListMarkerColor {
+  return _orderedListMarkerColor;
+}
+
+- (void)setOrderedListMarkerColor:(UIColor *)newValue {
+  _orderedListMarkerColor = newValue;
+}
+
+- (UIFont *)orderedListMarkerFont {
+  if(_olMarkerFontNeedsRecreation) {
+    _olMarkerFontNeedsRecreation = NO;
+    
+    NSString *newFontWeight = [self orderedListMarkerFontWeight];
+    // fix RCTFontWeight conversion warnings:
+    // sometimes changing font family comes with weight '0' if not specified
+    // RCTConvert doesn't recognize this value so we just nullify it and it gets a default value
+    if([newFontWeight isEqualToString:@"0"]) {
+      newFontWeight = nullptr;
+    }
+    
+    _orderedListMarkerFont = [RCTFont updateFont:nullptr
+      withFamily:[self primaryFontFamily]
+      size:[self primaryFontSize]
+      weight:newFontWeight
+      style:nullptr
+      variant:nullptr
+      scaleMultiplier: 1];
+  }
+  return _orderedListMarkerFont;
 }
 
 - (CGFloat)orderedListMarkerWidth {

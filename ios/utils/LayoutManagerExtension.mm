@@ -69,11 +69,11 @@ static void const *kEditorKey = &kEditorKey;
         CGFloat paddingTop = origin.y;
         CGFloat x = paddingLeft;
         CGFloat y = paddingTop + rect.origin.y;
-        CGFloat width = [typedEditor->config blockquoteWidth];
+        CGFloat width = [typedEditor->config blockquoteBorderWidth];
         CGFloat height = rect.size.height;
         
         CGRect lineRect = CGRectMake(x, y, width, height);
-        [[typedEditor->config blockquoteColor] setFill];
+        [[typedEditor->config blockquoteBorderColor] setFill];
         UIRectFill(lineRect);
       }
     ];
@@ -91,8 +91,8 @@ static void const *kEditorKey = &kEditorKey;
   for(StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
     NSDictionary *markerAttributes = @{
-      NSFontAttributeName: [typedEditor->config primaryFont],
-      NSForegroundColorAttributeName: [typedEditor->config primaryColor]
+      NSFontAttributeName: [typedEditor->config orderedListMarkerFont],
+      NSForegroundColorAttributeName: [typedEditor->config orderedListMarkerColor]
     };
     
     NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedEditor->textView range:[pair.rangeValue rangeValue]];

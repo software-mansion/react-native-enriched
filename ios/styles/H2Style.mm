@@ -4,4 +4,7 @@
 @implementation H2Style
 + (StyleType)getStyleType { return H2; }
 - (CGFloat)getHeadingFontSize { return [((ReactNativeRichTextEditorView *)editor)->config h2FontSize]; }
+- (BOOL)isHeadingBold {
+  return [((ReactNativeRichTextEditorView *)editor)->config h2Bold];
+}
 @end

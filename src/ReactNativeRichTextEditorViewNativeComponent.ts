@@ -74,17 +74,21 @@ export interface MentionStyleProperties {
 export interface RichTextStyleInternal {
   h1?: {
     fontSize?: Float;
+    bold?: boolean;
   };
   h2?: {
     fontSize?: Float;
+    bold?: boolean;
   };
   h3?: {
     fontSize?: Float;
+    bold?: boolean;
   };
   blockquote?: {
     borderColor?: ColorValue;
     borderWidth?: Float;
     gapWidth?: Float;
+    color?: ColorValue;
   };
   codeblock?: {
     color?: ColorValue;
@@ -109,6 +113,8 @@ export interface RichTextStyleInternal {
   ol?: {
     gapWidth?: Float;
     marginLeft?: Float;
+    markerFontWeight?: string;
+    markerColor?: ColorValue;
   };
   ul?: {
     bulletColor?: ColorValue;

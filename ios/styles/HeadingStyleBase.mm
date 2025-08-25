@@ -5,13 +5,14 @@
 
 @implementation HeadingStyleBase
 
+// mock values since H1/2/3Style classes anyway are used
 + (StyleType)getStyleType { return None; }
+- (CGFloat)getHeadingFontSize { return 0; }
+- (BOOL)isHeadingBold { return false; }
 
 - (ReactNativeRichTextEditorView *)typedEditor {
   return (ReactNativeRichTextEditorView *)editor;
 }
-
-- (CGFloat)getHeadingFontSize { return 0; }
 
 - (instancetype)initWithEditor:(id)editor {
   self = [super init];
@@ -38,6 +39,9 @@
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
         UIFont *newFont = [font setSize:[self getHeadingFontSize]];
+        if([self isHeadingBold]) {
+          newFont = [newFont setBold];
+        }
         [[self typedEditor]->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
@@ -53,7 +57,11 @@
   UIFont *currentFontAttr = (UIFont *)[self typedEditor]->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
     NSMutableDictionary *newTypingAttrs = [[self typedEditor]->textView.typingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [currentFontAttr setSize:[self getHeadingFontSize]];
+    UIFont *newFont = [currentFontAttr setSize:[self getHeadingFontSize]];
+    if([self isHeadingBold]) {
+      newFont = [newFont setBold];
+    }
+    newTypingAttrs[NSFontAttributeName] = newFont;
     [self typedEditor]->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -67,6 +75,9 @@
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       if([self styleCondition:value :range]) {
         UIFont *newFont = [(UIFont *)value setSize:[[[self typedEditor]->config primaryFontSize] floatValue]];
+        if([self isHeadingBold]) {
+          newFont = [newFont removeBold];
+        }
         [[self typedEditor]->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
@@ -77,7 +88,11 @@
   UIFont *currentFontAttr = (UIFont *)[self typedEditor]->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
     NSMutableDictionary *newTypingAttrs = [[self typedEditor]->textView.typingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [currentFontAttr setSize:[[[self typedEditor]->config primaryFontSize] floatValue]];
+    UIFont *newFont = [currentFontAttr setSize:[[[self typedEditor]->config primaryFontSize] floatValue]];
+    if([self isHeadingBold]) {
+      newFont = [newFont removeBold];
+    }
+    newTypingAttrs[NSFontAttributeName] = newFont;
     [self typedEditor]->textView.typingAttributes = newTypingAttrs;
   }
 }

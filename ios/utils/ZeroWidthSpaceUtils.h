@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#pragma once
 
 @interface ZeroWidthSpaceUtils : NSObject
 + (void)handleZeroWidthSpacesInEditor:(id)editor;
