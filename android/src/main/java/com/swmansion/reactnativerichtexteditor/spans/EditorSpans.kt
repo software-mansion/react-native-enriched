@@ -64,7 +64,7 @@ object EditorSpans {
 
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
     BOLD to StylesMergingConfig(
-      blockingStyles = arrayOf(CODE_BLOCK)
+      blockingStyles = arrayOf(CODE_BLOCK, H1, H2, H3)
     ),
     ITALIC to StylesMergingConfig(
       blockingStyles = arrayOf(CODE_BLOCK)
@@ -80,13 +80,13 @@ object EditorSpans {
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
     H1 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK, BOLD),
     ),
     H2 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK, BOLD),
     ),
     H3 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK, BOLD),
     ),
     BLOCK_QUOTE to StylesMergingConfig(
       conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),

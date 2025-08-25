@@ -283,12 +283,15 @@ export default function App() {
 const richTextStyles: RichTextStyle = {
   h1: {
     fontSize: 40,
+    bold: true,
   },
   h2: {
     fontSize: 32,
+    bold: true,
   },
   h3: {
     fontSize: 24,
+    bold: true,
   },
   blockquote: {
     borderColor: 'navy',
