@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import kotlin.Float
 import kotlin.Int
@@ -91,6 +92,7 @@ class RichTextStyle {
     olMarginLeft = calculatedMarginLeft
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
     olMarkerColor = parseOptionalColor(olStyle, "markerColor")
+    olMarkerFontWeight = parseOptionalFontWeight(olStyle, "markerFontWeight")
 
     val ulStyle = style.getMap("ul")
     ulBulletColor = parseColor(ulStyle, "bulletColor")
@@ -201,6 +203,15 @@ class RichTextStyle {
         }
 
     return parsedMentionsStyle
+  }
+
+  private fun parseOptionalFontWeight(map: ReadableMap?, key: String): Int? {
+    if (map == null) return null
+    if (!map.hasKey(key)) return null
+    if (map.isNull(key)) return null
+
+    val fontWeight = map.getString(key) ?: return null
+    return parseFontWeight(fontWeight)
   }
 
   companion object {

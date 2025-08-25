@@ -332,6 +332,7 @@ const richTextStyles: RichTextStyle = {
     gapWidth: 16,
     marginLeft: 24,
     markerColor: 'navy',
+    markerFontWeight: 'bold',
   },
   ul: {
     bulletColor: 'aquamarine',
