@@ -32,7 +32,11 @@ class EditorOrderedListSpan(private var index: Int, private val richTextStyle: R
 
       val yPosition = baseline.toFloat()
       val xPosition = (richTextStyle.olMarginLeft + x - width / 2) * dir
+
+      val originalColor = paint.color
+      paint.color = richTextStyle.olMarkerColor ?: originalColor
       canvas.drawText(text, xPosition, yPosition, paint)
+      paint.color = originalColor
     }
   }
 

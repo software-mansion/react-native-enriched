@@ -331,6 +331,7 @@ const richTextStyles: RichTextStyle = {
   ol: {
     gapWidth: 16,
     marginLeft: 24,
+    markerColor: 'navy',
   },
   ul: {
     bulletColor: 'aquamarine',

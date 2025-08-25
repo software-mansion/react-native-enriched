@@ -90,6 +90,7 @@ class RichTextStyle {
     val calculatedMarginLeft = calculateOlMarginLeft(editorView, userDefinedMarginLeft)
     olMarginLeft = calculatedMarginLeft
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
+    olMarkerColor = parseOptionalColor(olStyle, "markerColor")
 
     val ulStyle = style.getMap("ul")
     ulBulletColor = parseColor(ulStyle, "bulletColor")
