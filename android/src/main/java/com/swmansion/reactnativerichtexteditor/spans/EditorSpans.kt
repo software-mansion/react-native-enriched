@@ -1,7 +1,5 @@
 package com.swmansion.reactnativerichtexteditor.spans
 
-import com.swmansion.reactnativerichtexteditor.styles.RichTextStyle
-
 data class BaseSpanConfig(val clazz: Class<*>)
 data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
 data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
@@ -82,15 +80,12 @@ object EditorSpans {
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
     H1 to StylesMergingConfig(
-      // Keep in mind that "BOLD" is dynamic property, see getH1Config
       conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H2 to StylesMergingConfig(
-      // Keep in mind that "BOLD" is dynamic property, see getH2Config
       conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H3 to StylesMergingConfig(
-      // Keep in mind that "BOLD" is dynamic property, see getH3Config
       conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     BLOCK_QUOTE to StylesMergingConfig(
