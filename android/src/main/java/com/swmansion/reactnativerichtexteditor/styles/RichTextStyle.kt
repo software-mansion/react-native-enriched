@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.reactnativerichtexteditor.ReactNativeRichTextEditorView
 import kotlin.Float
 import kotlin.Int
@@ -19,15 +20,23 @@ class RichTextStyle {
   // They are specified only because they are required by the constructor.
   // JS passes them as a prop - so they are initialized after the constructor is called.
   var h1FontSize: Int = 72
-  var h2FontSize: Int = 64
-  var h3FontSize: Int = 56
+  var h1Bold: Boolean = false
 
-  var blockquoteColor: Int = Color.BLACK
+  var h2FontSize: Int = 64
+  var h2Bold: Boolean = false
+
+  var h3FontSize: Int = 56
+  var h3Bold: Boolean = false
+
+  var blockquoteColor: Int? = null
+  var blockquoteBorderColor: Int = Color.BLACK
   var blockquoteStripeWidth: Int = 2
   var blockquoteGapWidth: Int = 16
 
   var olGapWidth: Int = 16
   var olMarginLeft: Int = 24
+  var olMarkerFontWeight: Int? = null
+  var olMarkerColor: Int? = null
 
   var ulGapWidth: Int = 16
   var ulMarginLeft: Int = 24
@@ -61,15 +70,19 @@ class RichTextStyle {
 
     val h1Style = style.getMap("h1")
     h1FontSize = parseFloat(h1Style, "fontSize").toInt()
+    h1Bold = h1Style?.getBoolean("bold") == true
 
     val h2Style = style.getMap("h2")
     h2FontSize = parseFloat(h2Style, "fontSize").toInt()
+    h2Bold = h2Style?.getBoolean("bold") == true
 
     val h3Style = style.getMap("h3")
     h3FontSize = parseFloat(h3Style, "fontSize").toInt()
+    h3Bold = h3Style?.getBoolean("bold") == true
 
     val blockquoteStyle = style.getMap("blockquote")
-    blockquoteColor = parseColor(blockquoteStyle, "borderColor")
+    blockquoteColor = parseOptionalColor(blockquoteStyle, "color")
+    blockquoteBorderColor = parseColor(blockquoteStyle, "borderColor")
     blockquoteGapWidth = parseFloat(blockquoteStyle, "gapWidth").toInt()
     blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth").toInt()
 
@@ -78,6 +91,8 @@ class RichTextStyle {
     val calculatedMarginLeft = calculateOlMarginLeft(editorView, userDefinedMarginLeft)
     olMarginLeft = calculatedMarginLeft
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
+    olMarkerColor = parseOptionalColor(olStyle, "markerColor")
+    olMarkerFontWeight = parseOptionalFontWeight(olStyle, "markerFontWeight")
 
     val ulStyle = style.getMap("ul")
     ulBulletColor = parseColor(ulStyle, "bulletColor")
@@ -116,6 +131,14 @@ class RichTextStyle {
   private fun parseColorWithOpacity(map: ReadableMap?, key: String, opacity: Int): Int {
     val color = parseColor(map, key)
     return withOpacity(color, opacity)
+  }
+
+  private fun parseOptionalColor(map: ReadableMap?, key: String): Int? {
+    if (map == null) return null
+    if (!map.hasKey(key)) return null
+    if (map.isNull(key)) return null
+
+    return parseColor(map, key)
   }
 
   private fun parseColor(map: ReadableMap?, key: String): Int {
@@ -180,6 +203,15 @@ class RichTextStyle {
         }
 
     return parsedMentionsStyle
+  }
+
+  private fun parseOptionalFontWeight(map: ReadableMap?, key: String): Int? {
+    if (map == null) return null
+    if (!map.hasKey(key)) return null
+    if (map.isNull(key)) return null
+
+    val fontWeight = map.getString(key) ?: return null
+    return parseFontWeight(fontWeight)
   }
 
   companion object {

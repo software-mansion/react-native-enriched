@@ -283,17 +283,21 @@ export default function App() {
 const richTextStyles: RichTextStyle = {
   h1: {
     fontSize: 40,
+    bold: true,
   },
   h2: {
     fontSize: 32,
+    bold: true,
   },
   h3: {
     fontSize: 24,
+    bold: true,
   },
   blockquote: {
     borderColor: 'navy',
     borderWidth: 4,
     gapWidth: 16,
+    color: 'navy',
   },
   codeblock: {
     color: 'green',
@@ -327,6 +331,8 @@ const richTextStyles: RichTextStyle = {
   ol: {
     gapWidth: 16,
     marginLeft: 24,
+    markerColor: 'navy',
+    markerFontWeight: 'bold',
   },
   ul: {
     bulletColor: 'aquamarine',
