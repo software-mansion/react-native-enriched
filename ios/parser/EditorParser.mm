@@ -402,7 +402,7 @@
 - (NSString * _Nullable)initiallyProcessHtml:(NSString * _Nonnull)html {
   NSString *fixedHtml = nullptr;
   
-  if(html.length >= 15) {
+  if(html.length >= 13) {
     NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven = [html substringWithRange:NSMakeRange(html.length-7, 7)];
     NSInteger newlinesCount = [[html componentsSeparatedByString:@"\n"] count] - 1;
