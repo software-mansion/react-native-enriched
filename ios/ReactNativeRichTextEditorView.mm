@@ -792,6 +792,11 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(initiallyProcessedHtml == nullptr) {
     // just plain text
     textView.text = value;
+    
+    // typing attribtues need to be reset firstly if the input was emptied
+    if(textView.text.length == 0) {
+      textView.typingAttributes = defaultTypingAttributes;
+    }
   } else {
     // we've got some seemingly proper html
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
