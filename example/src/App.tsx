@@ -294,6 +294,7 @@ const richTextStyles: RichTextStyle = {
     borderColor: 'navy',
     borderWidth: 4,
     gapWidth: 16,
+    color: 'navy',
   },
   codeblock: {
     color: 'green',
