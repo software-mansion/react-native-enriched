@@ -117,6 +117,11 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+
       - name: Cache turborepo for iOS
         uses: actions/cache@v4
         with:
