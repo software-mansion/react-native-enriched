@@ -13,8 +13,8 @@
 
 - (CGFloat)getHeadIndent {
   // lists are drawn manually
-  // margin before bullet + bullet size + gap between bullet and paragraph
-  return [_editor->config unorderedListMarginLeft] + [_editor->config unorderedListBulletSize] + [_editor->config unorderedListGapWidth];
+  // margin before bullet + gap between bullet and paragraph
+  return [_editor->config unorderedListMarginLeft] + [_editor->config unorderedListGapWidth];
 }
 
 - (instancetype)initWithEditor:(id)editor {
