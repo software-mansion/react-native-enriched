@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "example": "yarn workspace @swmansion/react-native-rich-text-editor-example",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
