@@ -50,7 +50,6 @@
 - (UIColor *)orderedListMarkerColor;
 - (void)setOrderedListMarkerColor:(UIColor *)newValue;
 - (UIFont *)orderedListMarkerFont;
-- (CGFloat)orderedListMarkerWidth;
 - (UIColor *)unorderedListBulletColor;
 - (void)setUnorderedListBulletColor:(UIColor *)newValue;
 - (CGFloat)unorderedListBulletSize;

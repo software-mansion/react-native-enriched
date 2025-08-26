@@ -107,14 +107,13 @@ static void const *kEditorKey = &kEditorKey;
           if(pStyle.textLists.firstObject.markerFormat == NSTextListMarkerDecimal) {
             CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
             CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-            CGFloat rightEdge = usedRect.origin.x - gapWidth;
-            CGFloat numberX = rightEdge - markerWidth;
+            CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth/2;
             
-            [marker drawAtPoint:CGPointMake(numberX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
+            [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
           } else {
             CGFloat gapWidth = [typedEditor->config unorderedListGapWidth];
             CGFloat bulletSize = [typedEditor->config unorderedListBulletSize];
-            CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize;
+            CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize/2;
             CGFloat centerY = CGRectGetMidY(usedRect);
             
             CGContextRef context = UIGraphicsGetCurrentContext();

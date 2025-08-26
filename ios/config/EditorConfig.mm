@@ -313,15 +313,6 @@
   return _orderedListMarkerFont;
 }
 
-- (CGFloat)orderedListMarkerWidth {
-  NSDictionary *markerAttributes = @{
-    NSFontAttributeName: [self primaryFont],
-    NSForegroundColorAttributeName: [self primaryColor]
-  };
-  // TODO: marker widths could be dynamic, for now we settle with (usually) the widest 2-digit marker
-  return [@"88." sizeWithAttributes:markerAttributes].width;
-}
-
 - (UIColor *)unorderedListBulletColor {
   return _unorderedListBulletColor;
 }
