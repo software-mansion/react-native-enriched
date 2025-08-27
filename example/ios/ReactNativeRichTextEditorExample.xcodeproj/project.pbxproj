@@ -13,7 +13,6 @@
 		271147C3BA434F6A84F4483F /* CascadiaCode-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6352E13F84F841D5A2BA25B4 /* CascadiaCode-Italic.ttf */; };
 		56EDC86733EA478B9DA01878 /* CascadiaCode-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */; };
 		5B86D220CCF04C2A850EB7E8 /* CascadiaCode-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */; };
-		6CAA9050321F29070CC17EED /* libPods-ReactNativeRichTextEditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F824A13642F9C623EBB34CB3 /* libPods-ReactNativeRichTextEditorExample.a */; };
 		71808E445FEA4FCF902169F4 /* CascadiaCode-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */; };
 		71AA7E56B3D7424AB82C5D46 /* CascadiaCode-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 79452663257A4B73B2308643 /* CascadiaCode-Bold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
@@ -29,6 +28,7 @@
 		970142F6180042E5964006A6 /* CascadiaCode-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */; };
 		D8B2038262614F14AE6245F0 /* CascadiaCode-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4DA2D2AB9E3743888DAD5779 /* CascadiaCode-SemiBoldItalic.ttf */; };
 		DCB0457B1CAE40B29979CDB9 /* CascadiaCode-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */; };
+		E6AE3E75AAB6AEA81E4636B6 /* libPods-ReactNativeRichTextEditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BE313EFA3DE90E22B2A2BB6 /* libPods-ReactNativeRichTextEditorExample.a */; };
 		F83E68A3773947EA87D1FD9C /* CascadiaCode-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +37,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactNativeRichTextEditorExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactNativeRichTextEditorExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ReactNativeRichTextEditorExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1BE313EFA3DE90E22B2A2BB6 /* libPods-ReactNativeRichTextEditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeRichTextEditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		30BAB32B24F7542D489838C7 /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.release.xcconfig"; sourceTree = "<group>"; };
 		3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Italic-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-SemiBold.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBold.ttf"; sourceTree = "<group>"; };
 		4A13A7631B3C499C989AC38A /* CascadiaCode-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-ExtraLight.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-ExtraLight.ttf"; sourceTree = "<group>"; };
@@ -53,14 +55,12 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ReactNativeRichTextEditorExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Medium.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Medium.ttf"; sourceTree = "<group>"; };
 		8A425B9B75B9488EA0FDF624 /* README.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = README.txt; path = ../assets/fonts/Cascadia_Code/README.txt; sourceTree = "<group>"; };
-		B2974B849660C74739ED228D /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.release.xcconfig"; sourceTree = "<group>"; };
 		C667157990F34428AEE8CC93 /* FontAwesome.json */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.json; path = ../assets/icons/FontAwesome.json; sourceTree = "<group>"; };
+		CE2992D25A1E9E45E24B984C /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; sourceTree = "<group>"; };
 		D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = ../assets/icons/FontAwesome.ttf; sourceTree = "<group>"; };
 		D384E64346204A8C8E773595 /* CascadiaCode-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Light.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Light.ttf"; sourceTree = "<group>"; };
-		EA0F530C201B78553F854E4A /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F824A13642F9C623EBB34CB3 /* libPods-ReactNativeRichTextEditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeRichTextEditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,7 +68,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6CAA9050321F29070CC17EED /* libPods-ReactNativeRichTextEditorExample.a in Frameworks */,
+				E6AE3E75AAB6AEA81E4636B6 /* libPods-ReactNativeRichTextEditorExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,7 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F824A13642F9C623EBB34CB3 /* libPods-ReactNativeRichTextEditorExample.a */,
+				1BE313EFA3DE90E22B2A2BB6 /* libPods-ReactNativeRichTextEditorExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -129,8 +129,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				EA0F530C201B78553F854E4A /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */,
-				B2974B849660C74739ED228D /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */,
+				CE2992D25A1E9E45E24B984C /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */,
+				30BAB32B24F7542D489838C7 /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -168,13 +168,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactNativeRichTextEditorExample" */;
 			buildPhases = (
-				EC923F0A1E132D07714CB8A4 /* [CP] Check Pods Manifest.lock */,
+				E8E8B1D71189538899D5EDEB /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				A28128E043EC765FFAC05C88 /* [CP] Embed Pods Frameworks */,
-				55C10520FB5369E892513A7F /* [CP] Copy Pods Resources */,
+				E37ABD7431ADE223A4A33FE5 /* [CP] Embed Pods Frameworks */,
+				89ACA76C9F1E435BFBFA61A5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -264,7 +264,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		55C10520FB5369E892513A7F /* [CP] Copy Pods Resources */ = {
+		89ACA76C9F1E435BFBFA61A5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -281,7 +281,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A28128E043EC765FFAC05C88 /* [CP] Embed Pods Frameworks */ = {
+		E37ABD7431ADE223A4A33FE5 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -298,7 +298,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ReactNativeRichTextEditorExample/Pods-ReactNativeRichTextEditorExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EC923F0A1E132D07714CB8A4 /* [CP] Check Pods Manifest.lock */ = {
+		E8E8B1D71189538899D5EDEB /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -336,7 +336,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EA0F530C201B78553F854E4A /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */;
+			baseConfigurationReference = CE2992D25A1E9E45E24B984C /* Pods-ReactNativeRichTextEditorExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -364,7 +364,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B2974B849660C74739ED228D /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */;
+			baseConfigurationReference = 30BAB32B24F7542D489838C7 /* Pods-ReactNativeRichTextEditorExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
