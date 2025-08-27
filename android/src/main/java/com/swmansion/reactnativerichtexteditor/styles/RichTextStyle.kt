@@ -146,6 +146,9 @@ class RichTextStyle {
 
     val color = safeMap.getDouble(key)
     val parsedColor = ColorPropConverter.getColor(color, editorView?.context as ReactContext)
+    if (parsedColor == null) {
+      throw Error("Specified color value is not supported: $color")
+    }
 
     return parsedColor
   }
