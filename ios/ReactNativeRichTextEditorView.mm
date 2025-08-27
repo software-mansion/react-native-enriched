@@ -792,11 +792,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   if(initiallyProcessedHtml == nullptr) {
     // just plain text
     textView.text = value;
-    
-    // typing attribtues need to be reset firstly if the input was emptied
-    if(textView.text.length == 0) {
-      textView.typingAttributes = defaultTypingAttributes;
-    }
   } else {
     // we've got some seemingly proper html
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
@@ -1000,6 +995,12 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     return;
   }
   
+  // emptying input typing attributes management
+  if(textView.textStorage.string.length == 0 && _recentlyEmittedString.length > 0) {
+    // reset typing attribtues
+    textView.typingAttributes = defaultTypingAttributes;
+  }
+  
   // zero width space removal
   [ZeroWidthSpaceUtils handleZeroWidthSpacesInEditor:self];
   
@@ -1023,12 +1024,6 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-    // emptying input typing attributes management
-    if(textView.textStorage.string.length == 0) {
-      // reset typing attribtues
-      textView.typingAttributes = defaultTypingAttributes;
-    }
-  
     // mentions removal management
     MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
     if(mentionStyleClass != nullptr) {
