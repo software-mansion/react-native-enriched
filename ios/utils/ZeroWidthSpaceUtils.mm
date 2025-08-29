@@ -62,9 +62,11 @@
     }
   }
   
-  // fix the selection
-  [editor->textView reactFocus];
-  editor->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveOffset, preRemoveSelection.length);
+  // fix the selection if needed
+  if(editor->textView.focused) {
+    [editor->textView reactFocus];
+    editor->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveOffset, preRemoveSelection.length);
+  }
 }
 
 + (void)addSpacesIfNeededInEditor:(ReactNativeRichTextEditorView *)editor {
@@ -109,9 +111,11 @@
     [TextInsertionUtils insertText:@"\u200B" at:lastRange.location additionalAttributes:nullptr editor:editor withSelection:NO];
   }
   
-  // fix the selection
-  [editor->textView reactFocus];
-  editor->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddOffset, preAddSelection.length);
+  // fix the selection if needed
+  if(editor->textView.focused) {
+    [editor->textView reactFocus];
+    editor->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddOffset, preAddSelection.length);
+  }
 }
 
 + (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text editor:(id)editor {
