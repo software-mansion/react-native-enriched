@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "ReactNativeRichTextEditorExample.app"
-               BlueprintName = "ReactNativeRichTextEditorExample"
-               ReferencedContainer = "container:ReactNativeRichTextEditorExample.xcodeproj">
+               BuildableName = "EnrichedTextInputExample.app"
+               BlueprintName = "EnrichedTextInputExample"
+               ReferencedContainer = "container:EnrichedTextInputExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "ReactNativeRichTextEditorExampleTests.xctest"
-               BlueprintName = "ReactNativeRichTextEditorExampleTests"
-               ReferencedContainer = "container:ReactNativeRichTextEditorExample.xcodeproj">
+               BuildableName = "EnrichedTextInputExampleTests.xctest"
+               BlueprintName = "EnrichedTextInputExampleTests"
+               ReferencedContainer = "container:EnrichedTextInputExample.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ReactNativeRichTextEditorExample.app"
-            BlueprintName = "ReactNativeRichTextEditorExample"
-            ReferencedContainer = "container:ReactNativeRichTextEditorExample.xcodeproj">
+            BuildableName = "EnrichedTextInputExample.app"
+            BlueprintName = "EnrichedTextInputExample"
+            ReferencedContainer = "container:EnrichedTextInputExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ReactNativeRichTextEditorExample.app"
-            BlueprintName = "ReactNativeRichTextEditorExample"
-            ReferencedContainer = "container:ReactNativeRichTextEditorExample.xcodeproj">
+            BuildableName = "EnrichedTextInputExample.app"
+            BlueprintName = "EnrichedTextInputExample"
+            ReferencedContainer = "container:EnrichedTextInputExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -162,7 +162,7 @@
     },
     "ios": {
       "componentProvider": {
-        "ReactNativeRichTextEditorView": "ReactNativeRichTextEditorView"
+        "EnrichedTextInputView": "EnrichedTextInputView"
       }
     },
     "includesGeneratedCode": true
