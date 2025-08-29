@@ -7,16 +7,16 @@ import {
   ScrollView,
 } from 'react-native';
 import {
-  RichTextInput,
+  EnrichedTextInput,
   type OnChangeTextEvent,
-  type RichTextInputInstance,
+  type EnrichedTextInputInstance,
   type OnLinkDetected,
   type OnChangeMentionEvent,
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
-  type RichTextStyle,
-} from '@swmansion/react-native-rich-text-editor';
+  type HtmlStyle,
+} from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
@@ -74,7 +74,7 @@ export default function App() {
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
-  const ref = useRef<RichTextInputInstance>(null);
+  const ref = useRef<EnrichedTextInputInstance>(null);
 
   const userMention = useUserMention();
   const channelMention = useChannelMention();
@@ -217,12 +217,12 @@ export default function App() {
       >
         <Text style={styles.label}>SWM Rich Text Editor</Text>
         <View style={styles.editor}>
-          <RichTextInput
+          <EnrichedTextInput
             autoFocus
             ref={ref}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
-            richTextStyle={richTextStyles}
+            htmlStyle={htmlStyle}
             placeholder="Type something here..."
             placeholderTextColor="blue"
             selectionColor="red"
@@ -280,7 +280,7 @@ export default function App() {
   );
 }
 
-const richTextStyles: RichTextStyle = {
+const htmlStyle: HtmlStyle = {
   h1: {
     fontSize: 40,
     bold: true,

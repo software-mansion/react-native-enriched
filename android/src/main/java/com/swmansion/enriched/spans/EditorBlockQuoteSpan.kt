@@ -1,0 +1,34 @@
+package com.swmansion.enriched.spans
+
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.text.Layout
+import android.text.TextPaint
+import android.text.style.CharacterStyle
+import android.text.style.LeadingMarginSpan
+import com.swmansion.enriched.spans.interfaces.EditorBlockSpan
+import com.swmansion.enriched.styles.RichTextStyle
+
+// https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/QuoteSpan.java
+class EditorBlockQuoteSpan(private val richTextStyle: RichTextStyle) : CharacterStyle(), LeadingMarginSpan, EditorBlockSpan {
+  override fun getLeadingMargin(p0: Boolean): Int {
+    return richTextStyle.blockquoteStripeWidth + richTextStyle.blockquoteGapWidth
+  }
+
+  override fun drawLeadingMargin(c: Canvas, p: Paint, x: Int, dir: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, first: Boolean, layout: Layout?) {
+    val style = p.style
+    val color = p.color
+    p.style = Paint.Style.FILL
+    p.color = richTextStyle.blockquoteBorderColor
+    c.drawRect(x.toFloat(), top.toFloat(), x + dir * richTextStyle.blockquoteStripeWidth.toFloat(), bottom.toFloat(), p)
+    p.style = style
+    p.color = color
+  }
+
+  override fun updateDrawState(textPaint: TextPaint?) {
+    val color = richTextStyle.blockquoteColor
+    if (color != null) {
+      textPaint?.color = color
+    }
+  }
+}

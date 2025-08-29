@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "@swmansion/react-native-rich-text-editor": ["./src/index"]
+      "react-native-enriched": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
