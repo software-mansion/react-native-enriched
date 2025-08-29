@@ -1,7 +1,7 @@
-#import <EditorConfig.h>
+#import <InputConfig.h>
 #import <React/RCTFont.h>
 
-@implementation EditorConfig {
+@implementation InputConfig {
   UIColor *_primaryColor;
   NSNumber *_primaryFontSize;
   NSString *_primaryFontWeight;
@@ -47,7 +47,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  EditorConfig *copy = [[[self class] allocWithZone:zone] init];
+  InputConfig *copy = [[[self class] allocWithZone:zone] init];
   copy->_primaryColor = [_primaryColor copy];
   copy->_primaryFontSize = [_primaryFontSize copy];
   copy->_primaryFontWeight = [_primaryFontWeight copy];

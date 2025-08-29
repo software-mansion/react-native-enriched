@@ -1,16 +1,16 @@
 #import "StyleHeaders.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "OccurenceUtils.h"
 
 @implementation StrikethroughStyle {
-  ReactNativeRichTextEditorView *_editor;
+  EnrichedTextInputView *_input;
 }
 
 + (StyleType)getStyleType { return Strikethrough; }
 
-- (instancetype)initWithEditor:(id)editor {
+- (instancetype)initWithInput:(id)input {
   self = [super init];
-  _editor = (ReactNativeRichTextEditorView *) editor;
+  _input = (EnrichedTextInputView *)input;
   return self;
 }
 
@@ -24,23 +24,23 @@
 }
 
 - (void)addAttributes:(NSRange)range {
-  [_editor->textView.textStorage addAttribute:NSStrikethroughStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
+  [_input->textView.textStorage addAttribute:NSStrikethroughStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
 }
 
 - (void)addTypingAttributes {
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSStrikethroughStyleAttributeName] = @(NSUnderlineStyleSingle);
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 - (void)removeAttributes:(NSRange)range {
-  [_editor->textView.textStorage removeAttribute:NSStrikethroughStyleAttributeName range:range];
+  [_input->textView.textStorage removeAttribute:NSStrikethroughStyleAttributeName range:range];
 }
 
 - (void)removeTypingAttributes {
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
   [newTypingAttrs removeObjectForKey: NSStrikethroughStyleAttributeName];
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
@@ -50,19 +50,19 @@
 
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    return [OccurenceUtils detect:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+    return [OccurenceUtils detect:NSStrikethroughStyleAttributeName withInput:_input inRange:range
       withCondition: ^BOOL(id  _Nullable value, NSRange range) {
         return [self styleCondition:value :range];
       }
     ];
   } else {
-    NSNumber *currenStrikethroughAttr = (NSNumber *)_editor->textView.typingAttributes[NSStrikethroughStyleAttributeName];
+    NSNumber *currenStrikethroughAttr = (NSNumber *)_input->textView.typingAttributes[NSStrikethroughStyleAttributeName];
     return currenStrikethroughAttr != nullptr;
   }
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils any:NSStrikethroughStyleAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -70,7 +70,7 @@
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:NSStrikethroughStyleAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils all:NSStrikethroughStyleAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }

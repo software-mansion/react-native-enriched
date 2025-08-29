@@ -16,7 +16,7 @@
   if(fontDescriptor != nullptr) {
     return [UIFont fontWithDescriptor:fontDescriptor size:0];
   } else {
-    RCTLogWarn(@"[RichTextEditor]: Couldn't apply bold trait to the font.");
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't apply bold trait to the font.");
     return self;
   }
 }
@@ -30,7 +30,7 @@
   if(fontDescriptor != nullptr) {
     return [UIFont fontWithDescriptor:fontDescriptor size:0];
   } else {
-    RCTLogWarn(@"[RichTextEditor]: Couldn't remove bold trait from the font.");
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't remove bold trait from the font.");
     return self;
   }
 }
@@ -48,7 +48,7 @@
   if(fontDescriptor != nullptr) {
     return [UIFont fontWithDescriptor:fontDescriptor size:0];
   } else {
-    RCTLogWarn(@"[RichTextEditor]: Couldn't apply italic trait to the font.");
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't apply italic trait to the font.");
     return self;
   }
 }
@@ -62,7 +62,7 @@
   if(fontDescriptor != nullptr) {
     return [UIFont fontWithDescriptor:fontDescriptor size:0];
   } else {
-    RCTLogWarn(@"[RichTextEditor]: Couldn't remove italic trait from the font.");
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't remove italic trait from the font.");
     return self;
   }
 }
@@ -83,7 +83,7 @@
   if(newFontDescriptor != nullptr) {
     return [UIFont fontWithDescriptor:newFontDescriptor size:0];
   } else {
-    RCTLogWarn(@"[RichTextEditor]: Couldn't apply heading style to the font.");
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't apply heading style to the font.");
     return self;
   }
 }

@@ -1,22 +1,22 @@
-#import "EditorTextView.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "InputTextView.h"
+#import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "TextInsertionUtils.h"
 
-@implementation EditorTextView
+@implementation InputTextView
 
 - (void)copy:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
-  if(typedEditor == nullptr) { return; }
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
+  if(typedInput == nullptr) { return; }
   
   // remove zero width spaces before copying the text
-  NSString *plainText = [typedEditor->textView.textStorage.string substringWithRange:typedEditor->textView.selectedRange];
+  NSString *plainText = [typedInput->textView.textStorage.string substringWithRange:typedInput->textView.selectedRange];
   NSString *fixedPlainText = [plainText stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
   
-  NSString *escapedHtml = [NSString stringByEscapingHtml:[typedEditor->parser parseToHtmlFromRange:typedEditor->textView.selectedRange]];
+  NSString *escapedHtml = [NSString stringByEscapingHtml:[typedInput->parser parseToHtmlFromRange:typedInput->textView.selectedRange]];
   
-  NSMutableAttributedString *attrStr = [[typedEditor->textView.textStorage attributedSubstringFromRange:typedEditor->textView.selectedRange] mutableCopy];
+  NSMutableAttributedString *attrStr = [[typedInput->textView.textStorage attributedSubstringFromRange:typedInput->textView.selectedRange] mutableCopy];
   NSRange fullAttrStrRange = NSMakeRange(0, attrStr.length);
   [attrStr.mutableString replaceOccurrencesOfString:@"\u200B" withString:@"" options:0 range:fullAttrStrRange];
   
@@ -34,12 +34,12 @@
 }
 
 - (void)paste:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
-  if(typedEditor == nullptr) { return; }
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
+  if(typedInput == nullptr) { return; }
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   NSArray<NSString *> *pasteboardTypes = pasteboard.pasteboardTypes;
-  NSRange currentRange = typedEditor->textView.selectedRange;
+  NSRange currentRange = typedInput->textView.selectedRange;
   
   if([pasteboardTypes containsObject:UTTypeHTML.identifier]) {
     // we try processing the html contents
@@ -56,25 +56,25 @@
     // unescape the html
     htmlString = [NSString stringByUnescapingHtml:htmlString];
     // validate it
-    NSString *initiallyProcessedHtml = [typedEditor->parser initiallyProcessHtml:htmlString];
+    NSString *initiallyProcessedHtml = [typedInput->parser initiallyProcessHtml:htmlString];
     
     if(initiallyProcessedHtml != nullptr) {
       // valid html, let's apply it
       currentRange.length > 0
-        ? [typedEditor->parser replaceFromHtml:initiallyProcessedHtml range:currentRange]
-        : [typedEditor->parser insertFromHtml:initiallyProcessedHtml location:currentRange.location];
+        ? [typedInput->parser replaceFromHtml:initiallyProcessedHtml range:currentRange]
+        : [typedInput->parser insertFromHtml:initiallyProcessedHtml location:currentRange.location];
     } else {
       // fall back to plain text, otherwise do nothing
-      [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange editor:typedEditor];
+      [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange input:typedInput];
     }
   } else {
-    [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange editor:typedEditor];
+    [self tryHandlingPlainTextItemsIn:pasteboard range:currentRange input:typedInput];
   }
   
-  [typedEditor anyTextMayHaveBeenModified];
+  [typedInput anyTextMayHaveBeenModified];
 }
 
-- (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard range:(NSRange)range editor:(ReactNativeRichTextEditorView *)editor {
+- (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard range:(NSRange)range input:(EnrichedTextInputView *)input {
   NSArray *existingTypes = pasteboard.pasteboardTypes;
   NSArray *handledTypes = @[UTTypeUTF8PlainText.identifier, UTTypePlainText.identifier];
   NSString *plainText;
@@ -98,18 +98,18 @@
   }
   
   range.length > 0
-    ? [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nullptr editor:editor withSelection:YES]
-    : [TextInsertionUtils insertText:plainText at:range.location additionalAttributes:nullptr editor:editor withSelection:YES];
+    ? [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nullptr input:input withSelection:YES]
+    : [TextInsertionUtils insertText:plainText at:range.location additionalAttributes:nullptr input:input withSelection:YES];
 }
 
 - (void)cut:(id)sender {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)_editor;
-  if(typedEditor == nullptr) { return; }
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
+  if(typedInput == nullptr) { return; }
   
   [self copy:sender];
-  [TextInsertionUtils replaceText:@"" at:typedEditor->textView.selectedRange additionalAttributes:nullptr editor:typedEditor  withSelection:YES];
+  [TextInsertionUtils replaceText:@"" at:typedInput->textView.selectedRange additionalAttributes:nullptr input:typedInput  withSelection:YES];
   
-  [typedEditor anyTextMayHaveBeenModified];
+  [typedInput anyTextMayHaveBeenModified];
 }
 
 @end

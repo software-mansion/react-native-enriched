@@ -2,6 +2,6 @@
 #pragma once
 
 @interface ZeroWidthSpaceUtils : NSObject
-+ (void)handleZeroWidthSpacesInEditor:(id)editor;
-+ (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text editor:(id)editor;
++ (void)handleZeroWidthSpacesInInput:(id)input;
++ (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text input:(id)input;
 @end

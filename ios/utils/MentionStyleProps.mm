@@ -1,7 +1,6 @@
 #import "MentionStyleProps.h"
 #import <React/RCTConversions.h>
 #import "StringExtension.h"
-#import "ReactNativeRichTextEditorView.h"
 
 @implementation MentionStyleProps
 

@@ -1,9 +1,9 @@
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "RCTFabricComponentsPlugins.h"
-#import <ReactNativeRichTextEditor/ReactNativeRichTextEditorViewComponentDescriptor.h>
-#import <ReactNativeRichTextEditor/EventEmitters.h>
-#import <ReactNativeRichTextEditor/Props.h>
-#import <ReactNativeRichTextEditor/RCTComponentViewHelpers.h>
+#import <ReactNativeEnriched/EnrichedTextInputViewComponentDescriptor.h>
+#import <ReactNativeEnriched/EventEmitters.h>
+#import <ReactNativeEnriched/Props.h>
+#import <ReactNativeEnriched/RCTComponentViewHelpers.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <folly/dynamic.h>
 #import "UIView+React.h"
@@ -17,12 +17,12 @@
 
 using namespace facebook::react;
 
-@interface ReactNativeRichTextEditorView () <RCTReactNativeRichTextEditorViewViewProtocol, UITextViewDelegate, NSObject>
+@interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol, UITextViewDelegate, NSObject>
 
 @end
 
-@implementation ReactNativeRichTextEditorView {
-  ReactNativeRichTextEditorViewShadowNode::ConcreteState::Shared _state;
+@implementation EnrichedTextInputView {
+  EnrichedTextInputViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
@@ -41,11 +41,11 @@ using namespace facebook::react;
 // MARK: - Component utils
 
 + (ComponentDescriptorProvider)componentDescriptorProvider {
-  return concreteComponentDescriptorProvider<ReactNativeRichTextEditorViewComponentDescriptor>();
+  return concreteComponentDescriptorProvider<EnrichedTextInputViewComponentDescriptor>();
 }
 
-Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
-  return ReactNativeRichTextEditorView.class;
+Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+  return EnrichedTextInputView.class;
 }
 
 + (BOOL)shouldBeRecycled {
@@ -56,7 +56,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if (self = [super initWithFrame:frame]) {
-    static const auto defaultProps = std::make_shared<const ReactNativeRichTextEditorViewProps>();
+    static const auto defaultProps = std::make_shared<const EnrichedTextInputViewProps>();
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
@@ -81,19 +81,19 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
   
   stylesDict = @{
-    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithEditor:self],
-    @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithEditor:self],
-    @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithEditor:self],
-    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithEditor:self],
-    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithEditor:self],
-    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithEditor:self],
-    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithEditor:self],
-    @([H1Style getStyleType]): [[H1Style alloc] initWithEditor:self],
-    @([H2Style getStyleType]): [[H2Style alloc] initWithEditor:self],
-    @([H3Style getStyleType]): [[H3Style alloc] initWithEditor:self],
-    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithEditor:self],
-    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithEditor:self],
-    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithEditor:self]
+    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
+    @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithInput:self],
+    @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithInput:self],
+    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithInput:self],
+    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithInput:self],
+    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithInput:self],
+    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithInput:self],
+    @([H1Style getStyleType]): [[H1Style alloc] initWithInput:self],
+    @([H2Style getStyleType]): [[H2Style alloc] initWithInput:self],
+    @([H3Style getStyleType]): [[H3Style alloc] initWithInput:self],
+    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
+    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
+    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self]
   };
   
   _conflictingStyles = @{
@@ -128,17 +128,17 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     @([BlockQuoteStyle getStyleType]): @[],
   };
   
-  parser = [[EditorParser alloc] initWithEditor:self];
+  parser = [[InputParser alloc] initWithInput:self];
 }
 
 - (void)setupTextView {
-  textView = [[EditorTextView alloc] init];
+  textView = [[InputTextView alloc] init];
   textView.backgroundColor = UIColor.clearColor;
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
-  textView.editor = self;
-  textView.layoutManager.editor = self;
+  textView.input = self;
+  textView.layoutManager.input = self;
 }
 
 - (void)setupPlaceholderLabel {
@@ -159,21 +159,21 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps {
-  const auto &oldViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(_props);
-  const auto &newViewProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
+  const auto &oldViewProps = *std::static_pointer_cast<EnrichedTextInputViewProps const>(_props);
+  const auto &newViewProps = *std::static_pointer_cast<EnrichedTextInputViewProps const>(props);
   BOOL isFirstMount = NO;
   BOOL stylePropChanged = NO;
   
   // initial config
   if(config == nullptr) {
     isFirstMount = YES;
-    config = [[EditorConfig alloc] init];
+    config = [[InputConfig alloc] init];
   }
   
   // any style prop changes:
   // firstly we create the new config for the changes
   
-  EditorConfig *newConfig = [config copy];
+  InputConfig *newConfig = [config copy];
   
   if(newViewProps.color != oldViewProps.color) {
     if(isColorMeaningful(newViewProps.color)) {
@@ -215,91 +215,91 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   
   // rich text style
   
-  if(newViewProps.richTextStyle.h1.fontSize != oldViewProps.richTextStyle.h1.fontSize) {
-    [newConfig setH1FontSize:newViewProps.richTextStyle.h1.fontSize];
+  if(newViewProps.htmlStyle.h1.fontSize != oldViewProps.htmlStyle.h1.fontSize) {
+    [newConfig setH1FontSize:newViewProps.htmlStyle.h1.fontSize];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.h1.bold != oldViewProps.richTextStyle.h1.bold) {
-    [newConfig setH1Bold:newViewProps.richTextStyle.h1.bold];
+  if(newViewProps.htmlStyle.h1.bold != oldViewProps.htmlStyle.h1.bold) {
+    [newConfig setH1Bold:newViewProps.htmlStyle.h1.bold];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.h2.fontSize != oldViewProps.richTextStyle.h2.fontSize) {
-    [newConfig setH2FontSize:newViewProps.richTextStyle.h2.fontSize];
+  if(newViewProps.htmlStyle.h2.fontSize != oldViewProps.htmlStyle.h2.fontSize) {
+    [newConfig setH2FontSize:newViewProps.htmlStyle.h2.fontSize];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.h2.bold != oldViewProps.richTextStyle.h2.bold) {
-    [newConfig setH2Bold:newViewProps.richTextStyle.h2.bold];
+  if(newViewProps.htmlStyle.h2.bold != oldViewProps.htmlStyle.h2.bold) {
+    [newConfig setH2Bold:newViewProps.htmlStyle.h2.bold];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.h3.fontSize != oldViewProps.richTextStyle.h3.fontSize) {
-    [newConfig setH3FontSize:newViewProps.richTextStyle.h3.fontSize];
+  if(newViewProps.htmlStyle.h3.fontSize != oldViewProps.htmlStyle.h3.fontSize) {
+    [newConfig setH3FontSize:newViewProps.htmlStyle.h3.fontSize];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.h3.bold != oldViewProps.richTextStyle.h3.bold) {
-    [newConfig setH3Bold:newViewProps.richTextStyle.h3.bold];
+  if(newViewProps.htmlStyle.h3.bold != oldViewProps.htmlStyle.h3.bold) {
+    [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.blockquote.borderColor != oldViewProps.richTextStyle.blockquote.borderColor) {
-    if(isColorMeaningful(newViewProps.richTextStyle.blockquote.borderColor)) {
-      [newConfig setBlockquoteBorderColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.borderColor)];
+  if(newViewProps.htmlStyle.blockquote.borderColor != oldViewProps.htmlStyle.blockquote.borderColor) {
+    if(isColorMeaningful(newViewProps.htmlStyle.blockquote.borderColor)) {
+      [newConfig setBlockquoteBorderColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.blockquote.borderColor)];
       stylePropChanged = YES;
     }
   }
   
-  if(newViewProps.richTextStyle.blockquote.borderWidth != oldViewProps.richTextStyle.blockquote.borderWidth) {
-    [newConfig setBlockquoteBorderWidth:newViewProps.richTextStyle.blockquote.borderWidth];
+  if(newViewProps.htmlStyle.blockquote.borderWidth != oldViewProps.htmlStyle.blockquote.borderWidth) {
+    [newConfig setBlockquoteBorderWidth:newViewProps.htmlStyle.blockquote.borderWidth];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.blockquote.gapWidth != oldViewProps.richTextStyle.blockquote.gapWidth) {
-    [newConfig setBlockquoteGapWidth:newViewProps.richTextStyle.blockquote.gapWidth];
+  if(newViewProps.htmlStyle.blockquote.gapWidth != oldViewProps.htmlStyle.blockquote.gapWidth) {
+    [newConfig setBlockquoteGapWidth:newViewProps.htmlStyle.blockquote.gapWidth];
     stylePropChanged = YES;
   }
   
   // since this prop defaults to undefined on JS side, we need to force set the value on first mount
-  if(newViewProps.richTextStyle.blockquote.color != oldViewProps.richTextStyle.blockquote.color || isFirstMount) {
-    if(isColorMeaningful(newViewProps.richTextStyle.blockquote.color)) {
-      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.blockquote.color)];
+  if(newViewProps.htmlStyle.blockquote.color != oldViewProps.htmlStyle.blockquote.color || isFirstMount) {
+    if(isColorMeaningful(newViewProps.htmlStyle.blockquote.color)) {
+      [newConfig setBlockquoteColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.blockquote.color)];
     } else {
       [newConfig setBlockquoteColor:[newConfig primaryColor]];
     }
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.code.color != oldViewProps.richTextStyle.code.color) {
-    if(isColorMeaningful(newViewProps.richTextStyle.code.color)) {
-      [newConfig setInlineCodeFgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.color)];
+  if(newViewProps.htmlStyle.code.color != oldViewProps.htmlStyle.code.color) {
+    if(isColorMeaningful(newViewProps.htmlStyle.code.color)) {
+      [newConfig setInlineCodeFgColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.code.color)];
       stylePropChanged = YES;
     }
   }
   
-  if(newViewProps.richTextStyle.code.backgroundColor != oldViewProps.richTextStyle.code.backgroundColor) {
-    if(isColorMeaningful(newViewProps.richTextStyle.code.backgroundColor)) {
-      [newConfig setInlineCodeBgColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.code.backgroundColor)];
+  if(newViewProps.htmlStyle.code.backgroundColor != oldViewProps.htmlStyle.code.backgroundColor) {
+    if(isColorMeaningful(newViewProps.htmlStyle.code.backgroundColor)) {
+      [newConfig setInlineCodeBgColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.code.backgroundColor)];
       stylePropChanged = YES;
     }
   }
   
-  if(newViewProps.richTextStyle.ol.gapWidth != oldViewProps.richTextStyle.ol.gapWidth) {
-    [newConfig setOrderedListGapWidth:newViewProps.richTextStyle.ol.gapWidth];
+  if(newViewProps.htmlStyle.ol.gapWidth != oldViewProps.htmlStyle.ol.gapWidth) {
+    [newConfig setOrderedListGapWidth:newViewProps.htmlStyle.ol.gapWidth];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.ol.marginLeft != oldViewProps.richTextStyle.ol.marginLeft) {
-    [newConfig setOrderedListMarginLeft:newViewProps.richTextStyle.ol.marginLeft];
+  if(newViewProps.htmlStyle.ol.marginLeft != oldViewProps.htmlStyle.ol.marginLeft) {
+    [newConfig setOrderedListMarginLeft:newViewProps.htmlStyle.ol.marginLeft];
     stylePropChanged = YES;
   }
   
   // since this prop defaults to undefined on JS side, we need to force set the value on first mount
-  if(newViewProps.richTextStyle.ol.markerFontWeight != oldViewProps.richTextStyle.ol.markerFontWeight || isFirstMount) {
-    if(!newViewProps.richTextStyle.ol.markerFontWeight.empty()) {
-      [newConfig setOrderedListMarkerFontWeight:[NSString fromCppString: newViewProps.richTextStyle.ol.markerFontWeight]];
+  if(newViewProps.htmlStyle.ol.markerFontWeight != oldViewProps.htmlStyle.ol.markerFontWeight || isFirstMount) {
+    if(!newViewProps.htmlStyle.ol.markerFontWeight.empty()) {
+      [newConfig setOrderedListMarkerFontWeight:[NSString fromCppString: newViewProps.htmlStyle.ol.markerFontWeight]];
     } else {
       [newConfig setOrderedListMarkerFontWeight:[newConfig primaryFontWeight]];
     }
@@ -307,46 +307,46 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   // since this prop defaults to undefined on JS side, we need to force set the value on first mount
-  if(newViewProps.richTextStyle.ol.markerColor != oldViewProps.richTextStyle.ol.markerColor || isFirstMount) {
-    if(isColorMeaningful(newViewProps.richTextStyle.ol.markerColor)) {
-      [newConfig setOrderedListMarkerColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ol.markerColor)];
+  if(newViewProps.htmlStyle.ol.markerColor != oldViewProps.htmlStyle.ol.markerColor || isFirstMount) {
+    if(isColorMeaningful(newViewProps.htmlStyle.ol.markerColor)) {
+      [newConfig setOrderedListMarkerColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.ol.markerColor)];
     } else {
       [newConfig setOrderedListMarkerColor:[newConfig primaryColor]];
     }
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.ul.bulletColor != oldViewProps.richTextStyle.ul.bulletColor) {
-    if(isColorMeaningful(newViewProps.richTextStyle.ul.bulletColor)) {
-      [newConfig setUnorderedListBulletColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.ul.bulletColor)];
+  if(newViewProps.htmlStyle.ul.bulletColor != oldViewProps.htmlStyle.ul.bulletColor) {
+    if(isColorMeaningful(newViewProps.htmlStyle.ul.bulletColor)) {
+      [newConfig setUnorderedListBulletColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.ul.bulletColor)];
       stylePropChanged = YES;
     }
   }
   
-  if(newViewProps.richTextStyle.ul.bulletSize != oldViewProps.richTextStyle.ul.bulletSize) {
-    [newConfig setUnorderedListBulletSize:newViewProps.richTextStyle.ul.bulletSize];
+  if(newViewProps.htmlStyle.ul.bulletSize != oldViewProps.htmlStyle.ul.bulletSize) {
+    [newConfig setUnorderedListBulletSize:newViewProps.htmlStyle.ul.bulletSize];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.ul.gapWidth != oldViewProps.richTextStyle.ul.gapWidth) {
-    [newConfig setUnorderedListGapWidth:newViewProps.richTextStyle.ul.gapWidth];
+  if(newViewProps.htmlStyle.ul.gapWidth != oldViewProps.htmlStyle.ul.gapWidth) {
+    [newConfig setUnorderedListGapWidth:newViewProps.htmlStyle.ul.gapWidth];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.ul.marginLeft != oldViewProps.richTextStyle.ul.marginLeft) {
-    [newConfig setUnorderedListMarginLeft:newViewProps.richTextStyle.ul.marginLeft];
+  if(newViewProps.htmlStyle.ul.marginLeft != oldViewProps.htmlStyle.ul.marginLeft) {
+    [newConfig setUnorderedListMarginLeft:newViewProps.htmlStyle.ul.marginLeft];
     stylePropChanged = YES;
   }
   
-  if(newViewProps.richTextStyle.a.color != oldViewProps.richTextStyle.a.color) {
-    if(isColorMeaningful(newViewProps.richTextStyle.a.color)) {
-      [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.richTextStyle.a.color)];
+  if(newViewProps.htmlStyle.a.color != oldViewProps.htmlStyle.a.color) {
+    if(isColorMeaningful(newViewProps.htmlStyle.a.color)) {
+      [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.a.color)];
       stylePropChanged = YES;
     }
   }
   
-  if(newViewProps.richTextStyle.a.textDecorationLine != oldViewProps.richTextStyle.a.textDecorationLine) {
-    NSString *objcString = [NSString fromCppString:newViewProps.richTextStyle.a.textDecorationLine];
+  if(newViewProps.htmlStyle.a.textDecorationLine != oldViewProps.htmlStyle.a.textDecorationLine) {
+    NSString *objcString = [NSString fromCppString:newViewProps.htmlStyle.a.textDecorationLine];
     if([objcString isEqualToString:DecorationUnderline]) {
       [newConfig setLinkDecorationLine:DecorationUnderline];
     } else {
@@ -356,8 +356,8 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
     stylePropChanged = YES;
   }
   
-  folly::dynamic oldMentionStyle = oldViewProps.richTextStyle.mention;
-  folly::dynamic newMentionStyle = newViewProps.richTextStyle.mention;
+  folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
+  folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if(oldMentionStyle != newMentionStyle) {
     bool newSingleProps = NO;
     
@@ -580,7 +580,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
 
 // make sure the newest state is kept in _state property
 - (void)updateState:(State::Shared const &)state oldState:(State::Shared const &)oldState {
-  _state = std::static_pointer_cast<const ReactNativeRichTextEditorViewShadowNode::ConcreteState>(state);
+  _state = std::static_pointer_cast<const EnrichedTextInputViewShadowNode::ConcreteState>(state);
   
   // first render with all the needed stuff already defined (state and componentView)
   // so we need to run a single height calculation for any initial values
@@ -595,7 +595,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   _componentViewHeightUpdateCounter++;
   auto selfRef = wrapManagedObjectWeakly(self);
-  _state->updateState(ReactNativeRichTextEditorViewState(_componentViewHeightUpdateCounter, selfRef));
+  _state->updateState(EnrichedTextInputViewState(_componentViewHeightUpdateCounter, selfRef));
 }
 
 // MARK: - Active styles
@@ -770,10 +770,10 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
 }
 
-- (std::shared_ptr<ReactNativeRichTextEditorViewEventEmitter>)getEventEmitter {
+- (std::shared_ptr<EnrichedTextInputViewEventEmitter>)getEventEmitter {
   if(_eventEmitter != nullptr && !blockEmitting) {
-    auto emitter = static_cast<const ReactNativeRichTextEditorViewEventEmitter &>(*_eventEmitter);
-    return std::make_shared<ReactNativeRichTextEditorViewEventEmitter>(emitter);
+    auto emitter = static_cast<const EnrichedTextInputViewEventEmitter &>(*_eventEmitter);
+    return std::make_shared<EnrichedTextInputViewEventEmitter>(emitter);
   } else {
     return nullptr;
   }
@@ -1002,7 +1002,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   // zero width space removal
-  [ZeroWidthSpaceUtils handleZeroWidthSpacesInEditor:self];
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
   
   // inline code on newlines fix
   InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
@@ -1150,7 +1150,7 @@ Class<RCTComponentViewProtocol> ReactNativeRichTextEditorViewCls(void) {
   }
   
   // zero width space removal fix
-  rejectTextChanges = rejectTextChanges || [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text editor:self];
+  rejectTextChanges = rejectTextChanges || [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self];
 
   if(rejectTextChanges) {
     [self anyTextMayHaveBeenModified];

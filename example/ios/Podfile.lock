@@ -2251,7 +2251,7 @@ PODS:
     - React-perflogger (= 0.81.0)
     - React-utils (= 0.81.0)
     - SocketRocket
-  - ReactNativeRichTextEditor (0.1.0):
+  - ReactNativeEnriched (0.1.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2355,7 +2355,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - ReactNativeRichTextEditor (from `../..`)
+  - ReactNativeEnriched (from `../..`)
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2507,7 +2507,7 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  ReactNativeRichTextEditor:
+  ReactNativeEnriched:
     :path: "../.."
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
@@ -2584,7 +2584,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 562d731311d0524a577cf8a01faa97874bacbdfe
   ReactCodegen: a5d5626f71299d374b87e9a7dc92f968a963b4ef
   ReactCommon: c235ebd26d63fde9a2dfa72cee9f8294b910fee1
-  ReactNativeRichTextEditor: fca76141711f42ba23278cc8ad3bf396057eed44
+  ReactNativeEnriched: 9600491c8cc937f20a4d90c155b8febb1b6925b1
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: b01392348aeea02064c21a2762a42893d82b60a7
 

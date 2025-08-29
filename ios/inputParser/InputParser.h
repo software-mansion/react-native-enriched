@@ -1,8 +1,8 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@interface EditorParser : NSObject
-- (instancetype _Nonnull)initWithEditor:(id _Nonnull)editor;
+@interface InputParser : NSObject
+- (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
 - (NSString * _Nonnull)parseToHtmlFromRange:(NSRange)range;
 - (void)replaceWholeFromHtml:(NSString * _Nonnull)html;
 - (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range;

@@ -1,22 +1,22 @@
-#import "EditorParser.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "InputParser.h"
+#import "EnrichedTextInputView.h"
 #import "StyleHeaders.h"
 #import "UIView+React.h"
 #import "TextInsertionUtils.h"
 
-@implementation EditorParser {
-  ReactNativeRichTextEditorView *_editor;
+@implementation InputParser {
+  EnrichedTextInputView *_input;
 }
 
-- (instancetype)initWithEditor:(id)editor {
+- (instancetype)initWithInput:(id)input {
   self = [super init];
-  _editor = (ReactNativeRichTextEditorView *) editor;
+  _input = (EnrichedTextInputView *)input;
   return self;
 }
 
 - (NSString *)parseToHtmlFromRange:(NSRange)range {
   NSInteger offset = range.location;
-  NSString *text = [_editor->textView.textStorage.string substringWithRange:range];
+  NSString *text = [_input->textView.textStorage.string substringWithRange:range];
 
   if(text.length == 0) {
     return @"<html>\n<p></p>\n</html>";
@@ -36,8 +36,8 @@
     NSMutableDictionary *currentActiveStylesBeginning = [[NSMutableDictionary alloc] init];
     
     // check each existing style existence
-    for(NSNumber* type in _editor->stylesDict) {
-      id<BaseStyleProtocol> style = _editor->stylesDict[type];
+    for(NSNumber* type in _input->stylesDict) {
+      id<BaseStyleProtocol> style = _input->stylesDict[type];
       if([style detectStyle:currentRange]) {
         [currentActiveStyles addObject:type];
         
@@ -49,15 +49,15 @@
       }
     }
     
-    NSString *currentCharacterStr = [_editor->textView.textStorage.string substringWithRange:currentRange];
-    unichar currentCharacterChar = [_editor->textView.textStorage.string characterAtIndex:currentRange.location];
+    NSString *currentCharacterStr = [_input->textView.textStorage.string substringWithRange:currentRange];
+    unichar currentCharacterChar = [_input->textView.textStorage.string characterAtIndex:currentRange.location];
     
     if([[NSCharacterSet newlineCharacterSet] characterIsMember:currentCharacterChar]) {
       if(newLine) {
         // we can either have an empty list item OR need to close the list and put a BR in such a situation
         // the existence of the list must be checked on 0 length range, not on the newline character
         if(inOrderedList) {
-          OrderedListStyle *oStyle = _editor->stylesDict[@(OrderedList)];
+          OrderedListStyle *oStyle = _input->stylesDict[@(OrderedList)];
           BOOL detected = [oStyle detectStyle: NSMakeRange(currentRange.location, 0)];
           if(detected) {
             [result appendString:@"\n<li></li>"];
@@ -66,7 +66,7 @@
             inOrderedList = NO;
           }
         } else if(inUnorderedList) {
-          UnorderedListStyle *uStyle = _editor->stylesDict[@(UnorderedList)];
+          UnorderedListStyle *uStyle = _input->stylesDict[@(UnorderedList)];
           BOOL detected = [uStyle detectStyle: NSMakeRange(currentRange.location, 0)];
           if(detected) {
             [result appendString:@"\n<li></li>"];
@@ -221,7 +221,7 @@
       
     // append closing tags
     for(NSNumber *style in sortedEndedStyles) {
-      NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:_editor->textView.textStorage.string.length - 1];
+      NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:_input->textView.textStorage.string.length - 1];
       [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
     }
     
@@ -279,7 +279,7 @@
     return @"code";
   } else if([style isEqualToNumber: @([LinkStyle getStyleType])]) {
     if(openingTag) {
-      LinkStyle *linkStyle = (LinkStyle *)_editor->stylesDict[@([LinkStyle getStyleType])];
+      LinkStyle *linkStyle = (LinkStyle *)_input->stylesDict[@([LinkStyle getStyleType])];
       if(linkStyle != nullptr) {
         LinkData *data = [linkStyle getLinkDataAt: location];
         if(data != nullptr && data.url != nullptr) {
@@ -292,7 +292,7 @@
     }
   } else if([style isEqualToNumber: @([MentionStyle getStyleType])]) {
     if(openingTag) {
-      MentionStyle *mentionStyle = (MentionStyle *)_editor->stylesDict[@([MentionStyle getStyleType])];
+      MentionStyle *mentionStyle = (MentionStyle *)_input->stylesDict[@([MentionStyle getStyleType])];
       if(mentionStyle != nullptr) {
         MentionParams *params = [mentionStyle getMentionParamsAt:location];
         // attributes can theoretically be nullptr
@@ -339,11 +339,11 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // reset the text first and reset typing attributes
-  _editor->textView.text = @"";
-  _editor->textView.typingAttributes = _editor->defaultTypingAttributes;
+  _input->textView.text = @"";
+  _input->textView.typingAttributes = _input->defaultTypingAttributes;
   
   // set new text
-  _editor->textView.text = plainText;
+  _input->textView.text = plainText;
   
   // re-apply the styles
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:0];
@@ -355,7 +355,7 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // we can use ready replace util
-  [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nil editor:_editor withSelection:YES];
+  [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nil input:_input withSelection:YES];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
 }
@@ -366,7 +366,7 @@
   NSArray *stylesInfo = (NSArray *)processingResult[1];
   
   // same here, insertion utils got our back
-  [TextInsertionUtils insertText:plainText at:location additionalAttributes:nil editor:_editor withSelection:YES];
+  [TextInsertionUtils insertText:plainText at:location additionalAttributes:nil input:_input withSelection:YES];
   
   [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
 }
@@ -376,15 +376,15 @@
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
-    id<BaseStyleProtocol> baseStyle = _editor->stylesDict[styleType];
+    id<BaseStyleProtocol> baseStyle = _input->stylesDict[styleType];
     // range must be taking offest into consideration because processed styles' ranges are relative to only the new text
     // while we need absolute ranges relative to the whole existing text
     NSRange styleRange = NSMakeRange(offset + [stylePair.rangeValue rangeValue].location, [stylePair.rangeValue rangeValue].length);
     
     // of course any changes here need to take blocks and conflicts into consideration
-    if([_editor handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType] range:styleRange]) {
+    if([_input handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType] range:styleRange]) {
       if([styleType isEqualToNumber: @([LinkStyle getStyleType])]) {
-        NSString *text = [_editor->textView.textStorage.string substringWithRange:styleRange];
+        NSString *text = [_input->textView.textStorage.string substringWithRange:styleRange];
         NSString *url = (NSString *)stylePair.styleValue;
         BOOL isManual = ![text isEqualToString:url];
         [((LinkStyle *)baseStyle) addLink:text url:url range:styleRange manual:isManual];
@@ -396,7 +396,7 @@
       }
     }
   }
-  [_editor anyTextMayHaveBeenModified];
+  [_input anyTextMayHaveBeenModified];
 }
 
 - (NSString * _Nullable)initiallyProcessHtml:(NSString * _Nonnull)html {

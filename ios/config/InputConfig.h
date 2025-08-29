@@ -3,7 +3,7 @@
 #import "TextDecorationLineEnum.h"
 #import "MentionStyleProps.h"
 
-@interface EditorConfig: NSObject<NSCopying>
+@interface InputConfig: NSObject<NSCopying>
 - (instancetype) init;
 - (UIColor *)primaryColor;
 - (void)setPrimaryColor:(UIColor *)newValue;

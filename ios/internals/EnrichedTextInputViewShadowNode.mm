@@ -1,5 +1,5 @@
-#import "ReactNativeRichTextEditorViewShadowNode.h"
-#import <ReactNativeRichTextEditorView.h>
+#import "EnrichedTextInputViewShadowNode.h"
+#import <EnrichedTextInputView.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <yoga/Yoga.h>
 #import <React/RCTShadowView+Layout.h>
@@ -7,9 +7,9 @@
 
 namespace facebook::react {
 
-extern const char ReactNativeRichTextEditorViewComponentName[] = "ReactNativeRichTextEditorView";
+extern const char EnrichedTextInputViewComponentName[] = "EnrichedTextInputView";
 
-ReactNativeRichTextEditorViewShadowNode::ReactNativeRichTextEditorViewShadowNode(
+EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   const ShadowNodeFragment& fragment,
   const ShadowNodeFamily::Shared& family,
   ShadowNodeTraits traits
@@ -17,14 +17,14 @@ ReactNativeRichTextEditorViewShadowNode::ReactNativeRichTextEditorViewShadowNode
   localForceHeightRecalculationCounter_ = 0;
 }
 
-ReactNativeRichTextEditorViewShadowNode::ReactNativeRichTextEditorViewShadowNode(
+EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   const ShadowNode& sourceShadowNode,
   const ShadowNodeFragment& fragment
 ): ConcreteViewShadowNode(sourceShadowNode, fragment) {
   dirtyLayoutIfNeeded();
 }
 
-void ReactNativeRichTextEditorViewShadowNode::dirtyLayoutIfNeeded() {
+void EnrichedTextInputViewShadowNode::dirtyLayoutIfNeeded() {
   const auto state = this->getStateData();
   const int receivedCounter = state.getForceHeightRecalculationCounter();
   
@@ -34,14 +34,14 @@ void ReactNativeRichTextEditorViewShadowNode::dirtyLayoutIfNeeded() {
   }
 }
 
-Size ReactNativeRichTextEditorViewShadowNode::measureContent(const LayoutContext& layoutContext, const LayoutConstraints& layoutConstraints) const {
+Size EnrichedTextInputViewShadowNode::measureContent(const LayoutContext& layoutContext, const LayoutConstraints& layoutConstraints) const {
   const auto state = this->getStateData();
   const auto componentRef = state.getComponentViewRef();
   RCTInternalGenericWeakWrapper *weakWrapper = (RCTInternalGenericWeakWrapper *)unwrapManagedObject(componentRef);
   
   if(weakWrapper != nullptr) {
     id componentObject = weakWrapper.object;
-    ReactNativeRichTextEditorView *typedComponentObject = (ReactNativeRichTextEditorView *) componentObject;
+    EnrichedTextInputView *typedComponentObject = (EnrichedTextInputView *) componentObject;
     
     if(typedComponentObject != nullptr) {
       __block CGSize estimatedSize;
@@ -63,7 +63,7 @@ Size ReactNativeRichTextEditorViewShadowNode::measureContent(const LayoutContext
     // in a lot of cases it will be the desired height
     // in others, the jump on the second call will at least be smaller
     const auto props = this->getProps();
-    const auto &typedProps = *std::static_pointer_cast<ReactNativeRichTextEditorViewProps const>(props);
+    const auto &typedProps = *std::static_pointer_cast<EnrichedTextInputViewProps const>(props);
     NSAttributedString *attrStr = [[NSAttributedString alloc] initWithString:@"I" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:typedProps.fontSize]}];
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attrStr);
     const CGSize &suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(

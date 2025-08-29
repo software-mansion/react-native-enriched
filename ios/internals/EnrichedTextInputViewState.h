@@ -3,10 +3,10 @@
 
 namespace facebook::react {
 
-class ReactNativeRichTextEditorViewState {
+class EnrichedTextInputViewState {
 public:
-  ReactNativeRichTextEditorViewState(): forceHeightRecalculationCounter_(0), componentViewRef_(nullptr) {}
-  ReactNativeRichTextEditorViewState(int counter, std::shared_ptr<void> ref) {
+  EnrichedTextInputViewState(): forceHeightRecalculationCounter_(0), componentViewRef_(nullptr) {}
+  EnrichedTextInputViewState(int counter, std::shared_ptr<void> ref) {
     forceHeightRecalculationCounter_ = counter;
     componentViewRef_ = ref;
   }

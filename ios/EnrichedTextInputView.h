@@ -1,21 +1,21 @@
 #pragma once
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
-#import "EditorConfig.h"
-#import "EditorParser.h"
+#import "InputConfig.h"
+#import "InputParser.h"
 #import "BaseStyleProtocol.h"
-#import "EditorTextView.h"
+#import "InputTextView.h"
 
-#ifndef ReactNativeRichTextEditorViewNativeComponent_h
-#define ReactNativeRichTextEditorViewNativeComponent_h
+#ifndef EnrichedTextInputViewNativeComponent_h
+#define EnrichedTextInputViewNativeComponent_h
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ReactNativeRichTextEditorView : RCTViewComponentView {
-  @public EditorTextView *textView;
+@interface EnrichedTextInputView : RCTViewComponentView {
+  @public InputTextView *textView;
   @public NSRange recentlyChangedRange;
-  @public EditorConfig *config;
-  @public EditorParser *parser;
+  @public InputConfig *config;
+  @public InputParser *parser;
   @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
   @public BOOL blockEmitting;
@@ -30,4 +30,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#endif /* ReactNativeRichTextEditorViewNativeComponent_h */
+#endif /* EnrichedTextInputViewNativeComponent_h */
