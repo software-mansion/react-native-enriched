@@ -28,25 +28,25 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
 import com.swmansion.enriched.styles.ParametrizedStyles
-import com.swmansion.enriched.styles.RichTextStyle
-import com.swmansion.enriched.utils.EditorParser
-import com.swmansion.enriched.utils.EditorSelection
-import com.swmansion.enriched.utils.EditorSpanState
+import com.swmansion.enriched.styles.HtmlStyle
+import com.swmansion.enriched.utils.EnrichedParser
+import com.swmansion.enriched.utils.EnrichedSelection
+import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.mergeSpannables
-import com.swmansion.enriched.watchers.EditorSpanWatcher
-import com.swmansion.enriched.watchers.EditorTextWatcher
+import com.swmansion.enriched.watchers.EnrichedSpanWatcher
+import com.swmansion.enriched.watchers.EnrichedTextWatcher
 import kotlin.math.ceil
 
 
 class EnrichedTextInputView : AppCompatEditText {
   var stateWrapper: StateWrapper? = null
-  val selection: EditorSelection? = EditorSelection(this)
-  val spanState: EditorSpanState? = EditorSpanState(this)
+  val selection: EnrichedSelection? = EnrichedSelection(this)
+  val spanState: EnrichedSpanState? = EnrichedSpanState(this)
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
@@ -55,10 +55,9 @@ class EnrichedTextInputView : AppCompatEditText {
   var isRemovingMany: Boolean = false
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
-  var richTextStyle: RichTextStyle = RichTextStyle(this, null)
-  var spanWatcher: EditorSpanWatcher? = null
-  var layoutManager: ReactNativeRichTextEditorViewLayoutManager =
-    ReactNativeRichTextEditorViewLayoutManager(this)
+  var htmlStyle: HtmlStyle = HtmlStyle(this, null)
+  var spanWatcher: EnrichedSpanWatcher? = null
+  var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
   var fontSize: Float? = null
   private var autoFocus = false
@@ -101,8 +100,8 @@ class EnrichedTextInputView : AppCompatEditText {
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
 
-    addSpanWatcher(EditorSpanWatcher(this))
-    addTextChangedListener(EditorTextWatcher(this))
+    addSpanWatcher(EnrichedSpanWatcher(this))
+    addTextChangedListener(EnrichedTextWatcher(this))
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -175,7 +174,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
     if (start < end) {
       val selectedText = spannable.subSequence(start, end) as Spannable
-      val selectedHtml = EditorParser.toHtml(selectedText)
+      val selectedHtml = EnrichedParser.toHtml(selectedText)
 
       val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
       val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
@@ -216,7 +215,7 @@ class EnrichedTextInputView : AppCompatEditText {
     val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
     if (!isHtml) return text
 
-    val parsed = EditorParser.fromHtml(text.toString(), richTextStyle, null)
+    val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, null)
     val withoutLastNewLine = parsed.trimEnd('\n')
     return withoutLastNewLine
   }
@@ -229,7 +228,7 @@ class EnrichedTextInputView : AppCompatEditText {
     setText(newText)
 
     // Assign SpanWatcher one more time as our previous spannable has been replaced
-    addSpanWatcher(EditorSpanWatcher(this))
+    addSpanWatcher(EnrichedSpanWatcher(this))
 
     // Scroll to the last line of text
     setSelection(text?.length ?: 0)
@@ -291,7 +290,7 @@ class EnrichedTextInputView : AppCompatEditText {
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
 
     // This ensured that newly created spans will take the new font size into account
-    richTextStyle.invalidateStyles()
+    htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout(text)
   }
 
@@ -359,19 +358,19 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private fun toggleStyle(name: String) {
     when (name) {
-      EditorSpans.BOLD -> inlineStyles?.toggleStyle(EditorSpans.BOLD)
-      EditorSpans.ITALIC -> inlineStyles?.toggleStyle(EditorSpans.ITALIC)
-      EditorSpans.UNDERLINE -> inlineStyles?.toggleStyle(EditorSpans.UNDERLINE)
-      EditorSpans.STRIKETHROUGH -> inlineStyles?.toggleStyle(EditorSpans.STRIKETHROUGH)
-      EditorSpans.INLINE_CODE -> inlineStyles?.toggleStyle(EditorSpans.INLINE_CODE)
-      EditorSpans.H1 -> paragraphStyles?.toggleStyle(EditorSpans.H1)
-      EditorSpans.H2 -> paragraphStyles?.toggleStyle(EditorSpans.H2)
-      EditorSpans.H3 -> paragraphStyles?.toggleStyle(EditorSpans.H3)
-      EditorSpans.CODE_BLOCK -> paragraphStyles?.toggleStyle(EditorSpans.CODE_BLOCK)
-      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EditorSpans.BLOCK_QUOTE)
-      EditorSpans.ORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.ORDERED_LIST)
-      EditorSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EditorSpans.UNORDERED_LIST)
-      else -> Log.w("ReactNativeRichTextEditorView", "Unknown style: $name")
+      EnrichedSpans.BOLD -> inlineStyles?.toggleStyle(EnrichedSpans.BOLD)
+      EnrichedSpans.ITALIC -> inlineStyles?.toggleStyle(EnrichedSpans.ITALIC)
+      EnrichedSpans.UNDERLINE -> inlineStyles?.toggleStyle(EnrichedSpans.UNDERLINE)
+      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.toggleStyle(EnrichedSpans.STRIKETHROUGH)
+      EnrichedSpans.INLINE_CODE -> inlineStyles?.toggleStyle(EnrichedSpans.INLINE_CODE)
+      EnrichedSpans.H1 -> paragraphStyles?.toggleStyle(EnrichedSpans.H1)
+      EnrichedSpans.H2 -> paragraphStyles?.toggleStyle(EnrichedSpans.H2)
+      EnrichedSpans.H3 -> paragraphStyles?.toggleStyle(EnrichedSpans.H3)
+      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.toggleStyle(EnrichedSpans.CODE_BLOCK)
+      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EnrichedSpans.BLOCK_QUOTE)
+      EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
+      EnrichedSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.UNORDERED_LIST)
+      else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
     }
 
     layoutManager.invalidateLayout(text)
@@ -379,21 +378,21 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private fun removeStyle(name: String, start: Int, end: Int): Boolean {
     val removed = when (name) {
-      EditorSpans.BOLD -> inlineStyles?.removeStyle(EditorSpans.BOLD, start, end)
-      EditorSpans.ITALIC -> inlineStyles?.removeStyle(EditorSpans.ITALIC, start, end)
-      EditorSpans.UNDERLINE -> inlineStyles?.removeStyle(EditorSpans.UNDERLINE, start, end)
-      EditorSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EditorSpans.STRIKETHROUGH, start, end)
-      EditorSpans.INLINE_CODE -> inlineStyles?.removeStyle(EditorSpans.INLINE_CODE, start, end)
-      EditorSpans.H1 -> paragraphStyles?.removeStyle(EditorSpans.H1, start, end)
-      EditorSpans.H2 -> paragraphStyles?.removeStyle(EditorSpans.H2, start, end)
-      EditorSpans.H3 -> paragraphStyles?.removeStyle(EditorSpans.H3, start, end)
-      EditorSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EditorSpans.CODE_BLOCK, start, end)
-      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EditorSpans.BLOCK_QUOTE, start, end)
-      EditorSpans.ORDERED_LIST -> listStyles?.removeStyle(EditorSpans.ORDERED_LIST, start, end)
-      EditorSpans.UNORDERED_LIST -> listStyles?.removeStyle(EditorSpans.UNORDERED_LIST, start, end)
-      EditorSpans.LINK -> parametrizedStyles?.removeStyle(EditorSpans.LINK, start, end)
-      EditorSpans.IMAGE -> parametrizedStyles?.removeStyle(EditorSpans.IMAGE, start, end)
-      EditorSpans.MENTION -> parametrizedStyles?.removeStyle(EditorSpans.MENTION, start, end)
+      EnrichedSpans.BOLD -> inlineStyles?.removeStyle(EnrichedSpans.BOLD, start, end)
+      EnrichedSpans.ITALIC -> inlineStyles?.removeStyle(EnrichedSpans.ITALIC, start, end)
+      EnrichedSpans.UNDERLINE -> inlineStyles?.removeStyle(EnrichedSpans.UNDERLINE, start, end)
+      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EnrichedSpans.STRIKETHROUGH, start, end)
+      EnrichedSpans.INLINE_CODE -> inlineStyles?.removeStyle(EnrichedSpans.INLINE_CODE, start, end)
+      EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
+      EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
+      EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
+      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
+      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
+      EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
+      EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
+      EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
+      EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
+      EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
       else -> false
     }
 
@@ -402,21 +401,21 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private fun getTargetRange(name: String): Pair<Int, Int> {
     val result = when (name) {
-      EditorSpans.BOLD -> inlineStyles?.getStyleRange()
-      EditorSpans.ITALIC -> inlineStyles?.getStyleRange()
-      EditorSpans.UNDERLINE -> inlineStyles?.getStyleRange()
-      EditorSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
-      EditorSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
-      EditorSpans.H1 -> paragraphStyles?.getStyleRange()
-      EditorSpans.H2 -> paragraphStyles?.getStyleRange()
-      EditorSpans.H3 -> paragraphStyles?.getStyleRange()
-      EditorSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
-      EditorSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
-      EditorSpans.ORDERED_LIST -> listStyles?.getStyleRange()
-      EditorSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
-      EditorSpans.LINK -> parametrizedStyles?.getStyleRange()
-      EditorSpans.IMAGE -> parametrizedStyles?.getStyleRange()
-      EditorSpans.MENTION -> parametrizedStyles?.getStyleRange()
+      EnrichedSpans.BOLD -> inlineStyles?.getStyleRange()
+      EnrichedSpans.ITALIC -> inlineStyles?.getStyleRange()
+      EnrichedSpans.UNDERLINE -> inlineStyles?.getStyleRange()
+      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
+      EnrichedSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
+      EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
+      EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
+      EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
+      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
+      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
+      EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
+      EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+      EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
+      EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
+      EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
       else -> Pair(0, 0)
     }
 
@@ -424,7 +423,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun verifyStyle(name: String): Boolean {
-    val mergingConfig = EditorSpans.mergingConfig[name] ?: return true
+    val mergingConfig = EnrichedSpans.mergingConfig[name] ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
     val isEnabling = spanState?.getStart(name) == null
@@ -465,7 +464,7 @@ class EnrichedTextInputView : AppCompatEditText {
     return true
   }
 
-  private fun addSpanWatcher(watcher: EditorSpanWatcher) {
+  private fun addSpanWatcher(watcher: EnrichedSpanWatcher) {
     val spannable = text as Spannable
     spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
     spanWatcher = watcher
@@ -479,28 +478,28 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   fun addLink(start: Int, end: Int, text: String, url: String) {
-    val isValid = verifyStyle(EditorSpans.LINK)
+    val isValid = verifyStyle(EnrichedSpans.LINK)
     if (!isValid) return
 
     parametrizedStyles?.setLinkSpan(start, end, text, url)
   }
 
   fun addImage(src: String) {
-    val isValid = verifyStyle(EditorSpans.IMAGE)
+    val isValid = verifyStyle(EnrichedSpans.IMAGE)
     if (!isValid) return
 
     parametrizedStyles?.setImageSpan(src)
   }
 
   fun startMention(indicator: String) {
-    val isValid = verifyStyle(EditorSpans.MENTION)
+    val isValid = verifyStyle(EnrichedSpans.MENTION)
     if (!isValid) return
 
     parametrizedStyles?.startMention(indicator)
   }
 
   fun addMention(indicator: String, text: String, attributes: Map<String, String>) {
-    val isValid = verifyStyle(EditorSpans.MENTION)
+    val isValid = verifyStyle(EnrichedSpans.MENTION)
     if (!isValid) return
 
     parametrizedStyles?.setMentionSpan(text, indicator, attributes)
@@ -522,6 +521,6 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   companion object {
-    const val CLIPBOARD_TAG = "react-native-rich-text-editor-clipboard"
+    const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
   }
 }

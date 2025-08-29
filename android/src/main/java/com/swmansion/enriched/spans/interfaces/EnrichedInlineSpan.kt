@@ -1,4 +1,4 @@
 package com.swmansion.enriched.spans.interfaces
 
-interface EditorSpan {
+interface EnrichedInlineSpan : EnrichedSpan {
 }

@@ -6,14 +6,14 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.EnrichedTextInputView
-import com.swmansion.enriched.spans.EditorImageSpan
-import com.swmansion.enriched.spans.EditorLinkSpan
-import com.swmansion.enriched.spans.EditorMentionSpan
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedImageSpan
+import com.swmansion.enriched.spans.EnrichedLinkSpan
+import com.swmansion.enriched.spans.EnrichedMentionSpan
+import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import java.io.File
 
-class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
+class ParametrizedStyles(private val view: EnrichedTextInputView) {
   private var mentionStart: Int? = null
   private var isSettingLinkSpan = false
 
@@ -36,8 +36,8 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
   fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
     isSettingLinkSpan = true
 
-    val spannable = editorView.text as SpannableStringBuilder
-    val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
+    val spannable = view.text as SpannableStringBuilder
+    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -49,11 +49,11 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
     }
 
     val spanEnd = start + text.length
-    val span = EditorLinkSpan(url, editorView.richTextStyle)
+    val span = EnrichedLinkSpan(url, view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-    editorView.selection?.validateStyles()
+    view.selection?.validateStyles()
     isSettingLinkSpan = false
   }
 
@@ -65,12 +65,12 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun detectAllLinks() {
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
 
     // TODO: Consider using more reliable regex, this one matches almost anything
     val urlPattern = android.util.Patterns.WEB_URL.matcher(spannable)
 
-    val spans = spannable.getSpans(0, spannable.length, EditorLinkSpan::class.java)
+    val spans = spannable.getSpans(0, spannable.length, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -79,7 +79,7 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
       val word = urlPattern.group()
       val start = urlPattern.start()
       val end = urlPattern.end()
-      val span = EditorLinkSpan(word, editorView.richTextStyle)
+      val span = EnrichedLinkSpan(word, view.htmlStyle)
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
@@ -107,34 +107,34 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
     // Do not detect link if it's applied manually
     if (isSettingLinkSpan) return
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     val (word, start, end) = result
 
     // TODO: Consider using more reliable regex, this one matches almost anything
     val urlPattern = android.util.Patterns.WEB_URL.matcher(word)
 
-    val spans = spannable.getSpans(start, end, EditorLinkSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
     if (urlPattern.matches()) {
-      val span = EditorLinkSpan(word, editorView.richTextStyle)
+      val span = EnrichedLinkSpan(word, view.htmlStyle)
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
   private fun afterTextChangedMentions(result: Triple<String, Int, Int>) {
-    val mentionHandler = editorView.mentionHandler ?: return
-    val spannable = editorView.text as Spannable
+    val mentionHandler = view.mentionHandler ?: return
+    val spannable = view.text as Spannable
     val (word, start, end) = result
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
     val mentionRegex= Regex("^($indicatorsPattern)\\w*")
 
-    val spans = spannable.getSpans(start, end, EditorMentionSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedMentionSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -155,11 +155,11 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun setImageSpan(src: String) {
-    if (editorView.selection == null) return
+    if (view.selection == null) return
 
-    val spannable = editorView.text as SpannableStringBuilder
-    var (start, end) = editorView.selection.getInlineSelection()
-    val spans = spannable.getSpans(start, end, EditorImageSpan::class.java)
+    val spannable = view.text as SpannableStringBuilder
+    var (start, end) = view.selection.getInlineSelection()
+    val spans = spannable.getSpans(start, end, EnrichedImageSpan::class.java)
 
     for (s in spans) {
       spannable.removeSpan(s)
@@ -171,16 +171,16 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
     }
 
     val uri = Uri.fromFile(File(src))
-    val span = EditorImageSpan(editorView.context, uri, editorView.richTextStyle)
+    val span = EnrichedImageSpan(view.context, uri, view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {
-    val selection = editorView.selection ?: return
+    val selection = view.selection ?: return
 
-    val spannable = editorView.text as SpannableStringBuilder
-    var (start, end) = selection.getInlineSelection()
+    val spannable = view.text as SpannableStringBuilder
+    val (start, end) = selection.getInlineSelection()
 
     if (start == end) {
       spannable.insert(start, indicator)
@@ -190,34 +190,34 @@ class ParametrizedStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun setMentionSpan(indicator: String, text: String, attributes: Map<String, String>) {
-    val selection = editorView.selection ?: return
+    val selection = view.selection ?: return
 
-    val spannable = editorView.text as SpannableStringBuilder
-    var (selectionStart, selectionEnd) = selection.getInlineSelection()
-    val spans = spannable.getSpans(selectionStart, selectionEnd, EditorMentionSpan::class.java)
+    val spannable = view.text as SpannableStringBuilder
+    val (selectionStart, selectionEnd) = selection.getInlineSelection()
+    val spans = spannable.getSpans(selectionStart, selectionEnd, EnrichedMentionSpan::class.java)
 
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    var start = mentionStart ?: return
+    val start = mentionStart ?: return
     spannable.replace(start, selectionEnd, text)
 
-    val span = EditorMentionSpan(text, indicator, attributes, editorView.richTextStyle)
+    val span = EnrichedMentionSpan(text, indicator, attributes, view.htmlStyle)
     val spanEnd = start + text.length
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-    editorView.selection.validateStyles()
+    view.selection.validateStyles()
   }
 
   fun getStyleRange(): Pair<Int, Int> {
-    return editorView.selection?.getInlineSelection() ?: Pair(0, 0)
+    return view.selection?.getInlineSelection() ?: Pair(0, 0)
   }
 
   fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val config = EditorSpans.parametrizedStyles[name] ?: return false
-    val spannable = editorView.text as Spannable
+    val config = EnrichedSpans.parametrizedStyles[name] ?: return false
+    val spannable = view.text as Spannable
     return removeSpansForRange(spannable, start, end, config.clazz)
   }
 }

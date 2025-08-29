@@ -3,10 +3,10 @@ package com.swmansion.enriched.styles
 import android.text.Editable
 import android.text.Spannable
 import com.swmansion.enriched.EnrichedTextInputView
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class InlineStyles(private val editorView: EnrichedTextInputView) {
+class InlineStyles(private val view: EnrichedTextInputView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
     val previousSpanStart = (start - 1).coerceAtLeast(0)
     val previousSpanEnd = previousSpanStart + 1
@@ -32,7 +32,7 @@ class InlineStyles(private val editorView: EnrichedTextInputView) {
       spannable.removeSpan(span)
     }
 
-    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(minimum, maximum)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
@@ -89,8 +89,8 @@ class InlineStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {
-    for ((style, config) in EditorSpans.inlineSpans) {
-      val start = editorView.spanState?.getStart(style) ?: continue
+    for ((style, config) in EnrichedSpans.inlineSpans) {
+      val start = view.spanState?.getStart(style) ?: continue
       var end = endCursorPosition
       val spans = s.getSpans(start, end, config.clazz)
 
@@ -104,32 +104,32 @@ class InlineStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun toggleStyle(name: String) {
-    if (editorView.selection == null) return
-    val (start, end) = editorView.selection.getInlineSelection()
-    val config = EditorSpans.inlineSpans[name] ?: return
+    if (view.selection == null) return
+    val (start, end) = view.selection.getInlineSelection()
+    val config = EnrichedSpans.inlineSpans[name] ?: return
     val type = config.clazz
 
     // We either start or end current span
     if (start == end) {
-      val styleStart = editorView.spanState?.getStart(name)
+      val styleStart = view.spanState?.getStart(name)
 
       if (styleStart != null) {
-        editorView.spanState.setStart(name, null)
+        view.spanState.setStart(name, null)
       } else {
-        editorView.spanState?.setStart(name, start)
+        view.spanState?.setStart(name, start)
       }
 
       return
     }
 
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     setAndMergeSpans(spannable, type, start, end)
-    editorView.selection.validateStyles()
+    view.selection.validateStyles()
   }
 
   fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val config = EditorSpans.inlineSpans[name] ?: return false
-    val spannable = editorView.text as Spannable
+    val config = EnrichedSpans.inlineSpans[name] ?: return false
+    val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, config.clazz)
     if (spans.isEmpty()) return false
 
@@ -141,6 +141,6 @@ class InlineStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun getStyleRange(): Pair<Int, Int> {
-    return editorView.selection?.getInlineSelection() ?: Pair(0, 0)
+    return view.selection?.getInlineSelection() ?: Pair(0, 0)
   }
 }

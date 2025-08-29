@@ -5,7 +5,7 @@ import android.text.StaticLayout
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.uimanager.PixelUtil
 
-class ReactNativeRichTextEditorViewLayoutManager(private val editorView: EnrichedTextInputView) {
+class EnrichedTextInputViewLayoutManager(private val view: EnrichedTextInputView) {
   private var cachedSize: Pair<Float, Float> = Pair(0f, 0f)
   private var cachedYogaWidth: Float = 0f
   private var forceHeightRecalculationCounter: Int = 0
@@ -22,7 +22,7 @@ class ReactNativeRichTextEditorViewLayoutManager(private val editorView: Enriche
     forceHeightRecalculationCounter++
     val state = Arguments.createMap()
     state.putInt("forceHeightRecalculationCounter", counter)
-    editorView.stateWrapper?.updateState(state)
+    view.stateWrapper?.updateState(state)
   }
 
   fun getMeasuredSize(maxWidth: Float): Pair<Float, Float> {
@@ -30,7 +30,7 @@ class ReactNativeRichTextEditorViewLayoutManager(private val editorView: Enriche
       return cachedSize
     }
 
-    val text = editorView.text ?: ""
+    val text = view.text ?: ""
     val result = measureAndCacheSize(text, maxWidth)
     cachedYogaWidth = maxWidth
     return result
@@ -47,7 +47,7 @@ class ReactNativeRichTextEditorViewLayoutManager(private val editorView: Enriche
   }
 
   private fun measureSize(text: CharSequence, maxWidth: Float): Pair<Float, Float> {
-    val paint = editorView.paint
+    val paint = view.paint
     val textLength = text.length
 
     val staticLayout = StaticLayout.Builder

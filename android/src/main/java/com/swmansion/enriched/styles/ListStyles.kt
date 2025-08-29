@@ -5,13 +5,13 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.EnrichedTextInputView
-import com.swmansion.enriched.spans.EditorOrderedListSpan
-import com.swmansion.enriched.spans.EditorSpans
-import com.swmansion.enriched.spans.EditorUnorderedListSpan
+import com.swmansion.enriched.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class ListStyles(private val editorView: EnrichedTextInputView) {
+class ListStyles(private val view: EnrichedTextInputView) {
   private fun <T>getPreviousParagraphSpan(spannable: Spannable, s: Int, type: Class<T>): T? {
     if (s <= 0) return null
 
@@ -32,7 +32,7 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
   }
 
   private fun getOrderedListIndex(spannable: Spannable, s: Int): Int {
-    val span = getPreviousParagraphSpan(spannable, s, EditorOrderedListSpan::class.java)
+    val span = getPreviousParagraphSpan(spannable, s, EnrichedOrderedListSpan::class.java)
     val index = span?.getIndex() ?: 0
     return index + 1
   }
@@ -40,15 +40,15 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
   private fun setSpan(spannable: Spannable, name: String, start: Int, end: Int) {
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
 
-    if (name == EditorSpans.UNORDERED_LIST) {
-      val span = EditorUnorderedListSpan(editorView.richTextStyle)
+    if (name == EnrichedSpans.UNORDERED_LIST) {
+      val span = EnrichedUnorderedListSpan(view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       return
     }
 
-    if (name == EditorSpans.ORDERED_LIST) {
+    if (name == EnrichedSpans.ORDERED_LIST) {
       val index = getOrderedListIndex(spannable, safeStart)
-      val span = EditorOrderedListSpan(index, editorView.richTextStyle)
+      val span = EnrichedOrderedListSpan(index, view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
@@ -68,7 +68,7 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun updateOrderedListIndexes(text: Spannable, position: Int) {
-    val spans = text.getSpans(position + 1, text.length, EditorOrderedListSpan::class.java)
+    val spans = text.getSpans(position + 1, text.length, EnrichedOrderedListSpan::class.java)
     for (span in spans) {
       val spanStart = text.getSpanStart(span)
       val index = getOrderedListIndex(text, spanStart)
@@ -77,23 +77,23 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun toggleStyle(name: String) {
-    if (editorView.selection == null) return
-    val config = EditorSpans.listSpans[name] ?: return
-    val spannable = editorView.text as SpannableStringBuilder
-    var (start, end) = editorView.selection.getParagraphSelection()
-    val styleStart = editorView.spanState?.getStart(name)
+    if (view.selection == null) return
+    val config = EnrichedSpans.listSpans[name] ?: return
+    val spannable = view.text as SpannableStringBuilder
+    val (start, end) = view.selection.getParagraphSelection()
+    val styleStart = view.spanState?.getStart(name)
 
     if (styleStart != null) {
-      editorView.spanState.setStart(name, null)
+      view.spanState.setStart(name, null)
       removeSpansForRange(spannable, start, end, config.clazz)
-      editorView.selection.validateStyles()
+      view.selection.validateStyles()
 
       return
     }
 
     if (start == end) {
       spannable.insert(start, "\u200B")
-      editorView.spanState?.setStart(name, start + 1)
+      view.spanState?.setStart(name, start + 1)
       removeSpansForRange(spannable, start, end, config.clazz)
       setSpan(spannable, name, start, end + 1)
 
@@ -112,11 +112,11 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
       currentStart = currentEnd + 1
     }
 
-    editorView.spanState?.setStart(name, currentStart)
+    view.spanState?.setStart(name, currentStart)
   }
 
   private fun handleAfterTextChanged(s: Editable, name: String, endCursorPosition: Int, previousTextLength: Int) {
-    val config = EditorSpans.listSpans[name] ?: return
+    val config = EnrichedSpans.listSpans[name] ?: return
     val cursorPosition = endCursorPosition.coerceAtMost(s.length)
     val (start, end) = s.getParagraphBounds(cursorPosition)
 
@@ -135,7 +135,7 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
       s.replace(start, cursorPosition, "\u200B")
       setSpan(s, name, start, start + 1)
       // Inform that new span has been added
-      editorView.selection?.validateStyles()
+      view.selection?.validateStyles()
       return
     }
 
@@ -143,7 +143,7 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
       s.insert(cursorPosition, "\u200B")
       setSpan(s, name, start, end + 1)
       // Inform that new span has been added
-      editorView.selection?.validateStyles()
+      view.selection?.validateStyles()
       return
     }
 
@@ -157,17 +157,17 @@ class ListStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int, previousTextLength: Int) {
-    handleAfterTextChanged(s, EditorSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
-    handleAfterTextChanged(s, EditorSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
+    handleAfterTextChanged(s, EnrichedSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
+    handleAfterTextChanged(s, EnrichedSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
   }
 
   fun getStyleRange(): Pair<Int, Int> {
-    return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
+    return view.selection?.getParagraphSelection() ?: Pair(0, 0)
   }
 
   fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val config = EditorSpans.listSpans[name] ?: return false
-    val spannable = editorView.text as Spannable
+    val config = EnrichedSpans.listSpans[name] ?: return false
+    val spannable = view.text as Spannable
     return removeSpansForRange(spannable, start, end, config.clazz)
   }
 }

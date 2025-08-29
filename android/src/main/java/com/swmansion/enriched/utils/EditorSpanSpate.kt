@@ -6,9 +6,9 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeStateEvent
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedSpans
 
-class EditorSpanState(private val editorView: EnrichedTextInputView) {
+class EnrichedSpanState(private val view: EnrichedTextInputView) {
   private var previousPayload: WritableMap? = null
 
   var boldStart: Int? = null
@@ -119,21 +119,21 @@ class EditorSpanState(private val editorView: EnrichedTextInputView) {
 
   fun getStart(name: String): Int? {
     val start = when (name) {
-      EditorSpans.BOLD -> boldStart
-      EditorSpans.ITALIC -> italicStart
-      EditorSpans.UNDERLINE -> underlineStart
-      EditorSpans.STRIKETHROUGH -> strikethroughStart
-      EditorSpans.INLINE_CODE -> inlineCodeStart
-      EditorSpans.H1 -> h1Start
-      EditorSpans.H2 -> h2Start
-      EditorSpans.H3 -> h3Start
-      EditorSpans.CODE_BLOCK -> codeBlockStart
-      EditorSpans.BLOCK_QUOTE -> blockQuoteStart
-      EditorSpans.ORDERED_LIST -> orderedListStart
-      EditorSpans.UNORDERED_LIST -> unorderedListStart
-      EditorSpans.LINK -> linkStart
-      EditorSpans.IMAGE -> imageStart
-      EditorSpans.MENTION -> mentionStart
+      EnrichedSpans.BOLD -> boldStart
+      EnrichedSpans.ITALIC -> italicStart
+      EnrichedSpans.UNDERLINE -> underlineStart
+      EnrichedSpans.STRIKETHROUGH -> strikethroughStart
+      EnrichedSpans.INLINE_CODE -> inlineCodeStart
+      EnrichedSpans.H1 -> h1Start
+      EnrichedSpans.H2 -> h2Start
+      EnrichedSpans.H3 -> h3Start
+      EnrichedSpans.CODE_BLOCK -> codeBlockStart
+      EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
+      EnrichedSpans.ORDERED_LIST -> orderedListStart
+      EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+      EnrichedSpans.LINK -> linkStart
+      EnrichedSpans.IMAGE -> imageStart
+      EnrichedSpans.MENTION -> mentionStart
       else -> null
     }
 
@@ -142,21 +142,21 @@ class EditorSpanState(private val editorView: EnrichedTextInputView) {
 
   fun setStart(name: String, start: Int?) {
     when (name) {
-      EditorSpans.BOLD -> setBoldStart(start)
-      EditorSpans.ITALIC -> setItalicStart(start)
-      EditorSpans.UNDERLINE -> setUnderlineStart(start)
-      EditorSpans.STRIKETHROUGH -> setStrikethroughStart(start)
-      EditorSpans.INLINE_CODE -> setInlineCodeStart(start)
-      EditorSpans.H1 -> setH1Start(start)
-      EditorSpans.H2 -> setH2Start(start)
-      EditorSpans.H3 -> setH3Start(start)
-      EditorSpans.CODE_BLOCK -> setCodeBlockStart(start)
-      EditorSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
-      EditorSpans.ORDERED_LIST -> setOrderedListStart(start)
-      EditorSpans.UNORDERED_LIST -> setUnorderedListStart(start)
-      EditorSpans.LINK -> setLinkStart(start)
-      EditorSpans.IMAGE -> setImageStart(start)
-      EditorSpans.MENTION -> setMentionStart(start)
+      EnrichedSpans.BOLD -> setBoldStart(start)
+      EnrichedSpans.ITALIC -> setItalicStart(start)
+      EnrichedSpans.UNDERLINE -> setUnderlineStart(start)
+      EnrichedSpans.STRIKETHROUGH -> setStrikethroughStart(start)
+      EnrichedSpans.INLINE_CODE -> setInlineCodeStart(start)
+      EnrichedSpans.H1 -> setH1Start(start)
+      EnrichedSpans.H2 -> setH2Start(start)
+      EnrichedSpans.H3 -> setH3Start(start)
+      EnrichedSpans.CODE_BLOCK -> setCodeBlockStart(start)
+      EnrichedSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
+      EnrichedSpans.ORDERED_LIST -> setOrderedListStart(start)
+      EnrichedSpans.UNORDERED_LIST -> setUnorderedListStart(start)
+      EnrichedSpans.LINK -> setLinkStart(start)
+      EnrichedSpans.IMAGE -> setImageStart(start)
+      EnrichedSpans.MENTION -> setMentionStart(start)
     }
   }
 
@@ -187,13 +187,13 @@ class EditorSpanState(private val editorView: EnrichedTextInputView) {
       merge(payload)
     }
 
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnChangeStateEvent(surfaceId, editorView.id, payload))
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnChangeStateEvent(surfaceId, view.id, payload))
   }
 
   companion object {
-    const val NAME = "ReactNativeRichTextEditorView"
+    const val NAME = "ReactNativeEnrichedView"
   }
 }

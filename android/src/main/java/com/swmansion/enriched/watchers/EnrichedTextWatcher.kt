@@ -7,7 +7,7 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeTextEvent
 
-class EditorTextWatcher(private val editorView: EnrichedTextInputView) : TextWatcher {
+class EnrichedTextWatcher(private val view: EnrichedTextInputView) : TextWatcher {
   private var endCursorPosition: Int = 0
   private var previousTextLength: Int = 0
 
@@ -17,30 +17,30 @@ class EditorTextWatcher(private val editorView: EnrichedTextInputView) : TextWat
 
   override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
     endCursorPosition = start + count
-    editorView.layoutManager.measureSize(s ?: "")
-    editorView.isRemovingMany = !editorView.isSettingValue && before > count + 1
+    view.layoutManager.measureSize(s ?: "")
+    view.isRemovingMany = !view.isSettingValue && before > count + 1
   }
 
   override fun afterTextChanged(s: Editable?) {
     if (s == null) return
     emitEvents(s)
 
-    if (editorView.isSettingValue) return
+    if (view.isSettingValue) return
     applyStyles(s)
   }
 
   private fun applyStyles(s: Editable) {
-    editorView.inlineStyles?.afterTextChanged(s, endCursorPosition)
-    editorView.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
-    editorView.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
-    editorView.parametrizedStyles?.afterTextChanged(s, endCursorPosition)
+    view.inlineStyles?.afterTextChanged(s, endCursorPosition)
+    view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    view.parametrizedStyles?.afterTextChanged(s, endCursorPosition)
   }
 
   private fun emitEvents(s: Editable) {
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, editorView.id, s))
-    editorView.spanWatcher?.emitEvent(s, null)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, view.id, s))
+    view.spanWatcher?.emitEvent(s, null)
   }
 }

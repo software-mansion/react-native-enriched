@@ -5,12 +5,12 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.Layout
 import android.text.style.LeadingMarginSpan
-import com.swmansion.enriched.spans.interfaces.EditorParagraphSpan
-import com.swmansion.enriched.styles.RichTextStyle
+import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.styles.HtmlStyle
 
-class EditorOrderedListSpan(private var index: Int, private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan {
+class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: HtmlStyle) : LeadingMarginSpan, EnrichedParagraphSpan {
   override fun getLeadingMargin(first: Boolean): Int {
-    return richTextStyle.olMarginLeft + richTextStyle.olGapWidth
+    return htmlStyle.olMarginLeft + htmlStyle.olGapWidth
   }
 
   override fun drawLeadingMargin(
@@ -32,13 +32,13 @@ class EditorOrderedListSpan(private var index: Int, private val richTextStyle: R
       val width = paint.measureText(text)
 
       val yPosition = baseline.toFloat()
-      val xPosition = (richTextStyle.olMarginLeft + x - width / 2) * dir
+      val xPosition = (htmlStyle.olMarginLeft + x - width / 2) * dir
 
       val originalColor = paint.color
       val originalTypeface = paint.typeface
 
-      paint.color = richTextStyle.olMarkerColor ?: originalColor
-      paint.typeface = getTypeface(richTextStyle.olMarkerFontWeight, originalTypeface)
+      paint.color = htmlStyle.olMarkerColor ?: originalColor
+      paint.typeface = getTypeface(htmlStyle.olMarkerFontWeight, originalTypeface)
       canvas.drawText(text, xPosition, yPosition, paint)
 
       paint.color = originalColor

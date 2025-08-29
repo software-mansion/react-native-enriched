@@ -7,18 +7,18 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
-import com.swmansion.enriched.spans.interfaces.EditorInlineSpan
-import com.swmansion.enriched.styles.RichTextStyle
+import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
+import com.swmansion.enriched.styles.HtmlStyle
 
-class EditorImageSpan : ImageSpan, EditorInlineSpan {
-  private var richTextStyle: RichTextStyle? = null
+class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+  private var htmlStyle: HtmlStyle? = null
 
-  constructor(context: Context, uri: Uri, richTextStyle: RichTextStyle, ) : super(context, uri, ALIGN_BASELINE) {
-    this.richTextStyle = richTextStyle
+  constructor(context: Context, uri: Uri, htmlStyle: HtmlStyle, ) : super(context, uri, ALIGN_BASELINE) {
+    this.htmlStyle = htmlStyle
   }
 
-  constructor(drawable: Drawable, source: String, richTextStyle: RichTextStyle) : super(drawable, source, ALIGN_BASELINE) {
-    this.richTextStyle = richTextStyle
+  constructor(drawable: Drawable, source: String, htmlStyle: HtmlStyle) : super(drawable, source, ALIGN_BASELINE) {
+    this.htmlStyle = htmlStyle
   }
 
   override fun draw(
@@ -35,7 +35,7 @@ class EditorImageSpan : ImageSpan, EditorInlineSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, richTextStyle!!.imgWidth, richTextStyle!!.imgHeight)
+    drawable.setBounds(0, 0, htmlStyle!!.imgWidth, htmlStyle!!.imgHeight)
     return drawable
   }
 }

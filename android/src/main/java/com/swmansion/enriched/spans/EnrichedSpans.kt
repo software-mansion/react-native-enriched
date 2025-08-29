@@ -11,7 +11,7 @@ data class StylesMergingConfig(
   val blockingStyles: Array<String> = emptyArray(),
 )
 
-object EditorSpans {
+object EnrichedSpans {
   // inline styles
   const val BOLD = "bold"
   const val ITALIC = "italic"
@@ -36,30 +36,30 @@ object EditorSpans {
   const val MENTION = "mention"
 
   val inlineSpans: Map<String, BaseSpanConfig> = mapOf(
-    BOLD to BaseSpanConfig(EditorBoldSpan::class.java),
-    ITALIC to BaseSpanConfig(EditorItalicSpan::class.java),
-    UNDERLINE to BaseSpanConfig(EditorUnderlineSpan::class.java),
-    STRIKETHROUGH to BaseSpanConfig(EditorStrikeThroughSpan::class.java),
-    INLINE_CODE to BaseSpanConfig(EditorInlineCodeSpan::class.java),
+    BOLD to BaseSpanConfig(EnrichedBoldSpan::class.java),
+    ITALIC to BaseSpanConfig(EnrichedItalicSpan::class.java),
+    UNDERLINE to BaseSpanConfig(EnrichedUnderlineSpan::class.java),
+    STRIKETHROUGH to BaseSpanConfig(EnrichedStrikeThroughSpan::class.java),
+    INLINE_CODE to BaseSpanConfig(EnrichedInlineCodeSpan::class.java),
   )
 
   val paragraphSpans: Map<String, ParagraphSpanConfig> = mapOf(
-    H1 to ParagraphSpanConfig(EditorH1Span::class.java, false),
-    H2 to ParagraphSpanConfig(EditorH2Span::class.java, false),
-    H3 to ParagraphSpanConfig(EditorH3Span::class.java, false),
-    BLOCK_QUOTE to ParagraphSpanConfig(EditorBlockQuoteSpan::class.java, true),
-    CODE_BLOCK to ParagraphSpanConfig(EditorCodeBlockSpan::class.java, true),
+    H1 to ParagraphSpanConfig(EnrichedH1Span::class.java, false),
+    H2 to ParagraphSpanConfig(EnrichedH2Span::class.java, false),
+    H3 to ParagraphSpanConfig(EnrichedH3Span::class.java, false),
+    BLOCK_QUOTE to ParagraphSpanConfig(EnrichedBlockQuoteSpan::class.java, true),
+    CODE_BLOCK to ParagraphSpanConfig(EnrichedCodeBlockSpan::class.java, true),
   )
 
   val listSpans: Map<String, ListSpanConfig> = mapOf(
-    UNORDERED_LIST to ListSpanConfig(EditorUnorderedListSpan::class.java, "- "),
-    ORDERED_LIST to ListSpanConfig(EditorOrderedListSpan::class.java, "1. "),
+    UNORDERED_LIST to ListSpanConfig(EnrichedUnorderedListSpan::class.java, "- "),
+    ORDERED_LIST to ListSpanConfig(EnrichedOrderedListSpan::class.java, "1. "),
   )
 
   val parametrizedStyles: Map<String, BaseSpanConfig> = mapOf(
-    LINK to BaseSpanConfig(EditorLinkSpan::class.java),
-    IMAGE to BaseSpanConfig(EditorImageSpan::class.java),
-    MENTION to BaseSpanConfig(EditorMentionSpan::class.java),
+    LINK to BaseSpanConfig(EnrichedLinkSpan::class.java),
+    IMAGE to BaseSpanConfig(EnrichedImageSpan::class.java),
+    MENTION to BaseSpanConfig(EnrichedMentionSpan::class.java),
   )
 
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(

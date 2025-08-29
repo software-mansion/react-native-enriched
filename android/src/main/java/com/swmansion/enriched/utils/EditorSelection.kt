@@ -8,12 +8,12 @@ import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeSelectionEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
-import com.swmansion.enriched.spans.EditorLinkSpan
-import com.swmansion.enriched.spans.EditorMentionSpan
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedLinkSpan
+import com.swmansion.enriched.spans.EnrichedMentionSpan
+import com.swmansion.enriched.spans.EnrichedSpans
 import org.json.JSONObject
 
-class EditorSelection(private val editorView: EnrichedTextInputView) {
+class EnrichedSelection(private val view: EnrichedTextInputView) {
   var start: Int = 0
   var end: Int = 0
 
@@ -35,12 +35,12 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
       shouldValidateStyles = true
     }
 
-    val textLength = editorView.text?.length ?: 0
+    val textLength = view.text?.length ?: 0
     val finalStart = newStart.coerceAtMost(newEnd).coerceAtLeast(0).coerceAtMost(textLength)
     val finalEnd = newEnd.coerceAtLeast(newStart).coerceAtLeast(0).coerceAtMost(textLength)
 
-    if (isZeroWidthSelection(finalStart, finalEnd) && !editorView.isSettingValue) {
-      editorView.setSelection(finalStart + 1)
+    if (isZeroWidthSelection(finalStart, finalEnd) && !view.isSettingValue) {
+      view.setSelection(finalStart + 1)
       shouldValidateStyles = false
     }
 
@@ -49,11 +49,11 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
     start = finalStart
     end = finalEnd
     validateStyles()
-    emitSelectionChangeEvent(editorView.text, finalStart, finalEnd)
+    emitSelectionChangeEvent(view.text, finalStart, finalEnd)
   }
 
   private fun isZeroWidthSelection(start: Int, end: Int): Boolean {
-    val text = editorView.text ?: return false
+    val text = view.text ?: return false
 
     if (start != end) {
       return text.substring(start, end) == "\u200B"
@@ -70,28 +70,28 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
   }
 
   fun validateStyles() {
-    val state = editorView.spanState ?: return
+    val state = view.spanState ?: return
 
     // We don't validate inline styles when removing many characters at once
     // We don't want to remove styles on auto-correction
     // If user removes many characters at once, we want to keep the styles config
-    if (!editorView.isRemovingMany) {
-      for ((style, config) in EditorSpans.inlineSpans) {
+    if (!view.isRemovingMany) {
+      for ((style, config) in EnrichedSpans.inlineSpans) {
         state.setStart(style, getInlineStyleStart(config.clazz))
       }
     } else {
-      editorView.isRemovingMany = false
+      view.isRemovingMany = false
     }
 
-    for ((style, config) in EditorSpans.paragraphSpans) {
+    for ((style, config) in EnrichedSpans.paragraphSpans) {
       state.setStart(style, getParagraphStyleStart(config.clazz))
     }
 
-    for ((style, config) in EditorSpans.listSpans) {
+    for ((style, config) in EnrichedSpans.listSpans) {
       state.setStart(style, getListStyleStart(config.clazz))
     }
 
-    for ((style, config) in EditorSpans.parametrizedStyles) {
+    for ((style, config) in EnrichedSpans.parametrizedStyles) {
       state.setStart(style, getParametrizedStyleStart(config.clazz))
     }
   }
@@ -105,7 +105,7 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
 
   private fun <T>getInlineStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
     var styleStart: Int? = null
 
@@ -125,13 +125,13 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
 
   fun getParagraphSelection(): Pair<Int, Int> {
     val (currentStart, currentEnd) = getInlineSelection()
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     return spannable.getParagraphBounds(currentStart, currentEnd)
   }
 
   private fun <T>getParagraphStyleStart(type: Class<T>): Int? {
     val (start, end) = getParagraphSelection()
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
     var styleStart: Int? = null
 
@@ -150,7 +150,7 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
 
   private fun <T>getListStyleStart(type: Class<T>): Int? {
     val (start, end) = getParagraphSelection()
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     var styleStart: Int? = null
 
     var paragraphStart = start
@@ -179,10 +179,10 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
 
   private fun <T>getParametrizedStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
-    val spannable = editorView.text as Spannable
+    val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
-    val isLinkType = type == EditorLinkSpan::class.java
-    val isMentionType = type == EditorMentionSpan::class.java
+    val isLinkType = type == EnrichedLinkSpan::class.java
+    val isMentionType = type == EnrichedMentionSpan::class.java
 
     if (isLinkType && spans.isEmpty()) {
       emitLinkDetectedEvent(spannable, null, start, end)
@@ -199,9 +199,9 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
       val spanEnd = spannable.getSpanEnd(span)
 
       if (start >= spanStart && end <= spanEnd) {
-        if (isLinkType && span is EditorLinkSpan) {
+        if (isLinkType && span is EnrichedLinkSpan) {
           emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
-        } else if (isMentionType && span is EditorMentionSpan) {
+        } else if (isMentionType && span is EnrichedMentionSpan) {
           emitMentionDetectedEvent(spannable, span, spanStart, spanEnd)
         }
 
@@ -215,15 +215,15 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
   private fun emitSelectionChangeEvent(editable: Editable?, start: Int, end: Int) {
     if (editable == null) return
 
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
 
     val text = editable.substring(start, end)
-    dispatcher?.dispatchEvent(OnChangeSelectionEvent(surfaceId, editorView.id, text, start ,end))
+    dispatcher?.dispatchEvent(OnChangeSelectionEvent(surfaceId, view.id, text, start ,end))
   }
 
-  private fun emitLinkDetectedEvent(spannable: Spannable, span: EditorLinkSpan?, start: Int, end: Int) {
+  private fun emitLinkDetectedEvent(spannable: Spannable, span: EnrichedLinkSpan?, start: Int, end: Int) {
     val text = spannable.substring(start, end)
     val url = span?.getUrl() ?: ""
 
@@ -233,13 +233,13 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
     previousLinkDetectedEvent.put("text", text)
     previousLinkDetectedEvent.put("url", url)
 
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, editorView.id, text, url, start, end))
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, view.id, text, url, start, end))
   }
 
-  private fun emitMentionDetectedEvent(spannable: Spannable, span: EditorMentionSpan?, start: Int, end: Int) {
+  private fun emitMentionDetectedEvent(spannable: Spannable, span: EnrichedMentionSpan?, start: Int, end: Int) {
     val text = spannable.substring(start, end)
     val attributes = span?.getAttributes() ?: emptyMap()
     val indicator = span?.getIndicator() ?: ""
@@ -255,9 +255,9 @@ class EditorSelection(private val editorView: EnrichedTextInputView) {
     previousMentionDetectedEvent.put("payload", payload)
     previousMentionDetectedEvent.put("indicator", indicator)
 
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, editorView.id, text, indicator, payload))
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, view.id, text, indicator, payload))
   }
 }

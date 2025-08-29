@@ -4,13 +4,13 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.EnrichedTextInputView
-import com.swmansion.enriched.spans.EditorSpans
+import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class ParagraphStyles(private val editorView: EnrichedTextInputView) {
+class ParagraphStyles(private val view: EnrichedTextInputView) {
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    val span = type.getDeclaredConstructor(RichTextStyle::class.java).newInstance(editorView.richTextStyle)
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
@@ -86,7 +86,7 @@ class ParagraphStyles(private val editorView: EnrichedTextInputView) {
   }
 
   private fun <T>isSpanEnabledInNextLine(spannable: Spannable, index: Int, type: Class<T>): Boolean {
-    val selection = editorView.selection ?: return false
+    val selection = view.selection ?: return false
     if (index + 1 >= spannable.length) return false
     val (start, end) = selection.getParagraphSelection()
 
@@ -99,8 +99,8 @@ class ParagraphStyles(private val editorView: EnrichedTextInputView) {
     val isBackspace = s.length < previousTextLength
     val isNewLine = endCursorPosition == 0 || endCursorPosition > 0 && s[endCursorPosition - 1] == '\n'
 
-    for ((style, config) in EditorSpans.paragraphSpans) {
-      val spanState = editorView.spanState ?: continue
+    for ((style, config) in EnrichedSpans.paragraphSpans) {
+      val spanState = view.spanState ?: continue
       val styleStart = spanState.getStart(style) ?: continue
 
       if (isNewLine) {
@@ -111,7 +111,7 @@ class ParagraphStyles(private val editorView: EnrichedTextInputView) {
 
         if (isBackspace) {
           endCursorPosition -= 1
-          editorView.spanState.setStart(style, null)
+          view.spanState.setStart(style, null)
         } else {
           s.insert(endCursorPosition, "\u200B")
           endCursorPosition += 1
@@ -136,25 +136,25 @@ class ParagraphStyles(private val editorView: EnrichedTextInputView) {
   }
 
   fun toggleStyle(name: String) {
-    if (editorView.selection == null) return
-    val spannable = editorView.text as SpannableStringBuilder
-    var (start, end) = editorView.selection.getParagraphSelection()
-    val config = EditorSpans.paragraphSpans[name] ?: return
+    if (view.selection == null) return
+    val spannable = view.text as SpannableStringBuilder
+    val (start, end) = view.selection.getParagraphSelection()
+    val config = EnrichedSpans.paragraphSpans[name] ?: return
     val type = config.clazz
 
-    val styleStart = editorView.spanState?.getStart(name)
+    val styleStart = view.spanState?.getStart(name)
 
     if (styleStart != null) {
-      editorView.spanState.setStart(name, null)
+      view.spanState.setStart(name, null)
       removeSpansForRange(spannable, start, end, type)
-      editorView.selection.validateStyles()
+      view.selection.validateStyles()
 
       return
     }
 
     if (start == end) {
       spannable.insert(start, "\u200B")
-      editorView.spanState?.setStart(name, start + 1)
+      view.spanState?.setStart(name, start + 1)
       setAndMergeSpans(spannable, type, start, end + 1)
 
       return
@@ -170,17 +170,17 @@ class ParagraphStyles(private val editorView: EnrichedTextInputView) {
       currentStart = currentEnd + 1
     }
 
-    editorView.spanState?.setStart(name, start)
+    view.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
   }
 
   fun getStyleRange(): Pair<Int, Int> {
-    return editorView.selection?.getParagraphSelection() ?: Pair(0, 0)
+    return view.selection?.getParagraphSelection() ?: Pair(0, 0)
   }
 
   fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val config = EditorSpans.paragraphSpans[name] ?: return false
-    val spannable = editorView.text as Spannable
+    val config = EnrichedSpans.paragraphSpans[name] ?: return false
+    val spannable = view.text as Spannable
     return removeSpansForRange(spannable, start, end, config.clazz)
   }
 }

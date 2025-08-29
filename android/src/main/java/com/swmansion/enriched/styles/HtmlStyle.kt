@@ -12,9 +12,9 @@ import kotlin.Int
 import kotlin.String
 import kotlin.math.ceil
 
-class RichTextStyle {
+class HtmlStyle {
   private var style: ReadableMap? = null
-  private var editorView: EnrichedTextInputView? = null
+  private var view: EnrichedTextInputView? = null
 
   // Default values are ignored as they are specified on the JS side.
   // They are specified only because they are required by the constructor.
@@ -58,8 +58,8 @@ class RichTextStyle {
 
   var mentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
 
-  constructor(editorView: EnrichedTextInputView?, style: ReadableMap?) {
-    this.editorView = editorView
+  constructor(view: EnrichedTextInputView?, style: ReadableMap?) {
+    this.view = view
     this.style = style
 
     invalidateStyles()
@@ -88,7 +88,7 @@ class RichTextStyle {
 
     val olStyle = style.getMap("ol")
     val userDefinedMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
-    val calculatedMarginLeft = calculateOlMarginLeft(editorView, userDefinedMarginLeft)
+    val calculatedMarginLeft = calculateOlMarginLeft(view, userDefinedMarginLeft)
     olMarginLeft = calculatedMarginLeft
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
     olMarkerColor = parseOptionalColor(olStyle, "markerColor")
@@ -145,7 +145,7 @@ class RichTextStyle {
     val safeMap = ensureValueIsSet(map, key)
 
     val color = safeMap.getDouble(key)
-    val parsedColor = ColorPropConverter.getColor(color, editorView?.context as ReactContext)
+    val parsedColor = ColorPropConverter.getColor(color, view?.context as ReactContext)
     if (parsedColor == null) {
       throw Error("Specified color value is not supported: $color")
     }
@@ -169,8 +169,8 @@ class RichTextStyle {
     throw Error("Specified textDecorationLine value is not supported: $underline. Supported values are 'underline' and 'none'.")
   }
 
-  private fun calculateOlMarginLeft(editorView: EnrichedTextInputView?, userMargin: Int): Int {
-    val fontSize = editorView?.fontSize?.toInt() ?: 0
+  private fun calculateOlMarginLeft(view: EnrichedTextInputView?, userMargin: Int): Int {
+    val fontSize = view?.fontSize?.toInt() ?: 0
     val leadMargin = fontSize / 2
 
     return leadMargin + userMargin

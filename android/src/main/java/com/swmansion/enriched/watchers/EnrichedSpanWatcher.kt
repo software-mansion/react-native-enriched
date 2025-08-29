@@ -7,13 +7,13 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeHtmlEvent
-import com.swmansion.enriched.spans.EditorOrderedListSpan
-import com.swmansion.enriched.spans.interfaces.EditorHeadingSpan
-import com.swmansion.enriched.spans.interfaces.EditorSpan
-import com.swmansion.enriched.utils.EditorParser
+import com.swmansion.enriched.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.spans.interfaces.EnrichedHeadingSpan
+import com.swmansion.enriched.spans.interfaces.EnrichedSpan
+import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class EditorSpanWatcher(private val editorView: EnrichedTextInputView) : SpanWatcher {
+class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher {
   private var previousHtml: String? = null
 
   override fun onSpanAdded(text: Spannable, what: Any, start: Int, end: Int) {
@@ -33,8 +33,8 @@ class EditorSpanWatcher(private val editorView: EnrichedTextInputView) : SpanWat
   }
 
   private fun updateUnorderedListSpans(what: Any, text: Spannable, end: Int) {
-    if (what is EditorOrderedListSpan) {
-      editorView.listStyles?.updateOrderedListIndexes(text, end)
+    if (what is EnrichedOrderedListSpan) {
+      view.listStyles?.updateOrderedListIndexes(text, end)
     }
   }
 
@@ -43,7 +43,7 @@ class EditorSpanWatcher(private val editorView: EnrichedTextInputView) : SpanWat
   private fun updateNextLineLayout(what: Any, text: Spannable, end: Int) {
     class EmptySpan : ParagraphStyle {}
 
-    if (what is EditorHeadingSpan) {
+    if (what is EnrichedHeadingSpan) {
       val finalStart = (end + 1)
       val finalEnd = text.length
       val (safeStart, safeEnd) = text.getSafeSpanBoundaries(finalStart, finalEnd)
@@ -53,16 +53,16 @@ class EditorSpanWatcher(private val editorView: EnrichedTextInputView) : SpanWat
 
   fun emitEvent(s: Spannable, what: Any?) {
     // Emit event only if we change one of ours spans
-    if (what != null && what !is EditorSpan) return
+    if (what != null && what !is EnrichedSpan) return
 
-    val html = EditorParser.toHtml(s)
+    val html = EnrichedParser.toHtml(s)
     if (html == previousHtml) return
 
     previousHtml = html
-    editorView.layoutManager.invalidateLayout(editorView.text)
-    val context = editorView.context as ReactContext
+    view.layoutManager.invalidateLayout(view.text)
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnChangeHtmlEvent(surfaceId, editorView.id, html))
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnChangeHtmlEvent(surfaceId, view.id, html))
   }
 }

@@ -4,7 +4,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.EnrichedTextInputView
 
-class MentionHandler(private val editorView: EnrichedTextInputView) {
+class MentionHandler(private val view: EnrichedTextInputView) {
   private var previousText: String? = null
   private var previousIndicator: String? = null
 
@@ -26,9 +26,9 @@ class MentionHandler(private val editorView: EnrichedTextInputView) {
     if (previousText == text) return
 
     previousText = text
-    val context = editorView.context as ReactContext
+    val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, editorView.id)
-    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, editorView.id, indicator, text))
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, view.id, indicator, text))
   }
 }

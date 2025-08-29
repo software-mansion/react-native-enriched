@@ -5,13 +5,13 @@ import android.graphics.Paint
 import android.text.Layout
 import android.text.Spanned
 import android.text.style.LeadingMarginSpan
-import com.swmansion.enriched.spans.interfaces.EditorParagraphSpan
-import com.swmansion.enriched.styles.RichTextStyle
+import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : LeadingMarginSpan, EditorParagraphSpan {
+class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : LeadingMarginSpan, EnrichedParagraphSpan {
   override fun getLeadingMargin(p0: Boolean): Int {
-    return richTextStyle.ulBulletSize + richTextStyle.ulGapWidth + richTextStyle.ulMarginLeft
+    return htmlStyle.ulBulletSize + htmlStyle.ulGapWidth + htmlStyle.ulMarginLeft
   }
 
   override fun drawLeadingMargin(
@@ -32,15 +32,15 @@ class EditorUnorderedListSpan(private val richTextStyle: RichTextStyle) : Leadin
 
     if (spannedText.getSpanStart(this) == start) {
       val style = paint.style
-      var oldColor = paint.color
-      paint.color = richTextStyle.ulBulletColor
+      val oldColor = paint.color
+      paint.color = htmlStyle.ulBulletColor
       paint.style = Paint.Style.FILL
 
-      val bulletRadius = richTextStyle.ulBulletSize / 2f
+      val bulletRadius = htmlStyle.ulBulletSize / 2f
       val yPosition = (top + bottom) / 2f
-      val xPosition = x + dir * bulletRadius + richTextStyle.ulMarginLeft
+      val xPosition = x + dir * bulletRadius + htmlStyle.ulMarginLeft
 
-      canvas.drawCircle(xPosition.toFloat(), yPosition, bulletRadius, paint)
+      canvas.drawCircle(xPosition, yPosition, bulletRadius, paint)
 
       paint.color = oldColor
       paint.style = style

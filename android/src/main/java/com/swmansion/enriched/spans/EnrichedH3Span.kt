@@ -3,13 +3,13 @@ package com.swmansion.enriched.spans
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
-import com.swmansion.enriched.spans.interfaces.EditorHeadingSpan
-import com.swmansion.enriched.styles.RichTextStyle
+import com.swmansion.enriched.spans.interfaces.EnrichedHeadingSpan
+import com.swmansion.enriched.styles.HtmlStyle
 
-class EditorH1Span(private val style: RichTextStyle) : AbsoluteSizeSpan(style.h1FontSize), EditorHeadingSpan {
+class EnrichedH3Span(private val htmlStyle: HtmlStyle) : AbsoluteSizeSpan(htmlStyle.h3FontSize), EnrichedHeadingSpan {
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
-    val bold = style.h1Bold
+    val bold = htmlStyle.h3Bold
     if (bold) {
       tp.typeface = Typeface.create(tp.typeface, Typeface.BOLD)
     }

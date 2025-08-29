@@ -4,8 +4,8 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.Log
-import com.swmansion.enriched.spans.interfaces.EditorBlockSpan
-import com.swmansion.enriched.spans.interfaces.EditorParagraphSpan
+import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
+import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import org.json.JSONObject
 
 fun jsonStringToStringMap(json: String): Map<String, String> {
@@ -19,7 +19,7 @@ fun jsonStringToStringMap(json: String): Map<String, String> {
       }
     }
   } catch (e: Exception) {
-    Log.w("ReactNativeRichTextEditorView", "Failed to parse JSON string to Map: $json", e)
+    Log.w("ReactNativeEnrichedView", "Failed to parse JSON string to Map: $json", e)
   }
 
   return result
@@ -67,10 +67,10 @@ fun Spannable.mergeSpannables(start: Int, end: Int, spannable: Spannable): Spann
   var finalEnd = end
 
   val builder = SpannableStringBuilder(this)
-  val startBlockSpans = spannable.getSpans(0, 0, EditorBlockSpan::class.java)
-  val startParagraphSpans = spannable.getSpans(0, 0, EditorParagraphSpan::class.java)
-  val endBlockSpans = spannable.getSpans(this.length, this.length, EditorBlockSpan::class.java)
-  val endParagraphSpans = spannable.getSpans(this.length, this.length, EditorParagraphSpan::class.java)
+  val startBlockSpans = spannable.getSpans(0, 0, EnrichedBlockSpan::class.java)
+  val startParagraphSpans = spannable.getSpans(0, 0, EnrichedParagraphSpan::class.java)
+  val endBlockSpans = spannable.getSpans(this.length, this.length, EnrichedBlockSpan::class.java)
+  val endParagraphSpans = spannable.getSpans(this.length, this.length, EnrichedParagraphSpan::class.java)
   val (paragraphStart, paragraphEnd) = this.getParagraphBounds(start, end)
   val isNewLineStart = startBlockSpans.isNotEmpty() || startParagraphSpans.isNotEmpty()
   val isNewLineEnd = endBlockSpans.isNotEmpty() || endParagraphSpans.isNotEmpty()

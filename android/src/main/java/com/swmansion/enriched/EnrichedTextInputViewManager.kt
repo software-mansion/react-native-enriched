@@ -25,8 +25,8 @@ import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
 import com.swmansion.enriched.events.OnMentionEvent
-import com.swmansion.enriched.spans.EditorSpans
-import com.swmansion.enriched.styles.RichTextStyle
+import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.jsonStringToStringMap
 
 @ReactModule(name = EnrichedTextInputViewManager.NAME)
@@ -127,9 +127,9 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.parametrizedStyles?.mentionIndicators = indicatorsArray
   }
 
-  @ReactProp(name = "richTextStyle")
+  @ReactProp(name = "htmlStyle")
   override fun setHtmlStyle(view: EnrichedTextInputView?, style: ReadableMap?) {
-    view?.richTextStyle = RichTextStyle(view, style)
+    view?.htmlStyle = HtmlStyle(view, style)
   }
 
   @ReactProp(name = ViewProps.COLOR, customType = "Color")
@@ -195,51 +195,51 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   }
 
   override fun toggleBold(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.BOLD)
+    view?.verifyAndToggleStyle(EnrichedSpans.BOLD)
   }
 
   override fun toggleItalic(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.ITALIC)
+    view?.verifyAndToggleStyle(EnrichedSpans.ITALIC)
   }
 
   override fun toggleUnderline(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.UNDERLINE)
+    view?.verifyAndToggleStyle(EnrichedSpans.UNDERLINE)
   }
 
   override fun toggleStrikeThrough(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.STRIKETHROUGH)
+    view?.verifyAndToggleStyle(EnrichedSpans.STRIKETHROUGH)
   }
 
   override fun toggleInlineCode(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.INLINE_CODE)
+    view?.verifyAndToggleStyle(EnrichedSpans.INLINE_CODE)
   }
 
   override fun toggleH1(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.H1)
+    view?.verifyAndToggleStyle(EnrichedSpans.H1)
   }
 
   override fun toggleH2(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.H2)
+    view?.verifyAndToggleStyle(EnrichedSpans.H2)
   }
 
   override fun toggleH3(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.H3)
+    view?.verifyAndToggleStyle(EnrichedSpans.H3)
   }
 
   override fun toggleCodeBlock(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.CODE_BLOCK)
+    view?.verifyAndToggleStyle(EnrichedSpans.CODE_BLOCK)
   }
 
   override fun toggleBlockQuote(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.BLOCK_QUOTE)
+    view?.verifyAndToggleStyle(EnrichedSpans.BLOCK_QUOTE)
   }
 
   override fun toggleOrderedList(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.ORDERED_LIST)
+    view?.verifyAndToggleStyle(EnrichedSpans.ORDERED_LIST)
   }
 
   override fun toggleUnorderedList(view: EnrichedTextInputView?) {
-    view?.verifyAndToggleStyle(EditorSpans.UNORDERED_LIST)
+    view?.verifyAndToggleStyle(EnrichedSpans.UNORDERED_LIST)
   }
 
   override fun addLink(view: EnrichedTextInputView?, start: Int, end: Int, text: String, url: String) {
