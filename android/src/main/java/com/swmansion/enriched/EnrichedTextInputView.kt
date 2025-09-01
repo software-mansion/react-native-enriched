@@ -194,10 +194,12 @@ class EnrichedTextInputView : AppCompatEditText {
     val end = selection?.end ?: 0
 
     if (htmlText != null) {
-      val parsedText = parseText(htmlText) as Spannable
-      val finalText = currentText.mergeSpannables(start, end, parsedText)
-      setValue(finalText)
-      return
+      val parsedText = parseText(htmlText)
+      if (parsedText is Spannable) {
+        val finalText = currentText.mergeSpannables(start, end, parsedText)
+        setValue(finalText)
+        return
+      }
     }
 
     val finalText = currentText.mergeSpannables(start, end, item?.text.toString())
