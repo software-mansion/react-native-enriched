@@ -1,5 +1,5 @@
 {
-  "name": "@swmansion/react-native-rich-text-editor",
+  "name": "react-native-enriched",
   "version": "0.1.0",
   "description": "Rich Text Editor component for React Native",
   "source": "./src/index.tsx",
@@ -32,7 +32,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace @swmansion/react-native-rich-text-editor-example",
+    "example": "yarn workspace react-native-enriched-example",
     "test": "jest --passWithNoTests",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -150,7 +150,7 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNReactNativeRichTextEditorViewSpec",
+    "name": "RNEnrichedTextInputViewSpec",
     "type": "components",
     "jsSrcsDir": "src",
     "outputDir": {
@@ -158,11 +158,11 @@
       "android": "android/generated"
     },
     "android": {
-      "javaPackageName": "com.swmansion.reactnativerichtexteditor"
+      "javaPackageName": "com.swmansion.enriched"
     },
     "ios": {
       "componentProvider": {
-        "ReactNativeRichTextEditorView": "ReactNativeRichTextEditorView"
+        "EnrichedTextInputView": "EnrichedTextInputView"
       }
     },
     "includesGeneratedCode": true

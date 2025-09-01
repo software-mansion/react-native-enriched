@@ -2,8 +2,8 @@ import { FlatList, type ListRenderItemInfo, StyleSheet } from 'react-native';
 import { ToolbarButton } from './ToolbarButton';
 import type {
   OnChangeStateEvent,
-  RichTextInputInstance,
-} from '@swmansion/react-native-rich-text-editor';
+  EnrichedTextInputInstance,
+} from 'react-native-enriched';
 import type { FC } from 'react';
 
 const STYLE_ITEMS = [
@@ -74,7 +74,7 @@ type StylesState = OnChangeStateEvent;
 
 export interface ToolbarProps {
   stylesState: StylesState;
-  editorRef?: React.RefObject<RichTextInputInstance | null>;
+  editorRef?: React.RefObject<EnrichedTextInputInstance | null>;
   onOpenLinkModal: () => void;
   onSelectImage: () => void;
 }

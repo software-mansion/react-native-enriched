@@ -1,10 +1,10 @@
 #import "StyleHeaders.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 
 @implementation H3Style
 + (StyleType)getStyleType { return H3; }
-- (CGFloat)getHeadingFontSize { return [((ReactNativeRichTextEditorView *)editor)->config h3FontSize]; }
+- (CGFloat)getHeadingFontSize { return [((EnrichedTextInputView *)input)->config h3FontSize]; }
 - (BOOL)isHeadingBold {
-  return [((ReactNativeRichTextEditorView *)editor)->config h3Bold];
+  return [((EnrichedTextInputView *)input)->config h3Bold];
 }
 @end

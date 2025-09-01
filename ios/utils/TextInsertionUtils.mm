@@ -1,13 +1,13 @@
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 
 @implementation TextInsertionUtils
-+ (void)insertText:(NSString*)text at:(NSInteger)index additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs editor:(id)editor withSelection:(BOOL)withSelection {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)editor;
-  if(typedEditor == nullptr) { return; }
++ (void)insertText:(NSString*)text at:(NSInteger)index additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs input:(id)input withSelection:(BOOL)withSelection {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
+  if(typedInput == nullptr) { return; }
   
-  UITextView *textView = typedEditor->textView;
+  UITextView *textView = typedInput->textView;
 
   NSMutableDictionary<NSAttributedStringKey, id> *copiedAttrs = [textView.typingAttributes mutableCopy];
   if(additionalAttrs != nullptr) {
@@ -23,14 +23,14 @@
     }
     textView.selectedRange = NSMakeRange(index + text.length, 0);
   }
-  typedEditor->recentlyChangedRange = NSMakeRange(index, text.length);
+  typedInput->recentlyChangedRange = NSMakeRange(index, text.length);
 }
 
-+ (void)replaceText:(NSString*)text at:(NSRange)range additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs editor:(id)editor withSelection:(BOOL)withSelection {
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)editor;
-  if(typedEditor == nullptr) { return; }
++ (void)replaceText:(NSString*)text at:(NSRange)range additionalAttributes:(NSDictionary<NSAttributedStringKey, id>*)additionalAttrs input:(id)input withSelection:(BOOL)withSelection {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
+  if(typedInput == nullptr) { return; }
   
-  UITextView *textView = typedEditor->textView;
+  UITextView *textView = typedInput->textView;
 
   [textView.textStorage replaceCharactersInRange:range withString:text];
   if(additionalAttrs != nullptr) {
@@ -43,6 +43,6 @@
     }
     textView.selectedRange = NSMakeRange(range.location + text.length, 0);
   }
-  typedEditor->recentlyChangedRange = NSMakeRange(range.location, text.length);
+  typedInput->recentlyChangedRange = NSMakeRange(range.location, text.length);
 }
 @end

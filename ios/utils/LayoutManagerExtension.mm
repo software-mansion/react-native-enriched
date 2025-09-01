@@ -1,21 +1,21 @@
 #import "LayoutManagerExtension.h"
 #import <objc/runtime.h>
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "StyleHeaders.h"
 #import "ParagraphsUtils.h"
 
 @implementation NSLayoutManager (LayoutManagerExtension)
 
-static void const *kEditorKey = &kEditorKey;
+static void const *kInputKey = &kInputKey;
 
-- (id)editor {
-  return objc_getAssociatedObject(self, kEditorKey);
+- (id)input {
+  return objc_getAssociatedObject(self, kInputKey);
 }
 
-- (void)setEditor:(id)value {
+- (void)setInput:(id)value {
   objc_setAssociatedObject(
     self,
-    kEditorKey,
+    kInputKey,
     value,
     OBJC_ASSOCIATION_RETAIN_NONATOMIC
   );
@@ -49,19 +49,19 @@ static void const *kEditorKey = &kEditorKey;
 - (void)my_drawBackgroundForGlyphRange:(NSRange)glyphRange atPoint:(CGPoint)origin {
   [self my_drawBackgroundForGlyphRange:glyphRange atPoint:origin];
   
-  ReactNativeRichTextEditorView *typedEditor = (ReactNativeRichTextEditorView *)self.editor;
-  if(typedEditor == nullptr) { return; }
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)self.input;
+  if(typedInput == nullptr) { return; }
   
-  BlockQuoteStyle *bqStyle = typedEditor->stylesDict[@([BlockQuoteStyle getStyleType])];
+  BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   if(bqStyle == nullptr) { return; }
   
-  NSRange editorRange = NSMakeRange(0, typedEditor->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
   
   // it isn't the most performant but we have to check for all the blockquotes each time and redraw them
-  NSArray *allBlockquotes = [bqStyle findAllOccurences:editorRange];
+  NSArray *allBlockquotes = [bqStyle findAllOccurences:inputRange];
   
   for(StylePair *pair in allBlockquotes) {
-    NSRange paragraphRange = [typedEditor->textView.textStorage.string paragraphRangeForRange:[pair.rangeValue rangeValue]];
+    NSRange paragraphRange = [typedInput->textView.textStorage.string paragraphRangeForRange:[pair.rangeValue rangeValue]];
     NSRange paragraphGlyphRange = [self glyphRangeForCharacterRange:paragraphRange actualCharacterRange:nullptr];
     [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
       usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer * _Nonnull textContainer, NSRange glyphRange, BOOL * _Nonnull stop) {
@@ -69,56 +69,56 @@ static void const *kEditorKey = &kEditorKey;
         CGFloat paddingTop = origin.y;
         CGFloat x = paddingLeft;
         CGFloat y = paddingTop + rect.origin.y;
-        CGFloat width = [typedEditor->config blockquoteBorderWidth];
+        CGFloat width = [typedInput->config blockquoteBorderWidth];
         CGFloat height = rect.size.height;
         
         CGRect lineRect = CGRectMake(x, y, width, height);
-        [[typedEditor->config blockquoteBorderColor] setFill];
+        [[typedInput->config blockquoteBorderColor] setFill];
         UIRectFill(lineRect);
       }
     ];
   }
     
-  UnorderedListStyle *ulStyle = typedEditor->stylesDict[@([UnorderedListStyle getStyleType])];
-  OrderedListStyle *olStyle = typedEditor->stylesDict[@([OrderedListStyle getStyleType])];
+  UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
+  OrderedListStyle *olStyle = typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   if(ulStyle == nullptr || olStyle == nullptr) { return; }
   
   // also not the most performant but we redraw all the lists
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle findAllOccurences:editorRange]];
-  [allLists addObjectsFromArray:[olStyle findAllOccurences:editorRange]];
+  [allLists addObjectsFromArray:[ulStyle findAllOccurences:inputRange]];
+  [allLists addObjectsFromArray:[olStyle findAllOccurences:inputRange]];
   
   for(StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
     NSDictionary *markerAttributes = @{
-      NSFontAttributeName: [typedEditor->config orderedListMarkerFont],
-      NSForegroundColorAttributeName: [typedEditor->config orderedListMarkerColor]
+      NSFontAttributeName: [typedInput->config orderedListMarkerFont],
+      NSForegroundColorAttributeName: [typedInput->config orderedListMarkerColor]
     };
     
-    NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedEditor->textView range:[pair.rangeValue rangeValue]];
+    NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedInput->textView range:[pair.rangeValue rangeValue]];
     
     for(NSValue *paragraph in paragraphs) {
       NSRange paragraphGlyphRange = [self glyphRangeForCharacterRange:[paragraph rangeValue] actualCharacterRange:nullptr];
       
       [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
         usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
-          NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] editor:typedEditor];
+          NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] input:typedInput];
           
           if(pStyle.textLists.firstObject.markerFormat == NSTextListMarkerDecimal) {
-            CGFloat gapWidth = [typedEditor->config orderedListGapWidth];
+            CGFloat gapWidth = [typedInput->config orderedListGapWidth];
             CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
             CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth/2;
             
             [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
           } else {
-            CGFloat gapWidth = [typedEditor->config unorderedListGapWidth];
-            CGFloat bulletSize = [typedEditor->config unorderedListBulletSize];
+            CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
+            CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
             CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize/2;
             CGFloat centerY = CGRectGetMidY(usedRect);
             
             CGContextRef context = UIGraphicsGetCurrentContext();
             CGContextSaveGState(context); {
-              [[typedEditor->config unorderedListBulletColor] setFill];
+              [[typedInput->config unorderedListBulletColor] setFill];
               CGContextAddArc(context, bulletX, centerY, bulletSize/2, 0, 2 * M_PI, YES);
               CGContextFillPath(context);
             }
@@ -132,14 +132,14 @@ static void const *kEditorKey = &kEditorKey;
   }
 }
 
-- (NSString *)markerForList:(NSTextList *)list charIndex:(NSUInteger)index editor:(ReactNativeRichTextEditorView *)editor {
+- (NSString *)markerForList:(NSTextList *)list charIndex:(NSUInteger)index input:(EnrichedTextInputView *)input {
   if(list.markerFormat == NSTextListMarkerDecimal) {
-    NSString *fullText = editor->textView.textStorage.string;
+    NSString *fullText = input->textView.textStorage.string;
     NSInteger itemNumber = 1;
     
     NSRange currentParagraph = [fullText paragraphRangeForRange:NSMakeRange(index, 0)];
     if(currentParagraph.location > 0) {
-      OrderedListStyle *olStyle = editor->stylesDict[@([OrderedListStyle getStyleType])];
+      OrderedListStyle *olStyle = input->stylesDict[@([OrderedListStyle getStyleType])];
       
       NSInteger prevParagraphsCount = 0;
       NSInteger recentParagraphLocation = [fullText paragraphRangeForRange:NSMakeRange(currentParagraph.location - 1, 0)].location;

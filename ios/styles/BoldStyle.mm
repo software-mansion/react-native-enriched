@@ -1,17 +1,17 @@
 #import "StyleHeaders.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
 
 @implementation BoldStyle {
-  ReactNativeRichTextEditorView *_editor;
+  EnrichedTextInputView *_input;
 }
 
 + (StyleType)getStyleType { return Bold; }
 
-- (instancetype)initWithEditor:(id)editor {
+- (instancetype)initWithInput:(id)input {
   self = [super init];
-  _editor = (ReactNativeRichTextEditorView *) editor;
+  _input = (EnrichedTextInputView *)input;
   return self;
 }
 
@@ -25,61 +25,61 @@
 }
 
 - (void)addAttributes:(NSRange)range {
-  [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
+  [_input->textView.textStorage beginEditing];
+  [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
         UIFont *newFont = [font setBold];
-        [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+        [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
   ];
-  [_editor->textView.textStorage endEditing];
+  [_input->textView.textStorage endEditing];
 }
 
 - (void)addTypingAttributes {
-  UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
+  UIFont *currentFontAttr = (UIFont *)_input->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
-    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+    NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
     newTypingAttrs[NSFontAttributeName] = [currentFontAttr setBold];
-    _editor->textView.typingAttributes = newTypingAttrs;
+    _input->textView.typingAttributes = newTypingAttrs;
   }
 }
 
 - (void)removeAttributes:(NSRange)range {
-  [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
+  [_input->textView.textStorage beginEditing];
+  [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
         UIFont *newFont = [font removeBold];
-        [_editor->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+        [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
   ];
-  [_editor->textView.textStorage endEditing];
+  [_input->textView.textStorage endEditing];
 }
 
 - (void)removeTypingAttributes {
-  UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
+  UIFont *currentFontAttr = (UIFont *)_input->textView.typingAttributes[NSFontAttributeName];
   if(currentFontAttr != nullptr) {
-    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+    NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
     newTypingAttrs[NSFontAttributeName] = [currentFontAttr removeBold];
-    _editor->textView.typingAttributes = newTypingAttrs;
+    _input->textView.typingAttributes = newTypingAttrs;
   }
 }
 
 - (BOOL)boldHeadingConflictsInRange:(NSRange)range type:(StyleType)type {
   if(type == H1) {
-    if(![_editor->config h1Bold]) { return NO; }
+    if(![_input->config h1Bold]) { return NO; }
   } else if(type == H2) {
-    if(![_editor->config h2Bold]) { return NO; }
+    if(![_input->config h2Bold]) { return NO; }
   } else if(type == H3) {
-    if(![_editor->config h3Bold]) { return NO; }
+    if(![_input->config h3Bold]) { return NO; }
   }
   
-  id<BaseStyleProtocol> headingStyle = _editor->stylesDict[@(type)];
+  id<BaseStyleProtocol> headingStyle = _input->stylesDict[@(type)];
   return range.length > 0
     ? [headingStyle anyOccurence:range]
     : [headingStyle detectStyle:range];
@@ -92,19 +92,19 @@
 
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    return [OccurenceUtils detect:NSFontAttributeName withEditor:_editor inRange:range
+    return [OccurenceUtils detect:NSFontAttributeName withInput:_input inRange:range
       withCondition: ^BOOL(id  _Nullable value, NSRange range) {
         return [self styleCondition:value :range];
       }
     ];
   } else {
-    UIFont *currentFontAttr = (UIFont *)_editor->textView.typingAttributes[NSFontAttributeName];
+    UIFont *currentFontAttr = (UIFont *)_input->textView.typingAttributes[NSFontAttributeName];
     return [self styleCondition:currentFontAttr :range];
   }
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:NSFontAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils any:NSFontAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -112,7 +112,7 @@
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:NSFontAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils all:NSFontAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }

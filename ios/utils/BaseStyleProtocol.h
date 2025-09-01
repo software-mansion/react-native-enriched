@@ -4,7 +4,7 @@
 
 @protocol BaseStyleProtocol <NSObject>
 + (StyleType)getStyleType;
-- (instancetype _Nonnull)initWithEditor:(id _Nonnull)editor;
+- (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
 - (void)applyStyle:(NSRange)range;
 - (void)addAttributes:(NSRange)range;
 - (void)removeAttributes:(NSRange)range;

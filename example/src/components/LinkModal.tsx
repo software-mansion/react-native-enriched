@@ -1,7 +1,7 @@
 import { type FC, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
-import type { OnLinkDetected } from '@swmansion/react-native-rich-text-editor';
+import type { OnLinkDetected } from 'react-native-enriched';
 import { Icon } from './Icon';
 
 interface LinkModalProps {

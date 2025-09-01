@@ -1,5 +1,5 @@
 #import "StyleHeaders.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "OccurenceUtils.h"
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
@@ -10,14 +10,14 @@ static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
 static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName";
 
 @implementation LinkStyle {
-  ReactNativeRichTextEditorView *_editor;
+  EnrichedTextInputView *_input;
 }
 
 + (StyleType)getStyleType { return Link; }
 
-- (instancetype)initWithEditor:(id)editor {
+- (instancetype)initWithInput:(id)input {
   self = [super init];
-  _editor = (ReactNativeRichTextEditorView *) editor;
+  _input = (EnrichedTextInputView *)input;
   return self;
 }
 
@@ -36,54 +36,54 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // we have to make sure all links in the range get fully removed here
 - (void)removeAttributes:(NSRange)range {
   NSArray<StylePair *> *links = [self findAllOccurences:range];
-  [_editor->textView.textStorage beginEditing];
+  [_input->textView.textStorage beginEditing];
   for(StylePair *pair in links) {
     NSRange linkRange = [self getFullLinkRangeAt:[pair.rangeValue rangeValue].location];
-    [_editor->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
-    [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
-    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-    if([_editor->config linkDecorationLine] == DecorationUnderline) {
-      [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
+    [_input->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
+    [_input->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
+    [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config primaryColor] range:linkRange];
+    [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_input->config primaryColor] range:linkRange];
+    [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_input->config primaryColor] range:linkRange];
+    if([_input->config linkDecorationLine] == DecorationUnderline) {
+      [_input->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
     }
   }
-  [_editor->textView.textStorage endEditing];
+  [_input->textView.textStorage endEditing];
   
   // adjust typing attributes as well
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
-  newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
-  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
-  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
+  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config primaryColor];
+  if([_input->config linkDecorationLine] == DecorationUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
   }
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 // used for conflicts, we have to remove the whole link
 - (void)removeTypingAttributes {
-  NSRange linkRange = [self getFullLinkRangeAt:_editor->textView.selectedRange.location];
-  [_editor->textView.textStorage beginEditing];
-  [_editor->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
-  [_editor->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
-  [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-  [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-  [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config primaryColor] range:linkRange];
-  if([_editor->config linkDecorationLine] == DecorationUnderline) {
-    [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
+  NSRange linkRange = [self getFullLinkRangeAt:_input->textView.selectedRange.location];
+  [_input->textView.textStorage beginEditing];
+  [_input->textView.textStorage removeAttribute:ManualLinkAttributeName range:linkRange];
+  [_input->textView.textStorage removeAttribute:AutomaticLinkAttributeName range:linkRange];
+  [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config primaryColor] range:linkRange];
+  [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_input->config primaryColor] range:linkRange];
+  [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_input->config primaryColor] range:linkRange];
+  if([_input->config linkDecorationLine] == DecorationUnderline) {
+    [_input->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:linkRange];
   }
-  [_editor->textView.textStorage endEditing];
+  [_input->textView.textStorage endEditing];
   
   // adjust typing attributes as well
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
-  newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
-  newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
-  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
+  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config primaryColor];
+  newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config primaryColor];
+  if([_input->config linkDecorationLine] == DecorationUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
   }
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
@@ -93,7 +93,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:range
+    BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withInput:_input inRange:range
       withCondition: ^BOOL(id  _Nullable value, NSRange range) {
         return [self styleCondition:value :range];
       }
@@ -105,7 +105,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils anyMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:range
+  return [OccurenceUtils anyMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -113,7 +113,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils allMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:range
+  return [OccurenceUtils allMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -123,13 +123,13 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // MARK: - Public non-standard methods
 
 - (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual {
-  NSString *currentText = [_editor->textView.textStorage.string substringWithRange:range];
+  NSString *currentText = [_input->textView.textStorage.string substringWithRange:range];
   
   NSMutableDictionary<NSAttributedStringKey, id> *newAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
-  newAttrs[NSForegroundColorAttributeName] = [_editor->config linkColor];
-  newAttrs[NSUnderlineColorAttributeName] = [_editor->config linkColor];
-  newAttrs[NSStrikethroughColorAttributeName] = [_editor->config linkColor];
-  if([_editor->config linkDecorationLine] == DecorationUnderline) {
+  newAttrs[NSForegroundColorAttributeName] = [_input->config linkColor];
+  newAttrs[NSUnderlineColorAttributeName] = [_input->config linkColor];
+  newAttrs[NSStrikethroughColorAttributeName] = [_input->config linkColor];
+  if([_input->config linkDecorationLine] == DecorationUnderline) {
     newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
   }
   if(manual) {
@@ -140,23 +140,23 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   if(range.length == 0) {
     // insert link
-    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs editor:_editor withSelection:YES];
+    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs input:_input withSelection:YES];
   } else if([currentText isEqualToString:text]) {
     // apply link attributes
-    [_editor->textView.textStorage addAttributes:newAttrs range:range];
+    [_input->textView.textStorage addAttributes:newAttrs range:range];
     // TextInsertionUtils take care of the selection but here we have to manually set it behind the link
     // ONLY with manual links, automatic ones don't need the selection fix
     if(manual) {
-      [_editor->textView reactFocus];
-      _editor->textView.selectedRange = NSMakeRange(range.location + text.length, 0);
+      [_input->textView reactFocus];
+      _input->textView.selectedRange = NSMakeRange(range.location + text.length, 0);
     }
   } else {
     // replace text with link
-    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs editor:_editor withSelection:YES];
+    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs input:_input withSelection:YES];
   }
   
   // mandatory connected links check
-  NSDictionary *currentWord = [WordsUtils getCurrentWord:_editor->textView.textStorage.string range:_editor->textView.selectedRange];
+  NSDictionary *currentWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string range:_input->textView.selectedRange];
   if(currentWord != nullptr) {
     // get word properties
     NSString *wordText = (NSString *)[currentWord objectForKey:@"word"];
@@ -167,32 +167,32 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   [self manageLinkTypingAttributes];
-  [_editor anyTextMayHaveBeenModified];
+  [_input anyTextMayHaveBeenModified];
 }
 
 // get exact link data at the given location if it exists
 - (LinkData *)getLinkDataAt:(NSUInteger)location {
   NSRange manualLinkRange = NSMakeRange(0, 0);
   NSRange automaticLinkRange = NSMakeRange(0, 0);
-  NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
   
   // don't search at the very end of input
   NSUInteger searchLocation = location;
-  if(searchLocation == _editor->textView.textStorage.length) {
+  if(searchLocation == _input->textView.textStorage.length) {
     return nullptr;
   }
   
-  NSString *manualUrl = [_editor->textView.textStorage
+  NSString *manualUrl = [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
-    inRange:editorRange
+    inRange:inputRange
   ];
-  NSString *automaticUrl = [_editor->textView.textStorage
+  NSString *automaticUrl = [_input->textView.textStorage
     attribute:AutomaticLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
-    inRange:editorRange
+    inRange:inputRange
   ];
   
   if((manualUrl == nullptr && automaticUrl == nullptr) || (manualLinkRange.length == 0 && automaticLinkRange.length == 0)) {
@@ -204,7 +204,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   LinkData *data = [[LinkData alloc] init];
   data.url = linkUrl;
-  data.text = [_editor->textView.textStorage.string substringWithRange:linkRange];
+  data.text = [_input->textView.textStorage.string substringWithRange:linkRange];
   return data;
 }
 
@@ -212,11 +212,11 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location {
   NSRange manualLinkRange = NSMakeRange(0, 0);
   NSRange automaticLinkRange = NSMakeRange(0, 0);
-  NSRange editorRange = NSMakeRange(0, _editor->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
   
   // get the previous index if possible when at the very end of input
   NSUInteger searchLocation = location;
-  if(searchLocation == _editor->textView.textStorage.length) {
+  if(searchLocation == _input->textView.textStorage.length) {
     if(searchLocation == 0) {
       return NSMakeRange(0, 0);
     } else {
@@ -224,17 +224,17 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  [_editor->textView.textStorage
+  [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
-    inRange:editorRange
+    inRange:inputRange
   ];
-  [_editor->textView.textStorage
+  [_input->textView.textStorage
     attribute:AutomaticLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
-    inRange:editorRange
+    inRange:inputRange
   ];
   
   return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
@@ -244,41 +244,41 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   // link's typing attribtues need to be removed at ALL times whenever we have some link around
   BOOL removeAttrs = NO;
   
-  if(_editor->textView.selectedRange.length == 0) {
+  if(_input->textView.selectedRange.length == 0) {
     // check before
-    if(_editor->textView.selectedRange.location >= 1) {
-      if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location - 1, 1)]) {
+    if(_input->textView.selectedRange.location >= 1) {
+      if([self detectStyle:NSMakeRange(_input->textView.selectedRange.location - 1, 1)]) {
         removeAttrs = YES;
       }
     }
     // check after
-    if(_editor->textView.selectedRange.location < _editor->textView.textStorage.length) {
-      if([self detectStyle:NSMakeRange(_editor->textView.selectedRange.location, 1)]) {
+    if(_input->textView.selectedRange.location < _input->textView.textStorage.length) {
+      if([self detectStyle:NSMakeRange(_input->textView.selectedRange.location, 1)]) {
         removeAttrs = YES;
       }
     }
   } else {
-    if([self anyOccurence:_editor->textView.selectedRange]) {
+    if([self anyOccurence:_input->textView.selectedRange]) {
       removeAttrs = YES;
     }
   }
   
   if(removeAttrs) {
-    NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
-    newTypingAttrs[NSForegroundColorAttributeName] = [_editor->config primaryColor];
-    newTypingAttrs[NSUnderlineColorAttributeName] = [_editor->config primaryColor];
-    newTypingAttrs[NSStrikethroughColorAttributeName] = [_editor->config primaryColor];
-    if([_editor->config linkDecorationLine] == DecorationUnderline) {
+    NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
+    newTypingAttrs[NSForegroundColorAttributeName] = [_input->config primaryColor];
+    newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config primaryColor];
+    newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config primaryColor];
+    if([_input->config linkDecorationLine] == DecorationUnderline) {
       [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
     }
-    _editor->textView.typingAttributes = newTypingAttrs;
+    _input->textView.typingAttributes = newTypingAttrs;
   }
 }
 
 // handles detecting and removing automatic links
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
-  InlineCodeStyle *inlineCodeStyle = [_editor->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
-  MentionStyle *mentionStyle = [_editor->stylesDict objectForKey:@([MentionStyle getStyleType])];
+  InlineCodeStyle *inlineCodeStyle = [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
+  MentionStyle *mentionStyle = [_input->stylesDict objectForKey:@([MentionStyle getStyleType])];
   
   if (inlineCodeStyle == nullptr || mentionStyle == nullptr) {
     return;
@@ -299,7 +299,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   // we don't recognize automatic links along manual ones
   __block BOOL manualLinkPresent = NO;
-  [_editor->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
+  [_input->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
     usingBlock:^(id value, NSRange range, BOOL *stop) {
       NSString *urlValue = (NSString *)value;
       if(urlValue != nullptr) {
@@ -352,7 +352,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   
     // emit onLinkDetected
-    [_editor emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
+    [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
   }
 }
 
@@ -364,7 +364,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   __block NSInteger manualLinkMinIdx = -1;
   __block NSInteger manualLinkMaxIdx = -1;
   
-  [_editor->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
+  [_input->textView.textStorage enumerateAttribute:ManualLinkAttributeName inRange:wordRange options:0
     usingBlock:^(id value, NSRange range, BOOL *stop) {
       NSString *urlValue = (NSString *)value;
       if (urlValue != nullptr) {
@@ -392,13 +392,13 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   // this way manual link gets "extended" only if some characters were added inside it
   if([manualLinkMinValue isEqualToString:manualLinkMaxValue]) {
     NSRange newRange = NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
-    [_editor->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_editor->config linkColor] range:newRange];
-    [_editor->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_editor->config linkColor] range:newRange];
-    [_editor->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_editor->config linkColor] range:newRange];
-    if([_editor->config linkDecorationLine] == DecorationUnderline) {
-      [_editor->textView.textStorage addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:newRange];
+    [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config linkColor] range:newRange];
+    [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_input->config linkColor] range:newRange];
+    [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_input->config linkColor] range:newRange];
+    if([_input->config linkDecorationLine] == DecorationUnderline) {
+      [_input->textView.textStorage addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:newRange];
     }
-    [_editor->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newRange];
+    [_input->textView.textStorage addAttribute:ManualLinkAttributeName value:manualLinkMinValue range:newRange];
   }
     
   // link typing attributes need to be fixed after these changes
@@ -408,12 +408,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 // replacing whole input (that starts with a link) with a manually typed letter improperly applies link's attributes to all the following text
 - (BOOL)handleLeadingLinkReplacement:(NSRange)range replacementText:(NSString *)text {
   // whole textView range gets replaced with a single letter
-  if(_editor->textView.textStorage.string.length > 0 && NSEqualRanges(range, NSMakeRange(0, _editor->textView.textStorage.string.length)) && text.length == 1) {
+  if(_input->textView.textStorage.string.length > 0 && NSEqualRanges(range, NSMakeRange(0, _input->textView.textStorage.string.length)) && text.length == 1) {
     // first character detection is enough for the removal to be done
     if([self detectStyle:NSMakeRange(0, 1)]) {
-      [self removeAttributes:NSMakeRange(0, _editor->textView.textStorage.string.length)];
+      [self removeAttributes:NSMakeRange(0, _input->textView.textStorage.string.length)];
       // do the replacing manually
-      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr editor:_editor withSelection:YES];
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:_input withSelection:YES];
       return YES;
     }
   }
@@ -429,12 +429,12 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 }
 
 - (void)removeConnectedLinksIfNeeded:(NSString *)word range:(NSRange)wordRange {
-  BOOL anyAutomatic = [OccurenceUtils any:AutomaticLinkAttributeName withEditor:_editor inRange:wordRange
+  BOOL anyAutomatic = [OccurenceUtils any:AutomaticLinkAttributeName withInput:_input inRange:wordRange
     withCondition: ^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
   ];
-  BOOL anyManual = [OccurenceUtils any:ManualLinkAttributeName withEditor:_editor inRange:wordRange
+  BOOL anyManual = [OccurenceUtils any:ManualLinkAttributeName withInput:_input inRange:wordRange
     withCondition: ^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -447,7 +447,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   // we are now sure there is only one type of link there - and make sure it covers the whole word
-  BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withEditor:_editor inRange:wordRange
+  BOOL onlyLinks = [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName] withInput:_input inRange:wordRange
     withCondition: ^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }

@@ -2,5 +2,5 @@
 #import <UIKit/UIKit.h>
 
 @interface NSLayoutManager (LayoutManagerExtension)
-@property (nonatomic, weak) id editor;
+@property (nonatomic, weak) id input;
 @end

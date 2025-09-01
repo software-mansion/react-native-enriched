@@ -1,16 +1,16 @@
 #import "StyleHeaders.h"
-#import "ReactNativeRichTextEditorView.h"
+#import "EnrichedTextInputView.h"
 #import "OccurenceUtils.h"
 
 @implementation UnderlineStyle {
-  ReactNativeRichTextEditorView *_editor;
+  EnrichedTextInputView *_input;
 }
 
 + (StyleType)getStyleType { return Underline; }
 
-- (instancetype)initWithEditor:(id)editor {
+- (instancetype)initWithInput:(id)input {
   self = [super init];
-  _editor = (ReactNativeRichTextEditorView *) editor;
+  _input = (EnrichedTextInputView *)input;
   return self;
 }
 
@@ -24,29 +24,29 @@
 }
 
 - (void)addAttributes:(NSRange)range {
-  [_editor->textView.textStorage addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
+  [_input->textView.textStorage addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
 }
 
 - (void)addTypingAttributes {
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 - (void)removeAttributes:(NSRange)range {
-  [_editor->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:range];
+  [_input->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName range:range];
 }
 
 - (void)removeTypingAttributes {
-  NSMutableDictionary *newTypingAttrs = [_editor->textView.typingAttributes mutableCopy];
+  NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
   [newTypingAttrs removeObjectForKey: NSUnderlineStyleAttributeName];
-  _editor->textView.typingAttributes = newTypingAttrs;
+  _input->textView.typingAttributes = newTypingAttrs;
 }
 
 - (BOOL)underlinedLinkConflictsInRange:(NSRange)range {
   BOOL conflicted = NO;
-  if([_editor->config linkDecorationLine] == DecorationUnderline) {
-    LinkStyle *linkStyle = _editor->stylesDict[@([LinkStyle getStyleType])];
+  if([_input->config linkDecorationLine] == DecorationUnderline) {
+    LinkStyle *linkStyle = _input->stylesDict[@([LinkStyle getStyleType])];
     conflicted = range.length > 0
       ? [linkStyle anyOccurence:range]
       : [linkStyle detectStyle:range];
@@ -56,17 +56,17 @@
 
 - (BOOL)underlinedMentionConflictsInRange:(NSRange)range {
   BOOL conflicted = NO;
-  MentionStyle *mentionStyle = _editor->stylesDict[@([MentionStyle getStyleType])];
+  MentionStyle *mentionStyle = _input->stylesDict[@([MentionStyle getStyleType])];
   if(range.length == 0) {
     if([mentionStyle detectStyle:range]) {
       MentionParams *params = [mentionStyle getMentionParamsAt:range.location];
-      conflicted = [_editor->config mentionStylePropsForIndicator:params.indicator].decorationLine == DecorationUnderline;
+      conflicted = [_input->config mentionStylePropsForIndicator:params.indicator].decorationLine == DecorationUnderline;
     }
   } else {
     NSArray *occurences = [mentionStyle findAllOccurences:range];
     for(StylePair *pair in occurences) {
       MentionParams *params = [mentionStyle getMentionParamsAt:[pair.rangeValue rangeValue].location];
-      if([_editor->config mentionStylePropsForIndicator:params.indicator].decorationLine == DecorationUnderline) {
+      if([_input->config mentionStylePropsForIndicator:params.indicator].decorationLine == DecorationUnderline) {
         conflicted = YES;
         break;
       }
@@ -82,19 +82,19 @@
 
 - (BOOL)detectStyle:(NSRange)range {
   if(range.length >= 1) {
-    return [OccurenceUtils detect:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+    return [OccurenceUtils detect:NSUnderlineStyleAttributeName withInput:_input inRange:range
       withCondition: ^BOOL(id  _Nullable value, NSRange range) {
         return [self styleCondition:value :range];
       }
     ];
   } else {
-    NSNumber *currentUnderlineAttr = (NSNumber *)_editor->textView.typingAttributes[NSUnderlineStyleAttributeName];
+    NSNumber *currentUnderlineAttr = (NSNumber *)_input->textView.typingAttributes[NSUnderlineStyleAttributeName];
     return [self styleCondition:currentUnderlineAttr :range];
   }
 }
 
 - (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils any:NSUnderlineStyleAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }
@@ -102,7 +102,7 @@
 }
 
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:NSUnderlineStyleAttributeName withEditor:_editor inRange:range
+  return [OccurenceUtils all:NSUnderlineStyleAttributeName withInput:_input inRange:range
     withCondition:^BOOL(id  _Nullable value, NSRange range) {
       return [self styleCondition:value :range];
     }

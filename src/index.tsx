@@ -1,4 +1,4 @@
-export * from './RichTextInput';
+export * from './EnrichedTextInput';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
@@ -6,4 +6,4 @@ export type {
   OnLinkDetected,
   OnMentionDetected,
   OnChangeSelectionEvent,
-} from './ReactNativeRichTextEditorViewNativeComponent';
+} from './EnrichedTextInputNativeComponent';

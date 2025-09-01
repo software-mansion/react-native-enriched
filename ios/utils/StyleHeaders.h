@@ -43,7 +43,7 @@
 @end
 
 @interface HeadingStyleBase : NSObject<BaseStyleProtocol> {
-  id editor;
+  id input;
 }
 - (CGFloat)getHeadingFontSize;
 - (BOOL)isHeadingBold;

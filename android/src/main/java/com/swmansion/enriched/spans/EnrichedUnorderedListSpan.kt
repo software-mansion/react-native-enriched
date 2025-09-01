@@ -1,0 +1,49 @@
+package com.swmansion.enriched.spans
+
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.text.Layout
+import android.text.Spanned
+import android.text.style.LeadingMarginSpan
+import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.styles.HtmlStyle
+
+// https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
+class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : LeadingMarginSpan, EnrichedParagraphSpan {
+  override fun getLeadingMargin(p0: Boolean): Int {
+    return htmlStyle.ulBulletSize + htmlStyle.ulGapWidth + htmlStyle.ulMarginLeft
+  }
+
+  override fun drawLeadingMargin(
+    canvas: Canvas,
+    paint: Paint,
+    x: Int,
+    dir: Int,
+    top: Int,
+    baseline: Int,
+    bottom: Int,
+    text: CharSequence,
+    start: Int,
+    end: Int,
+    first: Boolean,
+    layout: Layout?
+  ) {
+    val spannedText = text as Spanned
+
+    if (spannedText.getSpanStart(this) == start) {
+      val style = paint.style
+      val oldColor = paint.color
+      paint.color = htmlStyle.ulBulletColor
+      paint.style = Paint.Style.FILL
+
+      val bulletRadius = htmlStyle.ulBulletSize / 2f
+      val yPosition = (top + bottom) / 2f
+      val xPosition = x + dir * bulletRadius + htmlStyle.ulMarginLeft
+
+      canvas.drawCircle(xPosition, yPosition, bulletRadius, paint)
+
+      paint.color = oldColor
+      paint.style = style
+    }
+  }
+}
