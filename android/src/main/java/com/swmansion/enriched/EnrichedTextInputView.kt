@@ -194,10 +194,12 @@ class EnrichedTextInputView : AppCompatEditText {
     val end = selection?.end ?: 0
 
     if (htmlText != null) {
-      val parsedText = parseText(htmlText) as Spannable
-      val finalText = currentText.mergeSpannables(start, end, parsedText)
-      setValue(finalText)
-      return
+      val parsedText = parseText(htmlText)
+      if (parsedText is Spannable) {
+        val finalText = currentText.mergeSpannables(start, end, parsedText)
+        setValue(finalText)
+        return
+      }
     }
 
     val finalText = currentText.mergeSpannables(start, end, item?.text.toString())
@@ -215,9 +217,14 @@ class EnrichedTextInputView : AppCompatEditText {
     val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
     if (!isHtml) return text
 
-    val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, null)
-    val withoutLastNewLine = parsed.trimEnd('\n')
-    return withoutLastNewLine
+    try {
+      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, null)
+      val withoutLastNewLine = parsed.trimEnd('\n')
+      return withoutLastNewLine
+    } catch (e: Exception) {
+      Log.e("EnrichedTextInputView", "Error parsing HTML: ${e.message}")
+      return text
+    }
   }
 
   fun setValue(value: CharSequence?) {
