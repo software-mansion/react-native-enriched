@@ -102,7 +102,7 @@ jobs:
 
       - name: Build example for Android
         env:
-          JAVA_OPTS: "-XX:MaxHeapSize=6g"
+          JAVA_OPTS: '-XX:MaxHeapSize=6g'
         run: |
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
@@ -120,7 +120,10 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2'
+          xcode-version: '16.4'
+
+      - name: Reset build folder and pods
+        run: rm -rf example/build example/ios/Pods example/ios/Podfile.lock
 
       - name: Cache turborepo for iOS
         uses: actions/cache@v4
