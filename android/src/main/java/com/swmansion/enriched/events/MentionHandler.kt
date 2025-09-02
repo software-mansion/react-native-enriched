@@ -34,7 +34,7 @@ class MentionHandler(private val view: EnrichedTextInputView) {
       view.id,
       indicator,
       text,
-      view.experimentalSynchronousEvents)
-    )
+      view.experimentalSynchronousEvents,
+    ))
   }
 }
