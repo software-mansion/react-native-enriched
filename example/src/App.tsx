@@ -219,7 +219,7 @@ export default function App() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <Text style={styles.label}>SWM Rich Text Editor</Text>
+        <Text style={styles.label}>react-native-enriched</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
             autoFocus
@@ -228,9 +228,9 @@ export default function App() {
             style={styles.editorInput}
             htmlStyle={htmlStyle}
             placeholder="Type something here..."
-            placeholderTextColor="blue"
-            selectionColor="red"
-            cursorColor="yellow"
+            placeholderTextColor="rgb(0, 26, 114)"
+            selectionColor="deepskyblue"
+            cursorColor="dodgerblue"
             autocapitalize="sentences"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
@@ -371,10 +371,10 @@ const styles = StyleSheet.create({
   editorInput: {
     marginTop: 24,
     width: '100%',
-    maxHeight: 120,
+    maxHeight: 240,
     backgroundColor: 'gainsboro',
     fontSize: 18,
-    fontFamily: 'CascadiaCode-Regular',
+    fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
