@@ -63,6 +63,10 @@ const DEFAULT_LINK_STATE = {
 
 const DEBUG_SCROLLABLE = false;
 
+// Enabling this prop fixes input flickering while auto growing.
+// However, it's still experimental and not tested well.
+const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = true;
+
 export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
@@ -240,6 +244,9 @@ export default function App() {
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
+            androidExperimentalSynchronousEvents={
+              ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
+            }
           />
           <Toolbar
             stylesState={stylesState}

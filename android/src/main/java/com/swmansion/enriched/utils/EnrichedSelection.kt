@@ -220,7 +220,14 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
 
     val text = editable.substring(start, end)
-    dispatcher?.dispatchEvent(OnChangeSelectionEvent(surfaceId, view.id, text, start ,end))
+    dispatcher?.dispatchEvent(OnChangeSelectionEvent(
+      surfaceId,
+      view.id,
+      text,
+      start ,
+      end,
+      view.experimentalSynchronousEvents,
+    ))
   }
 
   private fun emitLinkDetectedEvent(spannable: Spannable, span: EnrichedLinkSpan?, start: Int, end: Int) {
@@ -236,7 +243,15 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnLinkDetectedEvent(surfaceId, view.id, text, url, start, end))
+    dispatcher?.dispatchEvent(OnLinkDetectedEvent(
+      surfaceId,
+      view.id,
+      text,
+      url,
+      start,
+      end,
+      view.experimentalSynchronousEvents,
+    ))
   }
 
   private fun emitMentionDetectedEvent(spannable: Spannable, span: EnrichedMentionSpan?, start: Int, end: Int) {
@@ -258,6 +273,13 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnMentionDetectedEvent(surfaceId, view.id, text, indicator, payload))
+    dispatcher?.dispatchEvent(OnMentionDetectedEvent(
+      surfaceId,
+      view.id,
+      text,
+      indicator,
+      payload,
+      view.experimentalSynchronousEvents,
+    ))
   }
 }
