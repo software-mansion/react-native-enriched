@@ -63,6 +63,11 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeHtmlEvent(surfaceId, view.id, html))
+    dispatcher?.dispatchEvent(OnChangeHtmlEvent(
+      surfaceId,
+      view.id,
+      html,
+      view.experimentalSynchronousEvents,
+    ))
   }
 }

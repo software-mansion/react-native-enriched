@@ -190,7 +190,12 @@ class EnrichedSpanState(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeStateEvent(surfaceId, view.id, payload))
+    dispatcher?.dispatchEvent(OnChangeStateEvent(
+      surfaceId,
+      view.id,
+      payload,
+      view.experimentalSynchronousEvents,
+    ))
   }
 
   companion object {

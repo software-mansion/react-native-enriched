@@ -29,6 +29,12 @@ class MentionHandler(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnMentionEvent(surfaceId, view.id, indicator, text))
+    dispatcher?.dispatchEvent(OnMentionEvent(
+      surfaceId,
+      view.id,
+      indicator,
+      text,
+      view.experimentalSynchronousEvents)
+    )
   }
 }

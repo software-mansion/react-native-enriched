@@ -157,6 +157,9 @@ export interface NativeProps extends ViewProps {
 
   // Used for onChangeHtml event performance optimization
   isOnChangeHtmlSet: boolean;
+
+  // Experimental
+  androidExperimentalSynchronousEvents: boolean;
 }
 
 type ComponentType = HostComponent<NativeProps>;

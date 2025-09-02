@@ -4,7 +4,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-class OnMentionEvent(surfaceId: Int, viewId: Int, private val indicator: String, private val text: String?) : Event<OnMentionEvent>(surfaceId, viewId) {
+class OnMentionEvent(surfaceId: Int, viewId: Int, private val indicator: String, private val text: String?, private val experimentalSynchronousEvents: Boolean) : Event<OnMentionEvent>(surfaceId, viewId) {
 
   override fun getEventName(): String {
     return EVENT_NAME
@@ -21,6 +21,10 @@ class OnMentionEvent(surfaceId: Int, viewId: Int, private val indicator: String,
     }
 
     return eventData
+  }
+
+  override fun experimental_isSynchronous(): Boolean {
+    return experimentalSynchronousEvents
   }
 
   companion object {
