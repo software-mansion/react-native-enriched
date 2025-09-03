@@ -4,7 +4,7 @@
 
 - ⚡ Fully native text input component
 - 🕹️ Synchronous text styling
-- 🔍 Live styling detection and html parsing
+- 🔍 Live styling detection and HTML parsing
 - 🎨 Customizable styles
 - 📱 Mobile platforms support
 - 🏛 Supports only the New Architecture
@@ -18,13 +18,13 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 1. [Prerequisites](#prerequisites)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Simple Styles](#simple-styles)
+4. [Non Parametrized Styles](#non-parametrized-styles)
 5. [Links](#links)
 6. [Mentions](#mentions)
 7. [Inline Images](#inline-images)
 8. [Style Detection](#style-detection)
-9. [Other Useful Events](#other-useful-events)
-10. [Customizing Styles](#customizing-styles)
+9. [Other Events](#other-events)
+10. [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 11. [API Reference](#api-reference)
 12. [Future Plans](#future-plans)
 13. [Contributing](#contributing)
@@ -37,33 +37,40 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 
 ## Installation
 
-### 1. Install the package
+### Bare react native app
 
-#### npm
-
-```sh
-npm install react-native-enriched
-```
-
-#### yarn
+#### 1. Install the library
 
 ```sh
 yarn add react-native-enriched
 ```
 
-#### expo
+#### 2. Install iOS dependencies
 
-```sh
-npx expo install react-native-enriched
-```
-
-### 2. Install iOS dependencies
+The library includes native code so you will need to re-build the native app to use it.
 
 ```sh
 cd ios && bundler install && bundler exec pod install
 ```
 
+### Expo app
+
+#### 1. Install the library
+
+```sh
+npx expo install react-native-enriched
+```
+
+#### 2. Run prebuild
+
 The library includes native code so you will need to re-build the native app to use it.
+
+```sh
+npx expo prebuild
+```
+
+> [!NOTE]
+> The library won't work in Expo Go as it needs native changes.
 
 ## Usage
 
@@ -75,36 +82,25 @@ import type {
   EnrichedTextInputInstance,
   OnChangeStateEvent,
 } from 'react-native-enriched';
-import React from 'react';
+import { useState, useRef } from 'react';
 import { View, Button, StyleSheet } from 'react-native';
-import type { NativeSyntheticEvent } from 'react-native';
 
 export default function App() {
-  const ref = React.useRef<EnrichedTextInputInstance>(null);
-  const [stylesState, setStylesState] =
-    React.useState<OnChangeStateEvent | null>();
+  const ref = useRef<EnrichedTextInputInstance>(null);
 
-  const toggleBold = () => {
-    ref.current?.toggleBold();
-  };
-
-  const onChangeStateCallback = (
-    e: NativeSyntheticEvent<OnChangeStateEvent>
-  ) => {
-    setStylesState(e.nativeEvent);
-  };
+  const [stylesState, setStylesState] = useState<OnChangeStateEvent | null>();
 
   return (
     <View style={styles.container}>
       <EnrichedTextInput
         ref={ref}
-        onChangeState={onChangeStateCallback}
+        onChangeState={(e) => setStylesState(e.nativeEvent)}
         style={styles.input}
       />
       <Button
-        title={'Toggle bold'}
+        title="Toggle bold"
         color={stylesState?.isBold ? 'green' : 'gray'}
-        onPress={toggleBold}
+        onPress={() => ref.current?.toggleBold()}
       />
     </View>
   );
@@ -117,11 +113,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
-    fontSize: 32,
+    fontSize: 20,
     padding: 20,
-    margin: 20,
     maxHeight: 200,
-    backgroundColor: 'gainsboro',
+    borderWidth: 1,
   },
 });
 
@@ -130,28 +125,31 @@ const styles = StyleSheet.create({
 Summary of what happens here:
 
 1. Any methods imperatively called on the input to e.g. toggle some style must be used through a `ref` of `EnrichedTextInputInstance` type. Here, `toggleBold` method that is called on the button press calls `ref.current?.toggleBold()`, which toggles the bold styling within the current selection.
-2. All the active styles info is emitted by `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument and you can access an object with boolean properties indicating which styles are active, such as `.isBold` in the example. Here, this info is stored in a react state and used to change colors on the button.
+2. All the active styles info is emitted by `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument and you can access an object with boolean properties indicating which styles are active, such as `isBold` in the example. Here, this info is stored in a react state and used to change colors on the button.
 
-## Simple Styles
+## Non Parametrized Styles
 
-There are currently 12 simple styles that `react-native-enriched` offers as of now:
+Supported styles:
 
 - **bold**
 - *italic*
 - <ins>underline</ins>
 - ~~strikethrough~~
 - `inline code`
-- headings (H1, H2, H3)
+- H1 heading
+- H2 heading
+- H3 heading
 - `codeblock`
 - > blockquote
-- lists: ordered and unordered
+- ordered list
+- unordered list
 
 > [!NOTE]
 > The iOS doesn't support codeblocks just yet but it's planned in the near future!
 
-Each of the simple styles can be just toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
+Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 
-Each call toggles the simple style within the current text selection. We can still divide the simple styles into two categories based on how they treat the selection:
+Each call toggles the style within the current text selection. We can still divide styles into two categories based on how they treat the selection:
 
 - Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
 
@@ -160,33 +158,33 @@ If the selection spans more than one paragraph, logically more of them will be a
 
 ## Links
 
-The links are here, just like in any other editor, a piece of text with a URL attribtued to it. They are not clickable because it would disturb the editing and is not needed during it. They can be added in two ways: automatically or manually.
+The links are here, just like in any other editor, a piece of text with a URL attribtued to it. They can be added in two ways: automatically or manually.
 
-### Automatic links
+### Automatic links detection
 
-`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. It is not a perfect solution, because this way some texts that definitely aren't valid links will get marked too. We are considering making the automatic detection optional and/or providing a prop for user's own regular expression to detect a link in future releases.
+`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. Currently we are using pretty naive approach to detect whether text can be treated as a link or not. On iOS it's a pretty simple regex, on Android we are using URL regex provided by the system.
 
-### Manual links
+### Applying links manually
 
-Manual links can be added by calling [setLink](#setlink) method on the input ref:
+Links can also be added by calling [setLink](#setlink) method on the input ref:
 
 The `start`, `end` and `text` arguments for the method can be easily taken from [onChangeSelection](#onchangeselection) event payload as it returns exact `start` and `end` of the selection and the `text` it spans. This way, you just set the underlying URL to whatever is selected in there.
 
-Alternatively, you can always decide to change the text of the link to something else if, for example, your tool for link editing supports both URL and the text.
+Passing a different `text` than the one in the selection will properly replace it before applying the link.
 
 A complete example of a setup that supports both setting links on the selected text, as well as putting them in the place of cursor and editing existing links can be found in the example app code.
 
 ## Mentions
 
-Mentions are meant to be a customisable style that lets you put mentioning phrases in the input, e.g. `@someone` or `#some_channel`.
+Mentions are meant to be a customisable style that lets you put mentioning phrases in the input, e.g. `@someone` or `#some_channel` or `[any_character_you_like]something`.
 
-### `mentionIndicators`
+### Mention Indicators
 
 There is a [mentionIndicators](#mentionindicators) prop that lets you define what characters can start a mention. By default it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
 
 ### Starting a mention
 
-There's two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](#startmention) method on the input ref.
+There are two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](#startmention) method on the input ref.
 
 ### Mention related events
 
@@ -198,13 +196,13 @@ There's two ways in which a mention can be started; either by typing one of the 
 
 ### Setting a mention
 
-Whenever you feel ready with the currently edited mention (so most likely user chose something from your additional mention editor), you can complete it by calling [setMention](#setmention) ref method.
+Whenever you feel ready with the currently edited mention (so most likely user chooses something from your additional mention editor), you can complete it by calling [setMention](#setmention) ref method.
 
 ## Inline images
 
 You can insert an image into the input using [setImage](#setimage) ref method.
 
-The image will be put into a single line in the input and will affects the line's height as well as input's height.
+The image will be put into a single line in the input and will affects the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
 > [!NOTE]
 > The iOS doesn't support inline images just yet but it's planned in the near future!
@@ -215,37 +213,33 @@ All of the above styles can be detected with the use of [onChangeState](#onchang
 
 You can find some examples in the [usage section](#usage) or in the example app.
 
-## Other Useful Events
+## Other Events
 
 `react-native-enriched` emits a few more events that may be of use:
 
+- [onFocus](#onfocus) - emits whenever input focuses.
+- [onBlur](#onblur) - emits whenver input blurs.
 - [onChangeText](#onchangetext) - returns the input's text anytime it changes.
-- [onChangeHtml](#onchangehtml) - returns html string parsed from current input text and styles anytime it would change. As parsing the html on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
+- [onChangeHtml](#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
 - [onChangeSelection](#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
+- [onLinkDetected](#onlinkdetected) - returns link's detailed info whenever user selection is near one.
+- [onMentionDetected](#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 
-## Customizing Styles
+## Customizing \<EnrichedTextInput /> styles
 
-`react-native-enriched` allows for some degree of styles' customization, mainly cosmetic ones. The style config is handled by [htmlStyle](#htmlstyle) prop.
+`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component.  See [htmlStyle](#htmlstyle) prop.
 
 ## API Reference
 
 ### Props
 
-#### `androidExperimentalSynchronousEvents`
-
-If true, Android will use experimental synchronous events. This will prevent from input flickering when updating component size. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release. `false` by default.
-
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| bool |
-
 #### `autoFocus`
 
-If `true`, focuses the input. The default value is `false`.
+If `true`, focuses the input.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| bool |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `bool` | `false` | Both |
 
 #### `autoCapitalize`
 
@@ -253,67 +247,64 @@ Tells input to automatically capitalize certain characters.
 
 - `characters`: all characters.
 - `words`: first letter of each word.
-- `sentences`: first letter of each sentence (default).
+- `sentences`: first letter of each sentence.
 - `none`: don't auto capitalize anything.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| enum('none', 'sentences', 'words', 'characters') |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `'none' \| 'sentences' \| 'words' \| 'characters'` | `'sentences'` | Both |
 
 #### `cursorColor`
 
-> [!NOTE]
-> Android only
-
 When provided it will set the color of the cursor (or "caret") in the component.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| [color](https://reactnative.dev/docs/colors) |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| [`color`](https://reactnative.dev/docs/colors) | system default | Android |
 
 #### `defaultValue`
 
-Provides an initial value for the input. If the string is a valid html output of the `EnrichedTextInput` component (or other html that the parser will accept), proper styles will be applied.
+Provides an initial value for the input. If the string is a valid HTML output of the `EnrichedTextInput` component (or other HTML that the parser will accept), proper styles will be applied.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| string |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `string` | - | Both |
 
 #### `editable`
 
-If `false`, text is not editable. The default value is`true`.
+If `false`, text is not editable.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| bool |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `bool` | `true` | Both |
 
 #### `htmlStyle`
 
 A prop for customizing styles' appearances.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| [HtmlStyle](#htmlstyle-type) |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| [`HtmlStyle`](#htmlstyle-type) | default values from [`HtmlStyle`](#htmlstyle-type)  | Both |
 
 #### `mentionIndicators`
 
-The recognized mention indicators. Each item needs to be a 1 character long string. Defaults to `['@']`.
+The recognized mention indicators. Each item needs to be a 1 character long string.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| array of strings |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| array of `string` | `['@']` | Both |
 
 #### `onBlur`
 
 Callback that's called whenever the input loses focused (is blurred).
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| () => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `() => void` | - | Both |
 
 #### `onChangeHtml`
 
-Callback that is called when input's html changes.
+Callback that is called when input's HTML changes.
 
 Payload interface:
 
@@ -323,11 +314,11 @@ interface OnChangeHtmlEvent {
 }
 ```
 
-- `value` is the new html.
+- `value` is the new HTML.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (NativeSyntheticEvent\<OnChangeHtmlEvent>) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(NativeSyntheticEvent\<OnChangeHtmlEvent>) => void` | - | Both |
 
 #### `onChangeMention`
 
@@ -345,9 +336,9 @@ interface OnChangeMentionEvent {
 - `indicator` is the indicator of the currently edited mention.
 - `text` contains whole text that has been typed after the indicator.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (OnChangeMentionEvent) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(OnChangeMentionEvent) => void` | - | Both |
 
 #### `onChangeSelection`
 
@@ -367,13 +358,13 @@ OnChangeSelectionEvent {
 - `end` is the first index after the selection's ending. For just a cursor in place (no selection), `start` equals `end`.
 - `text` is the input's text in the current selection.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (NativeSyntheticEvent\<OnChangeSelectionEvent>) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(NativeSyntheticEvent\<OnChangeSelectionEvent>) => void` | - | Both |
 
 #### `onChangeState`
 
-Callback taht gets called when any of the styles within the selection changes. When user moves cursor or changes selection the event also emits.
+Callback that gets called when any of the styles within the selection changes.
 
 Payload has a bool flag for each style:
 
@@ -397,9 +388,9 @@ interface OnChangeStateEvent {
 }
 ```
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (NativeSyntheticEvent\<OnChangeStateEvent>) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(NativeSyntheticEvent\<OnChangeStateEvent>) => void` | - | Both |
 
 #### `onChangeText`
 
@@ -415,9 +406,9 @@ interface OnChangeTextEvent {
 
 - `value` is the new text value of the input.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (NativeSyntheticEvent\<OnChangeTextEvent>) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(NativeSyntheticEvent\<OnChangeTextEvent>) => void` | - | Both |
 
 #### `onEndMention`
 
@@ -425,17 +416,17 @@ Callback that is called when the user no longer edits a mention actively - has m
 
 - `indicator` is the indicator of the mention that was being edited.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (indicator: string) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(indicator: string) => void` | - | Both |
 
 #### `onFocus`
 
 Callback that's called whenever the input is focused.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| () => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `() => void` | - | Both |
 
 #### `onLinkDetected`
 
@@ -457,13 +448,13 @@ interface OnLinkDetected {
 - `start` is the starting index of the link.
 - `end` is the first index after the ending index of the link.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (OnLinkDetected) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(OnLinkDetected) => void` | - | Both |
 
 #### `onMentionDetected`
 
-Callback called when either a new mention has been added or the user has moved the cursor/selection to some mention.
+Callback called when mention has been detected - either a new mention has been added or the user has moved the cursor/selection to some mention.
 
 Payload interface contains all the useful mention data:
 
@@ -479,9 +470,9 @@ OnMentionDetected {
 - `indicator` is the indicator of the mention.
 - `attributes` are the additional user-defined attribtues that are being stored with the mention.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (OnMentionDetected) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(OnMentionDetected) => void` | - | Both |
 
 #### `onStartMention`
 
@@ -489,41 +480,41 @@ Callback that gets called whenever a mention editing starts (after placing the i
 
 - `indicator` is the indicator of the mention that begins editing.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| (indicator: string) => void |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `(indicator: string) => void` | - | Both |
 
 #### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| string |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `string` | `''` | Both |
 
 #### `placeholderTextColor`
 
 Input placeholder's text color.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| [color](https://reactnative.dev/docs/colors) |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| [`color`](https://reactnative.dev/docs/colors) | input's [color](#style) | Both |
 
 #### `ref`
 
 A React ref that lets you call any ref methods on the input.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| RefObject\<EnrichedTextInputInstance \| null> |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `RefObject<EnrichedTextInputInstance \| null>` | - | Both |
 
 #### `selectionColor`
 
-Color of the selection rectangle that gets drawn over the selected text. On iOS the cursor (caret) also gets set to this color.
+Color of the selection rectangle that gets drawn over the selected text. On iOS, the cursor (caret) also gets set to this color.
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| [color](https://reactnative.dev/docs/colors) |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| [`color`](https://reactnative.dev/docs/colors) | system default | Both |
 
 #### `style`
 
@@ -537,15 +528,23 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontWeight
 - fontStyle only on Android
 
-| <div style="width:150px">Type</div> |
-| ----------------------------------- |
-| [View Style](https://reactnative.dev/docs/view#style), [Text Style](https://reactnative.dev/docs/text#style) |
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| [`View Style`](https://reactnative.dev/docs/view#style) \| [`Text Style`](https://reactnative.dev/docs/text#style) | - | Both |
 
 #### `ViewProps`
 
 The input inherits [ViewProps](https://reactnative.dev/docs/view#props), but keep in mind that some of the props may not be supported.
 
-### Methods
+#### `androidExperimentalSynchronousEvents` - EXPERIMENTAL
+
+If true, Android will use experimental synchronous events. This will prevent from input flickering when updating component size. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
+
+| Type | Default Value | Platform |
+| ---- | ------------- | -------- |
+| `bool` | `false` | Android |
+
+### Ref Methods
 
 All of the methods should be called on the input's [ref](#ref).
 
@@ -566,6 +565,9 @@ focus: () => void;
 Focuses the input.
 
 #### `.setImage()`
+
+> [!NOTE]
+> This function is Android only as iOS doesn't support inline images just yet.
 
 ```ts
 setImage: (src: string) => void;
@@ -607,7 +609,7 @@ Sets the currently edited mention with a given indicator, displayed text and cus
 
 - `indicator: string` - the indicator of the set mention.
 - `text: string` - the text that should be displayed for the mention. Anything the user typed gets replaced by that text. The mention indicator isn't added to that text.
-- `attributes?: Record<string, string>` - additional, custom attribtues for the mention that can be passed as a typescript record. They are properly preserved through parsing from and to the html format.
+- `attributes?: Record<string, string>` - additional, custom attribtues for the mention that can be passed as a typescript record. They are properly preserved through parsing from and to the HTML format.
 
 #### `.setValue()`
 
@@ -615,9 +617,9 @@ Sets the currently edited mention with a given indicator, displayed text and cus
 setValue: (value: string) => void;
 ```
 
-Sets the input's value. If the string is a valid html output of the `EnrichedTextInput` component (or other html that the parser will accept), proper styles will be applied too.
+Sets the input's value.
 
-- `value: string` - the new value.
+- `value: string` - value to set, it can either be `react-native-enriched` supported HTML string or raw text.
 
 #### `.startMention()`
 
@@ -646,6 +648,9 @@ toggleBold: () => void;
 Toggles bold formatting at the current selection.
 
 #### `.toggleCodeBlock()`
+
+> [!NOTE]
+> This function is Android only as iOS doesn't support codeblocks just yet.
 
 ```ts
 toggleCodeBlock: () => void;
@@ -727,9 +732,7 @@ Converts current selection into an unordered list.
 
 ### HtmlStyle type
 
-This type is an object of objects that defines custom styles' config.
-
-The exact signature looks like this:
+Allows customizing HTML styles.
 
 ```ts
 interface HtmlStyle {
@@ -851,9 +854,11 @@ By bullet we mean the dot that begins each line of the list.
 
 ## Future Plans
 
-- Adding Codeblocks and Inline Images to iOS input
-- Making some optimalizations around `onChangeHtml` event, maybe some imperative API to get the html output
-- Creating `EnrichedText` text component that supports our html output format with all additional interactions like pressing links or mentions
+- Adding Codeblocks and Inline Images to iOS input.
+- Making some optimalizations around `onChangeHtml` event, maybe some imperative API to get the HTML output.
+- Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
+- Adding API for custom link detection regex.
+- Web library implementation via `react-native-web`.
 
 ## Contributing
 
