@@ -1,18 +1,30 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
+  disabled?: boolean;
 }
 
-export const Button: FC<ButtonProps> = ({ title, onPress }) => {
+export const Button: FC<ButtonProps> = ({
+  title,
+  onPress,
+  disabled = false,
+}) => {
+  const [pressed, setPressed] = useState(false);
+
   return (
     <Pressable
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       onPress={onPress}
-      style={({ pressed }) =>
-        pressed ? [styles.button, { opacity: 0.9 }] : styles.button
-      }
+      style={[
+        styles.button,
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+      ]}
+      disabled={disabled}
     >
       <Text style={styles.buttonLabel}>{title}</Text>
     </Pressable>
@@ -33,5 +45,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  disabled: {
+    backgroundColor: 'darkgray',
+  },
+  pressed: {
+    opacity: 0.9,
   },
 });

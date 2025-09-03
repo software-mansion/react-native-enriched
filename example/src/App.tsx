@@ -79,6 +79,14 @@ export default function App() {
   const userMention = useUserMention();
   const channelMention = useChannelMention();
 
+  const insideCurrentLink =
+    stylesState.isLink &&
+    currentLink.url.length > 0 &&
+    (currentLink.start !== 0 || currentLink.end !== 0) &&
+    selection &&
+    selection.start >= currentLink.start &&
+    selection.end <= currentLink.end;
+
   const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
     console.log('Text changed:', e?.nativeEvent.value);
   };
@@ -147,9 +155,27 @@ export default function App() {
   };
 
   const submitLink = (text: string, url: string) => {
-    if (!selection) return;
+    if (!selection || url.length === 0) {
+      closeLinkModal();
+      return;
+    }
 
-    ref.current?.setLink(selection.start, selection.end, text, url);
+    if (insideCurrentLink) {
+      ref.current?.setLink(
+        currentLink.start,
+        currentLink.end,
+        text.length > 0 ? text : url,
+        url
+      );
+    } else {
+      ref.current?.setLink(
+        selection.start,
+        selection.end,
+        text.length > 0 ? text : url,
+        url
+      );
+    }
+
     closeLinkModal();
   };
 
@@ -259,8 +285,11 @@ export default function App() {
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
       </ScrollView>
       <LinkModal
-        defaults={currentLink}
         isOpen={isLinkModalOpen}
+        editedText={
+          insideCurrentLink ? currentLink.text : (selection?.text ?? '')
+        }
+        editedUrl={insideCurrentLink ? currentLink.url : ''}
         onSubmit={submitLink}
         onClose={closeLinkModal}
       />

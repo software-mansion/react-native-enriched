@@ -1,35 +1,37 @@
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
-import type { OnLinkDetected } from 'react-native-enriched';
 import { Icon } from './Icon';
 
 interface LinkModalProps {
   isOpen: boolean;
-  defaults: OnLinkDetected;
+  editedText: string;
+  editedUrl: string;
   onClose: () => void;
   onSubmit: (text: string, url: string) => void;
 }
 
 export const LinkModal: FC<LinkModalProps> = ({
   isOpen,
-  defaults,
+  editedText,
+  editedUrl,
   onClose,
   onSubmit,
 }) => {
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
 
+  useEffect(() => {
+    setText(editedText);
+    setUrl(editedUrl);
+  }, [editedText, editedUrl]);
+
   const handleSave = () => {
-    onSubmit(text || defaults.text, url || defaults.url);
+    onSubmit(text, url);
   };
 
   return (
-    <Modal
-      visible={isOpen}
-      animationType="slide"
-      backdropColor="rgba(0, 0, 0, 0.5)"
-    >
+    <Modal visible={isOpen} animationType="slide" transparent>
       <View style={styles.container}>
         <View style={styles.modal}>
           <View style={styles.header}>
@@ -40,17 +42,21 @@ export const LinkModal: FC<LinkModalProps> = ({
           <View style={styles.content}>
             <TextInput
               placeholder="Text"
-              defaultValue={defaults.text}
+              defaultValue={editedText}
               style={styles.input}
               onChangeText={setText}
             />
             <TextInput
               placeholder="Link"
-              defaultValue={defaults.url}
+              defaultValue={editedUrl}
               style={styles.input}
               onChangeText={setUrl}
             />
-            <Button title="Save" onPress={handleSave} />
+            <Button
+              title="Save"
+              onPress={handleSave}
+              disabled={url.length === 0}
+            />
           </View>
         </View>
       </View>
@@ -63,6 +69,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgb(0, 0, 0, 0.5)',
   },
   modal: {
     width: 300,
@@ -87,8 +94,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
+    fontSize: 15,
     borderBottomWidth: 1,
     borderBottomColor: 'grey',
     width: '100%',
+    marginVertical: 10,
   },
 });
