@@ -1,16 +1,19 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useState, type FC } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Button: FC<ButtonProps> = ({
   title,
   onPress,
   disabled = false,
+  style = {},
 }) => {
   const [pressed, setPressed] = useState(false);
 
@@ -23,6 +26,7 @@ export const Button: FC<ButtonProps> = ({
         styles.button,
         pressed && styles.pressed,
         disabled && styles.disabled,
+        style,
       ]}
       disabled={disabled}
     >
@@ -37,7 +41,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 24,
-    width: '100%',
     backgroundColor: 'rgb(0, 26, 114)',
     borderRadius: 8,
   },

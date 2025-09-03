@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   type NativeSyntheticEvent,
-  TextInput,
   ScrollView,
 } from 'react-native';
 import {
@@ -21,10 +20,12 @@ import { useRef, useState } from 'react';
 import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
+import { ValueModal } from './components/ValueModal';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
 import { useUserMention } from './useUserMention';
 import { useChannelMention } from './useChannelMention';
+import { HtmlSection } from './components/HtmlSection';
 
 type StylesState = OnChangeStateEvent;
 
@@ -67,10 +68,11 @@ export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isValueModalOpen, setIsValueModalOpen] = useState(false);
+  const [currentHtml, setCurrentHtml] = useState('');
 
   const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
-  const [defaultValue, setDefaultValue] = useState('');
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
@@ -93,6 +95,7 @@ export default function App() {
 
   const handleChangeHtml = (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => {
     console.log('HTML changed:', e?.nativeEvent.value);
+    setCurrentHtml(e?.nativeEvent.value);
   };
 
   const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
@@ -105,10 +108,6 @@ export default function App() {
 
   const handleBlur = () => {
     ref.current?.blur();
-  };
-
-  const handleSetValue = () => {
-    ref.current?.setValue('<html><b>Hello</b> <i>world</i></html>');
   };
 
   const openLinkModal = () => {
@@ -135,6 +134,14 @@ export default function App() {
   const closeChannelMentionPopup = () => {
     setIsChannelPopupOpen(false);
     channelMention.onMentionChange('');
+  };
+
+  const openValueModal = () => {
+    setIsValueModalOpen(true);
+  };
+
+  const closeValueModal = () => {
+    setIsValueModalOpen(false);
   };
 
   const handleStartMention = (indicator: string) => {
@@ -177,6 +184,11 @@ export default function App() {
     }
 
     closeLinkModal();
+  };
+
+  const submitSetValue = (value: string) => {
+    ref.current?.setValue(value);
+    closeValueModal();
   };
 
   const selectImage = async () => {
@@ -241,7 +253,7 @@ export default function App() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <Text style={styles.label}>SWM Rich Text Editor</Text>
+        <Text style={styles.label}>Enriched Text Input</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
             autoFocus
@@ -254,7 +266,6 @@ export default function App() {
             selectionColor="red"
             cursorColor="yellow"
             autocapitalize="sentences"
-            defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
@@ -274,14 +285,16 @@ export default function App() {
             onSelectImage={selectImage}
           />
         </View>
-        <TextInput
-          placeholder="Default value"
-          style={styles.defaultInput}
-          onChangeText={setDefaultValue}
+        <View style={styles.buttonStack}>
+          <Button title="Focus" onPress={handleFocus} style={styles.button} />
+          <Button title="Blur" onPress={handleBlur} style={styles.button} />
+        </View>
+        <Button
+          title="Set input's value"
+          onPress={openValueModal}
+          style={styles.valueButton}
         />
-        <Button title="Focus" onPress={handleFocus} />
-        <Button title="Blur" onPress={handleBlur} />
-        <Button title="Set value" onPress={handleSetValue} />
+        <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
       </ScrollView>
       <LinkModal
@@ -292,6 +305,11 @@ export default function App() {
         editedUrl={insideCurrentLink ? currentLink.url : ''}
         onSubmit={submitLink}
         onClose={closeLinkModal}
+      />
+      <ValueModal
+        isOpen={isValueModalOpen}
+        onSubmit={submitSetValue}
+        onClose={closeValueModal}
       />
       <MentionPopup
         variant="user"
@@ -390,6 +408,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgb(0, 26, 114)',
   },
+  buttonStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  button: {
+    width: '45%',
+  },
+  valueButton: {
+    width: '100%',
+  },
   editorInput: {
     marginTop: 24,
     width: '100%',
@@ -399,13 +429,6 @@ const styles = StyleSheet.create({
     fontFamily: 'CascadiaCode-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
-  },
-  defaultInput: {
-    marginTop: 24,
-    width: '100%',
-    height: 40,
-    borderBottomWidth: 1,
-    borderBottomColor: 'grey',
   },
   scrollPlaceholder: {
     marginTop: 24,
