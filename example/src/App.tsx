@@ -64,6 +64,10 @@ const DEFAULT_LINK_STATE = {
 
 const DEBUG_SCROLLABLE = false;
 
+// Enabling this prop fixes input flickering while auto growing.
+// However, it's still experimental and not tested well.
+const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = true;
+
 export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
@@ -254,10 +258,10 @@ export default function App() {
             style={styles.editorInput}
             htmlStyle={htmlStyle}
             placeholder="Type something here..."
-            placeholderTextColor="blue"
-            selectionColor="red"
-            cursorColor="yellow"
-            autocapitalize="sentences"
+            placeholderTextColor="rgb(0, 26, 114)"
+            selectionColor="deepskyblue"
+            cursorColor="dodgerblue"
+            autoCapitalize="sentences"
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}
@@ -269,6 +273,9 @@ export default function App() {
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
+            androidExperimentalSynchronousEvents={
+              ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
+            }
           />
           <Toolbar
             stylesState={stylesState}
@@ -415,10 +422,10 @@ const styles = StyleSheet.create({
   editorInput: {
     marginTop: 24,
     width: '100%',
-    maxHeight: 120,
+    maxHeight: 180,
     backgroundColor: 'gainsboro',
     fontSize: 18,
-    fontFamily: 'CascadiaCode-Regular',
+    fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
   },

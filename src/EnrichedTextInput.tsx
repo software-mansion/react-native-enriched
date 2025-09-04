@@ -127,7 +127,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
-  autocapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
@@ -141,6 +141,14 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
+  /**
+   * If true, Android will use experimental synchronous events.
+   * This will prevent from input flickering when updating component size.
+   * However, this is an experimental feature, which has not been thoroughly tested.
+   * We may decide to enable it by default in a future release.
+   * Disabled by default.
+   */
+  androidExperimentalSynchronousEvents?: boolean;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -170,7 +178,7 @@ export const EnrichedTextInput = ({
   cursorColor,
   selectionColor,
   style,
-  autocapitalize = 'sentences',
+  autoCapitalize = 'sentences',
   htmlStyle = {},
   onFocus,
   onBlur,
@@ -183,6 +191,7 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
+  androidExperimentalSynchronousEvents = false,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -328,7 +337,7 @@ export const EnrichedTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
-      autoCapitalize={autocapitalize}
+      autoCapitalize={autoCapitalize}
       htmlStyle={normalizedHtmlStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
@@ -340,6 +349,9 @@ export const EnrichedTextInput = ({
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
+      androidExperimentalSynchronousEvents={
+        androidExperimentalSynchronousEvents
+      }
       {...rest}
     />
   );

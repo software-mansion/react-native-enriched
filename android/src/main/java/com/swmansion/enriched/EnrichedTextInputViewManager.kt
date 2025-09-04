@@ -182,6 +182,13 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.setAutoCapitalize(flag)
   }
 
+  override fun setAndroidExperimentalSynchronousEvents(
+    view: EnrichedTextInputView?,
+    value: Boolean
+  ) {
+    view?.experimentalSynchronousEvents = value
+  }
+
   override fun focus(view: EnrichedTextInputView?) {
     view?.requestFocusProgrammatically()
   }
