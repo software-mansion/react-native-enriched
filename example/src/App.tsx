@@ -231,7 +231,7 @@ export default function App() {
             placeholderTextColor="rgb(0, 26, 114)"
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
-            autocapitalize="sentences"
+            autoCapitalize="sentences"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}

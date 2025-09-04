@@ -127,7 +127,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
-  autocapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
   style?: ViewStyle | TextStyle;
   onFocus?: () => void;
@@ -178,7 +178,7 @@ export const EnrichedTextInput = ({
   cursorColor,
   selectionColor,
   style,
-  autocapitalize = 'sentences',
+  autoCapitalize = 'sentences',
   htmlStyle = {},
   onFocus,
   onBlur,
@@ -337,7 +337,7 @@ export const EnrichedTextInput = ({
       cursorColor={cursorColor}
       selectionColor={selectionColor}
       style={style}
-      autoCapitalize={autocapitalize}
+      autoCapitalize={autoCapitalize}
       htmlStyle={normalizedHtmlStyle}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
