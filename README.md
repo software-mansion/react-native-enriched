@@ -114,9 +114,9 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 20,
-    padding: 20,
+    padding: 10,
     maxHeight: 200,
-    borderWidth: 1,
+    backgroundColor: 'lightgray',
   },
 });
 
