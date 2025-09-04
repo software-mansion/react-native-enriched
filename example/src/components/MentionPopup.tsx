@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     borderRadius: 8,
-    maxHeight: 120,
+    maxHeight: 200,
     borderWidth: 1,
     borderColor: 'grey',
     backgroundColor: 'white',
