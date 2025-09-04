@@ -1,33 +1,23 @@
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useState } from 'react';
 import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
 import { Icon } from './Icon';
 
 interface LinkModalProps {
   isOpen: boolean;
-  editedText: string;
-  editedUrl: string;
   onClose: () => void;
-  onSubmit: (text: string, url: string) => void;
+  onSubmit: (value: string) => void;
 }
 
-export const LinkModal: FC<LinkModalProps> = ({
+export const ValueModal: FC<LinkModalProps> = ({
   isOpen,
-  editedText,
-  editedUrl,
   onClose,
   onSubmit,
 }) => {
-  const [text, setText] = useState('');
-  const [url, setUrl] = useState('');
-
-  useEffect(() => {
-    setText(editedText);
-    setUrl(editedUrl);
-  }, [editedText, editedUrl]);
+  const [value, setValue] = useState('');
 
   const handleSave = () => {
-    onSubmit(text, url);
+    onSubmit(value);
   };
 
   return (
@@ -41,21 +31,14 @@ export const LinkModal: FC<LinkModalProps> = ({
           </View>
           <View style={styles.content}>
             <TextInput
-              placeholder="Text"
-              defaultValue={editedText}
+              multiline
+              placeholder="New value"
               style={styles.input}
-              onChangeText={setText}
-            />
-            <TextInput
-              placeholder="Link"
-              defaultValue={editedUrl}
-              style={styles.input}
-              onChangeText={setUrl}
+              onChangeText={setValue}
             />
             <Button
-              title="Save"
+              title="Set Value"
               onPress={handleSave}
-              disabled={url.length === 0}
               style={styles.saveButton}
             />
           </View>
@@ -74,7 +57,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: 300,
-    height: 240,
+    height: 400,
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
@@ -96,8 +79,11 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'grey',
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    padding: 10,
+    height: 240,
     width: '100%',
     marginVertical: 10,
   },

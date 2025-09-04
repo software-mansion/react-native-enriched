@@ -1,18 +1,30 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import type { FC } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const Button: FC<ButtonProps> = ({ title, onPress }) => {
+export const Button: FC<ButtonProps> = ({
+  title,
+  onPress,
+  disabled = false,
+  style = {},
+}) => {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) =>
-        pressed ? [styles.button, { opacity: 0.9 }] : styles.button
-      }
+      style={({ pressed }) => [
+        styles.button,
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+        style,
+      ]}
+      disabled={disabled}
     >
       <Text style={styles.buttonLabel}>{title}</Text>
     </Pressable>
@@ -25,7 +37,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 24,
-    width: '100%',
     backgroundColor: 'rgb(0, 26, 114)',
     borderRadius: 8,
   },
@@ -33,5 +44,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  disabled: {
+    backgroundColor: 'darkgray',
+  },
+  pressed: {
+    opacity: 0.9,
   },
 });
