@@ -4,7 +4,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-class OnInputFocusEvent(surfaceId: Int, viewId: Int) :
+class OnInputFocusEvent(surfaceId: Int, viewId: Int, private val experimentalSynchronousEvents: Boolean) :
   Event<OnInputFocusEvent>(surfaceId, viewId) {
 
   override fun getEventName(): String {
@@ -15,6 +15,10 @@ class OnInputFocusEvent(surfaceId: Int, viewId: Int) :
     val eventData: WritableMap = Arguments.createMap()
 
     return eventData
+  }
+
+  override fun experimental_isSynchronous(): Boolean {
+    return experimentalSynchronousEvents
   }
 
   companion object {

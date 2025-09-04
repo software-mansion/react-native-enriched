@@ -63,6 +63,10 @@ const DEFAULT_LINK_STATE = {
 
 const DEBUG_SCROLLABLE = false;
 
+// Enabling this prop fixes input flickering while auto growing.
+// However, it's still experimental and not tested well.
+const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = true;
+
 export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
@@ -215,7 +219,7 @@ export default function App() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <Text style={styles.label}>SWM Rich Text Editor</Text>
+        <Text style={styles.label}>react-native-enriched</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
             autoFocus
@@ -224,10 +228,10 @@ export default function App() {
             style={styles.editorInput}
             htmlStyle={htmlStyle}
             placeholder="Type something here..."
-            placeholderTextColor="blue"
-            selectionColor="red"
-            cursorColor="yellow"
-            autoCapitalize="sentences"
+            placeholderTextColor="rgb(0, 26, 114)"
+            selectionColor="deepskyblue"
+            cursorColor="dodgerblue"
+            autocapitalize="sentences"
             defaultValue={defaultValue}
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
@@ -240,6 +244,9 @@ export default function App() {
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
             onChangeSelection={handleSelectionChangeEvent}
+            androidExperimentalSynchronousEvents={
+              ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
+            }
           />
           <Toolbar
             stylesState={stylesState}
@@ -364,10 +371,10 @@ const styles = StyleSheet.create({
   editorInput: {
     marginTop: 24,
     width: '100%',
-    maxHeight: 120,
+    maxHeight: 240,
     backgroundColor: 'gainsboro',
     fontSize: 18,
-    fontFamily: 'CascadiaCode-Regular',
+    fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
   },

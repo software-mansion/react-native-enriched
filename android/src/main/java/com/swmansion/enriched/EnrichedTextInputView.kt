@@ -59,6 +59,8 @@ class EnrichedTextInputView : AppCompatEditText {
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
+  var experimentalSynchronousEvents: Boolean = false
+
   var fontSize: Float? = null
   private var autoFocus = false
   private var typefaceDirty = false
@@ -147,9 +149,9 @@ class EnrichedTextInputView : AppCompatEditText {
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
 
     if (focused) {
-      dispatcher?.dispatchEvent(OnInputFocusEvent(surfaceId, id))
+      dispatcher?.dispatchEvent(OnInputFocusEvent(surfaceId, id, experimentalSynchronousEvents))
     } else {
-      dispatcher?.dispatchEvent(OnInputBlurEvent(surfaceId, id))
+      dispatcher?.dispatchEvent(OnInputBlurEvent(surfaceId, id, experimentalSynchronousEvents))
     }
   }
 

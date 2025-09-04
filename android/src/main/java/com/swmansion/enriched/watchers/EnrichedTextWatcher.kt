@@ -40,7 +40,12 @@ class EnrichedTextWatcher(private val view: EnrichedTextInputView) : TextWatcher
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeTextEvent(surfaceId, view.id, s))
+    dispatcher?.dispatchEvent(OnChangeTextEvent(
+      surfaceId,
+      view.id,
+      s,
+      view.experimentalSynchronousEvents,
+    ))
     view.spanWatcher?.emitEvent(s, null)
   }
 }
