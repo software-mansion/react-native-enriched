@@ -84,7 +84,7 @@ export default function App() {
   const insideCurrentLink =
     stylesState.isLink &&
     currentLink.url.length > 0 &&
-    (currentLink.start !== 0 || currentLink.end !== 0) &&
+    (currentLink.start || currentLink.end) &&
     selection &&
     selection.start >= currentLink.start &&
     selection.end <= currentLink.end;
@@ -167,20 +167,12 @@ export default function App() {
       return;
     }
 
+    const newText = text.length > 0 ? text : url;
+
     if (insideCurrentLink) {
-      ref.current?.setLink(
-        currentLink.start,
-        currentLink.end,
-        text.length > 0 ? text : url,
-        url
-      );
+      ref.current?.setLink(currentLink.start, currentLink.end, newText, url);
     } else {
-      ref.current?.setLink(
-        selection.start,
-        selection.end,
-        text.length > 0 ? text : url,
-        url
-      );
+      ref.current?.setLink(selection.start, selection.end, newText, url);
     }
 
     closeLinkModal();

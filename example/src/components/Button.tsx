@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { useState, type FC } from 'react';
+import type { FC } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 interface ButtonProps {
@@ -15,14 +15,10 @@ export const Button: FC<ButtonProps> = ({
   disabled = false,
   style = {},
 }) => {
-  const [pressed, setPressed] = useState(false);
-
   return (
     <Pressable
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.button,
         pressed && styles.pressed,
         disabled && styles.disabled,
