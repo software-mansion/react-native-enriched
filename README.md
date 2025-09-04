@@ -1,6 +1,6 @@
 # react-native-enriched
 
-`react-native-enriched` is a powerful React Native library that shares a rich text editor component:
+`react-native-enriched` is a powerful React Native library that exposes a rich text editor component:
 
 - ⚡ Fully native text input component
 - 🕹️ Synchronous text styling
@@ -9,7 +9,7 @@
 - 📱 Mobile platforms support
 - 🏛 Supports only the New Architecture
 
-`EnrichedTextInput`, the rich text editor component that the library shares is an uncontrolled input. This means that it doesn't use any state or props to store its value, but instead directly interacts with the underlying platform-specific components. Thanks to this, the component is really performant and simple to use while offering complex and advanced features no other solution has.
+`EnrichedTextInput`, the rich text editor component is an uncontrolled input. This means that it doesn't use any state or props to store its value, but instead directly interacts with the underlying platform-specific components. Thanks to this, the component is really performant and simple to use while offering complex and advanced features no other solution has.
 
 Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
 
