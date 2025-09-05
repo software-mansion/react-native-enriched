@@ -13,6 +13,8 @@
 
 Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
 
+[![Logo](https://github.com/user-attachments/assets/7afc5a46-5b2d-498a-88a2-ac171c99c317)](https://filament.dm/)
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
