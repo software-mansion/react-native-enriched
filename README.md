@@ -164,7 +164,7 @@ If the selection spans more than one paragraph, logically more of them will be a
 
 ## Links
 
-The links are here, just like in any other editor, a piece of text with a URL attribtued to it. They can be added in two ways: automatically or manually.
+The links are here, just like in any other editor, a piece of text with a URL attributed to it. They can be added in two ways: automatically or manually.
 
 ### Automatic links detection
 
@@ -224,7 +224,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 `react-native-enriched` emits a few more events that may be of use:
 
 - [onFocus](#onfocus) - emits whenever input focuses.
-- [onBlur](#onblur) - emits whenver input blurs.
+- [onBlur](#onblur) - emits whenever input blurs.
 - [onChangeText](#onchangetext) - returns the input's text anytime it changes.
 - [onChangeHtml](#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
 - [onChangeSelection](#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
@@ -243,9 +243,9 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 If `true`, focuses the input.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `bool` | `false` | Both |
+| Type   | Default Value | Platform |
+|--------|---------------|----------|
+| `bool` | `false`       | Both     |
 
 #### `autoCapitalize`
 
@@ -256,57 +256,57 @@ Tells input to automatically capitalize certain characters.
 - `sentences`: first letter of each sentence.
 - `none`: don't auto capitalize anything.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `'none' \| 'sentences' \| 'words' \| 'characters'` | `'sentences'` | Both |
+| Type                                               | Default Value | Platform |
+|----------------------------------------------------|---------------|----------|
+| `'none' \| 'sentences' \| 'words' \| 'characters'` | `'sentences'` | Both     |
 
 #### `cursorColor`
 
 When provided it will set the color of the cursor (or "caret") in the component.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| [`color`](https://reactnative.dev/docs/colors) | system default | Android |
+| Type                                           | Default Value  | Platform |
+|------------------------------------------------|----------------|----------|
+| [`color`](https://reactnative.dev/docs/colors) | system default | Android  |
 
 #### `defaultValue`
 
 Provides an initial value for the input. If the string is a valid HTML output of the `EnrichedTextInput` component (or other HTML that the parser will accept), proper styles will be applied.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `string` | - | Both |
+| Type     | Default Value | Platform |
+|----------|---------------|----------|
+| `string` | -             | Both     |
 
 #### `editable`
 
 If `false`, text is not editable.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `bool` | `true` | Both |
+| Type   | Default Value | Platform |
+|--------|---------------|----------|
+| `bool` | `true`        | Both     |
 
 #### `htmlStyle`
 
 A prop for customizing styles' appearances.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| [`HtmlStyle`](#htmlstyle-type) | default values from [`HtmlStyle`](#htmlstyle-type)  | Both |
+| Type                           | Default Value                                      | Platform |
+|--------------------------------|----------------------------------------------------|----------|
+| [`HtmlStyle`](#htmlstyle-type) | default values from [`HtmlStyle`](#htmlstyle-type) | Both     |
 
 #### `mentionIndicators`
 
 The recognized mention indicators. Each item needs to be a 1 character long string.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| array of `string` | `['@']` | Both |
+| Type              | Default Value | Platform |
+|-------------------|---------------|----------|
+| array of `string` | `['@']`       | Both     |
 
 #### `onBlur`
 
 Callback that's called whenever the input loses focused (is blurred).
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `() => void` | - | Both |
+| Type         | Default Value | Platform |
+|--------------|---------------|----------|
+| `() => void` | -             | Both     |
 
 #### `onChangeHtml`
 
@@ -322,9 +322,9 @@ interface OnChangeHtmlEvent {
 
 - `value` is the new HTML.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(NativeSyntheticEvent\<OnChangeHtmlEvent>) => void` | - | Both |
+| Type                                                 | Default Value | Platform |
+|------------------------------------------------------|---------------|----------|
+| `(NativeSyntheticEvent\<OnChangeHtmlEvent>) => void` | -             | Both     |
 
 #### `onChangeMention`
 
@@ -342,9 +342,9 @@ interface OnChangeMentionEvent {
 - `indicator` is the indicator of the currently edited mention.
 - `text` contains whole text that has been typed after the indicator.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(OnChangeMentionEvent) => void` | - | Both |
+| Type                             | Default Value | Platform |
+|----------------------------------|---------------|----------|
+| `(OnChangeMentionEvent) => void` | -             | Both     |
 
 #### `onChangeSelection`
 
@@ -364,9 +364,9 @@ OnChangeSelectionEvent {
 - `end` is the first index after the selection's ending. For just a cursor in place (no selection), `start` equals `end`.
 - `text` is the input's text in the current selection.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(NativeSyntheticEvent\<OnChangeSelectionEvent>) => void` | - | Both |
+| Type                                                      | Default Value | Platform |
+|-----------------------------------------------------------|---------------|----------|
+| `(NativeSyntheticEvent\<OnChangeSelectionEvent>) => void` | -             | Both     |
 
 #### `onChangeState`
 
@@ -394,9 +394,9 @@ interface OnChangeStateEvent {
 }
 ```
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(NativeSyntheticEvent\<OnChangeStateEvent>) => void` | - | Both |
+| Type                                                  | Default Value | Platform |
+|-------------------------------------------------------|---------------|----------|
+| `(NativeSyntheticEvent\<OnChangeStateEvent>) => void` | -             | Both     |
 
 #### `onChangeText`
 
@@ -412,9 +412,9 @@ interface OnChangeTextEvent {
 
 - `value` is the new text value of the input.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(NativeSyntheticEvent\<OnChangeTextEvent>) => void` | - | Both |
+| Type                                                 | Default Value | Platform |
+|------------------------------------------------------|---------------|----------|
+| `(NativeSyntheticEvent\<OnChangeTextEvent>) => void` | -             | Both     |
 
 #### `onEndMention`
 
@@ -422,17 +422,17 @@ Callback that is called when the user no longer edits a mention actively - has m
 
 - `indicator` is the indicator of the mention that was being edited.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(indicator: string) => void` | - | Both |
+| Type                          | Default Value | Platform |
+|-------------------------------|---------------|----------|
+| `(indicator: string) => void` | -             | Both     |
 
 #### `onFocus`
 
 Callback that's called whenever the input is focused.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `() => void` | - | Both |
+| Type         | Default Value | Platform |
+|--------------|---------------|----------|
+| `() => void` | -             | Both     |
 
 #### `onLinkDetected`
 
@@ -454,9 +454,9 @@ interface OnLinkDetected {
 - `start` is the starting index of the link.
 - `end` is the first index after the ending index of the link.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(OnLinkDetected) => void` | - | Both |
+| Type                       | Default Value | Platform |
+|----------------------------|---------------|----------|
+| `(OnLinkDetected) => void` | -             | Both     |
 
 #### `onMentionDetected`
 
@@ -474,11 +474,11 @@ OnMentionDetected {
 
 - `text` is the mention's displayed text.
 - `indicator` is the indicator of the mention.
-- `attributes` are the additional user-defined attribtues that are being stored with the mention.
+- `attributes` are the additional user-defined attributes that are being stored with the mention.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(OnMentionDetected) => void` | - | Both |
+| Type                          | Default Value | Platform |
+|-------------------------------|---------------|----------|
+| `(OnMentionDetected) => void` | -             | Both     |
 
 #### `onStartMention`
 
@@ -486,41 +486,41 @@ Callback that gets called whenever a mention editing starts (after placing the i
 
 - `indicator` is the indicator of the mention that begins editing.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `(indicator: string) => void` | - | Both |
+| Type                          | Default Value | Platform |
+|-------------------------------|---------------|----------|
+| `(indicator: string) => void` | -             | Both     |
 
 #### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `string` | `''` | Both |
+| Type     | Default Value | Platform |
+|----------|---------------|----------|
+| `string` | `''`          | Both     |
 
 #### `placeholderTextColor`
 
 Input placeholder's text color.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| [`color`](https://reactnative.dev/docs/colors) | input's [color](#style) | Both |
+| Type                                           | Default Value           | Platform |
+|------------------------------------------------|-------------------------|----------|
+| [`color`](https://reactnative.dev/docs/colors) | input's [color](#style) | Both     |
 
 #### `ref`
 
 A React ref that lets you call any ref methods on the input.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `RefObject<EnrichedTextInputInstance \| null>` | - | Both |
+| Type                                           | Default Value | Platform |
+|------------------------------------------------|---------------|----------|
+| `RefObject<EnrichedTextInputInstance \| null>` | -             | Both     |
 
 #### `selectionColor`
 
 Color of the selection rectangle that gets drawn over the selected text. On iOS, the cursor (caret) also gets set to this color.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| [`color`](https://reactnative.dev/docs/colors) | system default | Both |
+| Type                                           | Default Value  | Platform |
+|------------------------------------------------|----------------|----------|
+| [`color`](https://reactnative.dev/docs/colors) | system default | Both     |
 
 #### `style`
 
@@ -534,9 +534,9 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontWeight
 - fontStyle only on Android
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| [`View Style`](https://reactnative.dev/docs/view#style) \| [`Text Style`](https://reactnative.dev/docs/text#style) | - | Both |
+| Type                                                                                                               | Default Value | Platform |
+|--------------------------------------------------------------------------------------------------------------------|---------------|----------|
+| [`View Style`](https://reactnative.dev/docs/view#style) \| [`Text Style`](https://reactnative.dev/docs/text#style) | -             | Both     |
 
 #### `ViewProps`
 
@@ -546,9 +546,9 @@ The input inherits [ViewProps](https://reactnative.dev/docs/view#props), but kee
 
 If true, Android will use experimental synchronous events. This will prevent from input flickering when updating component size. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
 
-| Type | Default Value | Platform |
-| ---- | ------------- | -------- |
-| `bool` | `false` | Android |
+| Type   | Default Value | Platform |
+|--------|---------------|----------|
+| `bool` | `false`       | Android  |
 
 ### Ref Methods
 
@@ -615,7 +615,7 @@ Sets the currently edited mention with a given indicator, displayed text and cus
 
 - `indicator: string` - the indicator of the set mention.
 - `text: string` - the text that should be displayed for the mention. Anything the user typed gets replaced by that text. The mention indicator isn't added to that text.
-- `attributes?: Record<string, string>` - additional, custom attribtues for the mention that can be passed as a typescript record. They are properly preserved through parsing from and to the HTML format.
+- `attributes?: Record<string, string>` - additional, custom attributes for the mention that can be passed as a typescript record. They are properly preserved through parsing from and to the HTML format.
 
 #### `.setValue()`
 
@@ -837,7 +837,7 @@ If only a single config is given, the style applies to all mention types. You ca
 
 #### img (inline image)
 
-- `width` is the width of the inline image, deafults to `80`.
+- `width` is the width of the inline image, defaults to `80`.
 - `height` is the height of the inline image, defaults to `80`.
 
 #### ol (ordered list)
@@ -856,7 +856,7 @@ By bullet we mean the dot that begins each line of the list.
 - `bulletColor` defines the color of the bullet, takes [color](https://reactnative.dev/docs/colors) value and defaults to `black`.
 - `bulletSize` sets both the height and the width of the bullet, defaults to `8`.
 - `marginLeft` is the margin to the left of the bullet (between the bullet and input's left edge), defaults to `16`.
-- `gapWidth` sets the gap between the bullet and the list item's text, deafults to `16`.
+- `gapWidth` sets the gap between the bullet and the list item's text, defaults to `16`.
 
 ## Future Plans
 
