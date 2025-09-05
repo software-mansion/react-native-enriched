@@ -405,24 +405,16 @@
   if(html.length >= 13) {
     NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven = [html substringWithRange:NSMakeRange(html.length-7, 7)];
-    NSInteger newlinesCount = [[html componentsSeparatedByString:@"\n"] count] - 1;
     
     if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
-      if(newlinesCount >= 2) {
-        // looks like our format
-        // we want to get the string without <html> and </html> and their newlines
-        // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
-        fixedHtml = [html substringWithRange: NSMakeRange(7, html.length - 15)];
-      } else {
-        // most likely a valid html but with some newline differences
-        fixedHtml = [html copy];
+      // remove html tags, might be with newlines or without them
+      fixedHtml = [html copy];
         // firstly remove newlined html tags if any:
         fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n" withString:@""];
         fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</html>" withString:@""];
         // fallback; remove html tags without their newlines
         fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>" withString:@""];
         fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>" withString:@""];
-      }
     } else {
       // in other case we are most likely working with some external html - try getting the styles from between body tags
       NSRange openingBodyRange = [html rangeOfString:@"<body>"];
@@ -438,8 +430,6 @@
   
   // second processing - try fixing htmls with wrong newlines' setup
   if(fixedHtml != nullptr) {
-    NSInteger newlinesCount = [[fixedHtml componentsSeparatedByString:@"/n"] count] - 1;
-    if(newlinesCount == 0) {
       // add <br> tag wherever needed
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p></p>" withString:@"<br>"];
       
@@ -469,7 +459,6 @@
       fixedHtml = [self stringByAddingNewlinesToTag:@"</h1>" inString:fixedHtml leading:NO trailing:YES];
       fixedHtml = [self stringByAddingNewlinesToTag:@"</h2>" inString:fixedHtml leading:NO trailing:YES];
       fixedHtml = [self stringByAddingNewlinesToTag:@"</h3>" inString:fixedHtml leading:NO trailing:YES];
-    }
   }
   
   return fixedHtml;
