@@ -13,22 +13,28 @@
 
 Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
 
+<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/ced2ab47-2311-49ef-b451-86705b6e0a6c" />
+&nbsp;&nbsp;&nbsp;
+<img width="48" height="48" alt="" src="https://github.com/user-attachments/assets/46c6bf1f-2685-497e-b699-d5a94b2582a3" />
+&nbsp;&nbsp;&nbsp;
+<img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
+
 ## Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Non Parametrized Styles](#non-parametrized-styles)
-5. [Links](#links)
-6. [Mentions](#mentions)
-7. [Inline Images](#inline-images)
-8. [Style Detection](#style-detection)
-9. [Other Events](#other-events)
-10. [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
-11. [API Reference](#api-reference)
-12. [Future Plans](#future-plans)
-13. [Contributing](#contributing)
-14. [License](#license)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Non Parametrized Styles](#non-parametrized-styles)
+- [Links](#links)
+- [Mentions](#mentions)
+- [Inline Images](#inline-images)
+- [Style Detection](#style-detection)
+- [Other Events](#other-events)
+- [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
+- [API Reference](#api-reference)
+- [Future Plans](#future-plans)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Prerequisites
 
