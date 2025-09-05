@@ -13,11 +13,11 @@
 
 Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
 
-<img width="128" height="69" alt="swm128" src="https://github.com/user-attachments/assets/ced2ab47-2311-49ef-b451-86705b6e0a6c" />
+<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/ced2ab47-2311-49ef-b451-86705b6e0a6c" />
 &nbsp;&nbsp;&nbsp;
-<img width="48" height="48" alt="plus48" src="https://github.com/user-attachments/assets/46c6bf1f-2685-497e-b699-d5a94b2582a3" />
+<img width="48" height="48" alt="" src="https://github.com/user-attachments/assets/46c6bf1f-2685-497e-b699-d5a94b2582a3" />
 &nbsp;&nbsp;&nbsp;
-<img width="80" height="80" alt="Filament-Avatar-1024-1" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
+<img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
 
 ## Table of Contents
 
