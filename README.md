@@ -28,7 +28,6 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 - [Other Events](#other-events)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 - [API Reference](#api-reference)
-- [Limitations](#limitations)
 - [Future Plans](#future-plans)
 - [Contributing](#contributing)
 - [License](#license)
