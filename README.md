@@ -15,20 +15,21 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 
 ## Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Non Parametrized Styles](#non-parametrized-styles)
-5. [Links](#links)
-6. [Mentions](#mentions)
-7. [Inline Images](#inline-images)
-8. [Style Detection](#style-detection)
-9. [Other Events](#other-events)
-10. [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
-11. [API Reference](#api-reference)
-12. [Future Plans](#future-plans)
-13. [Contributing](#contributing)
-14. [License](#license)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Non Parametrized Styles](#non-parametrized-styles)
+- [Links](#links)
+- [Mentions](#mentions)
+- [Inline Images](#inline-images)
+- [Style Detection](#style-detection)
+- [Other Events](#other-events)
+- [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
+- [API Reference](#api-reference)
+- [Limitations](#limitations)
+- [Future Plans](#future-plans)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Prerequisites
 
