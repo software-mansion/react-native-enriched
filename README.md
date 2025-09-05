@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
+    width: '100%',
     fontSize: 20,
     padding: 10,
     maxHeight: 200,
