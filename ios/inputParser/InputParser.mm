@@ -171,10 +171,11 @@
         
         for(NSNumber *activeStyle in currentActiveStyles) {
           NSInteger activeStyleBeginning = [currentActiveStylesBeginning[activeStyle] integerValue];
-          // we end the styles that began after the currently ended style
-          // also the ones that ended in the exact same place but are "inner" in relation to them due to StyleTypeEnum integer values
-          // "activeStylesBeginning < i" is needed, so that we don't remove styles that have been freshly added now
-          if((activeStyleBeginning > styleBeginning) ||
+                  
+          // we end the styles that began after the currently ended style but not at the "i" (cause the old style ended at exactly "i-1"
+          // also the ones that began in the exact same place but are "inner" in relation to them due to StyleTypeEnum integer values
+          
+          if((activeStyleBeginning > styleBeginning && activeStyleBeginning < i) ||
              (activeStyleBeginning == styleBeginning && activeStyleBeginning < i && [activeStyle integerValue]  > [style integerValue])) {
             [fixedEndedStyles addObject:activeStyle];
             [stylesToBeReAdded addObject:activeStyle];
@@ -405,24 +406,16 @@
   if(html.length >= 13) {
     NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven = [html substringWithRange:NSMakeRange(html.length-7, 7)];
-    NSInteger newlinesCount = [[html componentsSeparatedByString:@"\n"] count] - 1;
     
     if([firstSix isEqualToString:@"<html>"] && [lastSeven isEqualToString:@"</html>"]) {
-      if(newlinesCount >= 2) {
-        // looks like our format
-        // we want to get the string without <html> and </html> and their newlines
-        // so we skip first 7 characters and get the string 7+8 = 15 characters shorter
-        fixedHtml = [html substringWithRange: NSMakeRange(7, html.length - 15)];
-      } else {
-        // most likely a valid html but with some newline differences
-        fixedHtml = [html copy];
-        // firstly remove newlined html tags if any:
-        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n" withString:@""];
-        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</html>" withString:@""];
-        // fallback; remove html tags without their newlines
-        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>" withString:@""];
-        fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>" withString:@""];
-      }
+      // remove html tags, might be with newlines or without them
+      fixedHtml = [html copy];
+      // firstly remove newlined html tags if any:
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n" withString:@""];
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</html>" withString:@""];
+      // fallback; remove html tags without their newlines
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>" withString:@""];
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>" withString:@""];
     } else {
       // in other case we are most likely working with some external html - try getting the styles from between body tags
       NSRange openingBodyRange = [html rangeOfString:@"<body>"];
@@ -438,38 +431,35 @@
   
   // second processing - try fixing htmls with wrong newlines' setup
   if(fixedHtml != nullptr) {
-    NSInteger newlinesCount = [[fixedHtml componentsSeparatedByString:@"/n"] count] - 1;
-    if(newlinesCount == 0) {
-      // add <br> tag wherever needed
-      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p></p>" withString:@"<br>"];
-      
-      // remove <p> tags inside of <li>
-      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<li><p>" withString:@"<li>"];
-      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</p></li>" withString:@"</li>"];
-      
-      // tags that have to be in separate lines
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<br>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<ul>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</ul>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<ol>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</ol>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<blockquote>" inString:fixedHtml leading:YES trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</blockquote>" inString:fixedHtml leading:YES trailing:YES];
-      
-      // line opening tags
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<p>" inString:fixedHtml leading:YES trailing:NO];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<li>" inString:fixedHtml leading:YES trailing:NO];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<h1>" inString:fixedHtml leading:YES trailing:NO];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<h2>" inString:fixedHtml leading:YES trailing:NO];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"<h3>" inString:fixedHtml leading:YES trailing:NO];
-      
-      // line closing tags
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</p>" inString:fixedHtml leading:NO trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</li>" inString:fixedHtml leading:NO trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</h1>" inString:fixedHtml leading:NO trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</h2>" inString:fixedHtml leading:NO trailing:YES];
-      fixedHtml = [self stringByAddingNewlinesToTag:@"</h3>" inString:fixedHtml leading:NO trailing:YES];
-    }
+    // add <br> tag wherever needed
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p></p>" withString:@"<br>"];
+    
+    // remove <p> tags inside of <li>
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<li><p>" withString:@"<li>"];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</p></li>" withString:@"</li>"];
+    
+    // tags that have to be in separate lines
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<br>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<ul>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</ul>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<ol>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</ol>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<blockquote>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</blockquote>" inString:fixedHtml leading:YES trailing:YES];
+    
+    // line opening tags
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<p>" inString:fixedHtml leading:YES trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<li>" inString:fixedHtml leading:YES trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h1>" inString:fixedHtml leading:YES trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h2>" inString:fixedHtml leading:YES trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h3>" inString:fixedHtml leading:YES trailing:NO];
+    
+    // line closing tags
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</p>" inString:fixedHtml leading:NO trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</li>" inString:fixedHtml leading:NO trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h1>" inString:fixedHtml leading:NO trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h2>" inString:fixedHtml leading:NO trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h3>" inString:fixedHtml leading:NO trailing:YES];
   }
   
   return fixedHtml;
