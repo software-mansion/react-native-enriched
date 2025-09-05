@@ -48,14 +48,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/software-mansion-labs/react-native-rich-text-editor.git"
+    "url": "git+https://github.com/software-mansion-labs/react-native-enriched.git"
   },
   "author": "Software Mansion <contact@swmansion.com> (https://swmansion.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/software-mansion-labs/react-native-rich-text-editor/issues"
+    "url": "https://github.com/software-mansion-labs/react-native-enriched/issues"
   },
-  "homepage": "https://github.com/software-mansion-labs/react-native-rich-text-editor#readme",
+  "homepage": "https://github.com/software-mansion-labs/react-native-enriched#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
