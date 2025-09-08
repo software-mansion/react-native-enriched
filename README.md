@@ -1,3 +1,5 @@
+<img src="https://github.com/user-attachments/assets/abc75d3b-495b-4a76-a72f-d87ce3ca1ff9" alt="react-native-enriched by Software Mansion" width="100%">
+
 # react-native-enriched
 
 `react-native-enriched` is a powerful React Native library that exposes a rich text editor component:
