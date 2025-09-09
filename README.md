@@ -21,6 +21,11 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 &nbsp;&nbsp;&nbsp;
 <img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
 
+\
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. 
+We can help you build your next dream product –
+[Hire us](https://swmansion.com/contact/projects?utm_source=react-native-enriched&utm_medium=readme).
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
