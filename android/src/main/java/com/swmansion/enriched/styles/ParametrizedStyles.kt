@@ -148,7 +148,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
         mentionStart = start
       }
 
-      mentionHandler.onMention(indicator, word.replaceFirst(indicator, ""))
+      mentionHandler.onMention(indicator, text)
     } else {
       mentionHandler.endMention()
     }
@@ -207,6 +207,11 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     val spanEnd = start + text.length
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    val hasSpaceAtTheEnd = spannable.length > safeEnd && spannable[safeEnd] == ' '
+    if (!hasSpaceAtTheEnd) {
+      spannable.insert(safeEnd, " ")
+    }
 
     view.selection.validateStyles()
   }
