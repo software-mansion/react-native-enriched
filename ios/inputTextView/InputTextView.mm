@@ -76,7 +76,7 @@
 
 - (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard range:(NSRange)range input:(EnrichedTextInputView *)input {
   NSArray *existingTypes = pasteboard.pasteboardTypes;
-  NSArray *handledTypes = @[UTTypeUTF8PlainText.identifier, UTTypePlainText.identifier];
+  NSArray *handledTypes = @[UTTypeUTF8PlainText.identifier, UTTypePlainText.identifier, UTTypeURL.identifier];
   NSString *plainText;
   
   for(NSString *type in handledTypes) {
@@ -90,6 +90,8 @@
       plainText = [[NSString alloc]initWithData:value encoding:NSUTF8StringEncoding];
     } else if([value isKindOfClass:[NSString class]]) {
       plainText = (NSString *)value;
+    } else if([value isKindOfClass:[NSURL class]]) {
+      plainText = [(NSURL *)value absoluteString];
     }
   }
   
