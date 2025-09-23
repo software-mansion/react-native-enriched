@@ -42,7 +42,7 @@
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         UIFont *font = (UIFont *)value;
         if(font != nullptr) {
-          UIFont *newFont = [[_input->config monospacedFont] withFontTraits:font];
+          UIFont *newFont = [[[_input->config monospacedFont] withFontTraits:font] setSize:font.pointSize];
           [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
         }
       }
@@ -60,7 +60,7 @@
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config inlineCodeFgColor];
   UIFont* currentFont = (UIFont *)newTypingAttrs[NSFontAttributeName];
   if(currentFont != nullptr) {
-    newTypingAttrs[NSFontAttributeName] = [[_input->config monospacedFont] withFontTraits:currentFont];
+    newTypingAttrs[NSFontAttributeName] = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
   }
   _input->textView.typingAttributes = newTypingAttrs;
 }
@@ -76,7 +76,7 @@
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
       UIFont *font = (UIFont *)value;
       if(font != nullptr) {
-        UIFont *newFont = [[_input->config primaryFont] withFontTraits:font];
+        UIFont *newFont = [[[_input->config primaryFont] withFontTraits:font] setSize:font.pointSize];
         [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
       }
     }
@@ -93,7 +93,7 @@
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config primaryColor];
   UIFont* currentFont = (UIFont *)newTypingAttrs[NSFontAttributeName];
   if(currentFont != nullptr) {
-    newTypingAttrs[NSFontAttributeName] = [[_input->config primaryFont] withFontTraits:currentFont];
+    newTypingAttrs[NSFontAttributeName] = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
   }
   _input->textView.typingAttributes = newTypingAttrs;
 }
