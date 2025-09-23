@@ -3,6 +3,7 @@
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
 #import "ParagraphsUtils.h"
+#import "ColorExtension.h"
 
 @implementation InlineCodeStyle {
   EnrichedTextInputView *_input;
@@ -33,7 +34,7 @@
     NSRange currentRange = [value rangeValue];
     [_input->textView.textStorage beginEditing];
 
-    [_input->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[[_input->config inlineCodeBgColor] colorWithAlphaComponent:0.4] range:currentRange];
+    [_input->textView.textStorage addAttribute:NSBackgroundColorAttributeName value:[[_input->config inlineCodeBgColor] colorWithAlphaIfNotTransparent:0.4] range:currentRange];
     [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
     [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
     [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
@@ -53,8 +54,7 @@
 
 - (void)addTypingAttributes {
   NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSBackgroundColorAttributeName] = [[_input->config inlineCodeBgColor] colorWithAlphaComponent:0.4];
-  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config inlineCodeFgColor];
+  newTypingAttrs[NSBackgroundColorAttributeName] = [[_input->config inlineCodeBgColor] colorWithAlphaIfNotTransparent:0.4];  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config inlineCodeFgColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config inlineCodeFgColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config inlineCodeFgColor];
   UIFont* currentFont = (UIFont *)newTypingAttrs[NSFontAttributeName];

@@ -4,6 +4,7 @@
 #import "TextInsertionUtils.h"
 #import "WordsUtils.h"
 #import "UIView+React.h"
+#import "ColorExtension.h"
 
 // custom NSAttributedStringKey to differentiate from links
 static NSString *const MentionAttributeName = @"MentionAttributeName";
@@ -154,7 +155,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
     NSStrikethroughColorAttributeName: styleProps.color,
-    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaIfNotTransparent:0.4],
   } mutableCopy];
   
   if(styleProps.decorationLine == DecorationUnderline) {
@@ -186,7 +187,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     NSForegroundColorAttributeName: styleProps.color,
     NSUnderlineColorAttributeName: styleProps.color,
     NSStrikethroughColorAttributeName: styleProps.color,
-    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaComponent:0.4],
+    NSBackgroundColorAttributeName: [styleProps.backgroundColor colorWithAlphaIfNotTransparent:0.4],
   } mutableCopy];
   
   if(styleProps.decorationLine == DecorationUnderline) {
