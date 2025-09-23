@@ -54,7 +54,8 @@
 
 - (void)addTypingAttributes {
   NSMutableDictionary *newTypingAttrs = [_input->textView.typingAttributes mutableCopy];
-  newTypingAttrs[NSBackgroundColorAttributeName] = [[_input->config inlineCodeBgColor] colorWithAlphaIfNotTransparent:0.4];  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config inlineCodeFgColor];
+  newTypingAttrs[NSBackgroundColorAttributeName] = [[_input->config inlineCodeBgColor] colorWithAlphaIfNotTransparent:0.4];
+  newTypingAttrs[NSForegroundColorAttributeName] = [_input->config inlineCodeFgColor];
   newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config inlineCodeFgColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] = [_input->config inlineCodeFgColor];
   UIFont* currentFont = (UIFont *)newTypingAttrs[NSFontAttributeName];
