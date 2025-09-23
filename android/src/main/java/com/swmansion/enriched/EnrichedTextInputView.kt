@@ -204,7 +204,9 @@ class EnrichedTextInputView : AppCompatEditText {
       }
     }
 
-    val finalText = currentText.mergeSpannables(start, end, item?.text.toString())
+    // Currently, we do not support pasting images
+    if (item?.text == null) return
+    val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
     parametrizedStyles?.detectAllLinks()
   }
