@@ -63,8 +63,7 @@
   }
   
   // fix the selection if needed
-  if(input->textView.focused) {
-    [input->textView reactFocus];
+  if([input->textView isFirstResponder]) {
     input->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveOffset, preRemoveSelection.length);
   }
 }
@@ -112,8 +111,7 @@
   }
   
   // fix the selection if needed
-  if(input->textView.focused) {
-    [input->textView reactFocus];
+  if([input->textView isFirstResponder]) {
     input->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddOffset, preAddSelection.length);
   }
 }
