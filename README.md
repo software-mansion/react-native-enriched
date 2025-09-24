@@ -22,7 +22,7 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 <img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
 
 \
-Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. 
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
 [Hire us](https://swmansion.com/contact/projects?utm_source=react-native-enriched&utm_medium=readme).
 
@@ -139,27 +139,27 @@ const styles = StyleSheet.create({
 Summary of what happens here:
 
 1. Any methods imperatively called on the input to e.g. toggle some style must be used through a `ref` of `EnrichedTextInputInstance` type. Here, `toggleBold` method that is called on the button press calls `ref.current?.toggleBold()`, which toggles the bold styling within the current selection.
-2. All the active styles info is emitted by `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument and you can access an object with boolean properties indicating which styles are active, such as `isBold` in the example. Here, this info is stored in a react state and used to change colors on the button.
+2. All the active styles info is emitted by `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument, and you can access an object with boolean properties indicating which styles are active, such as `isBold` in the example. Here, this info is stored in a React state and used to change colors on the button.
 
 ## Non Parametrized Styles
 
 Supported styles:
 
-- **bold**
-- *italic*
-- <ins>underline</ins>
-- ~~strikethrough~~
-- `inline code`
+- bold
+- italic
+- underline
+- strikethrough
+- inline code
 - H1 heading
 - H2 heading
 - H3 heading
-- `codeblock`
-- > blockquote
+- codeblock
+- blockquote
 - ordered list
 - unordered list
 
 > [!NOTE]
-> The iOS doesn't support codeblocks just yet but it's planned in the near future!
+> The iOS doesn't support codeblocks just yet, but it's planned in the near future!
 
 Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 
@@ -176,7 +176,7 @@ The links are here, just like in any other editor, a piece of text with a URL at
 
 ### Automatic links detection
 
-`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. Currently we are using pretty naive approach to detect whether text can be treated as a link or not. On iOS it's a pretty simple regex, on Android we are using URL regex provided by the system.
+`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. Currently, we are using pretty naive approach to detect whether text can be treated as a link or not. On iOS it's a pretty simple regex, on Android we are using URL regex provided by the system.
 
 ### Applying links manually
 
@@ -194,7 +194,7 @@ Mentions are meant to be a customisable style that lets you put mentioning phras
 
 ### Mention Indicators
 
-There is a [mentionIndicators](#mentionindicators) prop that lets you define what characters can start a mention. By default it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
+There is a [mentionIndicators](#mentionindicators) prop that lets you define what characters can start a mention. By default, it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
 
 ### Starting a mention
 
@@ -216,10 +216,10 @@ Whenever you feel ready with the currently edited mention (so most likely user c
 
 You can insert an image into the input using [setImage](#setimage) ref method.
 
-The image will be put into a single line in the input and will affects the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
+The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
 > [!NOTE]
-> The iOS doesn't support inline images just yet but it's planned in the near future!
+> The iOS doesn't support inline images just yet, but it's planned in the near future!
 
 ## Style Detection
 
@@ -294,7 +294,7 @@ If `false`, text is not editable.
 
 #### `htmlStyle`
 
-A prop for customizing styles' appearances.
+A prop for customizing styles appearances.
 
 | Type                           | Default Value                                      | Platform |
 |--------------------------------|----------------------------------------------------|----------|
@@ -330,9 +330,9 @@ interface OnChangeHtmlEvent {
 
 - `value` is the new HTML.
 
-| Type                                                 | Default Value | Platform |
-|------------------------------------------------------|---------------|----------|
-| `(NativeSyntheticEvent\<OnChangeHtmlEvent>) => void` | -             | Both     |
+| Type                                                       | Default Value | Platform |
+|------------------------------------------------------------|---------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | -             | Both     |
 
 #### `onChangeMention`
 
@@ -350,9 +350,9 @@ interface OnChangeMentionEvent {
 - `indicator` is the indicator of the currently edited mention.
 - `text` contains whole text that has been typed after the indicator.
 
-| Type                             | Default Value | Platform |
-|----------------------------------|---------------|----------|
-| `(OnChangeMentionEvent) => void` | -             | Both     |
+| Type                                    | Default Value | Platform |
+|-----------------------------------------|---------------|----------|
+| `(event: OnChangeMentionEvent) => void` | -             | Both     |
 
 #### `onChangeSelection`
 
@@ -361,7 +361,7 @@ Callback that is called each time user changes selection or moves the cursor in 
 Payload interface:
 
 ```ts
-OnChangeSelectionEvent {
+interface OnChangeSelectionEvent {
   start: Int32;
   end: Int32;
   text: string;
@@ -372,9 +372,9 @@ OnChangeSelectionEvent {
 - `end` is the first index after the selection's ending. For just a cursor in place (no selection), `start` equals `end`.
 - `text` is the input's text in the current selection.
 
-| Type                                                      | Default Value | Platform |
-|-----------------------------------------------------------|---------------|----------|
-| `(NativeSyntheticEvent\<OnChangeSelectionEvent>) => void` | -             | Both     |
+| Type                                                            | Default Value | Platform |
+|-----------------------------------------------------------------|---------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeSelectionEvent>) => void` | -             | Both     |
 
 #### `onChangeState`
 
@@ -402,9 +402,9 @@ interface OnChangeStateEvent {
 }
 ```
 
-| Type                                                  | Default Value | Platform |
-|-------------------------------------------------------|---------------|----------|
-| `(NativeSyntheticEvent\<OnChangeStateEvent>) => void` | -             | Both     |
+| Type                                                        | Default Value | Platform |
+|-------------------------------------------------------------|---------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | -             | Both     |
 
 #### `onChangeText`
 
@@ -420,9 +420,9 @@ interface OnChangeTextEvent {
 
 - `value` is the new text value of the input.
 
-| Type                                                 | Default Value | Platform |
-|------------------------------------------------------|---------------|----------|
-| `(NativeSyntheticEvent\<OnChangeTextEvent>) => void` | -             | Both     |
+| Type                                                       | Default Value | Platform |
+|------------------------------------------------------------|---------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | -             | Both     |
 
 #### `onEndMention`
 
@@ -462,9 +462,9 @@ interface OnLinkDetected {
 - `start` is the starting index of the link.
 - `end` is the first index after the ending index of the link.
 
-| Type                       | Default Value | Platform |
-|----------------------------|---------------|----------|
-| `(OnLinkDetected) => void` | -             | Both     |
+| Type                              | Default Value | Platform |
+|-----------------------------------|---------------|----------|
+| `(event: OnLinkDetected) => void` | -             | Both     |
 
 #### `onMentionDetected`
 
@@ -473,7 +473,7 @@ Callback called when mention has been detected - either a new mention has been a
 Payload interface contains all the useful mention data:
 
 ```ts
-OnMentionDetected {
+interface OnMentionDetected {
   text: string;
   indicator: string;
   attributes: Record<string, string>;
@@ -484,9 +484,9 @@ OnMentionDetected {
 - `indicator` is the indicator of the mention.
 - `attributes` are the additional user-defined attributes that are being stored with the mention.
 
-| Type                          | Default Value | Platform |
-|-------------------------------|---------------|----------|
-| `(OnMentionDetected) => void` | -             | Both     |
+| Type                                 | Default Value | Platform |
+|--------------------------------------|---------------|----------|
+| `(event: OnMentionDetected) => void` | -             | Both     |
 
 #### `onStartMention`
 
@@ -560,12 +560,12 @@ If true, Android will use experimental synchronous events. This will prevent fro
 
 ### Ref Methods
 
-All of the methods should be called on the input's [ref](#ref).
+All the methods should be called on the input's [ref](#ref).
 
 #### `.blur()`
 
 ```ts
-blur: () => void
+blur: () => void;
 ```
 
 Blurs the input.
@@ -811,6 +811,9 @@ interface MentionStyleProperties {
 
 - `fontSize` is the size of the heading's font, defaults to `32`/`24`/`20` for h1/h2/h3.
 - `bold` defines whether the heading should be bolded, defaults to `false`.
+
+> [!NOTE]
+> On iOS, the headings cannot have same `fontSize` as the component's `fontSize`. Doing so results in unexpected behavior.
 
 #### blockquote
 
