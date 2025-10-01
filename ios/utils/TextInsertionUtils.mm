@@ -18,7 +18,7 @@
   [textView.textStorage insertAttributedString:newAttrStr atIndex:index];
   
   if(withSelection) {
-    if(!textView.focused) {
+    if(![textView isFirstResponder]) {
       [textView reactFocus];
     }
     textView.selectedRange = NSMakeRange(index + text.length, 0);
@@ -38,7 +38,7 @@
   }
   
   if(withSelection) {
-    if(!textView.focused) {
+    if(![textView isFirstResponder]) {
       [textView reactFocus];
     }
     textView.selectedRange = NSMakeRange(range.location + text.length, 0);
