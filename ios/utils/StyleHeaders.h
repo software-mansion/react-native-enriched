@@ -47,6 +47,8 @@
 }
 - (CGFloat)getHeadingFontSize;
 - (BOOL)isHeadingBold;
+- (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)handleImproperHeadings;
 @end
 
 @interface H1Style : HeadingStyleBase

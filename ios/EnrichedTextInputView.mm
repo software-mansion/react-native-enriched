@@ -1016,6 +1016,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [bqStyle manageBlockquoteColor];
   }
   
+  // improper headings fix
+  H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
+  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
+  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
+  if(h1Style != nullptr && h2Style != nullptr && h3Style != nullptr) {
+    [h1Style handleImproperHeadings];
+    [h2Style handleImproperHeadings];
+    [h3Style handleImproperHeadings];
+  }
+  
   // placholder management
   if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
     [self setPlaceholderLabelShown:NO];
@@ -1102,61 +1112,36 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   recentlyChangedRange = NSMakeRange(range.location, text.length);
   
-  BOOL rejectTextChanges = NO;
-  
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
-  if(uStyle != nullptr) {
-    // removing first line list fix
-    BOOL removedFirstLineList = [uStyle handleBackspaceInRange:range replacementText:text];
-    
-    // creating unordered list from "- "
-    BOOL addedShortcutList = [uStyle tryHandlingListShorcutInRange:range replacementText:text];
-    
-    // any of these changes make us reject text changes
-    rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
-  }
-  
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
-  if(oStyle != nullptr) {
-    // removing first line list fix
-    BOOL removedFirstLineList = [oStyle handleBackspaceInRange:range replacementText:text];
-    
-    // creating ordered list from "1."
-    BOOL addedShortcutList = [oStyle tryHandlingListShorcutInRange:range replacementText:text];
-    
-    // any of these changes make us reject text changes
-    rejectTextChanges = rejectTextChanges || removedFirstLineList || addedShortcutList;
-  }
-  
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
-  if(bqStyle != nullptr) {
-    // removing first line quote fix
-    BOOL removedFirstLineQuote = [bqStyle handleBackspaceInRange:range replacementText:text];
-    rejectTextChanges = rejectTextChanges || removedFirstLineQuote;
-  }
-  
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
-  if(linkStyle != nullptr) {
-    // persisting link attributes fix
-    BOOL fixedLeadingAttributes = [linkStyle handleLeadingLinkReplacement:range replacementText:text];
-    rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
-  }
-  
   MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
-  if(mentionStyle != nullptr) {
-    // persisting mention attributes fix
-    BOOL fixedLeadingAttributes = [mentionStyle handleLeadingMentionReplacement:range replacementText:text];
-    rejectTextChanges = rejectTextChanges || fixedLeadingAttributes;
-  }
+  H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
+  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
+  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
   
-  // zero width space removal fix
-  rejectTextChanges = rejectTextChanges || [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self];
-
-  if(rejectTextChanges) {
+  // some of the changes these checks do could interfere with later checks and cause a crash
+  // so here I rely on short circuiting evaluation of the logical expression
+  // either way it's not possible to have two of them come off at the same time
+  if(
+    [uStyle handleBackspaceInRange:range replacementText:text] ||
+    [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+    [oStyle handleBackspaceInRange:range replacementText:text] ||
+    [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+    [bqStyle handleBackspaceInRange:range replacementText:text] ||
+    [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
+    [mentionStyle handleLeadingMentionReplacement:range replacementText:text] ||
+    [h1Style handleNewlinesInRange:range replacementText:text] ||
+    [h2Style handleNewlinesInRange:range replacementText:text] ||
+    [h3Style handleNewlinesInRange:range replacementText:text] ||
+    [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self]
+  ) {
     [self anyTextMayHaveBeenModified];
+    return NO;
   }
-  
-  return !rejectTextChanges;
+
+  return YES;
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView {
