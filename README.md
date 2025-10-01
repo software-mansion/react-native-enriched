@@ -22,7 +22,7 @@ Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](
 <img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />
 
 \
-Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. 
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
 [Hire us](https://swmansion.com/contact/projects?utm_source=react-native-enriched&utm_medium=readme).
 
@@ -46,7 +46,7 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports the 3 latest stable React Native releases, currently `0.79`, `0.80` and `0.81`
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81` and `0.82`
 
 ## Installation
 
