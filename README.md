@@ -46,7 +46,7 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports the 3 latest stable React Native releases, currently `0.79`, `0.80` and `0.81`
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81` and `0.82`
 
 ## Installation
 
