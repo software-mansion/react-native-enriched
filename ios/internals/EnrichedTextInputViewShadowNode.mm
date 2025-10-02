@@ -55,7 +55,10 @@ Size EnrichedTextInputViewShadowNode::measureContent(const LayoutContext& layout
         });
       }
       
-      return {estimatedSize.width, estimatedSize.height};
+      return {
+        estimatedSize.width,
+        MIN(estimatedSize.height, layoutConstraints.maximumSize.height)
+      };
     }
   } else {
     // on the very first call there is no componentView that we can query for the component height
