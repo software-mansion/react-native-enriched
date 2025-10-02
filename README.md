@@ -17,14 +17,6 @@
 https://github.com/user-attachments/assets/4778d541-d967-47e7-8013-6f7c436bcb95
 
 
-Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
-
-[<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/f0e18471-a7aa-4e80-86ac-87686a86fe56" />](https://swmansion.com/)
-&nbsp;&nbsp;&nbsp;
-<img width="48" height="48" alt="" src="https://github.com/user-attachments/assets/46c6bf1f-2685-497e-b699-d5a94b2582a3" />
-&nbsp;&nbsp;&nbsp;
-[<img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />](https://filament.dm/)
-
 \
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
@@ -184,9 +176,9 @@ The links are here, just like in any other editor, a piece of text with a URL at
 
 ### Applying links manually
 
-Links can also be added by calling [setLink](#setlink) method on the input ref:
+Links can also be added by calling [`setLink`](docs/API_REFERENCE.md#setlink) method on the input ref:
 
-The `start`, `end` and `text` arguments for the method can be easily taken from [onChangeSelection](#onchangeselection) event payload as it returns exact `start` and `end` of the selection and the `text` it spans. This way, you just set the underlying URL to whatever is selected in there.
+The `start`, `end` and `text` arguments for the method can be easily taken from [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) event payload as it returns exact `start` and `end` of the selection and the `text` it spans. This way, you just set the underlying URL to whatever is selected in there.
 
 Passing a different `text` than the one in the selection will properly replace it before applying the link.
 
@@ -198,27 +190,27 @@ Mentions are meant to be a customisable style that lets you put mentioning phras
 
 ### Mention Indicators
 
-There is a [mentionIndicators](#mentionindicators) prop that lets you define what characters can start a mention. By default, it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
+There is a [mentionIndicators](docs/API_REFERENCE.md#mentionindicators) prop that lets you define what characters can start a mention. By default, it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
 
 ### Starting a mention
 
-There are two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](#startmention) method on the input ref.
+There are two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](docs/API_REFERENCE.md#startmention) method on the input ref.
 
 ### Mention related events
 
 `react-native-enriched` emits 3 different events that help handling mentions' editing:
 
-- [onStartMention](#onstartmention) is emitted whenever mention is started in one of the ways from the [previous section](#starting-a-mention) or the user has come back (moved selection) to some unfinished mention they have started. It can be used for opening proper tools you use in the app to edit a mention (e.g. a list for choosing from users or channels that the mention will affect).
-- [onChangeMention](#onchangemention) is emitted whenever user put or removed some characters after a mention indicator. This way you can react to active mention editing by, for example, filtering users in your displayed list based on the typed text.
-- [onEndMention](#onendmention) is emitted whenever user is no longer editing a mention: they might have put a space or changed the cursor position to be no longer near the indicator. You can use it to hide appropriate tools that were used for mention editing.
+- [onStartMention](docs/API_REFERENCE.md#onstartmention) is emitted whenever mention is started in one of the ways from the [previous section](#starting-a-mention) or the user has come back (moved selection) to some unfinished mention they have started. It can be used for opening proper tools you use in the app to edit a mention (e.g. a list for choosing from users or channels that the mention will affect).
+- [onChangeMention](docs/API_REFERENCE.md#onchangemention) is emitted whenever user put or removed some characters after a mention indicator. This way you can react to active mention editing by, for example, filtering users in your displayed list based on the typed text.
+- [onEndMention](docs/API_REFERENCE.md#onendmention) is emitted whenever user is no longer editing a mention: they might have put a space or changed the cursor position to be no longer near the indicator. You can use it to hide appropriate tools that were used for mention editing.
 
 ### Setting a mention
 
-Whenever you feel ready with the currently edited mention (so most likely user chooses something from your additional mention editor), you can complete it by calling [setMention](#setmention) ref method.
+Whenever you feel ready with the currently edited mention (so most likely user chooses something from your additional mention editor), you can complete it by calling [setMention](docs/API_REFERENCE.md#setmention) ref method.
 
 ## Inline images
 
-You can insert an image into the input using [setImage](#setimage) ref method.
+You can insert an image into the input using [setImage](docs/API_REFERENCE.md#setimage) ref method.
 
 The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
@@ -227,7 +219,7 @@ The image will be put into a single line in the input and will affect the line's
 
 ## Style Detection
 
-All of the above styles can be detected with the use of [onChangeState](#onchangestate) event payload.
+All of the above styles can be detected with the use of [onChangeState](docs/API_REFERENCE.md#onchangestate) event payload.
 
 You can find some examples in the [usage section](#usage) or in the example app.
 
@@ -235,17 +227,17 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 `react-native-enriched` emits a few more events that may be of use:
 
-- [onFocus](#onfocus) - emits whenever input focuses.
-- [onBlur](#onblur) - emits whenever input blurs.
-- [onChangeText](#onchangetext) - returns the input's text anytime it changes.
-- [onChangeHtml](#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
-- [onChangeSelection](#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
-- [onLinkDetected](#onlinkdetected) - returns link's detailed info whenever user selection is near one.
-- [onMentionDetected](#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
+- [onFocus](docs/API_REFERENCE.md#onfocus) - emits whenever input focuses.
+- [onBlur](docs/API_REFERENCE.md) - emits whenever input blurs.
+- [onChangeText](docs/API_REFERENCE.md#onchangetext) - returns the input's text anytime it changes.
+- [onChangeHtml](docs/API_REFERENCE.md#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
+- [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
+- [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
+- [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 
 ## Customizing \<EnrichedTextInput /> styles
 
-`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component.  See [htmlStyle](#htmlstyle) prop.
+`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component.  See [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop.
 
 ## API Reference
 
@@ -266,3 +258,12 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 ## License
 
 `react-native-enriched` library is licensed under [The MIT License](./LICENSE).
+
+---
+Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
+
+[<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/f0e18471-a7aa-4e80-86ac-87686a86fe56" />](https://swmansion.com/)
+&nbsp;&nbsp;&nbsp;
+<img width="48" height="48" alt="" src="https://github.com/user-attachments/assets/46c6bf1f-2685-497e-b699-d5a94b2582a3" />
+&nbsp;&nbsp;&nbsp;
+[<img width="80" height="80" alt="Filament Logo" src="https://github.com/user-attachments/assets/4103ab79-da34-4164-aa5f-dcf08815bf65" />](https://filament.dm/)
