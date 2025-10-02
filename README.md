@@ -247,6 +247,14 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all the props, methods, and events available.
 
+## Future Plans
+
+- Adding Codeblocks and Inline Images to iOS input.
+- Making some optimizations around `onChangeHtml` event, maybe some imperative API to get the HTML output.
+- Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
+- Adding API for custom link detection regex.
+- Web library implementation via `react-native-web`.
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
