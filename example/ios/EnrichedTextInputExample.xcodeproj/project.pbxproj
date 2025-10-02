@@ -16,6 +16,7 @@
 		31EE7B79626043278451F7C2 /* Nunito-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 56DFDD6005684613BABE1A5B /* Nunito-MediumItalic.ttf */; };
 		44F3116C228D441D96648511 /* Nunito-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA817F04F35B4BA1A6C0BB7A /* Nunito-Bold.ttf */; };
 		475EC9D8C2514408931549DD /* Nunito-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 012D53DFD8C6464DBF6E19E4 /* Nunito-Black.ttf */; };
+		4B4950F65A47714993F53BB4 /* libPods-EnrichedTextInputExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CD629A5570EDEE67260A64 /* libPods-EnrichedTextInputExample.a */; };
 		4FEAEB180FF94632ADFA7D7D /* Nunito-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78A78FF825C747578571B76F /* Nunito-SemiBoldItalic.ttf */; };
 		56EDC86733EA478B9DA01878 /* CascadiaCode-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */; };
 		5B86D220CCF04C2A850EB7E8 /* CascadiaCode-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */; };
@@ -36,7 +37,6 @@
 		95A487B0B0A94AFDA7B10C06 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D133E950DA6A4BC0A97DDFFE /* FontAwesome.ttf */; };
 		95CD2D9394AA4FD8B184FC56 /* Nunito-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 153B340F016F497BA045811A /* Nunito-Light.ttf */; };
 		970142F6180042E5964006A6 /* CascadiaCode-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA76D9192FE24EC28C84DE79 /* CascadiaCode-Light.ttf */; };
-		9CCBAA226FD195143DDD2884 /* libPods-EnrichedTextInputExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D370084B15B932DA6ABD7D8 /* libPods-EnrichedTextInputExample.a */; };
 		A2B3511833CC42D2B563A6C8 /* Nunito-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 974D908628154101A0445B89 /* Nunito-Medium.ttf */; };
 		A9294579BC314C709C083877 /* Nunito-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 375DF342F26841F6BF549CAB /* Nunito-SemiBold.ttf */; };
 		B17531A20CBB4D92B0AF89A3 /* Nunito-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF6C071A9704D7F84EAC642 /* Nunito-Italic-VariableFont_wght.ttf */; };
@@ -58,6 +58,7 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = EnrichedTextInputExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		153B340F016F497BA045811A /* Nunito-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Light.ttf"; path = "../assets/fonts/Nunito/static/Nunito-Light.ttf"; sourceTree = "<group>"; };
 		1872D96B58594795BDF6C766 /* Nunito-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-ExtraLight.ttf"; path = "../assets/fonts/Nunito/static/Nunito-ExtraLight.ttf"; sourceTree = "<group>"; };
+		371B368B6AB82CCE5511A1CA /* Pods-EnrichedTextInputExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnrichedTextInputExample.debug.xcconfig"; path = "Target Support Files/Pods-EnrichedTextInputExample/Pods-EnrichedTextInputExample.debug.xcconfig"; sourceTree = "<group>"; };
 		375DF342F26841F6BF549CAB /* Nunito-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-SemiBold.ttf"; path = "../assets/fonts/Nunito/static/Nunito-SemiBold.ttf"; sourceTree = "<group>"; };
 		3A18DEB91C24449AA3ECE59A /* CascadiaCode-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Italic-VariableFont_wght.ttf"; path = "../assets/fonts/Cascadia_Code/CascadiaCode-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3FD646A3FF0F4F33AC65021F /* CascadiaCode-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-SemiBold.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -71,7 +72,7 @@
 		5D3228FB7E494D31805D6C01 /* Nunito-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Regular.ttf"; path = "../assets/fonts/Nunito/static/Nunito-Regular.ttf"; sourceTree = "<group>"; };
 		6352E13F84F841D5A2BA25B4 /* CascadiaCode-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Italic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Italic.ttf"; sourceTree = "<group>"; };
 		674C8E7598D647768ECEC0E1 /* OFL.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = OFL.txt; path = ../assets/fonts/Cascadia_Code/OFL.txt; sourceTree = "<group>"; };
-		6D370084B15B932DA6ABD7D8 /* libPods-EnrichedTextInputExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-EnrichedTextInputExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6918616D8394A3A8000BFE5C /* Pods-EnrichedTextInputExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnrichedTextInputExample.release.xcconfig"; path = "Target Support Files/Pods-EnrichedTextInputExample/Pods-EnrichedTextInputExample.release.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = EnrichedTextInputExample/AppDelegate.swift; sourceTree = "<group>"; };
 		78A78FF825C747578571B76F /* Nunito-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-SemiBoldItalic.ttf"; path = "../assets/fonts/Nunito/static/Nunito-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		78D6C09519344432B162E948 /* CascadiaCode-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-MediumItalic.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-MediumItalic.ttf"; sourceTree = "<group>"; };
@@ -82,10 +83,9 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = EnrichedTextInputExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		87375222174145AD85B4DE62 /* CascadiaCode-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "CascadiaCode-Medium.ttf"; path = "../assets/fonts/Cascadia_Code/static/CascadiaCode-Medium.ttf"; sourceTree = "<group>"; };
 		8A425B9B75B9488EA0FDF624 /* README.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = README.txt; path = ../assets/fonts/Cascadia_Code/README.txt; sourceTree = "<group>"; };
-		8D30641E04B3C92750094BD1 /* Pods-EnrichedTextInputExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnrichedTextInputExample.release.xcconfig"; path = "Target Support Files/Pods-EnrichedTextInputExample/Pods-EnrichedTextInputExample.release.xcconfig"; sourceTree = "<group>"; };
 		8DDAE8E93F2D4651A22D1882 /* Nunito-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-LightItalic.ttf"; path = "../assets/fonts/Nunito/static/Nunito-LightItalic.ttf"; sourceTree = "<group>"; };
+		95CD629A5570EDEE67260A64 /* libPods-EnrichedTextInputExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-EnrichedTextInputExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		974D908628154101A0445B89 /* Nunito-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Medium.ttf"; path = "../assets/fonts/Nunito/static/Nunito-Medium.ttf"; sourceTree = "<group>"; };
-		ABB962282C7DB4F364360154 /* Pods-EnrichedTextInputExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnrichedTextInputExample.debug.xcconfig"; path = "Target Support Files/Pods-EnrichedTextInputExample/Pods-EnrichedTextInputExample.debug.xcconfig"; sourceTree = "<group>"; };
 		ABF6C071A9704D7F84EAC642 /* Nunito-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Italic-VariableFont_wght.ttf"; path = "../assets/fonts/Nunito/Nunito-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		AFECE93D073F484A93612569 /* Nunito-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-ExtraLightItalic.ttf"; path = "../assets/fonts/Nunito/static/Nunito-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		B6CB34AFACC240079497790D /* Nunito-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Italic.ttf"; path = "../assets/fonts/Nunito/static/Nunito-Italic.ttf"; sourceTree = "<group>"; };
@@ -104,7 +104,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9CCBAA226FD195143DDD2884 /* libPods-EnrichedTextInputExample.a in Frameworks */,
+				4B4950F65A47714993F53BB4 /* libPods-EnrichedTextInputExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,7 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6D370084B15B932DA6ABD7D8 /* libPods-EnrichedTextInputExample.a */,
+				95CD629A5570EDEE67260A64 /* libPods-EnrichedTextInputExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -165,8 +165,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				ABB962282C7DB4F364360154 /* Pods-EnrichedTextInputExample.debug.xcconfig */,
-				8D30641E04B3C92750094BD1 /* Pods-EnrichedTextInputExample.release.xcconfig */,
+				371B368B6AB82CCE5511A1CA /* Pods-EnrichedTextInputExample.debug.xcconfig */,
+				6918616D8394A3A8000BFE5C /* Pods-EnrichedTextInputExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -222,13 +222,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "EnrichedTextInputExample" */;
 			buildPhases = (
-				4981A167C0063A82876DD1AB /* [CP] Check Pods Manifest.lock */,
+				78C433C49BA99727B8F82093 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				75C9505AFC16ED96EE5E9ED4 /* [CP] Embed Pods Frameworks */,
-				B600D4E6CF246F817102A773 /* [CP] Copy Pods Resources */,
+				EDDF48CF048F8E3AEC92FBE1 /* [CP] Embed Pods Frameworks */,
+				F803EE48F3DE8A3C8C2D3B60 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -336,7 +336,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		4981A167C0063A82876DD1AB /* [CP] Check Pods Manifest.lock */ = {
+		78C433C49BA99727B8F82093 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -358,7 +358,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		75C9505AFC16ED96EE5E9ED4 /* [CP] Embed Pods Frameworks */ = {
+		EDDF48CF048F8E3AEC92FBE1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -375,7 +375,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-EnrichedTextInputExample/Pods-EnrichedTextInputExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B600D4E6CF246F817102A773 /* [CP] Copy Pods Resources */ = {
+		F803EE48F3DE8A3C8C2D3B60 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -408,7 +408,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ABB962282C7DB4F364360154 /* Pods-EnrichedTextInputExample.debug.xcconfig */;
+			baseConfigurationReference = 371B368B6AB82CCE5511A1CA /* Pods-EnrichedTextInputExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -436,7 +436,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8D30641E04B3C92750094BD1 /* Pods-EnrichedTextInputExample.release.xcconfig */;
+			baseConfigurationReference = 6918616D8394A3A8000BFE5C /* Pods-EnrichedTextInputExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

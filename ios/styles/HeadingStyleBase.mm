@@ -2,6 +2,7 @@
 #import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
+#import "TextInsertionUtils.h"
 
 @implementation HeadingStyleBase
 
@@ -138,6 +139,37 @@
       return [self styleCondition:value :range];
     }
   ];
+}
+
+// used to make sure headings dont persist after a newline is placed
+- (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {
+  // in a heading and a new text ends with a newline
+  if(
+    [self detectStyle:[self typedInput]->textView.selectedRange] &&
+    text.length > 0 &&
+    [[NSCharacterSet newlineCharacterSet] characterIsMember: [text characterAtIndex:text.length-1]]
+  ) {
+    // do the replacement manually
+    [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:[self typedInput] withSelection:YES];
+    // remove the attribtues at the new selection
+    [self removeAttributes:[self typedInput]->textView.selectedRange];
+    return YES;
+  }
+  return NO;
+}
+
+// backspacing a line after a heading "into" a heading will not result in the text attaining heading attributes
+// so, we do it manually
+- (void)handleImproperHeadings {
+  NSArray *occurences = [self findAllOccurences:NSMakeRange(0, [self typedInput]->textView.textStorage.string.length)];
+  for(StylePair *pair in occurences) {
+    NSRange occurenceRange = [pair.rangeValue rangeValue];
+    NSRange paragraphRange = [[self typedInput]->textView.textStorage.string paragraphRangeForRange:occurenceRange];
+    if(!NSEqualRanges(occurenceRange, paragraphRange)) {
+      // we have a heading but it does not span its whole paragraph - let's fix it
+      [self addAttributes:paragraphRange];
+    }
+  }
 }
 
 @end
