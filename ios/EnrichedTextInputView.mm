@@ -14,6 +14,7 @@
 #import "WordsUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ZeroWidthSpaceUtils.h"
+#import "ParagraphAttributesUtils.h"
 
 using namespace facebook::react;
 
@@ -977,6 +978,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [mentionStyleClass manageMentionTypingAttributes];
     [mentionStyleClass manageMentionEditing];
   }
+  
+  // typing attributes for empty lines selection reset
+  NSString *currentString = [[textView.textStorage.string copy] stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
+  if(textView.selectedRange.length == 0 && [_recentlyEmittedString isEqualToString: currentString] ) {
+    // no string change means only a selection changed with no character changes
+    NSRange paragraphRange = [textView.textStorage.string paragraphRangeForRange:textView.selectedRange];
+    if(
+      paragraphRange.length == 0 ||
+      (paragraphRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember:[textView.textStorage.string characterAtIndex:paragraphRange.location]])
+    ) {
+      // user changed selection to an empty line (or empty line with a newline)
+      // typing attributes need to be reset
+      textView.typingAttributes = defaultTypingAttributes;
+    }
+  }
 }
 
 - (void)handleWordModificationBasedChanges:(NSString*)word inRange:(NSRange)range {
@@ -1135,7 +1152,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h1Style handleNewlinesInRange:range replacementText:text] ||
     [h2Style handleNewlinesInRange:range replacementText:text] ||
     [h3Style handleNewlinesInRange:range replacementText:text] ||
-    [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self]
+    [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self] ||
+    [ParagraphAttributesUtils handleBackspaceInRange:range replacementText:text input:self]
   ) {
     [self anyTextMayHaveBeenModified];
     return NO;
