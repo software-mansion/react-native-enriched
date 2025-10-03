@@ -565,7 +565,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     unichar lastChar = [currentStr.string characterAtIndex:currentStr.length-1];
     if([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
       [currentStr appendAttributedString:
-        [[NSAttributedString alloc] initWithString:@"I" attributes:textView.typingAttributes]
+        [[NSAttributedString alloc] initWithString:@"I" attributes:defaultTypingAttributes]
       ];
     }
   }
