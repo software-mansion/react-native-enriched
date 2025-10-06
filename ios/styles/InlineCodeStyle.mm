@@ -140,8 +140,11 @@
   
     return detected;
   } else {
-    UIColor *currentBgColorAttr = (UIColor *)_input->textView.typingAttributes[NSBackgroundColorAttributeName];
-    return [self styleCondition:currentBgColorAttr :range];
+    return [OccurenceUtils detect:NSBackgroundColorAttributeName withInput:_input atIndex:range.location checkPrevious:NO
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 

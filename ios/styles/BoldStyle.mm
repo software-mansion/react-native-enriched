@@ -98,8 +98,11 @@
       }
     ];
   } else {
-    UIFont *currentFontAttr = (UIFont *)_input->textView.typingAttributes[NSFontAttributeName];
-    return [self styleCondition:currentFontAttr :range];
+    return [OccurenceUtils detect:NSFontAttributeName withInput:_input atIndex:range.location checkPrevious:NO
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 

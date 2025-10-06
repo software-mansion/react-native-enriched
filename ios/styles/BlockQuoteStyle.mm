@@ -121,8 +121,8 @@
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text {
   if(
     [self detectStyle:_input->textView.selectedRange] &&
-     NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0)) &&
-     [text isEqualToString:@""]
+    NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0)) &&
+    [text isEqualToString:@""]
   ) {
     // removing first quote line by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
     // so we try guessing that a line should be deleted here
@@ -162,22 +162,11 @@
       }
     ];
   } else {
-    NSInteger searchLocation = range.location;
-    if(searchLocation == _input->textView.textStorage.length) {
-      NSParagraphStyle *pStyle = _input->textView.typingAttributes[NSParagraphStyleAttributeName];
-      return [self styleCondition:pStyle :NSMakeRange(0, 0)];
-    }
-    
-    NSRange paragraphRange = NSMakeRange(0, 0);
-    NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
-    NSParagraphStyle *paragraph = [_input->textView.textStorage
-      attribute:NSParagraphStyleAttributeName
-      atIndex:searchLocation
-      longestEffectiveRange: &paragraphRange
-      inRange:inputRange
+    return [OccurenceUtils detect:NSParagraphStyleAttributeName withInput:_input atIndex:range.location checkPrevious:YES
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
     ];
-    
-    return [self styleCondition:paragraph :NSMakeRange(0, 0)];
   }
 }
 

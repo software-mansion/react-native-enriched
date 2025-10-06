@@ -19,6 +19,37 @@
   return totalLength == range.length;
 }
 
+// checkPrevious flag is used for styles like lists or blockquotes
+// it means that first character of paragraph will be checked instead if the detection is not in input's selected range and at the end of the input
++ (BOOL)detect
+  :(NSAttributedStringKey _Nonnull)key
+  withInput:(EnrichedTextInputView* _Nonnull)input
+  atIndex:(NSUInteger)index
+  checkPrevious:(BOOL)checkPrev
+  withCondition:(BOOL (NS_NOESCAPE ^_Nonnull)(id _Nullable value, NSRange range))condition
+{
+  NSRange detectionRange = NSMakeRange(index, 0);
+  id attrValue;
+  if(NSEqualRanges(input->textView.selectedRange, detectionRange)) {
+    attrValue = input->textView.typingAttributes[key];
+  } else if(index == input->textView.textStorage.string.length) {
+    if(checkPrev) {
+      NSRange paragraphRange = [input->textView.textStorage.string paragraphRangeForRange:detectionRange];
+      if(paragraphRange.location == detectionRange.location) {
+        return NO;
+      } else {
+        return [self detect:key withInput:input inRange:NSMakeRange(paragraphRange.location, 1) withCondition:condition];
+      }
+    } else {
+      return NO;
+    }
+  } else {
+    NSRange attrRange = NSMakeRange(0, 0);
+    attrValue = [input->textView.textStorage attribute:key atIndex:index effectiveRange:&attrRange];
+  }
+  return condition(attrValue, NSMakeRange(index, 0));
+}
+
 + (BOOL)detectMultiple
   :(NSArray<NSAttributedStringKey> *_Nonnull)keys
   withInput:(EnrichedTextInputView* _Nonnull)input
