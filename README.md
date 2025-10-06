@@ -13,7 +13,7 @@
 
 `EnrichedTextInput`, the rich text editor component is an uncontrolled input. This means that it doesn't use any state or props to store its value, but instead directly interacts with the underlying platform-specific components. Thanks to this, the component is really performant and simple to use while offering complex and advanced features no other solution has.
 
-https://github.com/user-attachments/assets/4778d541-d967-47e7-8013-6f7c436bcb95
+<https://github.com/user-attachments/assets/4778d541-d967-47e7-8013-6f7c436bcb95>
 
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
@@ -32,6 +32,7 @@ We can help you build your next dream product –
 - [Other Events](#other-events)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 - [API Reference](#api-reference)
+- [Known limitations](#known-limitations)
 - [Future Plans](#future-plans)
 - [Contributing](#contributing)
 - [License](#license)
@@ -239,6 +240,13 @@ You can find some examples in the [usage section](#usage) or in the example app.
 ## API Reference
 
 See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all the props, methods, and events available.
+
+## Known limitations
+
+- Only one level of lists is supported. We currently do not support nested lists.
+- Inline images are supported only on Android.
+- Codeblocks are supported only on Android.
+- iOS headings can't have the same `fontSize` in their config as input's `fontSize`. Doing so results in incorrect headings behavior.
 
 ## Future Plans
 
