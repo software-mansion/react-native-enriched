@@ -130,16 +130,33 @@
   [self removeAttributes:_input->textView.selectedRange];
 }
 
-// removing first list point by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
-// so we try guessing that a point should be deleted here
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text {
-  if([self detectStyle:_input->textView.selectedRange] &&
+  if(
+    [self detectStyle:_input->textView.selectedRange] &&
      NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0)) &&
      [text isEqualToString:@""]
   ) {
+    // removing first list point by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
+    // so we try guessing that a point should be deleted here
     NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:_input->textView.selectedRange];
     [self removeAttributes:paragraphRange];
     return YES;
+  } else if(
+    [self detectStyle:_input->textView.selectedRange] &&
+    [text isEqualToString:@""]
+  ) {
+    // other case; make sure removing all the (non newline) text from a list item also removes the item itself
+    NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:range];
+    NSValue *nonNewlineVal = [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:paragraphRange].firstObject;
+    if(nonNewlineVal == nullptr) {
+      return NO;
+    }
+    NSRange nonNewlineRange = [nonNewlineVal rangeValue];
+    if(NSEqualRanges(range, nonNewlineRange)) {
+      [self removeAttributes:range];
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:_input withSelection:YES];
+      return YES;
+    }
   }
   return NO;
 }
