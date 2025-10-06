@@ -88,8 +88,11 @@
       }
     ];
   } else {
-    NSNumber *currentUnderlineAttr = (NSNumber *)_input->textView.typingAttributes[NSUnderlineStyleAttributeName];
-    return [self styleCondition:currentUnderlineAttr :range];
+    return [OccurenceUtils detect:NSUnderlineStyleAttributeName withInput:_input atIndex:range.location checkPrevious:NO
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 

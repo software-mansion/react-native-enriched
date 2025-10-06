@@ -83,11 +83,11 @@
       }
     ];
   } else {
-    UIFont *currentFontAttr = (UIFont *)_input->textView.typingAttributes[NSFontAttributeName];
-    if(currentFontAttr == nullptr) {
-      return false;
-    }
-    return [currentFontAttr isItalic];
+    return [OccurenceUtils detect:NSFontAttributeName withInput:_input atIndex:range.location checkPrevious:NO
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 

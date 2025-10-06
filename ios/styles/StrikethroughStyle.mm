@@ -56,8 +56,11 @@
       }
     ];
   } else {
-    NSNumber *currenStrikethroughAttr = (NSNumber *)_input->textView.typingAttributes[NSStrikethroughStyleAttributeName];
-    return currenStrikethroughAttr != nullptr;
+    return [OccurenceUtils detect:NSStrikethroughStyleAttributeName withInput:_input atIndex:range.location checkPrevious:NO
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 

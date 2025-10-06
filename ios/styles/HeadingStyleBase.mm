@@ -117,11 +117,11 @@
       }
     ];
   } else {
-    UIFont *currentFontAttr = (UIFont *)[self typedInput]->textView.typingAttributes[NSFontAttributeName];
-    if(currentFontAttr == nullptr) {
-      return false;
-    }
-    return currentFontAttr.pointSize == [self getHeadingFontSize];
+    return [OccurenceUtils detect:NSFontAttributeName withInput:[self typedInput] atIndex:range.location checkPrevious:YES
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
   }
 }
 
