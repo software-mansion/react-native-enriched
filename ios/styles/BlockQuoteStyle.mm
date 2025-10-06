@@ -141,8 +141,8 @@
     }
     NSRange nonNewlineRange = [nonNewlineVal rangeValue];
     if(NSEqualRanges(range, nonNewlineRange)) {
-      [self removeAttributes:range];
       [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:_input withSelection:YES];
+      [self removeAttributes:NSMakeRange(range.location, 0)];
       return YES;
     }
   }

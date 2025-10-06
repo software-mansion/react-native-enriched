@@ -52,19 +52,23 @@
   
   // do the removing
   NSInteger offset = 0;
-  NSInteger postRemoveOffset = 0;
+  NSInteger postRemoveLocationOffset = 0;
+  NSInteger postRemoveLengthOffset = 0;
   for(NSNumber *index in indexesToBeRemoved) {
     NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
     [TextInsertionUtils replaceText:@"" at:replaceRange additionalAttributes:nullptr input:input withSelection:NO];
     offset -= 1;
     if([index integerValue] < preRemoveSelection.location) {
-      postRemoveOffset -= 1;
+      postRemoveLocationOffset -= 1;
+    }
+    if([index integerValue] >= preRemoveSelection.location && [index integerValue] < NSMaxRange(preRemoveSelection)) {
+      postRemoveLengthOffset -= 1;
     }
   }
   
   // fix the selection if needed
   if([input->textView isFirstResponder]) {
-    input->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveOffset, preRemoveSelection.length);
+    input->textView.selectedRange = NSMakeRange(preRemoveSelection.location + postRemoveLocationOffset, preRemoveSelection.length + postRemoveLengthOffset);
   }
 }
 
@@ -93,13 +97,17 @@
   
   // do the replacing
   NSInteger offset = 0;
-  NSInteger postAddOffset = 0;
+  NSInteger postAddLocationOffset = 0;
+  NSInteger postAddLengthOffset = 0;
   for(NSNumber *index in indexesToBeInserted) {
     NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
     [TextInsertionUtils replaceText:@"\u200B\n" at:replaceRange additionalAttributes:nullptr input:input withSelection:NO];
     offset += 1;
     if([index integerValue] < preAddSelection.location) {
-      postAddOffset += 1;
+      postAddLocationOffset += 1;
+    }
+    if([index integerValue] >= preAddSelection.location && [index integerValue] < NSMaxRange(preAddSelection)) {
+      postAddLengthOffset += 1;
     }
   }
   
@@ -112,7 +120,7 @@
   
   // fix the selection if needed
   if([input->textView isFirstResponder]) {
-    input->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddOffset, preAddSelection.length);
+    input->textView.selectedRange = NSMakeRange(preAddSelection.location + postAddLocationOffset, preAddSelection.length + postAddLengthOffset);
   }
 }
 
