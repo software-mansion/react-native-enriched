@@ -32,6 +32,7 @@ We can help you build your next dream product –
 - [Other Events](#other-events)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 - [API Reference](#api-reference)
+- [Known limitations](#known-limitations)
 - [Future Plans](#future-plans)
 - [Contributing](#contributing)
 - [License](#license)
@@ -239,6 +240,12 @@ You can find some examples in the [usage section](#usage) or in the example app.
 ## API Reference
 
 See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all the props, methods, and events available.
+
+## Known limitations
+
+- Only one level of lists is supported. We currently do not support nested lists.
+- Inline images are supported only on Android.
+- Codeblocks are supported only on Android.
 
 ## Future Plans
 
