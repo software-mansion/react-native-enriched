@@ -19,17 +19,17 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetectedInternal,
   type MentionStyleProperties,
 } from './EnrichedTextInputNativeComponent';
-import {
-  type ColorValue,
-  type HostInstance,
-  type MeasureInWindowOnSuccessCallback,
-  type MeasureLayoutOnSuccessCallback,
-  type MeasureOnSuccessCallback,
-  type NativeMethods,
-  type NativeSyntheticEvent,
-  type TextStyle,
-  type ViewProps,
-  type ViewStyle,
+import type {
+  ColorValue,
+  HostInstance,
+  MeasureInWindowOnSuccessCallback,
+  MeasureLayoutOnSuccessCallback,
+  MeasureOnSuccessCallback,
+  NativeMethods,
+  NativeSyntheticEvent,
+  TextStyle,
+  ViewProps,
+  ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from './normalizeHtmlStyle';
 
