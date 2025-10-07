@@ -34,42 +34,24 @@
   
   NSRange nonNewlineRange = [(NSValue *)paragraphs.firstObject rangeValue];
   
-  // if the backspace removes the whole content of a paragraph, we remove the typing attributes
-  if(NSEqualRanges(nonNewlineRange, range)) {
-  
-    // edge case with lists and blockquotes:
-    // for some reason, removing all characters from a list point that is: both the first point of a list and is the last thing in the input, doesn't preserve typing attributes
-    // so we manually remove the characters and reapply attribtues for zero width space to appear there
-    // otherwise (there still is list or quote) we don't want no actions because attributes are properly preserved and zero width space appears
-    if([ulStyle detectStyle:paragraphRange]) {
-      if(NSMaxRange(nonNewlineRange) == typedInput->textView.textStorage.string.length) {
-        // manually remove the characters
-        [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
-        // add atributes again
-        [ulStyle addAttributes:NSMakeRange(range.location, 0)];
-        return YES;
-      }
-      return NO;
+  // if the backspace removes the whole content of a paragraph (possibly more but has to start where the paragraph starts), we remove the typing attributes
+  if(range.location == nonNewlineRange.location && range.length >= nonNewlineRange.length) {
+    // for lists and quotes we want to remove the characters but keep attribtues so that a zero width space appears here
+    // so we do the removing manually and reapply attributes
+    if([ulStyle detectStyle:nonNewlineRange]) {
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+      [ulStyle addAttributes:NSMakeRange(range.location, 0)];
+      return YES;
     }
-    if([olStyle detectStyle:paragraphRange]) {
-      if(NSMaxRange(nonNewlineRange) == typedInput->textView.textStorage.string.length) {
-        // manually remove the characters
-        [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
-        // add atributes again
-        [olStyle addAttributes:NSMakeRange(range.location, 0)];
-        return YES;
-      }
-      return NO;
+    if([olStyle detectStyle:nonNewlineRange]) {
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+      [olStyle addAttributes:NSMakeRange(range.location, 0)];
+      return YES;
     }
-    if([bqStyle detectStyle:paragraphRange]) {
-      if(NSMaxRange(nonNewlineRange) == typedInput->textView.textStorage.string.length) {
-        // manually remove the characters
-        [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
-        // add atributes again
-        [bqStyle addAttributes:NSMakeRange(range.location, 0)];
-        return YES;
-      }
-      return NO;
+    if([bqStyle detectStyle:nonNewlineRange]) {
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+      [bqStyle addAttributes:NSMakeRange(range.location, 0)];
+      return YES;
     }
   
     // do the replacement manually
