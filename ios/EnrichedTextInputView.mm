@@ -980,8 +980,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   
   // typing attributes for empty lines selection reset
-  NSString *currentString = [[textView.textStorage.string copy] stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
-  if(textView.selectedRange.length == 0 && [_recentlyEmittedString isEqualToString: currentString] ) {
+  NSString *currentString = [textView.textStorage.string copy];
+  if(textView.selectedRange.length == 0 && [_recentlyEmittedString isEqualToString:currentString]) {
     // no string change means only a selection changed with no character changes
     NSRange paragraphRange = [textView.textStorage.string paragraphRangeForRange:textView.selectedRange];
     if(
@@ -1012,14 +1012,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
   
+  // zero width space adding or removal
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
+  
   // emptying input typing attributes management
   if(textView.textStorage.string.length == 0 && _recentlyEmittedString.length > 0) {
     // reset typing attribtues
     textView.typingAttributes = defaultTypingAttributes;
   }
-  
-  // zero width space removal
-  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
   
   // inline code on newlines fix
   InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];

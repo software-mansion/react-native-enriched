@@ -119,30 +119,19 @@
 }
 
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text {
-  if(
-    [self detectStyle:_input->textView.selectedRange] &&
-    NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0)) &&
-    [text isEqualToString:@""]
-  ) {
-    // removing first quote line by backspacing doesn't remove typing attributes because it doesn't run textViewDidChange
-    // so we try guessing that a line should be deleted here
+  if([self detectStyle:_input->textView.selectedRange] && text.length == 0) {
+    // backspace while the style is active
+    
     NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:_input->textView.selectedRange];
-    [self removeAttributes:paragraphRange];
-    return YES;
-  } else if(
-    [self detectStyle:_input->textView.selectedRange] &&
-    [text isEqualToString:@""]
-  ) {
-    // other case; make sure removing all the (non newline) text from a quto line also removes the line itself
-    NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:range];
-    NSValue *nonNewlineVal = [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:paragraphRange].firstObject;
-    if(nonNewlineVal == nullptr) {
-      return NO;
-    }
-    NSRange nonNewlineRange = [nonNewlineVal rangeValue];
-    if(NSEqualRanges(range, nonNewlineRange)) {
-      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:_input withSelection:YES];
-      [self removeAttributes:NSMakeRange(range.location, 0)];
+    
+    if(NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0))) {
+      // a backspace on the very first input's line quote
+      // it doesn't run textVieDidChange so we need to manually remove attributes
+      [self removeAttributes:paragraphRange];
+      return YES;
+    } else if(range.location == paragraphRange.location - 1) {
+      // same case in other lines; here, the removed range location will be exactly 1 less than paragraph range location
+      [self removeAttributes:paragraphRange];
       return YES;
     }
   }
