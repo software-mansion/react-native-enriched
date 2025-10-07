@@ -47,7 +47,7 @@
     NSRange attrRange = NSMakeRange(0, 0);
     attrValue = [input->textView.textStorage attribute:key atIndex:index effectiveRange:&attrRange];
   }
-  return condition(attrValue, NSMakeRange(index, 0));
+  return condition(attrValue, detectionRange);
 }
 
 + (BOOL)detectMultiple
