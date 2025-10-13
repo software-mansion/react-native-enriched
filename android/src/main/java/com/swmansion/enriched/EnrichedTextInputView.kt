@@ -51,7 +51,10 @@ class EnrichedTextInputView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
-  var isSettingValue: Boolean = false
+  // Sometimes setting up style triggers many changes in sequence
+  // Eg. removing conflicting styles -> changing text -> applying spans
+  // In such scenario we want to prevent from handling side effects (eg. onTextChanged)
+  var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
@@ -233,7 +236,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   fun setValue(value: CharSequence?) {
     if (value == null) return
-    isSettingValue = true
+    isDuringTransaction = true
 
     val newText = parseText(value)
     setText(newText)
@@ -244,7 +247,7 @@ class EnrichedTextInputView : AppCompatEditText {
     // Scroll to the last line of text
     setSelection(text?.length ?: 0)
 
-    isSettingValue = false
+    isDuringTransaction = false
   }
 
   fun setAutoFocus(autoFocus: Boolean) {
@@ -452,13 +455,13 @@ class EnrichedTextInputView : AppCompatEditText {
       val end = selection?.end ?: 0
       val lengthBefore = text?.length ?: 0
 
-      isSettingValue = true
+      isDuringTransaction = true
       val targetRange = getTargetRange(name)
       val removed = removeStyle(style, targetRange.first, targetRange.second)
       if (removed) {
         spanState?.setStart(style, null)
       }
-      isSettingValue = false
+      isDuringTransaction = false
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter

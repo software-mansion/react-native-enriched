@@ -39,7 +39,7 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val finalStart = newStart.coerceAtMost(newEnd).coerceAtLeast(0).coerceAtMost(textLength)
     val finalEnd = newEnd.coerceAtLeast(newStart).coerceAtLeast(0).coerceAtMost(textLength)
 
-    if (isZeroWidthSelection(finalStart, finalEnd) && !view.isSettingValue) {
+    if (isZeroWidthSelection(finalStart, finalEnd) && !view.isDuringTransaction) {
       view.setSelection(finalStart + 1)
       shouldValidateStyles = false
     }

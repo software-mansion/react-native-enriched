@@ -149,7 +149,14 @@ export default function App() {
   };
 
   const handleStartMention = (indicator: string) => {
-    indicator === '@' ? openUserMentionPopup() : openChannelMentionPopup();
+    if (indicator === '@') {
+      userMention.onMentionChange('');
+      openUserMentionPopup();
+      return;
+    }
+
+    channelMention.onMentionChange('');
+    openChannelMentionPopup();
   };
 
   const handleEndMention = (indicator: string) => {

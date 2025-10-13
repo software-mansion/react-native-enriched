@@ -18,14 +18,14 @@ class EnrichedTextWatcher(private val view: EnrichedTextInputView) : TextWatcher
   override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
     endCursorPosition = start + count
     view.layoutManager.measureSize(s ?: "")
-    view.isRemovingMany = !view.isSettingValue && before > count + 1
+    view.isRemovingMany = !view.isDuringTransaction && before > count + 1
   }
 
   override fun afterTextChanged(s: Editable?) {
     if (s == null) return
     emitEvents(s)
 
-    if (view.isSettingValue) return
+    if (view.isDuringTransaction) return
     applyStyles(s)
   }
 
