@@ -201,6 +201,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
 
     val start = mentionStart ?: return
+    view.isDuringTransaction = true
     spannable.replace(start, selectionEnd, text)
 
     val span = EnrichedMentionSpan(text, indicator, attributes, view.htmlStyle)
@@ -213,6 +214,8 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
       spannable.insert(safeEnd, " ")
     }
 
+    view.isDuringTransaction = false
+    view.mentionHandler?.reset()
     view.selection.validateStyles()
   }
 
