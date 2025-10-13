@@ -423,7 +423,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   
   // editable
-  if(newViewProps.editable != oldViewProps.editable) {
+  if(newViewProps.editable != textView.editable) {
     textView.editable = newViewProps.editable;
   }
   
