@@ -10,7 +10,6 @@ import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerInterface
@@ -132,7 +131,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.htmlStyle = HtmlStyle(view, style)
   }
 
-  @ReactProp(name = ViewProps.COLOR, customType = "Color")
+  @ReactProp(name = "color", customType = "Color")
   override fun setColor(view: EnrichedTextInputView?, color: Int?) {
     view?.setColor(color)
   }
@@ -174,6 +173,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.setPadding(left, top, right, bottom)
   }
 
+  @ReactProp(name = "isOnChangeHtmlSet", defaultBoolean = true)
   override fun setIsOnChangeHtmlSet(view: EnrichedTextInputView?, value: Boolean) {
     // this prop isn't used on Android as of now, but the setter must be present
   }

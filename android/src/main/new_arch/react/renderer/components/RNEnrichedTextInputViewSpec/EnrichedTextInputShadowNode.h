@@ -2,9 +2,9 @@
 
 #include "EnrichedTextInputMeasurementManager.h"
 #include "EnrichedTextInputState.h"
+#include "EnrichedTextInputProps.h"
 
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
 #include <react/renderer/components/RNEnrichedTextInputViewSpec/EventEmitters.h>
 
 namespace facebook::react {
@@ -15,7 +15,7 @@ JSI_EXPORT extern const char EnrichedTextInputComponentName[];
  */
 class EnrichedTextInputShadowNode final : public ConcreteViewShadowNode<
         EnrichedTextInputComponentName,
-        EnrichedTextInputViewProps,
+        EnrichedTextInputProps,
         EnrichedTextInputViewEventEmitter,
         EnrichedTextInputState> {
 public:

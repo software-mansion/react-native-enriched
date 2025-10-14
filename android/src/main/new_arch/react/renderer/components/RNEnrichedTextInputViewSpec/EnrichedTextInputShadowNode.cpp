@@ -28,7 +28,7 @@ extern const char EnrichedTextInputComponentName[] = "EnrichedTextInputView";
             const LayoutContext &layoutContext,
             const LayoutConstraints &layoutConstraints) const {
 
-        return measurementsManager_->measure(getSurfaceId(), getConcreteProps(), layoutConstraints);
+        return measurementsManager_->measure(getSurfaceId(), layoutConstraints);
     }
 
 } // namespace facebook::react

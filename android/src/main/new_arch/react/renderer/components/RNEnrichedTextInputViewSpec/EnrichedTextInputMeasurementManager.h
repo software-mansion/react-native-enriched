@@ -4,7 +4,6 @@
 
 #include <react/utils/ContextContainer.h>
 #include <react/renderer/core/LayoutConstraints.h>
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
 
 namespace facebook::react {
 
@@ -16,7 +15,6 @@ namespace facebook::react {
 
         Size measure(
                 SurfaceId surfaceId,
-                const EnrichedTextInputViewProps& props,
                 LayoutConstraints layoutConstraints) const;
 
     private:

@@ -10,7 +10,6 @@ namespace facebook::react {
 
     Size EnrichedTextInputMeasurementManager::measure(
             SurfaceId surfaceId,
-            const EnrichedTextInputViewProps& props,
             LayoutConstraints layoutConstraints) const {
         const jni::global_ref<jobject>& fabricUIManager =
                 contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
