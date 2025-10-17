@@ -80,6 +80,10 @@ export default function App() {
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
+  const [key, setKey] = useState(0);
+  const incrementKey = () => setKey((v) => v + 1);
+  const collectGarbage = () => global.gc?.();
+
   const ref = useRef<EnrichedTextInputInstance>(null);
 
   const userMention = useUserMention();
@@ -259,6 +263,7 @@ export default function App() {
         <Text style={styles.label}>Enriched Text Input</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
+            key={key}
             autoFocus
             ref={ref}
             mentionIndicators={['@', '#']}
@@ -294,6 +299,14 @@ export default function App() {
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
+        </View>
+        <View style={styles.buttonStack}>
+          <Button
+            title="Bump key"
+            onPress={incrementKey}
+            style={styles.button}
+          />
+          <Button title="GC" onPress={collectGarbage} style={styles.button} />
         </View>
         <Button
           title="Set input's value"
