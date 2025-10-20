@@ -2,6 +2,7 @@ import {
   type Component,
   type RefObject,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
 } from 'react';
@@ -31,6 +32,9 @@ import type {
   ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from './normalizeHtmlStyle';
+
+//@ts-ignore
+import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -297,6 +301,19 @@ export const EnrichedTextInput = ({
     },
   }));
 
+  useLayoutEffect(() => {
+    const inputRef = nativeRef.current;
+    TextInputState.registerInput(inputRef);
+
+    return () => {
+      TextInputState.unregisterInput(inputRef);
+
+      if (TextInputState.currentlyFocusedInput() === inputRef) {
+        inputRef?.blur();
+      }
+    };
+  }, []);
+
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
     const mentionText = e.nativeEvent.text;
     const mentionIndicator = e.nativeEvent.indicator;
@@ -325,6 +342,16 @@ export const EnrichedTextInput = ({
     onMentionDetected?.({ text, indicator, attributes });
   };
 
+  const _onFocus = () => {
+    TextInputState.focusInput(nativeRef?.current);
+    onFocus?.();
+  };
+
+  const _onBlur = () => {
+    TextInputState.blurInput(nativeRef?.current);
+    onBlur?.();
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -339,8 +366,8 @@ export const EnrichedTextInput = ({
       style={style}
       autoCapitalize={autoCapitalize}
       htmlStyle={normalizedHtmlStyle}
-      onInputFocus={onFocus}
-      onInputBlur={onBlur}
+      onInputFocus={_onFocus}
+      onInputBlur={_onBlur}
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}

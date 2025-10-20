@@ -4,6 +4,7 @@ import {
   Text,
   type NativeSyntheticEvent,
   ScrollView,
+  Keyboard,
 } from 'react-native';
 import {
   EnrichedTextInput,
@@ -62,7 +63,7 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
-const DEBUG_SCROLLABLE = false;
+const DEBUG_SCROLLABLE = true;
 
 // Enabling this prop fixes input flickering while auto growing.
 // However, it's still experimental and not tested well.
@@ -311,6 +312,11 @@ export default function App() {
         <Button
           title="Set input's value"
           onPress={openValueModal}
+          style={styles.valueButton}
+        />
+        <Button
+          title="Dismiss keyboard"
+          onPress={Keyboard.dismiss}
           style={styles.valueButton}
         />
         <HtmlSection currentHtml={currentHtml} />
