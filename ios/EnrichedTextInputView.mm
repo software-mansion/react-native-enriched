@@ -1091,10 +1091,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+
   // update drawing
-  NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
-  [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:nullptr];
-  [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+   dispatch_async(dispatch_get_main_queue(), ^{
+     NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+     NSRange actualRange = NSMakeRange(0, 0);
+     [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
+     [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
+     [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+   });
 }
 
 // MARK: - UITextView delegate methods
