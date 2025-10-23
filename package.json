@@ -39,7 +39,8 @@
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it",
-    "android-studio": "open -a 'Android Studio' example/android"
+    "android-studio": "open -a 'Android Studio' example/android",
+    "xcode": "open -a 'Xcode' example/ios/EnrichedTextInputExample.xcworkspace"
   },
   "keywords": [
     "react-native",
