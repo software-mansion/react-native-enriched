@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "react": "19.1.1",
-    "react-native": "0.82.0-rc.5",
+    "react-native": "0.82.1",
     "react-native-image-picker": "^8.2.1"
   },
   "devDependencies": {
@@ -21,9 +21,9 @@
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
-    "@react-native/babel-preset": "0.82.0-rc.5",
-    "@react-native/metro-config": "0.82.0-rc.5",
-    "@react-native/typescript-config": "0.82.0-rc.5",
+    "@react-native/babel-preset": "0.82.1",
+    "@react-native/metro-config": "0.82.1",
+    "@react-native/typescript-config": "0.82.1",
     "@types/react": "^19.1.1",
     "react-native-builder-bob": "^0.40.13"
   },
