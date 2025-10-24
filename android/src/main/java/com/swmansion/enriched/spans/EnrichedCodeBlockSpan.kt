@@ -5,15 +5,19 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
-import android.text.style.CharacterStyle
 import android.text.style.LineBackgroundSpan
+import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : CharacterStyle(), LineBackgroundSpan, EnrichedBlockSpan {
-  override fun updateDrawState(paint: TextPaint?) {
-    paint?.typeface = Typeface.MONOSPACE
-    paint?.color = htmlStyle.codeBlockColor
+class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LineBackgroundSpan, EnrichedBlockSpan {
+  override fun updateDrawState(paint: TextPaint) {
+    paint.typeface = Typeface.MONOSPACE
+    paint.color = htmlStyle.codeBlockColor
+  }
+
+  override fun updateMeasureState(paint: TextPaint) {
+    paint.typeface = Typeface.MONOSPACE
   }
 
   override fun drawBackground(
