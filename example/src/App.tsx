@@ -262,10 +262,33 @@ export default function App() {
       >
         <Text style={styles.label}>Enriched Text Input</Text>
         <View style={styles.editor}>
+          {/*<EnrichedTextInput*/}
+          {/*  mentionIndicators={['@', '#']}*/}
+          {/*  style={{ ...styles.editorInput, width: 250, fontSize: 50 }}*/}
+          {/*  htmlStyle={htmlStyle}*/}
+          {/*  placeholder="Type"*/}
+          {/*  placeholderTextColor="rgb(0, 26, 114)"*/}
+          {/*  selectionColor="deepskyblue"*/}
+          {/*  cursorColor="dodgerblue"*/}
+          {/*  autoCapitalize="sentences"*/}
+          {/*  onChangeText={handleChangeText}*/}
+          {/*  onChangeHtml={handleChangeHtml}*/}
+          {/*  onChangeState={handleChangeState}*/}
+          {/*  onLinkDetected={handleLinkDetected}*/}
+          {/*  onMentionDetected={console.log}*/}
+          {/*  onStartMention={handleStartMention}*/}
+          {/*  onChangeMention={handleChangeMention}*/}
+          {/*  onEndMention={handleEndMention}*/}
+          {/*  onFocus={handleFocusEvent}*/}
+          {/*  onBlur={handleBlurEvent}*/}
+          {/*  onChangeSelection={handleSelectionChangeEvent}*/}
+          {/*  androidExperimentalSynchronousEvents={*/}
+          {/*    ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS*/}
+          {/*  }*/}
+          {/*/>*/}
           <EnrichedTextInput
-            key={key}
-            autoFocus
             ref={ref}
+            key={key}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={htmlStyle}
