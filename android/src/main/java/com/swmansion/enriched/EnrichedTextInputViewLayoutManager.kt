@@ -1,5 +1,7 @@
 package com.swmansion.enriched
 
+import android.graphics.text.LineBreaker
+import android.os.Build
 import android.text.Editable
 import android.text.StaticLayout
 import com.facebook.react.bridge.Arguments
@@ -50,12 +52,20 @@ class EnrichedTextInputViewLayoutManager(private val view: EnrichedTextInputView
     val paint = view.paint
     val textLength = text.length
 
-    val staticLayout = StaticLayout.Builder
+    val builder = StaticLayout.Builder
       .obtain(text, 0, textLength, paint, maxWidth.toInt())
       .setIncludePad(true)
       .setLineSpacing(0f, 1f)
-      .build()
 
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      builder.setBreakStrategy(LineBreaker.BREAK_STRATEGY_HIGH_QUALITY)
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      builder.setUseLineSpacingFromFallbacks(true)
+    }
+
+    val staticLayout = builder.build()
     val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat())
     val widthInSP = PixelUtil.toDIPFromPixel(maxWidth)
 
