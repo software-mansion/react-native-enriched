@@ -503,6 +503,7 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setImageSpan(src)
+    layoutManager.invalidateLayout()
   }
 
   fun startMention(indicator: String) {
