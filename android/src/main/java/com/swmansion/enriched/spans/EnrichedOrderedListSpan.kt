@@ -4,11 +4,21 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.Layout
+import android.text.TextPaint
 import android.text.style.LeadingMarginSpan
+import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: HtmlStyle) : LeadingMarginSpan, EnrichedParagraphSpan {
+class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedParagraphSpan {
+  override fun updateMeasureState(p0: TextPaint) {
+    // Do nothing, but inform layout that this span affects text metrics
+  }
+
+  override fun updateDrawState(p0: TextPaint?) {
+    // Do nothing, but inform layout that this span affects text metrics
+  }
+
   override fun getLeadingMargin(first: Boolean): Int {
     return htmlStyle.olMarginLeft + htmlStyle.olGapWidth
   }
