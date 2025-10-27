@@ -4,6 +4,7 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.util.Log
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.spans.EnrichedSpans
@@ -58,12 +59,11 @@ class ListStyles(private val view: EnrichedTextInputView) {
     val spans = ssb.getSpans(start, end, clazz)
     if (spans.isEmpty()) return false
 
-    ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
-
     for (span in spans) {
       ssb.removeSpan(span)
     }
 
+    ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
     return true
   }
 
@@ -83,7 +83,11 @@ class ListStyles(private val view: EnrichedTextInputView) {
     val (start, end) = view.selection.getParagraphSelection()
     val styleStart = view.spanState?.getStart(name)
 
+    Log.d("ListStyles", "Toggling list style $name from $start to $end")
+
     if (styleStart != null) {
+      Log.d("ListStyles", "Removing list style from $start to $end")
+
       view.spanState.setStart(name, null)
       removeSpansForRange(spannable, start, end, config.clazz)
       view.selection.validateStyles()
