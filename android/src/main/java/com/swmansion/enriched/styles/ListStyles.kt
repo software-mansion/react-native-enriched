@@ -58,12 +58,11 @@ class ListStyles(private val view: EnrichedTextInputView) {
     val spans = ssb.getSpans(start, end, clazz)
     if (spans.isEmpty()) return false
 
-    ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
-
     for (span in spans) {
       ssb.removeSpan(span)
     }
 
+    ssb.replace(start, end, ssb.substring(start, end).replace("\u200B", ""))
     return true
   }
 

@@ -7,6 +7,7 @@ import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.InputType
 import android.text.Spannable
@@ -51,9 +52,6 @@ class EnrichedTextInputView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
-  // Sometimes setting up style triggers many changes in sequence
-  // Eg. removing conflicting styles -> changing text -> applying spans
-  // In such scenario we want to prevent from handling side effects (eg. onTextChanged)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
 
@@ -101,6 +99,10 @@ class EnrichedTextInputView : AppCompatEditText {
     isVerticalScrollBarEnabled = true
     gravity = Gravity.TOP or Gravity.START
     inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      breakStrategy = LineBreaker.BREAK_STRATEGY_HIGH_QUALITY
+    }
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
@@ -236,18 +238,17 @@ class EnrichedTextInputView : AppCompatEditText {
 
   fun setValue(value: CharSequence?) {
     if (value == null) return
-    isDuringTransaction = true
 
-    val newText = parseText(value)
-    setText(newText)
+    runAsATransaction {
+      val newText = parseText(value)
+      setText(newText)
 
-    // Assign SpanWatcher one more time as our previous spannable has been replaced
-    addSpanWatcher(EnrichedSpanWatcher(this))
+      // Assign SpanWatcher one more time as our previous spannable has been replaced
+      addSpanWatcher(EnrichedSpanWatcher(this))
 
-    // Scroll to the last line of text
-    setSelection(text?.length ?: 0)
-
-    isDuringTransaction = false
+      // Scroll to the last line of text
+      setSelection(text?.length ?: 0)
+    }
   }
 
   fun setAutoFocus(autoFocus: Boolean) {
@@ -455,13 +456,13 @@ class EnrichedTextInputView : AppCompatEditText {
       val end = selection?.end ?: 0
       val lengthBefore = text?.length ?: 0
 
-      isDuringTransaction = true
-      val targetRange = getTargetRange(name)
-      val removed = removeStyle(style, targetRange.first, targetRange.second)
-      if (removed) {
-        spanState?.setStart(style, null)
+      runAsATransaction {
+        val targetRange = getTargetRange(name)
+        val removed = removeStyle(style, targetRange.first, targetRange.second)
+        if (removed) {
+          spanState?.setStart(style, null)
+        }
       }
-      isDuringTransaction = false
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter
@@ -518,6 +519,18 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setMentionSpan(text, indicator, attributes)
+  }
+
+  // Sometimes setting up style triggers many changes in sequence
+  // Eg. removing conflicting styles -> changing text -> applying spans
+  // In such scenario we want to prevent from handling side effects (eg. onTextChanged)
+  fun runAsATransaction(block: () -> Unit) {
+    try {
+      isDuringTransaction = true
+      block()
+    } finally {
+      isDuringTransaction = false
+    }
   }
 
   override fun onAttachedToWindow() {
