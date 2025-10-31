@@ -263,9 +263,8 @@ export default function App() {
         <Text style={styles.label}>Enriched Text Input</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
-            key={key}
-            autoFocus
             ref={ref}
+            key={key}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={htmlStyle}

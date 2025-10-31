@@ -10,7 +10,7 @@ namespace facebook::react {
 
     Size EnrichedTextInputMeasurementManager::measure(
             SurfaceId surfaceId,
-            const EnrichedTextInputViewProps& props,
+            int viewTag,
             LayoutConstraints layoutConstraints) const {
         const jni::global_ref<jobject>& fabricUIManager =
                 contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
@@ -33,11 +33,16 @@ namespace facebook::react {
 
         local_ref<JString> componentName = make_jstring("EnrichedTextInputView");
 
+        folly::dynamic extra = folly::dynamic::object();
+        extra["viewTag"] = viewTag;
+        local_ref<ReadableNativeMap::javaobject> extraData = ReadableNativeMap::newObjectCxxArgs(extra);
+        local_ref<ReadableMap::javaobject> extraDataRM = make_local(reinterpret_cast<ReadableMap::javaobject>(extraData.get()));
+
         auto measurement = yogaMeassureToSize(measure(
                 fabricUIManager,
                 surfaceId,
                 componentName.get(),
-                nullptr,
+                extraDataRM.get(),
                 nullptr,
                 nullptr,
                 minimumSize.width,
