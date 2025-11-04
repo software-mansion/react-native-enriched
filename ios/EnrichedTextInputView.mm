@@ -1091,15 +1091,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  // update drawing - schedule debounced relayout
+  [self scheduleRelayoutIfNeeded];
+}
 
-  // update drawing
-   dispatch_async(dispatch_get_main_queue(), ^{
-     NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
-     NSRange actualRange = NSMakeRange(0, 0);
-     [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
-     [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-     [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
-   });
+// Debounced relayout helper - coalesces multiple requests into one per runloop tick
+- (void)scheduleRelayoutIfNeeded
+{
+  // Cancel any previously scheduled invocation to debounce
+  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_performRelayout) object:nil];
+  // Schedule on next runloop cycle
+  [self performSelector:@selector(_performRelayout) withObject:nil afterDelay:0];
+}
+
+- (void)_performRelayout
+{
+  if (!textView) { return; }
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+    NSRange actualRange = NSMakeRange(0, 0);
+    [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
+    [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
+    [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+  });
+}
+
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+  [self scheduleRelayoutIfNeeded];
 }
 
 // MARK: - UITextView delegate methods
