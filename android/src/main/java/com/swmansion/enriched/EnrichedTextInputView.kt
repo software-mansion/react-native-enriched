@@ -306,7 +306,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
     // This ensured that newly created spans will take the new font size into account
     htmlStyle.invalidateStyles()
-    layoutManager.invalidateLayout(text)
+    layoutManager.invalidateLayout()
   }
 
   fun setFontFamily(family: String?) {
@@ -368,7 +368,7 @@ class EnrichedTextInputView : AppCompatEditText {
     typeface = newTypeface
     paint.typeface = newTypeface
 
-    layoutManager.invalidateLayout(text)
+    layoutManager.invalidateLayout()
   }
 
   private fun toggleStyle(name: String) {
@@ -388,7 +388,7 @@ class EnrichedTextInputView : AppCompatEditText {
       else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
     }
 
-    layoutManager.invalidateLayout(text)
+    layoutManager.invalidateLayout()
   }
 
   private fun removeStyle(name: String, start: Int, end: Int): Boolean {
@@ -504,6 +504,7 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setImageSpan(src)
+    layoutManager.invalidateLayout()
   }
 
   fun startMention(indicator: String) {
@@ -540,11 +541,6 @@ class EnrichedTextInputView : AppCompatEditText {
     }
 
     didAttachToWindow = true
-  }
-
-  override fun onDetachedFromWindow() {
-    layoutManager.cleanup()
-    super.onDetachedFromWindow()
   }
 
   companion object {

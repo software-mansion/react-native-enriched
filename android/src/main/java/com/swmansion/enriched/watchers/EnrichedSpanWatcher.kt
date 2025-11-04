@@ -59,7 +59,6 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
     if (html == previousHtml) return
 
     previousHtml = html
-    view.layoutManager.invalidateLayout(view.text)
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)

@@ -1,6 +1,7 @@
 package com.swmansion.enriched
 
 import android.content.Context
+import android.util.Log
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -15,7 +16,6 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerInterface
 import com.facebook.yoga.YogaMeasureMode
-import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnChangeHtmlEvent
 import com.swmansion.enriched.events.OnChangeSelectionEvent
@@ -32,12 +32,8 @@ import com.swmansion.enriched.utils.jsonStringToStringMap
 @ReactModule(name = EnrichedTextInputViewManager.NAME)
 class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   EnrichedTextInputViewManagerInterface<EnrichedTextInputView> {
-  private val mDelegate: ViewManagerDelegate<EnrichedTextInputView>
-  private var view: EnrichedTextInputView? = null
-
-  init {
-    mDelegate = EnrichedTextInputViewManagerDelegate(this)
-  }
+  private val mDelegate: ViewManagerDelegate<EnrichedTextInputView> =
+    EnrichedTextInputViewManagerDelegate(this)
 
   override fun getDelegate(): ViewManagerDelegate<EnrichedTextInputView>? {
     return mDelegate
@@ -48,10 +44,12 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   }
 
   public override fun createViewInstance(context: ThemedReactContext): EnrichedTextInputView {
-    val view = EnrichedTextInputView(context)
-    this.view = view
+    return EnrichedTextInputView(context)
+  }
 
-    return view
+  override fun onDropViewInstance(view: EnrichedTextInputView) {
+    super.onDropViewInstance(view)
+    view.layoutManager.releaseMeasurementStore()
   }
 
   override fun updateState(
@@ -277,13 +275,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     heightMode: YogaMeasureMode?,
     attachmentsPositions: FloatArray?
   ): Long {
-    val size = this.view?.layoutManager?.getMeasuredSize(width)
-
-    if (size != null) {
-      return YogaMeasureOutput.make(size.first, size.second)
-    }
-
-    return YogaMeasureOutput.make(0, 0)
+    return MeasurementStore.getMeasureById(localData?.getInt("viewTag"), width)
   }
 
   companion object {
