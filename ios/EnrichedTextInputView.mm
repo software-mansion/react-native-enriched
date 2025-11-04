@@ -63,6 +63,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self setupTextView];
     [self setupPlaceholderLabel];
     self.contentView = textView;
+    [textView setScrollEnabled: NO];
   }
   return self;
 }
@@ -155,6 +156,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   _placeholderLabel.text = @"";
   _placeholderLabel.hidden = YES;
+}
+
+// MARK: - HTML Value Getter
+
+- (NSString *)getHTMLValue {
+    if (textView.textStorage.string.length == 0) {
+        return @"";
+    }
+    
+    NSString *htmlOutput = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
+    return htmlOutput ?: @"";
 }
 
 // MARK: - Props
@@ -389,7 +401,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // this way, the newest config attributes are being used!
     
     // the html needs to be generated using the old config
-    NSString *currentHtml = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
+    NSString *currentHtml = [self getHTMLValue];
     
     // now set the new config
     config = newConfig;
@@ -851,7 +863,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
-    NSString *htmlOutput = [parser parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)];
+    NSString *htmlOutput = [self getHTMLValue];
     // make sure html really changed
     if(![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
       _recentlyEmittedHtml = htmlOutput;

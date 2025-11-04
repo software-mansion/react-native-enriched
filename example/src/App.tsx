@@ -312,6 +312,11 @@ export default function App() {
           onPress={openValueModal}
           style={styles.valueButton}
         />
+        <Button
+          title="Get input's HTML value"
+          onPress={() => console.log(ref.current?.getHTMLValue())}
+          style={styles.valueButton}
+        />
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
       </ScrollView>
