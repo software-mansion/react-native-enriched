@@ -357,6 +357,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.scrollEnabled != oldViewProps.scrollEnabled || textView.scrollEnabled != newViewProps.scrollEnabled) {
+    [self setScrollEnabled: newViewProps.scrollEnabled];
+  }
+  
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if(oldMentionStyle != newMentionStyle) {
@@ -860,6 +864,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       });
     }
   }
+}
+
+-(void)setScrollEnabled:(bool)scrollEnabled {
+  [textView setScrollEnabled: scrollEnabled];
 }
 
 // MARK: - Styles manipulation

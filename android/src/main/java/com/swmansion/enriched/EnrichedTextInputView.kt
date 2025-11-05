@@ -54,6 +54,7 @@ class EnrichedTextInputView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
+  var scrollEnabled = true
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -135,6 +136,14 @@ class EnrichedTextInputView : AppCompatEditText {
     }
 
     return super.onTouchEvent(ev)
+  }
+
+  override fun canScrollVertically(direction: Int): Boolean {
+    return scrollEnabled
+  }
+
+  override fun canScrollHorizontally(direction: Int): Boolean {
+    return scrollEnabled
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
