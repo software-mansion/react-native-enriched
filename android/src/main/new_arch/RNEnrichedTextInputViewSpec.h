@@ -18,13 +18,6 @@
 
 namespace facebook::react {
 
-/**
- * JNI C++ class for module 'NativeEnrichedTextInputModule'
- */
-class JSI_EXPORT NativeEnrichedTextInputModuleSpecJSI : public JavaTurboModule {
-public:
-  NativeEnrichedTextInputModuleSpecJSI(const JavaTurboModule::InitParams &params);
-};
 
 
 JSI_EXPORT
