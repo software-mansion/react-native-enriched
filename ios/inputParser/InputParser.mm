@@ -599,6 +599,7 @@
     } else if([tagName isEqualToString:@"a"]) {
        [styleArr addObject:@([LinkStyle getStyleType])];
        NSRange hrefRange = [params rangeOfString:@"href="];
+       stylePair.styleValue = @"";
        if(hrefRange.location != NSNotFound) {
          NSString *url = [params substringWithRange:NSMakeRange(6, params.length - 7)];
          stylePair.styleValue = url;
