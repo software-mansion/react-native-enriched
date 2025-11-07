@@ -153,7 +153,7 @@
   "codegenConfig": {
     "name": "RNEnrichedTextInputViewSpec",
     "type": "all",
-    "jsSrcsDir": "./src",
+    "jsSrcsDir": "src",
     "outputDir": {
       "ios": "ios/generated",
       "android": "android/generated"

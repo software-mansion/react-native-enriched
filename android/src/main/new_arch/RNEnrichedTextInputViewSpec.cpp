@@ -12,10 +12,20 @@
 
 namespace facebook::react {
 
+static facebook::jsi::Value __hostFunction_NativeEnrichedTextInputModuleSpecJSI_getHTMLValue(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
+  static jmethodID cachedMethodId = nullptr;
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, "getHTMLValue", "(D)Ljava/lang/String;", args, count, cachedMethodId);
+}
 
+NativeEnrichedTextInputModuleSpecJSI::NativeEnrichedTextInputModuleSpecJSI(const JavaTurboModule::InitParams &params)
+  : JavaTurboModule(params) {
+  methodMap_["getHTMLValue"] = MethodMetadata {1, __hostFunction_NativeEnrichedTextInputModuleSpecJSI_getHTMLValue};
+}
 
 std::shared_ptr<TurboModule> RNEnrichedTextInputViewSpec_ModuleProvider(const std::string &moduleName, const JavaTurboModule::InitParams &params) {
-
+  if (moduleName == "EnrichedTextInputModule") {
+    return std::make_shared<NativeEnrichedTextInputModuleSpecJSI>(params);
+  }
   return nullptr;
 }
 
