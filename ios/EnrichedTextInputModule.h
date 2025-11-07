@@ -8,9 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <ReactNativeEnriched/RNEnrichedTextInputViewSpec.h>
 #import <React/RCTBridge.h>
-#import <React/RCTSurfacePresenter.h>
 #import <React/RCTUIManager.h>
-#import "EnrichedTextInputView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

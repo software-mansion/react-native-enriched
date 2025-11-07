@@ -6,19 +6,14 @@
 //
 
 #import "EnrichedTextInputModule.h"
+#import "EnrichedTextInputView.h"
 
-static UIView *findViewByTag(NSInteger reactTag, RCTBridge *bridge) {
+static UIView *findViewByReactTag(NSInteger reactTag, RCTBridge *bridge) {
   if (bridge.uiManager) {
     UIView *view = [bridge.uiManager viewForReactTag:@(reactTag)];
     if (view) {
       return view;
     }
-  }
-
-  RCTUIManager *uiManager = [bridge moduleForClass:[RCTUIManager class]];
-  if (uiManager) {
-    UIView *view = [uiManager viewForReactTag:@(reactTag)];
-    return view;
   }
 
   return nil;
@@ -34,7 +29,7 @@ static UIView *findViewByTag(NSInteger reactTag, RCTBridge *bridge) {
   __block NSString *value = @"";
 
   dispatch_sync(dispatch_get_main_queue(), ^{
-      UIView *view = findViewByTag(inputTag, self.bridge);
+      UIView *view = findViewByReactTag(inputTag, self.bridge);
       if ([view isKindOfClass:[EnrichedTextInputView class]]) {
         EnrichedTextInputView *enrichedTextView = (EnrichedTextInputView *)view;
         value = [enrichedTextView getHTMLValue];
