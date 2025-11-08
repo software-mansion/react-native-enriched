@@ -60,6 +60,12 @@ class EnrichedTextInputView : AppCompatEditText {
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
+    set(value) {
+        if (field != value) {
+            field = value
+            reapplyTextWithNewStyles()
+        }
+    }
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
@@ -589,6 +595,27 @@ class EnrichedTextInputView : AppCompatEditText {
       block()
     } finally {
       isDuringTransaction = false
+    }
+  }
+
+  private fun reapplyTextWithNewStyles() {
+    val currentText = text
+    if (currentText != null && currentText.isNotEmpty()) {
+      runAsATransaction {
+        val currentHtml = EnrichedParser.toHtml(currentText as Spannable)
+        val newText = parseText(currentHtml)
+
+        val currentSelectionStart = selectionStart
+        val currentSelectionEnd = selectionEnd
+
+        setText(newText)
+
+        val newLength = text?.length ?: 0
+        val safeStart = currentSelectionStart.coerceIn(0, newLength)
+        val safeEnd = currentSelectionEnd.coerceIn(0, newLength)
+        setSelection(safeStart, safeEnd)
+        layoutManager.invalidateLayout()
+      }
     }
   }
 
