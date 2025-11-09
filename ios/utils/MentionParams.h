@@ -6,4 +6,3 @@
 @property NSString *indicator;
 @property NSString *attributes;
 @end
-

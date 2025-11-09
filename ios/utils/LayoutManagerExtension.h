@@ -2,5 +2,5 @@
 #import <UIKit/UIKit.h>
 
 @interface NSLayoutManager (LayoutManagerExtension)
-@property (nonatomic, weak) id input;
+@property(nonatomic, weak) id input;
 @end
