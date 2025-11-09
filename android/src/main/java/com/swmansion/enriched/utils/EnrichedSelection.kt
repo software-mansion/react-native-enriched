@@ -13,14 +13,19 @@ import com.swmansion.enriched.spans.EnrichedMentionSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import org.json.JSONObject
 
-class EnrichedSelection(private val view: EnrichedTextInputView) {
+class EnrichedSelection(
+  private val view: EnrichedTextInputView,
+) {
   var start: Int = 0
   var end: Int = 0
 
   private var previousLinkDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "url" to "")
   private var previousMentionDetectedEvent: MutableMap<String, String> = mutableMapOf("text" to "", "payload" to "")
 
-  fun onSelection(selStart: Int, selEnd: Int) {
+  fun onSelection(
+    selStart: Int,
+    selEnd: Int,
+  ) {
     var shouldValidateStyles = false
     var newStart = start
     var newEnd = end
@@ -52,19 +57,23 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     emitSelectionChangeEvent(view.text, finalStart, finalEnd)
   }
 
-  private fun isZeroWidthSelection(start: Int, end: Int): Boolean {
+  private fun isZeroWidthSelection(
+    start: Int,
+    end: Int,
+  ): Boolean {
     val text = view.text ?: return false
 
     if (start != end) {
       return text.substring(start, end) == "\u200B"
     }
 
-    val isNewLine = if (start > 0 ) text.substring(start - 1, start) == "\n" else true
-    val isNextCharacterZeroWidth = if (start < text.length) {
-      text.substring(start, start + 1) == "\u200B"
-    } else {
-      false
-    }
+    val isNewLine = if (start > 0) text.substring(start - 1, start) == "\n" else true
+    val isNextCharacterZeroWidth =
+      if (start < text.length) {
+        text.substring(start, start + 1) == "\u200B"
+      } else {
+        false
+      }
 
     return isNewLine && isNextCharacterZeroWidth
   }
@@ -103,7 +112,7 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     return Pair(finalStart, finalEnd)
   }
 
-  private fun <T>getInlineStyleStart(type: Class<T>): Int? {
+  private fun <T> getInlineStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
     val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
@@ -129,7 +138,7 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     return spannable.getParagraphBounds(currentStart, currentEnd)
   }
 
-  private fun <T>getParagraphStyleStart(type: Class<T>): Int? {
+  private fun <T> getParagraphStyleStart(type: Class<T>): Int? {
     val (start, end) = getParagraphSelection()
     val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
@@ -148,7 +157,7 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     return styleStart
   }
 
-  private fun <T>getListStyleStart(type: Class<T>): Int? {
+  private fun <T> getListStyleStart(type: Class<T>): Int? {
     val (start, end) = getParagraphSelection()
     val spannable = view.text as Spannable
     var styleStart: Int? = null
@@ -177,7 +186,7 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     return styleStart
   }
 
-  private fun <T>getParametrizedStyleStart(type: Class<T>): Int? {
+  private fun <T> getParametrizedStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
     val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
@@ -212,7 +221,11 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     return null
   }
 
-  private fun emitSelectionChangeEvent(editable: Editable?, start: Int, end: Int) {
+  private fun emitSelectionChangeEvent(
+    editable: Editable?,
+    start: Int,
+    end: Int,
+  ) {
     if (editable == null) return
 
     val context = view.context as ReactContext
@@ -220,17 +233,24 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
 
     val text = editable.substring(start, end)
-    dispatcher?.dispatchEvent(OnChangeSelectionEvent(
-      surfaceId,
-      view.id,
-      text,
-      start ,
-      end,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnChangeSelectionEvent(
+        surfaceId,
+        view.id,
+        text,
+        start,
+        end,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 
-  private fun emitLinkDetectedEvent(spannable: Spannable, span: EnrichedLinkSpan?, start: Int, end: Int) {
+  private fun emitLinkDetectedEvent(
+    spannable: Spannable,
+    span: EnrichedLinkSpan?,
+    start: Int,
+    end: Int,
+  ) {
     val text = spannable.substring(start, end)
     val url = span?.getUrl() ?: ""
 
@@ -243,18 +263,25 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnLinkDetectedEvent(
-      surfaceId,
-      view.id,
-      text,
-      url,
-      start,
-      end,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnLinkDetectedEvent(
+        surfaceId,
+        view.id,
+        text,
+        url,
+        start,
+        end,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 
-  private fun emitMentionDetectedEvent(spannable: Spannable, span: EnrichedMentionSpan?, start: Int, end: Int) {
+  private fun emitMentionDetectedEvent(
+    spannable: Spannable,
+    span: EnrichedMentionSpan?,
+    start: Int,
+    end: Int,
+  ) {
     val text = spannable.substring(start, end)
     val attributes = span?.getAttributes() ?: emptyMap()
     val indicator = span?.getIndicator() ?: ""
@@ -273,13 +300,15 @@ class EnrichedSelection(private val view: EnrichedTextInputView) {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnMentionDetectedEvent(
-      surfaceId,
-      view.id,
-      text,
-      indicator,
-      payload,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnMentionDetectedEvent(
+        surfaceId,
+        view.id,
+        text,
+        indicator,
+        payload,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 }

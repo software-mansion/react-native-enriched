@@ -1,4 +1,5 @@
 package com.swmansion.enriched.spans.interfaces
 
-interface EnrichedParagraphSpan : EnrichedSpan, EnrichedZeroWidthSpaceSpan {
-}
+interface EnrichedParagraphSpan :
+  EnrichedSpan,
+  EnrichedZeroWidthSpaceSpan

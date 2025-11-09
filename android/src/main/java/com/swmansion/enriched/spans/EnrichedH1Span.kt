@@ -6,7 +6,10 @@ import android.text.style.AbsoluteSizeSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedH1Span(private val style: HtmlStyle) : AbsoluteSizeSpan(style.h1FontSize), EnrichedHeadingSpan {
+class EnrichedH1Span(
+  private val style: HtmlStyle,
+) : AbsoluteSizeSpan(style.h1FontSize),
+  EnrichedHeadingSpan {
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
     val bold = style.h1Bold

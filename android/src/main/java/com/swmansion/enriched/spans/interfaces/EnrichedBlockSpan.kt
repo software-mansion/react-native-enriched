@@ -1,4 +1,5 @@
 package com.swmansion.enriched.spans.interfaces
 
-interface EnrichedBlockSpan : EnrichedSpan, EnrichedZeroWidthSpaceSpan {
-}
+interface EnrichedBlockSpan :
+  EnrichedSpan,
+  EnrichedZeroWidthSpaceSpan

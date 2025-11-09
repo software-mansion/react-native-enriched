@@ -6,8 +6,13 @@ import android.view.View
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedMentionSpan(private val text: String, private val indicator: String, private val attributes: Map<String, String>, private val htmlStyle: HtmlStyle) :
-  ClickableSpan(), EnrichedInlineSpan {
+class EnrichedMentionSpan(
+  private val text: String,
+  private val indicator: String,
+  private val attributes: Map<String, String>,
+  private val htmlStyle: HtmlStyle,
+) : ClickableSpan(),
+  EnrichedInlineSpan {
   override fun onClick(view: View) {
     // Do nothing. Mentions inside the input are not clickable.
     // We are using `ClickableSpan` to allow the text to be styled as a clickable element.
@@ -22,15 +27,9 @@ class EnrichedMentionSpan(private val text: String, private val indicator: Strin
     textPaint.isUnderlineText = mentionsStyle.underline
   }
 
-  fun getAttributes(): Map<String, String> {
-    return attributes
-  }
+  fun getAttributes(): Map<String, String> = attributes
 
-  fun getText(): String {
-    return text
-  }
+  fun getText(): String = text
 
-  fun getIndicator(): String {
-    return indicator
-  }
+  fun getIndicator(): String = indicator
 }

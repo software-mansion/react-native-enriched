@@ -10,10 +10,12 @@ import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+class EnrichedImageSpan :
+  ImageSpan,
+  EnrichedInlineSpan {
   private var htmlStyle: HtmlStyle? = null
 
-  constructor(context: Context, uri: Uri, htmlStyle: HtmlStyle, ) : super(context, uri, ALIGN_BASELINE) {
+  constructor(context: Context, uri: Uri, htmlStyle: HtmlStyle) : super(context, uri, ALIGN_BASELINE) {
     this.htmlStyle = htmlStyle
   }
 
@@ -22,11 +24,18 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   }
 
   override fun draw(
-    canvas: Canvas, text: CharSequence?, start: Int, end: Int, x: Float,
-    top: Int, y: Int, bottom: Int, paint: Paint
+    canvas: Canvas,
+    text: CharSequence?,
+    start: Int,
+    end: Int,
+    x: Float,
+    top: Int,
+    y: Int,
+    bottom: Int,
+    paint: Paint,
   ) {
     val drawable = drawable
-    canvas.withSave() {
+    canvas.withSave {
       val transY = bottom - drawable.bounds.bottom - paint.fontMetricsInt.descent
       translate(x, transY.toFloat())
       drawable.draw(this)

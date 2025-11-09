@@ -13,13 +13,20 @@ import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import java.io.File
 
-class ParametrizedStyles(private val view: EnrichedTextInputView) {
+class ParametrizedStyles(
+  private val view: EnrichedTextInputView,
+) {
   private var mentionStart: Int? = null
   private var isSettingLinkSpan = false
 
   var mentionIndicators: Array<String> = emptyArray<String>()
 
-  fun <T>removeSpansForRange(spannable: Spannable, start: Int, end: Int, clazz: Class<T>): Boolean {
+  fun <T> removeSpansForRange(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    clazz: Class<T>,
+  ): Boolean {
     val ssb = spannable as SpannableStringBuilder
     val spans = ssb.getSpans(start, end, clazz)
     if (spans.isEmpty()) return false
@@ -33,7 +40,12 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     return true
   }
 
-  fun setLinkSpan(start: Int, end: Int, text: String, url: String) {
+  fun setLinkSpan(
+    start: Int,
+    end: Int,
+    text: String,
+    url: String,
+  ) {
     isSettingLinkSpan = true
 
     val spannable = view.text as SpannableStringBuilder
@@ -57,7 +69,10 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     isSettingLinkSpan = false
   }
 
-  fun afterTextChanged(s: Editable, endCursorPosition: Int) {
+  fun afterTextChanged(
+    s: Editable,
+    endCursorPosition: Int,
+  ) {
     val result = getWordAtIndex(s, endCursorPosition) ?: return
 
     afterTextChangedLinks(result)
@@ -68,7 +83,9 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     val spannable = view.text as Spannable
 
     // TODO: Consider using more reliable regex, this one matches almost anything
-    val urlPattern = android.util.Patterns.WEB_URL.matcher(spannable)
+    val urlPattern =
+      android.util.Patterns.WEB_URL
+        .matcher(spannable)
 
     val spans = spannable.getSpans(0, spannable.length, EnrichedLinkSpan::class.java)
     for (span in spans) {
@@ -85,8 +102,11 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  private fun getWordAtIndex(s: Editable, index: Int): Triple<String, Int, Int>? {
-    if (index < 0 ) return null
+  private fun getWordAtIndex(
+    s: Editable,
+    index: Int,
+  ): Triple<String, Int, Int>? {
+    if (index < 0) return null
 
     var start = index
     var end = index
@@ -111,7 +131,9 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     val (word, start, end) = result
 
     // TODO: Consider using more reliable regex, this one matches almost anything
-    val urlPattern = android.util.Patterns.WEB_URL.matcher(word)
+    val urlPattern =
+      android.util.Patterns.WEB_URL
+        .matcher(word)
 
     val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
@@ -132,7 +154,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
-    val mentionRegex= Regex("^($indicatorsPattern)\\w*")
+    val mentionRegex = Regex("^($indicatorsPattern)\\w*")
 
     val spans = spannable.getSpans(start, end, EnrichedMentionSpan::class.java)
     for (span in spans) {
@@ -189,7 +211,11 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  fun setMentionSpan(indicator: String, text: String, attributes: Map<String, String>) {
+  fun setMentionSpan(
+    indicator: String,
+    text: String,
+    attributes: Map<String, String>,
+  ) {
     val selection = view.selection ?: return
 
     val spannable = view.text as SpannableStringBuilder
@@ -220,11 +246,13 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     view.selection.validateStyles()
   }
 
-  fun getStyleRange(): Pair<Int, Int> {
-    return view.selection?.getInlineSelection() ?: Pair(0, 0)
-  }
+  fun getStyleRange(): Pair<Int, Int> = view.selection?.getInlineSelection() ?: Pair(0, 0)
 
-  fun removeStyle(name: String, start: Int, end: Int): Boolean {
+  fun removeStyle(
+    name: String,
+    start: Int,
+    end: Int,
+  ): Boolean {
     val config = EnrichedSpans.parametrizedStyles[name] ?: return false
     val spannable = view.text as Spannable
     return removeSpansForRange(spannable, start, end, config.clazz)

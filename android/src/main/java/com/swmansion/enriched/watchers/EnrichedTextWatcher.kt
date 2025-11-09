@@ -7,15 +7,27 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeTextEvent
 
-class EnrichedTextWatcher(private val view: EnrichedTextInputView) : TextWatcher {
+class EnrichedTextWatcher(
+  private val view: EnrichedTextInputView,
+) : TextWatcher {
   private var endCursorPosition: Int = 0
   private var previousTextLength: Int = 0
 
-  override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+  override fun beforeTextChanged(
+    s: CharSequence?,
+    start: Int,
+    count: Int,
+    after: Int,
+  ) {
     previousTextLength = s?.length ?: 0
   }
 
-  override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+  override fun onTextChanged(
+    s: CharSequence?,
+    start: Int,
+    before: Int,
+    count: Int,
+  ) {
     endCursorPosition = start + count
     view.layoutManager.invalidateLayout()
     view.isRemovingMany = !view.isDuringTransaction && before > count + 1
@@ -40,12 +52,14 @@ class EnrichedTextWatcher(private val view: EnrichedTextInputView) : TextWatcher
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeTextEvent(
-      surfaceId,
-      view.id,
-      s,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnChangeTextEvent(
+        surfaceId,
+        view.id,
+        s,
+        view.experimentalSynchronousEvents,
+      ),
+    )
     view.spanWatcher?.emitEvent(s, null)
   }
 }
