@@ -15,6 +15,9 @@ jobs:
   lint:
     name: Run Gradle lint verification
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: example/android
 
     steps:
       - name: Checkout repository
