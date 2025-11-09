@@ -53,7 +53,6 @@ class EnrichedTextInputView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
-  var test = true
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
