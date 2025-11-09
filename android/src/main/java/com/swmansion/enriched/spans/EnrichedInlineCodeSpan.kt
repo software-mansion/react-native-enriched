@@ -6,7 +6,10 @@ import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedInlineCodeSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), EnrichedInlineSpan {
+class EnrichedInlineCodeSpan(
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  EnrichedInlineSpan {
   override fun updateDrawState(textPaint: TextPaint) {
     val typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
     textPaint.typeface = typeface

@@ -13,26 +13,49 @@ import com.swmansion.enriched.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher {
+class EnrichedSpanWatcher(
+  private val view: EnrichedTextInputView,
+) : SpanWatcher {
   private var previousHtml: String? = null
 
-  override fun onSpanAdded(text: Spannable, what: Any, start: Int, end: Int) {
+  override fun onSpanAdded(
+    text: Spannable,
+    what: Any,
+    start: Int,
+    end: Int,
+  ) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
     emitEvent(text, what)
   }
 
-  override fun onSpanRemoved(text: Spannable, what: Any, start: Int, end: Int) {
+  override fun onSpanRemoved(
+    text: Spannable,
+    what: Any,
+    start: Int,
+    end: Int,
+  ) {
     updateNextLineLayout(what, text, end)
     updateUnorderedListSpans(what, text, end)
     emitEvent(text, what)
   }
 
-  override fun onSpanChanged(text: Spannable, what: Any, ostart: Int, oend: Int, nstart: Int, nend: Int) {
+  override fun onSpanChanged(
+    text: Spannable,
+    what: Any,
+    ostart: Int,
+    oend: Int,
+    nstart: Int,
+    nend: Int,
+  ) {
     // Do nothing for now
   }
 
-  private fun updateUnorderedListSpans(what: Any, text: Spannable, end: Int) {
+  private fun updateUnorderedListSpans(
+    what: Any,
+    text: Spannable,
+    end: Int,
+  ) {
     if (what is EnrichedOrderedListSpan) {
       view.listStyles?.updateOrderedListIndexes(text, end)
     }
@@ -40,8 +63,12 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
 
   // After adding/removing heading span, we have to manually set empty paragraph span to the following text
   // This allows us to update the layout (as it's not updated automatically - looks like an Android issue)
-  private fun updateNextLineLayout(what: Any, text: Spannable, end: Int) {
-    class EmptySpan : ParagraphStyle {}
+  private fun updateNextLineLayout(
+    what: Any,
+    text: Spannable,
+    end: Int,
+  ) {
+    class EmptySpan : ParagraphStyle
 
     if (what is EnrichedHeadingSpan) {
       val finalStart = (end + 1)
@@ -51,7 +78,10 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
     }
   }
 
-  fun emitEvent(s: Spannable, what: Any?) {
+  fun emitEvent(
+    s: Spannable,
+    what: Any?,
+  ) {
     // Emit event only if we change one of ours spans
     if (what != null && what !is EnrichedSpan) return
 
@@ -62,11 +92,13 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeHtmlEvent(
-      surfaceId,
-      view.id,
-      html,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnChangeHtmlEvent(
+        surfaceId,
+        view.id,
+        html,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 }

@@ -121,19 +121,29 @@ class HtmlStyle {
     mentionsStyle = parseMentionsStyle(mentionStyle)
   }
 
-  private fun parseFloat(map: ReadableMap?, key: String): Float {
+  private fun parseFloat(
+    map: ReadableMap?,
+    key: String,
+  ): Float {
     val safeMap = ensureValueIsSet(map, key)
 
     val fontSize = safeMap.getDouble(key)
     return ceil(PixelUtil.toPixelFromSP(fontSize))
   }
 
-  private fun parseColorWithOpacity(map: ReadableMap?, key: String, opacity: Int): Int {
+  private fun parseColorWithOpacity(
+    map: ReadableMap?,
+    key: String,
+    opacity: Int,
+  ): Int {
     val color = parseColor(map, key)
     return withOpacity(color, opacity)
   }
 
-  private fun parseOptionalColor(map: ReadableMap?, key: String): Int? {
+  private fun parseOptionalColor(
+    map: ReadableMap?,
+    key: String,
+  ): Int? {
     if (map == null) return null
     if (!map.hasKey(key)) return null
     if (map.isNull(key)) return null
@@ -141,7 +151,10 @@ class HtmlStyle {
     return parseColor(map, key)
   }
 
-  private fun parseColor(map: ReadableMap?, key: String): Int {
+  private fun parseColor(
+    map: ReadableMap?,
+    key: String,
+  ): Int {
     val safeMap = ensureValueIsSet(map, key)
 
     val color = safeMap.getDouble(key)
@@ -153,7 +166,10 @@ class HtmlStyle {
     return parsedColor
   }
 
-  private fun withOpacity(color: Int, alpha: Int): Int {
+  private fun withOpacity(
+    color: Int,
+    alpha: Int,
+  ): Int {
     // Do not apply opacity to transparent color
     if (Color.alpha(color) == 0) return color
     val a = alpha.coerceIn(0, 255)
@@ -171,14 +187,20 @@ class HtmlStyle {
     throw Error("Specified textDecorationLine value is not supported: $underline. Supported values are 'underline' and 'none'.")
   }
 
-  private fun calculateOlMarginLeft(view: EnrichedTextInputView?, userMargin: Int): Int {
+  private fun calculateOlMarginLeft(
+    view: EnrichedTextInputView?,
+    userMargin: Int,
+  ): Int {
     val fontSize = view?.fontSize?.toInt() ?: 0
     val leadMargin = fontSize / 2
 
     return leadMargin + userMargin
   }
 
-  private fun ensureValueIsSet(map: ReadableMap?, key: String): ReadableMap {
+  private fun ensureValueIsSet(
+    map: ReadableMap?,
+    key: String,
+  ): ReadableMap {
     if (map == null) throw Error("Style map cannot be null")
 
     if (!map.hasKey(key)) throw Error("Style map must contain key: $key")
@@ -193,24 +215,27 @@ class HtmlStyle {
 
     val parsedMentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
 
-     val iterator = mentionsStyle.keySetIterator()
-        while (iterator.hasNextKey()) {
-          val key = iterator.nextKey()
-          val value = mentionsStyle.getMap(key)
+    val iterator = mentionsStyle.keySetIterator()
+    while (iterator.hasNextKey()) {
+      val key = iterator.nextKey()
+      val value = mentionsStyle.getMap(key)
 
-          if (value == null) throw Error("Mention style for key '$key' cannot be null")
+      if (value == null) throw Error("Mention style for key '$key' cannot be null")
 
-          val color = parseColor(value, "color")
-          val backgroundColor = parseColorWithOpacity(value, "backgroundColor", 80)
-          val isUnderline = parseIsUnderline(value)
-          val parsedStyle = MentionStyle(color, backgroundColor, isUnderline)
-          parsedMentionsStyle.put(key, parsedStyle)
-        }
+      val color = parseColor(value, "color")
+      val backgroundColor = parseColorWithOpacity(value, "backgroundColor", 80)
+      val isUnderline = parseIsUnderline(value)
+      val parsedStyle = MentionStyle(color, backgroundColor, isUnderline)
+      parsedMentionsStyle.put(key, parsedStyle)
+    }
 
     return parsedMentionsStyle
   }
 
-  private fun parseOptionalFontWeight(map: ReadableMap?, key: String): Int? {
+  private fun parseOptionalFontWeight(
+    map: ReadableMap?,
+    key: String,
+  ): Int? {
     if (map == null) return null
     if (!map.hasKey(key)) return null
     if (map.isNull(key)) return null
@@ -223,7 +248,7 @@ class HtmlStyle {
     data class MentionStyle(
       val color: Int,
       val backgroundColor: Int,
-      val underline: Boolean
+      val underline: Boolean,
     )
   }
 }

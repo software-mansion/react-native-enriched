@@ -30,11 +30,11 @@ import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
 import com.swmansion.enriched.styles.ParametrizedStyles
-import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
@@ -42,7 +42,6 @@ import com.swmansion.enriched.utils.mergeSpannables
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
 import kotlin.math.ceil
-
 
 class EnrichedTextInputView : AppCompatEditText {
   var stateWrapper: StateWrapper? = null
@@ -84,7 +83,7 @@ class EnrichedTextInputView : AppCompatEditText {
   constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
     context,
     attrs,
-    defStyleAttr
+    defStyleAttr,
   ) {
     prepareComponent()
   }
@@ -126,7 +125,8 @@ class EnrichedTextInputView : AppCompatEditText {
           if (!canScrollVertically(-1) &&
             !canScrollVertically(1) &&
             !canScrollHorizontally(-1) &&
-            !canScrollHorizontally(1)) {
+            !canScrollHorizontally(1)
+          ) {
             // We cannot scroll, let parent views take care of these touches.
             this.parent.requestDisallowInterceptTouchEvent(false)
           }
@@ -137,7 +137,10 @@ class EnrichedTextInputView : AppCompatEditText {
     return super.onTouchEvent(ev)
   }
 
-  override fun onSelectionChanged(selStart: Int, selEnd: Int) {
+  override fun onSelectionChanged(
+    selStart: Int,
+    selEnd: Int,
+  ) {
     super.onSelectionChanged(selStart, selEnd)
     selection?.onSelection(selStart, selEnd)
   }
@@ -147,7 +150,11 @@ class EnrichedTextInputView : AppCompatEditText {
     inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
   }
 
-  override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+  override fun onFocusChanged(
+    focused: Boolean,
+    direction: Int,
+    previouslyFocusedRect: Rect?,
+  ) {
     super.onFocusChanged(focused, direction, previouslyFocusedRect)
     val context = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
@@ -335,19 +342,21 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   fun setAutoCapitalize(flagName: String?) {
-    val flag = when (flagName) {
-      "none" -> InputType.TYPE_NULL
-      "sentences" -> InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-      "words" -> InputType.TYPE_TEXT_FLAG_CAP_WORDS
-      "characters" -> InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-      else -> InputType.TYPE_NULL
-    }
+    val flag =
+      when (flagName) {
+        "none" -> InputType.TYPE_NULL
+        "sentences" -> InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        "words" -> InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        "characters" -> InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+        else -> InputType.TYPE_NULL
+      }
 
-    inputType = (inputType and
-      InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS.inv() and
-      InputType.TYPE_TEXT_FLAG_CAP_WORDS.inv() and
-      InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
-      ) or if (flag == InputType.TYPE_NULL) 0 else flag
+    inputType = (
+      inputType and
+        InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS.inv() and
+        InputType.TYPE_TEXT_FLAG_CAP_WORDS.inv() and
+        InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
+    ) or if (flag == InputType.TYPE_NULL) 0 else flag
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
@@ -356,9 +365,7 @@ class EnrichedTextInputView : AppCompatEditText {
   // next layout() to be called. However, we do not perform a layout() after a requestLayout(), so
   // we need to override isLayoutRequested to force EditText to scroll to the end of the new text
   // immediately.
-  override fun isLayoutRequested(): Boolean {
-    return false
-  }
+  override fun isLayoutRequested(): Boolean = false
 
   fun updateTypeface() {
     if (!typefaceDirty) return
@@ -391,48 +398,54 @@ class EnrichedTextInputView : AppCompatEditText {
     layoutManager.invalidateLayout()
   }
 
-  private fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val removed = when (name) {
-      EnrichedSpans.BOLD -> inlineStyles?.removeStyle(EnrichedSpans.BOLD, start, end)
-      EnrichedSpans.ITALIC -> inlineStyles?.removeStyle(EnrichedSpans.ITALIC, start, end)
-      EnrichedSpans.UNDERLINE -> inlineStyles?.removeStyle(EnrichedSpans.UNDERLINE, start, end)
-      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EnrichedSpans.STRIKETHROUGH, start, end)
-      EnrichedSpans.INLINE_CODE -> inlineStyles?.removeStyle(EnrichedSpans.INLINE_CODE, start, end)
-      EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
-      EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
-      EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
-      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
-      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
-      EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
-      EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
-      EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
-      EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
-      EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
-      else -> false
-    }
+  private fun removeStyle(
+    name: String,
+    start: Int,
+    end: Int,
+  ): Boolean {
+    val removed =
+      when (name) {
+        EnrichedSpans.BOLD -> inlineStyles?.removeStyle(EnrichedSpans.BOLD, start, end)
+        EnrichedSpans.ITALIC -> inlineStyles?.removeStyle(EnrichedSpans.ITALIC, start, end)
+        EnrichedSpans.UNDERLINE -> inlineStyles?.removeStyle(EnrichedSpans.UNDERLINE, start, end)
+        EnrichedSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EnrichedSpans.STRIKETHROUGH, start, end)
+        EnrichedSpans.INLINE_CODE -> inlineStyles?.removeStyle(EnrichedSpans.INLINE_CODE, start, end)
+        EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
+        EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
+        EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
+        EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
+        EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
+        EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
+        EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
+        EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
+        EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
+        EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
+        else -> false
+      }
 
     return removed == true
   }
 
   private fun getTargetRange(name: String): Pair<Int, Int> {
-    val result = when (name) {
-      EnrichedSpans.BOLD -> inlineStyles?.getStyleRange()
-      EnrichedSpans.ITALIC -> inlineStyles?.getStyleRange()
-      EnrichedSpans.UNDERLINE -> inlineStyles?.getStyleRange()
-      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
-      EnrichedSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
-      EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
-      EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
-      EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
-      EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
-      EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
-      else -> Pair(0, 0)
-    }
+    val result =
+      when (name) {
+        EnrichedSpans.BOLD -> inlineStyles?.getStyleRange()
+        EnrichedSpans.ITALIC -> inlineStyles?.getStyleRange()
+        EnrichedSpans.UNDERLINE -> inlineStyles?.getStyleRange()
+        EnrichedSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
+        EnrichedSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
+        EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
+        EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
+        EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
+        else -> Pair(0, 0)
+      }
 
     return result ?: Pair(0, 0)
   }
@@ -466,11 +479,12 @@ class EnrichedTextInputView : AppCompatEditText {
 
       val lengthAfter = text?.length ?: 0
       val charactersRemoved = lengthBefore - lengthAfter
-      val finalEnd = if (charactersRemoved > 0) {
-        (end - charactersRemoved).coerceAtLeast(0)
-      } else {
-        end
-      }
+      val finalEnd =
+        if (charactersRemoved > 0) {
+          (end - charactersRemoved).coerceAtLeast(0)
+        } else {
+          end
+        }
 
       val finalStart = start.coerceAtLeast(0).coerceAtMost(finalEnd)
       selection?.onSelection(finalStart, finalEnd)
@@ -492,7 +506,12 @@ class EnrichedTextInputView : AppCompatEditText {
     toggleStyle(name)
   }
 
-  fun addLink(start: Int, end: Int, text: String, url: String) {
+  fun addLink(
+    start: Int,
+    end: Int,
+    text: String,
+    url: String,
+  ) {
     val isValid = verifyStyle(EnrichedSpans.LINK)
     if (!isValid) return
 
@@ -514,7 +533,11 @@ class EnrichedTextInputView : AppCompatEditText {
     parametrizedStyles?.startMention(indicator)
   }
 
-  fun addMention(indicator: String, text: String, attributes: Map<String, String>) {
+  fun addMention(
+    indicator: String,
+    text: String,
+    attributes: Map<String, String>,
+  ) {
     val isValid = verifyStyle(EnrichedSpans.MENTION)
     if (!isValid) return
 

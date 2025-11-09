@@ -8,7 +8,9 @@ import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeStateEvent
 import com.swmansion.enriched.spans.EnrichedSpans
 
-class EnrichedSpanState(private val view: EnrichedTextInputView) {
+class EnrichedSpanState(
+  private val view: EnrichedTextInputView,
+) {
   private var previousPayload: WritableMap? = null
 
   var boldStart: Int? = null
@@ -118,29 +120,33 @@ class EnrichedSpanState(private val view: EnrichedTextInputView) {
   }
 
   fun getStart(name: String): Int? {
-    val start = when (name) {
-      EnrichedSpans.BOLD -> boldStart
-      EnrichedSpans.ITALIC -> italicStart
-      EnrichedSpans.UNDERLINE -> underlineStart
-      EnrichedSpans.STRIKETHROUGH -> strikethroughStart
-      EnrichedSpans.INLINE_CODE -> inlineCodeStart
-      EnrichedSpans.H1 -> h1Start
-      EnrichedSpans.H2 -> h2Start
-      EnrichedSpans.H3 -> h3Start
-      EnrichedSpans.CODE_BLOCK -> codeBlockStart
-      EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
-      EnrichedSpans.ORDERED_LIST -> orderedListStart
-      EnrichedSpans.UNORDERED_LIST -> unorderedListStart
-      EnrichedSpans.LINK -> linkStart
-      EnrichedSpans.IMAGE -> imageStart
-      EnrichedSpans.MENTION -> mentionStart
-      else -> null
-    }
+    val start =
+      when (name) {
+        EnrichedSpans.BOLD -> boldStart
+        EnrichedSpans.ITALIC -> italicStart
+        EnrichedSpans.UNDERLINE -> underlineStart
+        EnrichedSpans.STRIKETHROUGH -> strikethroughStart
+        EnrichedSpans.INLINE_CODE -> inlineCodeStart
+        EnrichedSpans.H1 -> h1Start
+        EnrichedSpans.H2 -> h2Start
+        EnrichedSpans.H3 -> h3Start
+        EnrichedSpans.CODE_BLOCK -> codeBlockStart
+        EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
+        EnrichedSpans.ORDERED_LIST -> orderedListStart
+        EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+        EnrichedSpans.LINK -> linkStart
+        EnrichedSpans.IMAGE -> imageStart
+        EnrichedSpans.MENTION -> mentionStart
+        else -> null
+      }
 
     return start
   }
 
-  fun setStart(name: String, start: Int?) {
+  fun setStart(
+    name: String,
+    start: Int?,
+  ) {
     when (name) {
       EnrichedSpans.BOLD -> setBoldStart(start)
       EnrichedSpans.ITALIC -> setItalicStart(start)
@@ -183,19 +189,22 @@ class EnrichedSpanState(private val view: EnrichedTextInputView) {
       return
     }
 
-    previousPayload = Arguments.createMap().apply {
-      merge(payload)
-    }
+    previousPayload =
+      Arguments.createMap().apply {
+        merge(payload)
+      }
 
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnChangeStateEvent(
-      surfaceId,
-      view.id,
-      payload,
-      view.experimentalSynchronousEvents,
-    ))
+    dispatcher?.dispatchEvent(
+      OnChangeStateEvent(
+        surfaceId,
+        view.id,
+        payload,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 
   companion object {

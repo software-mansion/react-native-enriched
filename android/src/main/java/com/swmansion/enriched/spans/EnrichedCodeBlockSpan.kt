@@ -10,7 +10,11 @@ import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LineBackgroundSpan, EnrichedBlockSpan {
+class EnrichedCodeBlockSpan(
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  LineBackgroundSpan,
+  EnrichedBlockSpan {
   override fun updateDrawState(paint: TextPaint) {
     paint.typeface = Typeface.MONOSPACE
     paint.color = htmlStyle.codeBlockColor
@@ -31,7 +35,7 @@ class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingS
     text: CharSequence,
     start: Int,
     end: Int,
-    lineNum: Int
+    lineNum: Int,
   ) {
     val previousColor = p.color
     p.color = htmlStyle.codeBlockBackgroundColor
