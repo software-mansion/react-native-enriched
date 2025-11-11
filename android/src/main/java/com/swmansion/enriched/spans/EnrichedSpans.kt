@@ -23,6 +23,9 @@ object EnrichedSpans {
   const val H1 = "h1"
   const val H2 = "h2"
   const val H3 = "h3"
+  const val H4 = "h4"
+  const val H5 = "h5"
+  const val H6 = "h6"
   const val BLOCK_QUOTE = "block_quote"
   const val CODE_BLOCK = "code_block"
 
@@ -47,6 +50,9 @@ object EnrichedSpans {
     H1 to ParagraphSpanConfig(EnrichedH1Span::class.java, false),
     H2 to ParagraphSpanConfig(EnrichedH2Span::class.java, false),
     H3 to ParagraphSpanConfig(EnrichedH3Span::class.java, false),
+    H4 to ParagraphSpanConfig(EnrichedH4Span::class.java, false),
+    H5 to ParagraphSpanConfig(EnrichedH5Span::class.java, false),
+    H6 to ParagraphSpanConfig(EnrichedH6Span::class.java, false),
     BLOCK_QUOTE to ParagraphSpanConfig(EnrichedBlockQuoteSpan::class.java, true),
     CODE_BLOCK to ParagraphSpanConfig(EnrichedCodeBlockSpan::class.java, true),
   )
@@ -80,25 +86,34 @@ object EnrichedSpans {
       blockingStyles = arrayOf(CODE_BLOCK)
     ),
     H1 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H2, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H2 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     H3 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+      conflictingStyles = arrayOf(H1, H2, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+    ),
+    H4 to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+    ),
+    H5 to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
+    ),
+    H6 to StylesMergingConfig(
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H5, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
     ),
     BLOCK_QUOTE to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),
     ),
     CODE_BLOCK to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE, INLINE_CODE),
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE, INLINE_CODE),
     ),
     UNORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
     ),
     ORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
+      conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
     ),
     LINK to StylesMergingConfig(
       blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, MENTION)
