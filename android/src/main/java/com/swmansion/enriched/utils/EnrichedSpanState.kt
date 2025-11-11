@@ -29,6 +29,12 @@ class EnrichedSpanState(
     private set
   var h3Start: Int? = null
     private set
+  var h4Start: Int? = null
+    private set
+  var h5Start: Int? = null
+    private set
+  var h6Start: Int? = null
+    private set
   var codeBlockStart: Int? = null
     private set
   var blockQuoteStart: Int? = null
@@ -84,6 +90,21 @@ class EnrichedSpanState(
     emitStateChangeEvent()
   }
 
+  fun setH4Start(start: Int?) {
+    this.h4Start = start
+    emitStateChangeEvent()
+  }
+
+  fun setH5Start(start: Int?) {
+    this.h5Start = start
+    emitStateChangeEvent()
+  }
+
+  fun setH6Start(start: Int?) {
+    this.h6Start = start
+    emitStateChangeEvent()
+  }
+
   fun setCodeBlockStart(start: Int?) {
     this.codeBlockStart = start
     emitStateChangeEvent()
@@ -120,25 +141,27 @@ class EnrichedSpanState(
   }
 
   fun getStart(name: String): Int? {
-    val start =
-      when (name) {
-        EnrichedSpans.BOLD -> boldStart
-        EnrichedSpans.ITALIC -> italicStart
-        EnrichedSpans.UNDERLINE -> underlineStart
-        EnrichedSpans.STRIKETHROUGH -> strikethroughStart
-        EnrichedSpans.INLINE_CODE -> inlineCodeStart
-        EnrichedSpans.H1 -> h1Start
-        EnrichedSpans.H2 -> h2Start
-        EnrichedSpans.H3 -> h3Start
-        EnrichedSpans.CODE_BLOCK -> codeBlockStart
-        EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
-        EnrichedSpans.ORDERED_LIST -> orderedListStart
-        EnrichedSpans.UNORDERED_LIST -> unorderedListStart
-        EnrichedSpans.LINK -> linkStart
-        EnrichedSpans.IMAGE -> imageStart
-        EnrichedSpans.MENTION -> mentionStart
-        else -> null
-      }
+    val start = when (name) {
+      EnrichedSpans.BOLD -> boldStart
+      EnrichedSpans.ITALIC -> italicStart
+      EnrichedSpans.UNDERLINE -> underlineStart
+      EnrichedSpans.STRIKETHROUGH -> strikethroughStart
+      EnrichedSpans.INLINE_CODE -> inlineCodeStart
+      EnrichedSpans.H1 -> h1Start
+      EnrichedSpans.H2 -> h2Start
+      EnrichedSpans.H3 -> h3Start
+      EnrichedSpans.H4 -> h4Start
+      EnrichedSpans.H5 -> h5Start
+      EnrichedSpans.H6 -> h6Start
+      EnrichedSpans.CODE_BLOCK -> codeBlockStart
+      EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
+      EnrichedSpans.ORDERED_LIST -> orderedListStart
+      EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+      EnrichedSpans.LINK -> linkStart
+      EnrichedSpans.IMAGE -> imageStart
+      EnrichedSpans.MENTION -> mentionStart
+      else -> null
+    }
 
     return start
   }
@@ -156,6 +179,9 @@ class EnrichedSpanState(
       EnrichedSpans.H1 -> setH1Start(start)
       EnrichedSpans.H2 -> setH2Start(start)
       EnrichedSpans.H3 -> setH3Start(start)
+      EnrichedSpans.H4 -> setH4Start(start)
+      EnrichedSpans.H5 -> setH5Start(start)
+      EnrichedSpans.H6 -> setH6Start(start)
       EnrichedSpans.CODE_BLOCK -> setCodeBlockStart(start)
       EnrichedSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
       EnrichedSpans.ORDERED_LIST -> setOrderedListStart(start)
@@ -176,6 +202,9 @@ class EnrichedSpanState(
     payload.putBoolean("isH1", h1Start != null)
     payload.putBoolean("isH2", h2Start != null)
     payload.putBoolean("isH3", h3Start != null)
+    payload.putBoolean("isH4", h4Start != null)
+    payload.putBoolean("isH5", h5Start != null)
+    payload.putBoolean("isH6", h6Start != null)
     payload.putBoolean("isCodeBlock", codeBlockStart != null)
     payload.putBoolean("isBlockQuote", blockQuoteStart != null)
     payload.putBoolean("isOrderedList", orderedListStart != null)

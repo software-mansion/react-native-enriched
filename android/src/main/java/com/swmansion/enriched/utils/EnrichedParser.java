@@ -15,6 +15,9 @@ import com.swmansion.enriched.spans.EnrichedCodeBlockSpan;
 import com.swmansion.enriched.spans.EnrichedH1Span;
 import com.swmansion.enriched.spans.EnrichedH2Span;
 import com.swmansion.enriched.spans.EnrichedH3Span;
+import com.swmansion.enriched.spans.EnrichedH4Span;
+import com.swmansion.enriched.spans.EnrichedH5Span;
+import com.swmansion.enriched.spans.EnrichedH6Span;
 import com.swmansion.enriched.spans.EnrichedImageSpan;
 import com.swmansion.enriched.spans.EnrichedInlineCodeSpan;
 import com.swmansion.enriched.spans.EnrichedItalicSpan;
@@ -159,6 +162,12 @@ public class EnrichedParser {
         return "h2";
       } else if (span instanceof EnrichedH3Span) {
         return "h3";
+      } else if (span instanceof EnrichedH4Span) {
+        return "h4";
+      } else if (span instanceof EnrichedH5Span) {
+        return "h5";
+      } else if (span instanceof EnrichedH6Span) {
+        return "h6";
       }
     }
 
@@ -477,6 +486,12 @@ class HtmlToSpannedConverter implements ContentHandler {
       startHeading(mSpannableStringBuilder, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
       startHeading(mSpannableStringBuilder, 3);
+    } else if (tag.equalsIgnoreCase("h4")) {
+      startHeading(mSpannableStringBuilder, 4);
+    } else if (tag.equalsIgnoreCase("h5")) {
+      startHeading(mSpannableStringBuilder, 5);
+    } else if (tag.equalsIgnoreCase("h6")) {
+      startHeading(mSpannableStringBuilder, 6);
     } else if (tag.equalsIgnoreCase("img")) {
       startImg(mSpannableStringBuilder, attributes, mImageGetter);
     } else if (tag.equalsIgnoreCase("code")) {
@@ -515,6 +530,12 @@ class HtmlToSpannedConverter implements ContentHandler {
       endHeading(mSpannableStringBuilder, mStyle, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
       endHeading(mSpannableStringBuilder, mStyle, 3);
+    } else if (tag.equalsIgnoreCase("h4")) {
+      endHeading(mSpannableStringBuilder, mStyle, 4);
+    } else if (tag.equalsIgnoreCase("h5")) {
+      endHeading(mSpannableStringBuilder, mStyle, 5);
+    } else if (tag.equalsIgnoreCase("h6")) {
+      endHeading(mSpannableStringBuilder, mStyle, 6);
     } else if (tag.equalsIgnoreCase("code")) {
       end(mSpannableStringBuilder, Code.class, new EnrichedInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -618,6 +639,15 @@ class HtmlToSpannedConverter implements ContentHandler {
       case 3:
         start(text, new H3());
         break;
+      case 4:
+        start(text, new H4());
+        break;
+      case 5:
+        start(text, new H5());
+        break;
+      case 6:
+        start(text, new H6());
+        break;
       default:
         throw new IllegalArgumentException("Unsupported heading level: " + level);
     }
@@ -638,6 +668,18 @@ class HtmlToSpannedConverter implements ContentHandler {
       case 3:
         H3 lastH3 = getLast(text, H3.class);
         setParagraphSpanFromMark(text, lastH3, new EnrichedH3Span(style));
+        break;
+      case 4:
+        H4 lastH4 = getLast(text, H4.class);
+        setParagraphSpanFromMark(text, lastH4, new EnrichedH4Span(style));
+        break;
+      case 5:
+        H5 lastH5 = getLast(text, H5.class);
+        setParagraphSpanFromMark(text, lastH5, new EnrichedH5Span(style));
+        break;
+      case 6:
+        H6 lastH6 = getLast(text, H6.class);
+        setParagraphSpanFromMark(text, lastH6, new EnrichedH6Span(style));
         break;
       default:
         throw new IllegalArgumentException("Unsupported heading level: " + level);
@@ -819,7 +861,17 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static class H3 {}
 
-  private static class Bold {}
+  private static class H4 {
+  }
+
+  private static class H5 {
+  }
+
+  private static class H6 {
+  }
+
+  private static class Bold {
+  }
 
   private static class Italic {}
 
