@@ -29,6 +29,18 @@
 - (void)setH3FontSize:(CGFloat)newValue;
 - (BOOL)h3Bold;
 - (void)setH3Bold:(BOOL)newValue;
+- (CGFloat)h4FontSize;
+- (void)setH4FontSize:(CGFloat)newValue;
+- (BOOL)h4Bold;
+- (void)setH4Bold:(BOOL)newValue;
+- (CGFloat)h5FontSize;
+- (void)setH5FontSize:(CGFloat)newValue;
+- (BOOL)h5Bold;
+- (void)setH5Bold:(BOOL)newValue;
+- (CGFloat)h6FontSize;
+- (void)setH6FontSize:(CGFloat)newValue;
+- (BOOL)h6Bold;
+- (void)setH6Bold:(BOOL)newValue;
 - (UIColor *)blockquoteBorderColor;
 - (void)setBlockquoteBorderColor:(UIColor *)newValue;
 - (CGFloat)blockquoteBorderWidth;
