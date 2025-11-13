@@ -51,6 +51,8 @@
     return;
   }
 
+  _textWasPasted = YES;
+
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   NSArray<NSString *> *pasteboardTypes = pasteboard.pasteboardTypes;
   NSRange currentRange = typedInput->textView.selectedRange;
@@ -151,6 +153,19 @@
                     withSelection:YES];
 
   [typedInput anyTextMayHaveBeenModified];
+}
+
+- (void)deleteBackward {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
+  if (typedInput != nullptr) {
+    [typedInput emitOnKeyPressEvent:@"Backspace"];
+  }
+
+  [super deleteBackward];
+  
+  if (typedInput != nullptr) {
+    [typedInput anyTextMayHaveBeenModified];
+  }
 }
 
 @end

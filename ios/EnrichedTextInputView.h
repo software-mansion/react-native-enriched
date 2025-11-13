@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
                                             range:(NSRange)range;
+- (void)emitOnKeyPressEvent:(NSString *)key;
 @end
 
 NS_ASSUME_NONNULL_END

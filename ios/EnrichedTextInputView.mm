@@ -1735,11 +1735,32 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (bool)textView:(UITextView *)textView
-    shouldChangeTextInRange:(NSRange)range
-            replacementText:(NSString *)text {
-  recentlyChangedRange = NSMakeRange(range.location, text.length);
+- (void)emitOnKeyPressEvent:(NSString *)key {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    emitter->onInputKeyPress({
+      .key = [key toCppString]
+    });
+  }
+}
 
+- (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+  recentlyChangedRange = NSMakeRange(range.location, text.length);
+  NSString *key = nil;
+  if (text.length == 0 && range.length > 0) {
+    key = @"Backspace";
+  } else if ([text isEqualToString:@"\n"]) {
+    key = @"Enter";
+  } else if ([text isEqualToString:@"\t"]) {
+    key = @"Tab";
+  } else if (text.length == 1) {
+    key = text;
+  }
+
+  if(key != nil) {
+    [self emitOnKeyPressEvent: key];
+  }
+  
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
