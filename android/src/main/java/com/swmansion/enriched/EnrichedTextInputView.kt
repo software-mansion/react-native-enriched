@@ -380,8 +380,6 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun updateTypeface() {
-    setValue(defaultValue)
-
     if (!typefaceDirty) return
     typefaceDirty = false
 
