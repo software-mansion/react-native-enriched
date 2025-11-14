@@ -77,7 +77,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
 
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: EnrichedTextInputView?, value: String?) {
-    view?.setValue(value)
+    view?.setDefaultValue(value)
   }
 
   @ReactProp(name = "placeholder")
@@ -156,7 +156,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
 
   override fun onAfterUpdateTransaction(view: EnrichedTextInputView) {
     super.onAfterUpdateTransaction(view)
-    view.updateTypeface()
+    view.afterUpdateTransaction()
   }
 
   override fun setPadding(

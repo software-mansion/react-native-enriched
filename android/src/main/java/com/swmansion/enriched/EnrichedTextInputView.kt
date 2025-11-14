@@ -70,6 +70,8 @@ class EnrichedTextInputView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+  private var defaultValue: CharSequence? = null
+  private var defaultValueDirty: Boolean = false
 
   private var inputMethodManager: InputMethodManager? = null
 
@@ -360,7 +362,24 @@ class EnrichedTextInputView : AppCompatEditText {
     return false
   }
 
-  fun updateTypeface() {
+  fun afterUpdateTransaction() {
+    updateTypeface()
+    updateDefaultValue()
+  }
+
+  fun setDefaultValue(value: CharSequence?) {
+    defaultValue = value
+    defaultValueDirty = true
+  }
+
+  private fun updateDefaultValue() {
+    if (!defaultValueDirty) return
+
+    defaultValueDirty = false
+    setValue(defaultValue ?: "")
+  }
+
+  private fun updateTypeface() {
     if (!typefaceDirty) return
     typefaceDirty = false
 
