@@ -15,6 +15,7 @@ import {
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
   type HtmlStyle,
+  type OnKeyPressEvent,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -241,6 +242,10 @@ export default function App() {
     console.log('Input blurred');
   };
 
+  const handleKeyPress = (e: NativeSyntheticEvent<OnKeyPressEvent>) => {
+    console.log('Key pressed:', e.nativeEvent.key);
+  };
+
   const handleLinkDetected = (state: CurrentLinkState) => {
     console.log(state);
     setCurrentLink(state);
@@ -280,6 +285,7 @@ export default function App() {
             onEndMention={handleEndMention}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
+            onKeyPress={handleKeyPress}
             onChangeSelection={handleSelectionChangeEvent}
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS

@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)anyTextMayHaveBeenModified;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
+- (void)emitOnKeyPressEvent:(NSString *)key;
 @end
 
 NS_ASSUME_NONNULL_END
