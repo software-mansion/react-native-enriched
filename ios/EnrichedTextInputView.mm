@@ -601,6 +601,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // style updates are emitted only if something differs from the previously active styles
   BOOL updateNeeded = NO;
   
+  // active styles are kept in a separate set until we're sure they can be emitted
+  NSMutableSet *newActiveStyles = [_activeStyles mutableCopy];
+  
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
@@ -611,14 +614,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   for (NSNumber* type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
-    BOOL wasActive = [_activeStyles containsObject: type];
+    BOOL wasActive = [newActiveStyles containsObject: type];
     BOOL isActive = [style detectStyle:textView.selectedRange];
     if(wasActive != isActive) {
       updateNeeded = YES;
       if(isActive) {
-        [_activeStyles addObject:type];
+        [newActiveStyles addObject:type];
       } else {
-        [_activeStyles removeObject:type];
+        [newActiveStyles removeObject:type];
       }
     }
     
@@ -678,6 +681,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if(updateNeeded) {
     auto emitter = [self getEventEmitter];
     if(emitter != nullptr) {
+      // update activeStyles only if emitter is available
+      _activeStyles = newActiveStyles;
+      
       emitter->onChangeState({
         .isBold = [_activeStyles containsObject: @([BoldStyle getStyleType])],
         .isItalic = [_activeStyles containsObject: @([ItalicStyle getStyleType])],
@@ -990,6 +996,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       textView.typingAttributes = defaultTypingAttributes;
     }
   }
+  
+  // update active styles as well
+  [self tryUpdatingActiveStyles];
 }
 
 - (void)handleWordModificationBasedChanges:(NSString*)word inRange:(NSRange)range {
@@ -1105,17 +1114,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (!textView) { return; }
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+    NSRange wholeRange = NSMakeRange(0, self->textView.textStorage.string.length);
     NSRange actualRange = NSMakeRange(0, 0);
-    [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
-    [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-    [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+    [self->textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
+    [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
+    [self->textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
   });
 }
 
 - (void)didMoveToWindow {
   [super didMoveToWindow];
-  [self scheduleRelayoutIfNeeded];
+  // used to run all lifecycle callbacks
+  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - UITextView delegate methods
@@ -1200,9 +1210,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   
   // manage selection changes
   [self manageSelectionBasedChanges];
-  
-  // update active styles
-  [self tryUpdatingActiveStyles];
 }
 
 // this function isn't called always when some text changes (for example setting link or starting mention with indicator doesn't fire it)
