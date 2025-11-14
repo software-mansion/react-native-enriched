@@ -1124,7 +1124,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)didMoveToWindow {
   [super didMoveToWindow];
-  [self scheduleRelayoutIfNeeded];
+  // used to run all lifecycle callbacks
+  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - UITextView delegate methods
