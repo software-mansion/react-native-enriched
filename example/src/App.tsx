@@ -66,7 +66,9 @@ const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
 // However, it's still experimental and not tested well.
-const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = true;
+// Disabled for now, as it's causing some strange issues.
+// See: https://github.com/software-mansion/react-native-enriched/issues/229
+const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = false;
 
 export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
@@ -79,10 +81,6 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
-
-  const [key, setKey] = useState(0);
-  const incrementKey = () => setKey((v) => v + 1);
-  const collectGarbage = () => global.gc?.();
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -264,7 +262,6 @@ export default function App() {
         <View style={styles.editor}>
           <EnrichedTextInput
             ref={ref}
-            key={key}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={htmlStyle}
@@ -298,14 +295,6 @@ export default function App() {
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
-        </View>
-        <View style={styles.buttonStack}>
-          <Button
-            title="Bump key"
-            onPress={incrementKey}
-            style={styles.button}
-          />
-          <Button title="GC" onPress={collectGarbage} style={styles.button} />
         </View>
         <Button
           title="Set input's value"
