@@ -13,15 +13,18 @@
 + (NSString *)stringByEscapingHtml:(NSString *)html {
   NSMutableString *escaped = [html mutableCopy];
   NSDictionary *escapeMap = @{
-    @"&": @"&amp;",
-    @"<": @"&lt;",
-    @">": @"&gt;",
-    @"\"": @"&quot;",
-    @"'": @"&apos;"
+    @"&" : @"&amp;",
+    @"<" : @"&lt;",
+    @">" : @"&gt;",
+    @"\"" : @"&quot;",
+    @"'" : @"&apos;"
   };
-  
-  for(NSString *key in escapeMap) {
-    [escaped replaceOccurrencesOfString:key withString:escapeMap[key] options:NSLiteralSearch range:NSMakeRange(0, escaped.length)];
+
+  for (NSString *key in escapeMap) {
+    [escaped replaceOccurrencesOfString:key
+                             withString:escapeMap[key]
+                                options:NSLiteralSearch
+                                  range:NSMakeRange(0, escaped.length)];
   }
   return escaped;
 }
@@ -29,15 +32,18 @@
 + (NSString *)stringByUnescapingHtml:(NSString *)html {
   NSMutableString *unescaped = [html mutableCopy];
   NSDictionary *unescapeMap = @{
-    @"&amp;": @"&",
-    @"&lt;": @"<",
-    @"&gt;": @">",
-    @"&quot;": @"\"",
-    @"&apos;": @"'",
+    @"&amp;" : @"&",
+    @"&lt;" : @"<",
+    @"&gt;" : @">",
+    @"&quot;" : @"\"",
+    @"&apos;" : @"'",
   };
-  
-  for(NSString *key in unescapeMap) {
-    [unescaped replaceOccurrencesOfString:key withString:unescapeMap[key] options:NSLiteralSearch range:NSMakeRange(0, unescaped.length)];
+
+  for (NSString *key in unescapeMap) {
+    [unescaped replaceOccurrencesOfString:key
+                               withString:unescapeMap[key]
+                                  options:NSLiteralSearch
+                                    range:NSMakeRange(0, unescaped.length)];
   }
   return unescaped;
 }
