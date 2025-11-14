@@ -130,6 +130,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
   style?: ViewStyle | TextStyle;
+  scrollEnabled?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -192,6 +193,7 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   androidExperimentalSynchronousEvents = false,
+  scrollEnabled = true,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -352,6 +354,7 @@ export const EnrichedTextInput = ({
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
+      scrollEnabled={scrollEnabled}
       {...rest}
     />
   );
