@@ -158,18 +158,13 @@
     if(charBefore == '1') {
       // we got a match - add a list if possible
       if([_input handleStyleBlocksAndConflicts:[[self class] getStyleType] range:paragraphRange]) {
-        // don't emit some html updates during the replacing
-        BOOL prevEmitHtml = _input->emitHtml;
-        if(prevEmitHtml) {
-          _input->emitHtml = NO;
-        }
+        // don't emit during the replacing
+        _input->blockEmitting = YES;
         
         // remove the number
         [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr input:_input withSelection:YES];
         
-        if(prevEmitHtml) {
-          _input->emitHtml = YES;
-        }
+        _input->blockEmitting = NO;
         
         // add attributes on the paragraph
         [self addAttributes:NSMakeRange(paragraphRange.location, paragraphRange.length - 1)];
