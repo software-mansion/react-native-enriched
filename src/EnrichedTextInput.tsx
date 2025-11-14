@@ -18,19 +18,21 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetectedInternal,
   type MentionStyleProperties,
 } from './EnrichedTextInputNativeComponent';
-import type {
-  ColorValue,
-  HostInstance,
-  MeasureInWindowOnSuccessCallback,
-  MeasureLayoutOnSuccessCallback,
-  MeasureOnSuccessCallback,
-  NativeMethods,
-  NativeSyntheticEvent,
-  TextStyle,
-  ViewProps,
-  ViewStyle,
+import {
+  findNodeHandle,
+  type ColorValue,
+  type HostInstance,
+  type MeasureInWindowOnSuccessCallback,
+  type MeasureLayoutOnSuccessCallback,
+  type MeasureOnSuccessCallback,
+  type NativeMethods,
+  type NativeSyntheticEvent,
+  type TextStyle,
+  type ViewProps,
+  type ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from './normalizeHtmlStyle';
+import EnrichedTextInputModule from './NativeEnrichedTextInputModule';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -59,6 +61,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  getHTMLValue: () => string;
 }
 
 export interface OnChangeMentionEvent {
@@ -295,6 +298,10 @@ export const EnrichedTextInput = ({
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
     },
+    getHTMLValue: () =>
+      EnrichedTextInputModule?.getHTMLValue(
+        nullthrows(findNodeHandle(nativeRef.current))
+      ) ?? '',
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {

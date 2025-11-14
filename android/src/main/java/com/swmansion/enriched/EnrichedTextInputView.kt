@@ -543,6 +543,10 @@ class EnrichedTextInputView : AppCompatEditText {
     didAttachToWindow = true
   }
 
+  fun getHtmlValue(): String? {
+    return EnrichedParser.toHtml(text)
+  }
+
   companion object {
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
   }
