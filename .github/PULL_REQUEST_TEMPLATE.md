@@ -4,7 +4,7 @@
 
 Explain the **motivation** for making this change: here are some points to help you:
 
-- What issues does the pull request solve? Please tag them so that they will get automatically closed once the PR is merged
+- What issues does the pull request solve? Please tag them so that they will get automatically closed once PR is merged
 - What is the feature? (if applicable)
 - How did you implement the solution?
 - What areas of the library does it impact?
