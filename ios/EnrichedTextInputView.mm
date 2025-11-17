@@ -34,6 +34,7 @@ using namespace facebook::react;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
   NSString *_recentlyEmittedHtml;
+  BOOL _emitHtml;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
@@ -75,7 +76,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
   _recentlyEmittedHtml = @"";
-  emitHtml = NO;
+  _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
   
@@ -393,22 +394,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     
     // now set the new config
     config = newConfig;
-    
-    // we don't want to emit these html changes in here
-    BOOL prevEmitHtml = emitHtml;
-    if(prevEmitHtml) {
-      emitHtml = NO;
-    }
-    
+        
+    // no emitting during styles reload
+    blockEmitting = YES;
+        
     // make sure everything is sound in the html
     NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:currentHtml];
     if(initiallyProcessedHtml != nullptr) {
       [parser replaceWholeFromHtml:initiallyProcessedHtml];
     }
     
-    if(prevEmitHtml) {
-      emitHtml = YES;
-    }
+    blockEmitting = NO;
     
     // fill the typing attributes with style props
     defaultTypingAttributes[NSForegroundColorAttributeName] = [config primaryColor];
@@ -509,7 +505,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   
   // isOnChangeHtmlSet
-  emitHtml = newViewProps.isOnChangeHtmlSet;
+  _emitHtml = newViewProps.isOnChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
   // mandatory text and height checks
@@ -846,7 +842,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 - (void)tryEmittingOnChangeHtmlEvent {
-  if(!emitHtml || textView.markedTextRange != nullptr) {
+  if(!_emitHtml || textView.markedTextRange != nullptr) {
     return;
   }
   auto emitter = [self getEventEmitter];
@@ -1091,15 +1087,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  // update drawing - schedule debounced relayout
+  [self scheduleRelayoutIfNeeded];
+}
 
-  // update drawing
-   dispatch_async(dispatch_get_main_queue(), ^{
-     NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
-     NSRange actualRange = NSMakeRange(0, 0);
-     [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
-     [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-     [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
-   });
+// Debounced relayout helper - coalesces multiple requests into one per runloop tick
+- (void)scheduleRelayoutIfNeeded
+{
+  // Cancel any previously scheduled invocation to debounce
+  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_performRelayout) object:nil];
+  // Schedule on next runloop cycle
+  [self performSelector:@selector(_performRelayout) withObject:nil afterDelay:0];
+}
+
+- (void)_performRelayout
+{
+  if (!textView) { return; }
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSRange wholeRange = NSMakeRange(0, textView.textStorage.string.length);
+    NSRange actualRange = NSMakeRange(0, 0);
+    [textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
+    [textView.layoutManager ensureLayoutForCharacterRange:actualRange];
+    [textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+  });
+}
+
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+  [self scheduleRelayoutIfNeeded];
 }
 
 // MARK: - UITextView delegate methods
