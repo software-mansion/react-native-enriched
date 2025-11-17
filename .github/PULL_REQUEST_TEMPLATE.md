@@ -11,7 +11,17 @@ Explain the **motivation** for making this change: here are some points to help 
 
 ## Test Plan
 
-Demonstrate the code is solid. Example: The exact commands you ran and their output, screenshots / videos if the pull request changes UI.
+Provide **clear steps so another contributor can reproduce the behavior or verify the feature works**.  
+For example:
+
+- Steps to reproduce the bug (if this is a bug fix)
+- Steps to verify the new feature
+- Expected vs. actual results
+- Any special conditions or edge cases to test
+
+## Screenshots / Videos
+
+Include any visual proof that helps reviewers understand the change — UI updates, bug reproduction or the result of the fix.
 
 ## Compatibility
 
