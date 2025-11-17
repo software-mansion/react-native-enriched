@@ -350,6 +350,7 @@ class HtmlToSpannedConverter implements ContentHandler {
   private final EnrichedParser.ImageGetter mImageGetter;
   private static Integer currentOrderedListItemIndex = 0;
   private static Boolean isInOrderedList = false;
+  private static Boolean isEmptyTag = false;
 
   public HtmlToSpannedConverter(String source, HtmlStyle style, EnrichedParser.ImageGetter imageGetter, Parser parser) {
     mStyle = style;
@@ -396,19 +397,27 @@ class HtmlToSpannedConverter implements ContentHandler {
     for (EnrichedZeroWidthSpaceSpan zeroWidthSpaceSpan : zeroWidthSpaceSpans) {
       int start = mSpannableStringBuilder.getSpanStart(zeroWidthSpaceSpan);
       int end = mSpannableStringBuilder.getSpanEnd(zeroWidthSpaceSpan);
-      mSpannableStringBuilder.insert(start, "\u200B");
+
+      if (mSpannableStringBuilder.charAt(start) != '\u200B') {
+        // Insert zero-width space character at the start if it's not already present.
+        mSpannableStringBuilder.insert(start, "\u200B");
+        end++; // Adjust end position due to insertion.
+      }
+
       mSpannableStringBuilder.removeSpan(zeroWidthSpaceSpan);
-      mSpannableStringBuilder.setSpan(zeroWidthSpaceSpan, start, end + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      mSpannableStringBuilder.setSpan(zeroWidthSpaceSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     return mSpannableStringBuilder;
   }
 
   private void handleStartTag(String tag, Attributes attributes) {
+    isEmptyTag = false;
     if (tag.equalsIgnoreCase("br")) {
       // We don't need to handle this. TagSoup will ensure that there's a </br> for each <br>
       // so we can safely emit the linebreaks when we handle the close tag.
     } else if (tag.equalsIgnoreCase("p")) {
+      isEmptyTag = true;
       startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
@@ -418,14 +427,17 @@ class HtmlToSpannedConverter implements ContentHandler {
       currentOrderedListItemIndex = 0;
       startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("li")) {
+      isEmptyTag = true;
       startLi(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("b")) {
       start(mSpannableStringBuilder, new Bold());
     } else if (tag.equalsIgnoreCase("i")) {
       start(mSpannableStringBuilder, new Italic());
     } else if (tag.equalsIgnoreCase("blockquote")) {
+      isEmptyTag = true;
       startBlockquote(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("codeblock")) {
+      isEmptyTag = true;
       startCodeBlock(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("a")) {
       startA(mSpannableStringBuilder, attributes);
@@ -632,10 +644,16 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void setParagraphSpanFromMark(Spannable text, Object mark, Object... spans) {
+  private static void setParagraphSpanFromMark(Editable text, Object mark, Object... spans) {
     int where = text.getSpanStart(mark);
     text.removeSpan(mark);
     int len = text.length();
+
+    // Block spans require at least one character to be applied.
+    if (isEmptyTag) {
+      text.append("\u200B");
+      len++;
+    }
 
     // Adjust the end position to exclude the newline character, if present
     if (len > 0 && text.charAt(len - 1) == '\n') {
@@ -741,6 +759,8 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   public void characters(char[] ch, int start, int length) {
     StringBuilder sb = new StringBuilder();
+    if (length > 0) isEmptyTag = false;
+
     /*
      * Ignore whitespace that immediately follows other whitespace;
      * newlines count as spaces.
