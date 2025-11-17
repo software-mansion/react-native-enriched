@@ -39,13 +39,12 @@
 
     while(searchRange.location < text.length) {
       foundRange = [text rangeOfString:key options:0 range:searchRange];
-      if(foundRange.location != NSNotFound) {
-        results[@(foundRange.location)] = @[key, unescapeMap[key]];
-        searchRange.location = foundRange.location + foundRange.length;
-        searchRange.length = text.length - searchRange.location;
-      } else {
+      if(foundRange.location == NSNotFound) {
         break;
       }
+      results[@(foundRange.location)] = @[key, unescapeMap[key]];
+      searchRange.location = foundRange.location + foundRange.length;
+      searchRange.length = text.length - searchRange.location;
     }
   }
   
