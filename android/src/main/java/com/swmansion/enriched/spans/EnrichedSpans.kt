@@ -4,7 +4,6 @@ data class BaseSpanConfig(val clazz: Class<*>)
 data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
 data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
 
-
 data class StylesMergingConfig(
   // styles that should be removed when we apply specific style
   val conflictingStyles: Array<String> = emptyArray(),
