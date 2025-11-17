@@ -16,7 +16,7 @@ For example:
 
 - Steps to reproduce the bug (if this is a bug fix)
 - Steps to verify the new feature
-- Expected vs. actual results
+- Expected vs actual results
 - Any special conditions or edge cases to test
 
 ## Screenshots / Videos
