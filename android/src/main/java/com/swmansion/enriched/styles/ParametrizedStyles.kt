@@ -104,33 +104,31 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     return Triple(result, start, end)
   }
 
-  private fun detectLinkConflicts(spannable: Spannable, start: Int, end: Int): Boolean {
+  private fun detectLinkConflicts(): Boolean {
     val mergingConfig = EnrichedSpans.mergingConfig[EnrichedSpans.LINK] ?: return false
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
 
     for (style in blockingStyles) {
-      val spans = spannable.getSpans(start, end, EnrichedSpans.allSpans[style]?.clazz)
-      if (spans.isNotEmpty()) return true
+      if (view.spanState?.getStart(style) != null) return true
     }
 
     for (style in conflictingStyles) {
-      val spans = spannable.getSpans(start, end, EnrichedSpans.allSpans[style]?.clazz)
-      if (spans.isNotEmpty()) return true
+      if (view.spanState?.getStart(style) != null) return true
     }
 
     return false
   }
 
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
+    if (detectLinkConflicts()) {
+      return
+    }
+
     // Do not detect link if it's applied manually
     if (isSettingLinkSpan) return
     val spannable = view.text as Spannable
     val (word, start, end) = result
-
-    if (detectLinkConflicts(spannable, start, end)) {
-      return
-    }
 
     // TODO: Consider using more reliable regex, this one matches almost anything
     val urlPattern = android.util.Patterns.WEB_URL.matcher(word)

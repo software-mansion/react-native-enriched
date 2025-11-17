@@ -1,12 +1,8 @@
 package com.swmansion.enriched.spans
 
-interface ISpanConfig {
-  val clazz: Class<*>
-}
-
-data class BaseSpanConfig(override  val clazz: Class<*>): ISpanConfig
-data class ParagraphSpanConfig(override  val clazz: Class<*>, val isContinuous: Boolean): ISpanConfig
-data class ListSpanConfig(override val clazz: Class<*>, val shortcut: String) : ISpanConfig
+data class BaseSpanConfig(val clazz: Class<*>)
+data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
+data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
 
 
 data class StylesMergingConfig(
@@ -67,7 +63,6 @@ object EnrichedSpans {
     MENTION to BaseSpanConfig(EnrichedMentionSpan::class.java),
   )
 
-  val allSpans: Map<String, ISpanConfig> = inlineSpans + paragraphSpans + listSpans + parametrizedStyles
   val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
     BOLD to StylesMergingConfig(
       blockingStyles = arrayOf(CODE_BLOCK)
