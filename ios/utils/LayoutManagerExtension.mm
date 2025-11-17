@@ -3,6 +3,7 @@
 #import "EnrichedTextInputView.h"
 #import "StyleHeaders.h"
 #import "ParagraphsUtils.h"
+#import "ColorExtension.h"
 
 @implementation NSLayoutManager (LayoutManagerExtension)
 
@@ -128,6 +129,70 @@ static void const *kInputKey = &kInputKey;
           *stop = YES;
         }
       ];
+    }
+  }
+  
+  [self drawCodeBlocks:typedInput origin:origin];
+}
+
+- (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput origin:(CGPoint)origin
+{
+  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
+  CodeBlockStyle *codeBlockStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+  if(codeBlockStyle == nullptr) { return; }
+  
+  NSArray<StylePair *> *allCodeBlocks = [codeBlockStyle findAllOccurences:inputRange];
+  UIColor *bgColor = [[typedInput->config codeBlockBgColor] colorWithAlphaIfNotTransparent:0.4];
+  CGFloat radius = [typedInput->config codeBlockBorderRadius];
+  [bgColor setFill];
+  
+  for (StylePair *pair in allCodeBlocks) {
+    NSRange blockCharacterRange = [pair.rangeValue rangeValue];
+    if (blockCharacterRange.length == 0) continue;
+    
+    NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedInput->textView range:blockCharacterRange];
+    if (paragraphs.count == 0) continue;
+    
+    NSRange firstParagraphRange = [((NSValue *)[paragraphs firstObject]) rangeValue];
+    NSRange lastParagraphRange = [((NSValue *)[paragraphs lastObject]) rangeValue];
+
+    for (NSValue *paragraphValue in paragraphs) {
+      NSRange paragraphCharacterRange = [paragraphValue rangeValue];
+      
+      BOOL isFirstParagraph = NSEqualRanges(paragraphCharacterRange, firstParagraphRange);
+      BOOL isLastParagraph = NSEqualRanges(paragraphCharacterRange, lastParagraphRange);
+      
+      NSRange paragraphGlyphRange = [self glyphRangeForCharacterRange:paragraphCharacterRange actualCharacterRange:NULL];
+      
+      __block BOOL isFirstLineOfParagraph = YES;
+      
+      [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
+                                     usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer * _Nonnull textContainer, NSRange glyphRange, BOOL * _Nonnull stop) {
+        
+        CGRect lineBgRect = rect;
+        lineBgRect.origin.x = origin.x;
+        lineBgRect.origin.y += origin.y;
+        lineBgRect.size.width = textContainer.size.width;
+        
+        UIRectCorner cornersForThisLine = 0;
+        
+        if (isFirstParagraph && isFirstLineOfParagraph) {
+          cornersForThisLine = UIRectCornerTopLeft | UIRectCornerTopRight;
+        }
+        
+        BOOL isLastLineOfParagraph = (NSMaxRange(glyphRange) >= NSMaxRange(paragraphGlyphRange));
+        
+        if (isLastParagraph && isLastLineOfParagraph) {
+          cornersForThisLine = cornersForThisLine | UIRectCornerBottomLeft | UIRectCornerBottomRight;
+        }
+        
+        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:lineBgRect
+                                                   byRoundingCorners:cornersForThisLine
+                                                         cornerRadii:CGSizeMake(radius, radius)];
+        [path fill];
+        
+        isFirstLineOfParagraph = NO;
+      }];
     }
   }
 }

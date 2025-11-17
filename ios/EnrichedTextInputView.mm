@@ -94,7 +94,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H3Style getStyleType]): [[H3Style alloc] initWithInput:self],
     @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self]
+    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self],
+    @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self]
   };
   
   _conflictingStyles = @{
@@ -105,28 +106,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
+    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([CodeBlockStyle getStyleType])],
+    @([CodeBlockStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]),
+        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType])]
   };
   
   _blockingStyles = @{
-    @([BoldStyle getStyleType]) : @[],
-    @([ItalicStyle getStyleType]) : @[],
-    @([UnderlineStyle getStyleType]) : @[],
-    @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[],
-    @([LinkStyle getStyleType]): @[],
-    @([MentionStyle getStyleType]): @[],
+    @([BoldStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
+    @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
+    @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
+    @([StrikethroughStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
+    @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
+    @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
+    @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
     @([H1Style getStyleType]): @[],
     @([H2Style getStyleType]): @[],
     @([H3Style getStyleType]): @[],
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
+    @([CodeBlockStyle getStyleType]): @[],
   };
   
   parser = [[InputParser alloc] initWithInput:self];
@@ -344,6 +348,25 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.a.color)];
       stylePropChanged = YES;
     }
+  }
+  
+  if(newViewProps.htmlStyle.codeblock.color != oldViewProps.htmlStyle.codeblock.color) {
+    if(isColorMeaningful(newViewProps.htmlStyle.codeblock.color)) {
+      [newConfig setCodeBlockFgColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.codeblock.color)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.htmlStyle.codeblock.backgroundColor != oldViewProps.htmlStyle.codeblock.backgroundColor) {
+    if(isColorMeaningful(newViewProps.htmlStyle.codeblock.backgroundColor)) {
+      [newConfig setCodeBlockBgColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.codeblock.backgroundColor)];
+      stylePropChanged = YES;
+    }
+  }
+  
+  if(newViewProps.htmlStyle.codeblock.borderRadius != oldViewProps.htmlStyle.codeblock.borderRadius) {
+    [newConfig setCodeBlockBorderRadius:newViewProps.htmlStyle.codeblock.borderRadius];
+    stylePropChanged = YES;
   }
   
   if(newViewProps.htmlStyle.a.textDecorationLine != oldViewProps.htmlStyle.a.textDecorationLine) {
@@ -696,7 +719,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         .isUnorderedList = [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
         .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
         .isBlockQuote = [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
-        .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
+        .isCodeBlock = [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
         .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]])],
       });
     }
@@ -768,6 +791,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleCodeBlock"]) {
+    [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
   }
 }
 
@@ -1031,6 +1056,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
   if(bqStyle != nullptr) {
     [bqStyle manageBlockquoteColor];
+  }
+  
+  // codeblock colors management
+  CodeBlockStyle *codeBlockStyle = stylesDict[@([CodeBlockStyle getStyleType])];
+  if(codeBlockStyle != nullptr) {
+    [codeBlockStyle manageCodeBlockColor];
   }
   
   // improper headings fix

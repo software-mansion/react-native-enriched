@@ -42,9 +42,10 @@
       UnorderedListStyle *ulStyle = input->stylesDict[@([UnorderedListStyle getStyleType])];
       OrderedListStyle *olStyle = input->stylesDict[@([OrderedListStyle getStyleType])];
       BlockQuoteStyle *bqStyle = input->stylesDict[@([BlockQuoteStyle getStyleType])];
+      CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
       
       // zero width spaces with no lists/blockquote styles on them get removed
-      if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange]) {
+      if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange] && ![cbStyle detectStyle:characterRange]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -76,6 +77,7 @@
   UnorderedListStyle *ulStyle = input->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle = input->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = input->stylesDict[@([BlockQuoteStyle getStyleType])];
+  CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = input->textView.selectedRange;
   
@@ -87,7 +89,7 @@
       NSRange paragraphRange = [input->textView.textStorage.string paragraphRangeForRange:characterRange];
       
       if(paragraphRange.length == 1) {
-        if([ulStyle detectStyle:characterRange] || [olStyle detectStyle:characterRange] || [bqStyle detectStyle:characterRange]) {
+        if([ulStyle detectStyle:characterRange] || [olStyle detectStyle:characterRange] || [bqStyle detectStyle:characterRange] || [cbStyle detectStyle:characterRange]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -114,7 +116,7 @@
   // additional check for last index of the input
   NSRange lastRange = NSMakeRange(input->textView.textStorage.string.length, 0);
   NSRange lastParagraphRange = [input->textView.textStorage.string paragraphRangeForRange:lastRange];
-  if(lastParagraphRange.length == 0 && ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] || [bqStyle detectStyle:lastRange])) {
+  if(lastParagraphRange.length == 0 && ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] || [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange])) {
     [TextInsertionUtils insertText:@"\u200B" at:lastRange.location additionalAttributes:nullptr input:input withSelection:NO];
   }
   
@@ -153,13 +155,16 @@
     UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
     OrderedListStyle *olStyle = typedInput->stylesDict[@([OrderedListStyle getStyleType])];
     BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
+    CodeBlockStyle *cbStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
     
-    if([ulStyle detectStyle:styleRemovalRange]) {
+    if ([ulStyle detectStyle:styleRemovalRange]) {
       [ulStyle removeAttributes:styleRemovalRange];
-    } else if([olStyle detectStyle:styleRemovalRange]) {
+    } else if ([olStyle detectStyle:styleRemovalRange]) {
       [olStyle removeAttributes:styleRemovalRange];
-    } else if([bqStyle detectStyle:styleRemovalRange]) {
+    } else if ([bqStyle detectStyle:styleRemovalRange]) {
       [bqStyle removeAttributes:styleRemovalRange];
+    }else if ([cbStyle detectStyle:styleRemovalRange]) {
+      [cbStyle removeAttributes:styleRemovalRange];
     }
     
     return YES;
