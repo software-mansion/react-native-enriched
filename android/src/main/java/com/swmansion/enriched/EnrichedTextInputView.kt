@@ -447,7 +447,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun verifyStyle(name: String): Boolean {
-    val mergingConfig = EnrichedSpans.mergingConfig[name] ?: return true
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(name, htmlStyle) ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
     val isEnabling = spanState?.getStart(name) == null
