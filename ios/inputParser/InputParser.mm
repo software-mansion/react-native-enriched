@@ -28,6 +28,7 @@
   BOOL inUnorderedList = NO;
   BOOL inOrderedList = NO;
   BOOL inBlockQuote = NO;
+  BOOL inCodeBlock = NO;
   unichar lastCharacter = 0;
   
   for(int i = 0; i < text.length; i++) {
@@ -94,7 +95,8 @@
            [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
            [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
            [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
-           [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
+           [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])] ||
+           [previousActiveStyles containsObject:@([CodeBlockStyle getStyleType])]
         ) {
           // do nothing, proper closing paragraph tags have been already appended
         } else {
@@ -127,6 +129,11 @@
           inBlockQuote = NO;
           [result appendString:@"\n</blockquote>"];
         }
+        // handle ending codeblock
+        if(inCodeBlock && ![currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+          inCodeBlock = NO;
+          [result appendString:@"\n</codeblock>"];
+        }
         
         // handle starting unordered list
         if(!inUnorderedList && [currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
@@ -143,6 +150,11 @@
           inBlockQuote = YES;
           [result appendString:@"\n<blockquote>"];
         }
+        // handle starting codeblock
+        if(!inCodeBlock && [currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+          inCodeBlock = YES;
+          [result appendString:@"\n<codeblock>"];
+        }
         
         // don't add the <p> tag if some paragraph styles are present
         if([currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
@@ -150,7 +162,8 @@
            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
-           [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
+           [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])] ||
+           [currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]
         ) {
           [result appendString:@"\n"];
         } else {
@@ -234,6 +247,8 @@
       [result appendString:@"\n</ol>"];
     } else if([previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]) {
       [result appendString:@"\n</blockquote>"];
+    } else if([previousActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+      [result appendString:@"\n</codeblock>"];
     } else if(
       [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
       [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
@@ -256,6 +271,10 @@
     if(inBlockQuote) {
       inBlockQuote = NO;
       [result appendString:@"\n</blockquote>"];
+    }
+    if(inCodeBlock) {
+      inCodeBlock = NO;
+      [result appendString:@"\n</codeblock>"];
     }
   }
   
@@ -327,8 +346,8 @@
     return @"h3";
   } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])] || [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
-  } else if([style isEqualToNumber:@([BlockQuoteStyle getStyleType])]) {
-    // blockquotes use <p> tags the same way lists use <li>
+  } else if([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] || [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
+    // blockquotes and codeblock use <p> tags the same way lists use <li>
     return @"p";
   }
   return @"";
@@ -446,6 +465,8 @@
     fixedHtml = [self stringByAddingNewlinesToTag:@"</ol>" inString:fixedHtml leading:YES trailing:YES];
     fixedHtml = [self stringByAddingNewlinesToTag:@"<blockquote>" inString:fixedHtml leading:YES trailing:YES];
     fixedHtml = [self stringByAddingNewlinesToTag:@"</blockquote>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<codeblock>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</codeblock>" inString:fixedHtml leading:YES trailing:YES];
     
     // line opening tags
     fixedHtml = [self stringByAddingNewlinesToTag:@"<p>" inString:fixedHtml leading:YES trailing:NO];
@@ -518,14 +539,14 @@
         ongoingTags[currentTagName] = tagArr;
         
         // skip one newline after opening tags that are in separate lines intentionally
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"] || [currentTagName isEqualToString:@"codeblock"]) {
           i += 1;
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
         
         // skip one newline that was added before some closing tags that are in separate lines
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"] || [currentTagName isEqualToString:@"codeblock"]) {
           plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
         }
         
@@ -643,6 +664,8 @@
       [styleArr addObject:@([OrderedListStyle getStyleType])];
     } else if([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
+    } else if([tagName isEqualToString:@"codeblock"]) {
+      [styleArr addObject:@([CodeBlockStyle getStyleType])];
     } else {
     // some other external tags like span just don't get put into the processed styles
       continue;
