@@ -180,35 +180,8 @@
   ];
 }
 
-// gets ranges that aren't link, mention or inline code
-- (NSArray *)getProperColorRangesIn:(NSRange)range {
-  LinkStyle *linkStyle = _input->stylesDict[@([LinkStyle getStyleType])];
-  MentionStyle *mentionStyle = _input->stylesDict[@([MentionStyle getStyleType])];
-  InlineCodeStyle *codeStyle = _input->stylesDict[@([InlineCodeStyle getStyleType])];
-  
-  NSMutableArray *newRanges = [[NSMutableArray alloc] init];
-  int lastRangeLocation = range.location;
-  
-  for (int i = range.location; i < range.location + range.length; i++) {
-    NSRange currentRange = NSMakeRange(i, 1);
-    if ([linkStyle detectStyle:currentRange] || [mentionStyle detectStyle:currentRange] || [codeStyle detectStyle:currentRange]) {
-      if (i - lastRangeLocation > 0) {
-        [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, i - lastRangeLocation)]];
-      }
-      lastRangeLocation = i+1;
-    }
-  }
-  if (lastRangeLocation < range.location + range.length) {
-    [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, range.location + range.length - lastRangeLocation)]];
-  }
-  
-  return newRanges;
-}
-
-// general checkup correcting codeBlock color
-// since links, mentions and inline code affects coloring, the checkup gets done only outside of them
 - (void)manageCodeBlockColor {
-  if([[_input->config blockquoteColor] isEqualToColor:[_input->config primaryColor]]) {
+  if([[_input->config codeBlockFgColor] isEqualToColor:[_input->config primaryColor]]) {
     return;
   }
   
@@ -217,31 +190,26 @@
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:wholeRange];
   for(NSValue *pValue in paragraphs) {
     NSRange paragraphRange = [pValue rangeValue];
-    NSArray *properRanges = [self getProperColorRangesIn:paragraphRange];
+    BOOL selfDetected = [self detectStyle:paragraphRange];
     
-    for(NSValue *value in properRanges) {
-      NSRange currRange = [value rangeValue];
-      BOOL selfDetected = [self detectStyle:currRange];
-      
-      [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:currRange options:0
-        usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-          UIColor *newColor = nullptr;
-          BOOL colorApplied = [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
-          
-          if(colorApplied && !selfDetected) {
-            newColor = [_input->config primaryColor];
-          } else if(!colorApplied && selfDetected) {
-            newColor = [_input->config codeBlockFgColor];
-          }
-      
-          if(newColor != nullptr) {
-            [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:currRange];
-            [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:newColor range:currRange];
-            [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:newColor range:currRange];
-          }
+    [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:paragraphRange options:0
+      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIColor *newColor = nullptr;
+        BOOL colorApplied = [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
+        
+        if(colorApplied && !selfDetected) {
+          newColor = [_input->config primaryColor];
+        } else if(!colorApplied && selfDetected) {
+          newColor = [_input->config codeBlockFgColor];
         }
-      ];
-    }
+    
+        if(newColor != nullptr) {
+          [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:range];
+          [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName value:newColor range:range];
+          [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName value:newColor range:range];
+        }
+      }
+    ];
   }
 }
 
