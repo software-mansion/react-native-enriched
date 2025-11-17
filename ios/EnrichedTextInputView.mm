@@ -113,7 +113,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([CodeBlockStyle getStyleType])],
     @([CodeBlockStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]),
-        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType])]
+        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])]
   };
   
   _blockingStyles = @{
@@ -1024,7 +1024,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)handleWordModificationBasedChanges:(NSString*)word inRange:(NSRange)range {
   // manual links refreshing and automatic links detection handling
   LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
-  if(linkStyle != nullptr) {
+  
+  if(linkStyle != nullptr && [self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:range]) {
     // manual links need to be handled first because they can block automatic links after being refreshed
     [linkStyle handleManualLinks:word inRange:range];
     [linkStyle handleAutomaticLinks:word inRange:range];
