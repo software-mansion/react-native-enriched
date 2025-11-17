@@ -105,7 +105,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
   }
 
   private fun detectLinkConflicts(): Boolean {
-    val mergingConfig = EnrichedSpans.mergingConfig[EnrichedSpans.LINK] ?: return false
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle)?: return false
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
 
