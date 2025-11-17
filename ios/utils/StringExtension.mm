@@ -16,9 +16,6 @@
     @"&": @"&amp;",
     @"<": @"&lt;",
     @">": @"&gt;",
-    @"\"": @"&quot;",
-    @"'": @"&apos;",
-    @"/": @"&sol;",
   };
   
   for(NSString *key in escapeMap) {
@@ -32,9 +29,6 @@
     @"&amp;": @"&",
     @"&lt;": @"<",
     @"&gt;": @">",
-    @"&quot;": @"\"",
-    @"&apos;": @"'",
-    @"&sol;": @"/",
   };
   
   NSMutableDictionary *results = [[NSMutableDictionary alloc] init];
