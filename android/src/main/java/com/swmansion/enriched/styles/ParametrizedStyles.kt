@@ -104,29 +104,26 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     return Triple(result, start, end)
   }
 
-  private fun detectLinkConflicts(): Boolean {
-    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle)?: return false
+  private fun canLinkBeApplied(): Boolean {
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle)?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
 
     for (style in blockingStyles) {
-      if (view.spanState?.getStart(style) != null) return true
+      if (view.spanState?.getStart(style) != null) return false
     }
 
     for (style in conflictingStyles) {
-      if (view.spanState?.getStart(style) != null) return true
+      if (view.spanState?.getStart(style) != null) return false
     }
 
-    return false
+    return true
   }
 
   private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
-    if (detectLinkConflicts()) {
-      return
-    }
-
     // Do not detect link if it's applied manually
-    if (isSettingLinkSpan) return
+    if (isSettingLinkSpan || !canLinkBeApplied()) return
+
     val spannable = view.text as Spannable
     val (word, start, end) = result
 
