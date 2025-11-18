@@ -14,7 +14,7 @@
   NSString *plainText = [typedInput->textView.textStorage.string substringWithRange:typedInput->textView.selectedRange];
   NSString *fixedPlainText = [plainText stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
   
-  NSString *escapedHtml = [NSString stringByEscapingHtml:[typedInput->parser parseToHtmlFromRange:typedInput->textView.selectedRange]];
+  NSString *parsedHtml = [typedInput->parser parseToHtmlFromRange:typedInput->textView.selectedRange];
   
   NSMutableAttributedString *attrStr = [[typedInput->textView.textStorage attributedSubstringFromRange:typedInput->textView.selectedRange] mutableCopy];
   NSRange fullAttrStrRange = NSMakeRange(0, attrStr.length);
@@ -28,7 +28,7 @@
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   [pasteboard setItems:@[@{
     UTTypeUTF8PlainText.identifier : fixedPlainText,
-    UTTypeHTML.identifier : escapedHtml,
+    UTTypeHTML.identifier : parsedHtml,
     UTTypeRTF.identifier : rtfData
   }]];
 }
@@ -53,9 +53,7 @@
       htmlString = htmlValue;
     }
     
-    // unescape the html
-    htmlString = [NSString stringByUnescapingHtml:htmlString];
-    // validate it
+    // validate the html
     NSString *initiallyProcessedHtml = [typedInput->parser initiallyProcessHtml:htmlString];
     
     if(initiallyProcessedHtml != nullptr) {
