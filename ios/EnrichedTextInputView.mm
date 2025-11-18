@@ -358,6 +358,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
   
+  if(newViewProps.scrollEnabled != oldViewProps.scrollEnabled || textView.scrollEnabled != newViewProps.scrollEnabled) {
+    [textView setScrollEnabled:newViewProps.scrollEnabled];
+  }
+  
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if(oldMentionStyle != newMentionStyle) {

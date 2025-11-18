@@ -154,6 +154,11 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.setFontStyle(style)
   }
 
+  @ReactProp(name = "scrollEnabled")
+  override fun setScrollEnabled(view: EnrichedTextInputView, scrollEnabled: Boolean) {
+    view.scrollEnabled = scrollEnabled
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextInputView) {
     super.onAfterUpdateTransaction(view)
     view.afterUpdateTransaction()
