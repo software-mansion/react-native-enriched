@@ -597,12 +597,10 @@
     } else if([tagName isEqualToString:@"code"]) {
       [styleArr addObject:@([InlineCodeStyle getStyleType])];
     } else if([tagName isEqualToString:@"a"]) {
-       [styleArr addObject:@([LinkStyle getStyleType])];
-       NSRange hrefRange = [params rangeOfString:@"href="];
-       if(hrefRange.location != NSNotFound) {
-         NSString *url = [params substringWithRange:NSMakeRange(6, params.length - 7)];
-         stylePair.styleValue = url;
-       }
+      [styleArr addObject:@([LinkStyle getStyleType])];
+      // cut only the url from the href="..." string
+      NSString *url = [params substringWithRange:NSMakeRange(6, params.length - 7)];
+      stylePair.styleValue = url;
     } else if([tagName isEqualToString:@"mention"]) {
       [styleArr addObject:@([MentionStyle getStyleType])];
       // extract html expression into dict using some regex
