@@ -610,9 +610,20 @@
     } else if([tagName isEqualToString:@"code"]) {
       [styleArr addObject:@([InlineCodeStyle getStyleType])];
     } else if([tagName isEqualToString:@"a"]) {
+      NSRegularExpression *hrefRegex = [NSRegularExpression regularExpressionWithPattern:@"href=\".+\""
+        options:0
+        error:nullptr
+      ];
+      NSTextCheckingResult* match = [hrefRegex firstMatchInString:params options:0 range: NSMakeRange(0, params.length)];
+      
+      if(match == nullptr) {
+        // same as on Android, no href (or empty href) equals no link style
+        continue;
+      }
+      
+      NSRange hrefRange = match.range;
       [styleArr addObject:@([LinkStyle getStyleType])];
-      // cut only the url from the href="..." string
-      NSString *url = [params substringWithRange:NSMakeRange(6, params.length - 7)];
+      NSString *url = [params substringWithRange:NSMakeRange(hrefRange.location + 6, hrefRange.length - 7)];
       stylePair.styleValue = url;
     } else if([tagName isEqualToString:@"mention"]) {
       [styleArr addObject:@([MentionStyle getStyleType])];
@@ -657,7 +668,7 @@
     } else if([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
     } else {
-    // some other external tags like span just don't get put into the processed styles
+      // some other external tags like span just don't get put into the processed styles
       continue;
     }
     
