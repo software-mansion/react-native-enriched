@@ -14,6 +14,7 @@
   UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle = typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
+  CodeBlockStyle *cbStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
   
   if(typedInput == nullptr) {
     return NO;
@@ -51,6 +52,11 @@
     if([bqStyle detectStyle:nonNewlineRange]) {
       [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
       [bqStyle addAttributes:NSMakeRange(range.location, 0)];
+      return YES;
+    }
+    if([cbStyle detectStyle:nonNewlineRange]) {
+      [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+      [cbStyle addAttributes:NSMakeRange(range.location, 0)];
       return YES;
     }
   

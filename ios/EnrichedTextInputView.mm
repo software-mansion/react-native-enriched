@@ -1059,6 +1059,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [bqStyle manageBlockquoteColor];
   }
   
+  // codeblock font and color management
+  CodeBlockStyle *codeBlockStyle = stylesDict[@([CodeBlockStyle getStyleType])];
+  if(codeBlockStyle != nullptr) {
+    [codeBlockStyle manageCodeBlockFontAndColor];
+  }
+  
   // improper headings fix
   H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
   H2Style *h2Style = stylesDict[@([H2Style getStyleType])];

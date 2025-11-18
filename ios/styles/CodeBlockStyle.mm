@@ -49,23 +49,6 @@
       offset += 1;
     }
     
-    [_input->textView.textStorage enumerateAttribute:NSFontAttributeName
-                                             inRange:pRange
-                                             options:0
-                                          usingBlock:^(id _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        UIFont *font = (UIFont *)value;
-        if(font != nullptr) {
-          UIFont *newFont = [[[_input->config monospacedFont] withFontTraits:font] setSize:font.pointSize];
-          [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
-        }
-    }];
-    
-    [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:pRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config codeBlockFgColor] range:range];
-      }
-    ];
-    
     [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
@@ -91,11 +74,6 @@
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
   pStyle.textLists = @[codeBlockList];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-  typingAttrs[NSForegroundColorAttributeName] = [_input->config codeBlockFgColor];
-  UIFont *currentFont = typingAttrs[NSFontAttributeName];
-  if(currentFont != nullptr) {
-    typingAttrs[NSFontAttributeName] = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
-  }
   
   _input->textView.typingAttributes = typingAttrs;
 }
@@ -111,23 +89,8 @@
   
   for(NSValue *value in paragraphs) {
     NSRange pRange = [value rangeValue];
-    [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:pRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        UIFont *font = (UIFont *)value;
-        if(font != nullptr) {
-          UIFont *newFont = [[[_input->config primaryFont] withFontTraits:font] setSize:font.pointSize];
-          [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
-        }
-      }
-    ];
     
-    [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:pRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:[_input->config primaryColor] range:range];
-      }
-    ];
-    
-    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:range options:0
+    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
         pStyle.textLists = @[];
@@ -144,11 +107,6 @@
   pStyle.textLists = @[];
   
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-  typingAttrs[NSForegroundColorAttributeName] = [_input->config primaryColor];
-  UIFont *currentFont = typingAttrs[NSFontAttributeName];
-  if(currentFont != nullptr) {
-    typingAttrs[NSFontAttributeName] = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
-  }
   
   _input->textView.typingAttributes = typingAttrs;
 }
@@ -175,7 +133,7 @@
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
-  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat  isEqual: @"codeblock"];
+  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat isEqual:@"codeblock"];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -208,6 +166,55 @@
       return [self styleCondition:value :range];
     }
   ];
+}
+
+- (void)manageCodeBlockFontAndColor {
+  if([[_input->config codeBlockFgColor] isEqualToColor:[_input->config primaryColor]]) {
+    return;
+  }
+
+  NSRange wholeRange = NSMakeRange(0, _input->textView.textStorage.string.length);
+  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:wholeRange];
+  
+  for(NSValue *pValue in paragraphs) {
+    NSRange paragraphRange = [pValue rangeValue];
+    BOOL selfDetected = [self detectStyle:paragraphRange];
+    
+    [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:paragraphRange options:0
+                                          usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      UIFont *currentFont = (UIFont *)value;
+      UIFont *newFont = nullptr;
+      
+      BOOL isCodeFont = [[currentFont familyName] isEqualToString:[[_input->config monospacedFont] familyName]];
+      
+      if (isCodeFont && !selfDetected) {
+        newFont = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+      } else if (!isCodeFont && selfDetected) {
+        newFont = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+      }
+      
+      if (newFont != nullptr) {
+        [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+      }
+    }];
+
+    [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:paragraphRange options:0
+      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIColor *newColor = nullptr;
+        BOOL colorApplied = [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
+
+        if(colorApplied && !selfDetected) {
+          newColor = [_input->config primaryColor];
+        } else if(!colorApplied && selfDetected) {
+          newColor = [_input->config codeBlockFgColor];
+        }
+
+        if(newColor != nullptr) {
+          [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:range];
+        }
+      }
+    ];
+  }
 }
 
 @end
