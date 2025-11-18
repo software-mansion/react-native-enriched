@@ -1025,7 +1025,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // manual links refreshing and automatic links detection handling
   LinkStyle* linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
   
-  if(linkStyle != nullptr && [self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:range]) {
+  if(linkStyle != nullptr) {
     // manual links need to be handled first because they can block automatic links after being refreshed
     [linkStyle handleManualLinks:word inRange:range];
     [linkStyle handleAutomaticLinks:word inRange:range];
@@ -1057,12 +1057,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
   if(bqStyle != nullptr) {
     [bqStyle manageBlockquoteColor];
-  }
-  
-  // codeblock colors management
-  CodeBlockStyle *codeBlockStyle = stylesDict[@([CodeBlockStyle getStyleType])];
-  if(codeBlockStyle != nullptr) {
-    [codeBlockStyle manageCodeBlockColor];
   }
   
   // improper headings fix
@@ -1189,6 +1183,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
+  CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle getStyleType])];
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
   MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
   H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
@@ -1204,6 +1199,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [oStyle handleBackspaceInRange:range replacementText:text] ||
     [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
     [bqStyle handleBackspaceInRange:range replacementText:text] ||
+    [cbStyle handleBackspaceInRange:range replacementText:text] ||
     [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
     [mentionStyle handleLeadingMentionReplacement:range replacementText:text] ||
     [h1Style handleNewlinesInRange:range replacementText:text] ||

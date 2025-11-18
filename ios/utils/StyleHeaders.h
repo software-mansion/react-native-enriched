@@ -77,4 +77,5 @@
 
 @interface CodeBlockStyle : NSObject<BaseStyleProtocol>
 - (void)manageCodeBlockColor;
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end
