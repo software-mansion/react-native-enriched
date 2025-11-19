@@ -329,16 +329,22 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     return;
   }
   
-  // get conflicting style classes
-  LinkStyle* linkStyle = [_input->stylesDict objectForKey:@([LinkStyle getStyleType])];
-  InlineCodeStyle* inlineCodeStyle = [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
-  if(linkStyle == nullptr || inlineCodeStyle == nullptr) {
-    [self removeActiveMentionRange];
-    return;
+  // get style classes that the mention shouldn't be recognized in
+  NSArray *conflicts = _input->conflictingStyles[@([MentionStyle getStyleType])];
+  NSArray *blocks = _input->blockingStyles[@([MentionStyle getStyleType])];
+  NSArray *allConflicts = [conflicts arrayByAddingObjectsFromArray:blocks];
+  BOOL conflictingStyle = NO;
+  
+  for(NSNumber *styleType in allConflicts) {
+    id<BaseStyleProtocol> styleClass = _input->stylesDict[styleType];
+    if(styleClass != nullptr && [styleClass anyOccurence:wordRange]) {
+      conflictingStyle = YES;
+      break;
+    }
   }
   
-  // if there is any sign of conflicting style classes, stop editing a mention
-  if([linkStyle anyOccurence:wordRange] || [inlineCodeStyle anyOccurence:wordRange]) {
+  // if any of the conflicting styles were present, don't edit the mention
+  if(conflictingStyle) {
     [self removeActiveMentionRange];
     return;
   }
