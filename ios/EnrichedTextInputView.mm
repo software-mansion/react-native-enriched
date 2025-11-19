@@ -533,9 +533,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   emitHtml = newViewProps.isOnChangeHtmlSet;
   
   [super updateProps:props oldProps:oldProps];
-  // mandatory text and height checks
+  // run the changes callback
   [self anyTextMayHaveBeenModified];
-  [self tryUpdatingHeight];
   
   // autofocus - needs to be done at the very end
   if(isFirstMount && newViewProps.autoFocus) {
@@ -1072,6 +1071,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h2Style handleImproperHeadings];
     [h3Style handleImproperHeadings];
   }
+  
+  // additionally, manage selection based changes
+  [self manageSelectionBasedChanges];
   
   // placholder management
   if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
