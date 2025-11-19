@@ -226,7 +226,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  [_input->textView.textStorage
+  NSString *manualUrl = [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
@@ -239,7 +239,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     inRange:inputRange
   ];
   
-  return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
+  return manualUrl == nil ? automaticLinkRange : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {

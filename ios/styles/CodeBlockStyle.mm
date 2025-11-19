@@ -8,6 +8,7 @@
 
 @implementation CodeBlockStyle {
   EnrichedTextInputView *_input;
+  NSArray *_stylesToExclude;
 }
 
 + (StyleType)getStyleType { return CodeBlock; }
@@ -17,6 +18,7 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _stylesToExclude = @[ @(InlineCode), @(Mention), @(Link) ];
   return self;
 }
 
@@ -180,28 +182,32 @@
   
   for(NSValue *pValue in paragraphs) {
     NSRange paragraphRange = [pValue rangeValue];
-    BOOL selfDetected = [self detectStyle:paragraphRange];
+    NSArray *properRanges = [OccurenceUtils getRangesWithout:_stylesToExclude withInput:_input inRange:paragraphRange];
     
-    [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:paragraphRange options:0
-                                          usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *currentFont = (UIFont *)value;
-      UIFont *newFont = nullptr;
+    for(NSValue *value in properRanges) {
+      NSRange currRange = [value rangeValue];
+      BOOL selfDetected = [self detectStyle:currRange];
       
-      BOOL isCodeFont = [[currentFont familyName] isEqualToString:[[_input->config monospacedFont] familyName]];
+      [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:currRange options:0
+                                            usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIFont *currentFont = (UIFont *)value;
+        UIFont *newFont = nullptr;
+        
+        BOOL isCodeFont = [[currentFont familyName] isEqualToString:[[_input->config monospacedFont] familyName]];
+        
+        if (isCodeFont && !selfDetected) {
+          newFont = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+        } else if (!isCodeFont && selfDetected) {
+          newFont = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+        }
+        
+        if (newFont != nullptr) {
+          [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+        }
+      }];
       
-      if (isCodeFont && !selfDetected) {
-        newFont = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
-      } else if (!isCodeFont && selfDetected) {
-        newFont = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
-      }
-      
-      if (newFont != nullptr) {
-        [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }];
-
-    [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:paragraphRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:currRange options:0
+                                            usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         UIColor *newColor = nullptr;
         BOOL colorApplied = [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
 
@@ -214,8 +220,8 @@
         if(newColor != nullptr) {
           [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:range];
         }
-      }
-    ];
+      }];
+    }
   }
 }
 

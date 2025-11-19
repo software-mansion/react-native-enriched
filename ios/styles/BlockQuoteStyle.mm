@@ -7,6 +7,7 @@
 
 @implementation BlockQuoteStyle {
   EnrichedTextInputView *_input;
+  NSArray *_stylesToExclude;
 }
 
 + (StyleType)getStyleType { return BlockQuote; }
@@ -16,6 +17,7 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _stylesToExclude = @[ @(InlineCode), @(Mention), @(Link) ];
   return self;
 }
 
@@ -177,31 +179,6 @@
   ];
 }
 
-// gets ranges that aren't link, mention or inline code
-- (NSArray *)getProperColorRangesIn:(NSRange)range {
-  LinkStyle *linkStyle = _input->stylesDict[@([LinkStyle getStyleType])];
-  MentionStyle *mentionStyle = _input->stylesDict[@([MentionStyle getStyleType])];
-  InlineCodeStyle *codeStyle = _input->stylesDict[@([InlineCodeStyle getStyleType])];
-  
-  NSMutableArray *newRanges = [[NSMutableArray alloc] init];
-  int lastRangeLocation = range.location;
-  
-  for(int i = range.location; i < range.location + range.length; i++) {
-    NSRange currentRange = NSMakeRange(i, 1);
-    if([linkStyle detectStyle:currentRange] || [mentionStyle detectStyle:currentRange] || [codeStyle detectStyle:currentRange]) {
-      if(i - lastRangeLocation > 0) {
-        [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, i - lastRangeLocation)]];
-      }
-      lastRangeLocation = i+1;
-    }
-  }
-  if(lastRangeLocation < range.location + range.length) {
-    [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastRangeLocation, range.location + range.length - lastRangeLocation)]];
-  }
-  
-  return newRanges;
-}
-
 // general checkup correcting blockquote color
 // since links, mentions and inline code affects coloring, the checkup gets done only outside of them
 - (void)manageBlockquoteColor {
@@ -214,7 +191,7 @@
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:wholeRange];
   for(NSValue *pValue in paragraphs) {
     NSRange paragraphRange = [pValue rangeValue];
-    NSArray *properRanges = [self getProperColorRangesIn:paragraphRange];
+    NSArray *properRanges = [OccurenceUtils getRangesWithout:_stylesToExclude withInput:_input inRange:paragraphRange];
     
     for(NSValue *value in properRanges) {
       NSRange currRange = [value rangeValue];

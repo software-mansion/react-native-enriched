@@ -152,4 +152,49 @@
   return occurences;
 }
 
++ (NSArray *_Nonnull)getRangesWithout:(NSArray<NSNumber *> *_Nonnull)types withInput:(EnrichedTextInputView* _Nonnull)input
+    inRange:(NSRange)range
+{
+  NSMutableArray<id> *activeStyleObjects = [[NSMutableArray alloc] init];
+  for(NSNumber *type in types) {
+    id<BaseStyleProtocol> styleClass = input->stylesDict[type];
+    [activeStyleObjects addObject:styleClass];
+  }
+  
+  if (activeStyleObjects.count == 0) {
+    return @[[NSValue valueWithRange:range]];
+  }
+  
+  NSMutableArray<NSValue *> *newRanges = [[NSMutableArray alloc] init];
+  NSUInteger lastRangeLocation = range.location;
+  NSUInteger endLocation = range.location + range.length;
+
+  for (NSUInteger i = range.location; i < endLocation; i++) {
+    NSRange currentRange = NSMakeRange(i, 1);
+    BOOL forbiddenStyleFound = NO;
+
+    for (id style in activeStyleObjects) {
+      if ([style detectStyle:currentRange]) {
+        forbiddenStyleFound = YES;
+        break;
+      }
+    }
+
+    if (forbiddenStyleFound) {
+      if (i > lastRangeLocation) {
+          NSRange cleanRange = NSMakeRange(lastRangeLocation, i - lastRangeLocation);
+          [newRanges addObject:[NSValue valueWithRange:cleanRange]];
+      }
+      lastRangeLocation = i + 1;
+    }
+  }
+
+  if (lastRangeLocation < endLocation) {
+    NSRange remainingRange = NSMakeRange(lastRangeLocation, endLocation - lastRangeLocation);
+    [newRanges addObject:[NSValue valueWithRange:remainingRange]];
+  }
+
+  return newRanges;
+}
+
 @end
