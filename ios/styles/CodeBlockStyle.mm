@@ -12,6 +12,8 @@
 
 + (StyleType)getStyleType { return CodeBlock; }
 
++ (BOOL)isParagraphStyle { return YES; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

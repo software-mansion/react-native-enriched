@@ -26,8 +26,6 @@ using namespace facebook::react;
   EnrichedTextInputViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_conflictingStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *_blockingStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSString *_recentlyEmittedString;
@@ -98,7 +96,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self]
   };
   
-  _conflictingStyles = @{
+  conflictingStyles = @{
     @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
@@ -116,7 +114,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])]
   };
   
-  _blockingStyles = @{
+  blockingStyles = @{
     @([BoldStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
@@ -945,13 +943,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
   // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: _blockingStyles[@(type)] range:range];
+  NSArray<NSNumber *> *blocking = [self getPresentStyleTypesFrom: blockingStyles[@(type)] range:range];
   if(blocking.count != 0) {
     return NO;
   }
   
   // handle conflicting styles: all of their occurences have to be removed
-  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: _conflictingStyles[@(type)] range:range];
+  NSArray<NSNumber *> *conflicting = [self getPresentStyleTypesFrom: conflictingStyles[@(type)] range:range];
   if(conflicting.count != 0) {
     for(NSNumber *style in conflicting) {
       id<BaseStyleProtocol> styleClass = stylesDict[style];
@@ -1212,7 +1210,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h2Style handleNewlinesInRange:range replacementText:text] ||
     [h3Style handleNewlinesInRange:range replacementText:text] ||
     [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self] ||
-    [ParagraphAttributesUtils handleBackspaceInRange:range replacementText:text input:self]
+    [ParagraphAttributesUtils handleBackspaceInRange:range replacementText:text input:self] ||
+    // this callback HAS TO be always evaluated last
+    [ParagraphAttributesUtils handleNewlineBackspaceInRange:range replacementText:text input:self]
   ) {
     [self anyTextMayHaveBeenModified];
     return NO;

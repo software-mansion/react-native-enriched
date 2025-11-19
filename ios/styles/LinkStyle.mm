@@ -15,6 +15,8 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 
 + (StyleType)getStyleType { return Link; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

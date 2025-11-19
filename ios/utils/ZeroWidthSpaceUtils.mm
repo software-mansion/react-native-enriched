@@ -148,8 +148,6 @@
       styleRemovalRange = NSMakeRange(paragraphRange.location, 1);
     }
     
-    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
-    
     // and then remove associated styling
     
     UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
@@ -157,19 +155,28 @@
     BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
     CodeBlockStyle *cbStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
     
+    if([cbStyle detectStyle:removalRange]) {
+      // code blocks are being handled differently; we want to remove previous newline if there is a one
+      if(range.location > 0) {
+        removalRange = NSMakeRange(removalRange.location - 1, removalRange.length + 1);
+      }
+      [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
+      return YES;
+    }
+    
+    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
+    
     if ([ulStyle detectStyle:styleRemovalRange]) {
       [ulStyle removeAttributes:styleRemovalRange];
     } else if ([olStyle detectStyle:styleRemovalRange]) {
       [olStyle removeAttributes:styleRemovalRange];
     } else if ([bqStyle detectStyle:styleRemovalRange]) {
       [bqStyle removeAttributes:styleRemovalRange];
-    }else if ([cbStyle detectStyle:styleRemovalRange]) {
-      [cbStyle removeAttributes:styleRemovalRange];
     }
     
     return YES;
   }
   return NO;
 }
-@end
 
+@end

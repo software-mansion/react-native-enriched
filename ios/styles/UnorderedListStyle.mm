@@ -11,6 +11,8 @@
 
 + (StyleType)getStyleType { return UnorderedList; }
 
++ (BOOL)isParagraphStyle { return YES; }
+
 - (CGFloat)getHeadIndent {
   // lists are drawn manually
   // margin before bullet + gap between bullet and paragraph

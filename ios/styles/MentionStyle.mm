@@ -18,6 +18,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 
 + (StyleType)getStyleType { return Mention; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

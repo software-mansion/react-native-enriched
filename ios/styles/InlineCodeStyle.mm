@@ -11,6 +11,8 @@
 
 + (StyleType)getStyleType { return InlineCode; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

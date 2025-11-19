@@ -70,4 +70,57 @@
   return NO;
 }
 
++ (BOOL)handleNewlineBackspaceInRange:(NSRange)range replacementText:(NSString *)text input:(id)input {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
+  if(typedInput == nullptr) {
+    return NO;
+  }
+  
+  if(text.length == 0 && range.length == 1 &&
+     [[NSCharacterSet newlineCharacterSet] characterIsMember:[typedInput->textView.textStorage.string characterAtIndex:range.location]]) {
+    NSRange leftRange = [typedInput->textView.textStorage.string paragraphRangeForRange:range];
+    
+    id<BaseStyleProtocol> leftParagraphStyle = nullptr;
+    for (NSNumber *key in typedInput->stylesDict) {
+      id<BaseStyleProtocol> style = typedInput->stylesDict[key];
+      if([[style class] isParagraphStyle] && [style detectStyle:leftRange]) {
+        leftParagraphStyle = style;
+      }
+    }
+    
+    if(leftParagraphStyle == nullptr) {
+      return NO;
+    }
+    
+    // index out of bounds
+    if(range.location + 1 >= typedInput->textView.textStorage.string.length) {
+      return NO;
+    }
+    
+    NSRange rightRange = [typedInput->textView.textStorage.string paragraphRangeForRange:NSMakeRange(range.location + 1, 1)];
+    
+    StyleType type = [[leftParagraphStyle class] getStyleType];
+    
+    NSArray *conflictingStyles = [typedInput getPresentStyleTypesFrom:typedInput->conflictingStyles[@(type)] range:rightRange];
+    NSArray *blockingStyles = [typedInput getPresentStyleTypesFrom:typedInput->blockingStyles[@(type)] range:rightRange];
+    NSArray *allToBeRemoved = [conflictingStyles arrayByAddingObjectsFromArray:blockingStyles];
+    
+    for(NSNumber *style in allToBeRemoved) {
+      id<BaseStyleProtocol> styleClass = typedInput->stylesDict[style];
+      
+      // for ranges, we need to remove each occurence
+      NSArray<StylePair *> *allOccurences = [styleClass findAllOccurences:rightRange];
+      
+      for(StylePair* pair in allOccurences) {
+        [styleClass removeAttributes: [pair.rangeValue rangeValue]];
+      }
+    }
+    
+    [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+    return YES;
+  }
+  
+  return NO;
+}
+
 @end
