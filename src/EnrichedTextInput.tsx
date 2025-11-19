@@ -17,6 +17,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetected,
   type OnMentionDetectedInternal,
   type MentionStyleProperties,
+  type OnChangeColorEvent,
 } from './EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -59,6 +60,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  toggleColor: (color: string) => void;
 }
 
 export interface OnChangeMentionEvent {
@@ -138,6 +140,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
+  onColorChangeInSelection?: (
+    color: NativeSyntheticEvent<OnChangeColorEvent>
+  ) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -188,6 +193,7 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
+  onColorChangeInSelection,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
   ...rest
@@ -293,6 +299,9 @@ export const EnrichedTextInput = ({
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
     },
+    toggleColor: (color: string) => {
+      Commands.toggleColor(nullthrows(nativeRef.current), color);
+    },
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
@@ -347,6 +356,7 @@ export const EnrichedTextInput = ({
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
+      onColorChangeInSelection={onColorChangeInSelection}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
