@@ -20,6 +20,13 @@
 - (void)handleNewlines;
 @end
 
+@interface ColorStyle : NSObject <BaseStyleProtocol>
+@property (nonatomic, strong) UIColor *color;
+- (UIColor *)getColorAt:(NSUInteger)location;
+- (void)applyStyle:(NSRange)range color:(UIColor *)color;
+- (BOOL)detectExcludingColor:(UIColor *)excludedColor inRange:(NSRange)range;
+@end
+
 @interface LinkStyle : NSObject <BaseStyleProtocol>
 - (void)addLink:(NSString *)text
               url:(NSString *)url

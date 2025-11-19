@@ -26,6 +26,8 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
+import type { OnChangeColorEvent } from '../../src/EnrichedTextInputNativeComponent';
+import ColorPreview from './components/ColorPreview';
 
 type StylesState = OnChangeStateEvent;
 
@@ -45,6 +47,7 @@ const DEFAULT_STYLE_STATE = {
 
 const DEFAULT_STYLES: StylesState = {
   bold: DEFAULT_STYLE_STATE,
+  colored: DEFAULT_STYLE_STATE,
   italic: DEFAULT_STYLE_STATE,
   underline: DEFAULT_STYLE_STATE,
   strikeThrough: DEFAULT_STYLE_STATE,
@@ -94,6 +97,7 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
+  const [selectionColor, setSelectionColor] = useState<string>(PRIMARY_COLOR);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -293,6 +297,14 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handleSelectionColorChange = (
+    e: NativeSyntheticEvent<OnChangeColorEvent>
+  ) => {
+    if (e.nativeEvent.color) {
+      setSelectionColor(e.nativeEvent.color);
+    }
+  };
+
   return (
     <>
       <ScrollView
@@ -315,6 +327,7 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            onColorChangeInSelection={handleSelectionColorChange}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
@@ -330,6 +343,7 @@ export default function App() {
           <Toolbar
             stylesState={stylesState}
             editorRef={ref}
+            selectionColor={selectionColor}
             onOpenLinkModal={openLinkModal}
             onSelectImage={openImageModal}
           />
@@ -345,6 +359,7 @@ export default function App() {
         />
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+        <ColorPreview color={selectionColor} />
       </ScrollView>
       <LinkModal
         isOpen={isLinkModalOpen}
@@ -422,7 +437,7 @@ const htmlStyle: HtmlStyle = {
     backgroundColor: 'yellow',
   },
   a: {
-    color: 'green',
+    color: 'blue',
     textDecorationLine: 'underline',
   },
   mention: {

@@ -15,6 +15,7 @@
 #import <ReactNativeEnriched/RCTComponentViewHelpers.h>
 #import <folly/dynamic.h>
 #import <react/utils/ManagedObjectWrapper.h>
+#import "ColorExtension.h"
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
   {                                                                            \
@@ -42,6 +43,7 @@ using namespace facebook::react;
   NSRange _recentlyActiveMentionRange;
   NSString *_recentlyEmittedHtml;
   BOOL _emitHtml;
+  NSString *_recentlyEmittedColor;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
@@ -88,6 +90,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
+  _recentlyEmittedColor = nil;
   blockEmitting = NO;
   _emitFocusBlur = YES;
   _emitTextChange = NO;
@@ -104,6 +107,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[StrikethroughStyle alloc] initWithInput:self],
     @([InlineCodeStyle getStyleType]) :
         [[InlineCodeStyle alloc] initWithInput:self],
+    @([ColorStyle getStyleType]) : [[ColorStyle alloc] initWithInput:self],
     @([LinkStyle getStyleType]) : [[LinkStyle alloc] initWithInput:self],
     @([MentionStyle getStyleType]) : [[MentionStyle alloc] initWithInput:self],
     @([H1Style getStyleType]) : [[H1Style alloc] initWithInput:self],
@@ -134,6 +138,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]),
       @([MentionStyle getStyleType])
     ],
+    @([ColorStyle getStyleType]) : @[@([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]) :
         @[ @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]) ],
     @([H1Style getStyleType]) : @[
@@ -215,6 +220,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   blockingStyles = [@{
     @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
+    @([ColorStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([ItalicStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([StrikethroughStyle getStyleType]) :
@@ -1025,29 +1031,38 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _blockedStyles = newBlockedStyles;
 
       emitter->onChangeStateDeprecated({
-          .isBold = [self isStyleActive:[BoldStyle getStyleType]],
-          .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
-          .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
-          .isStrikeThrough =
-              [self isStyleActive:[StrikethroughStyle getStyleType]],
-          .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
-          .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-          .isMention = [self isStyleActive:[MentionStyle getStyleType]],
-          .isH1 = [self isStyleActive:[H1Style getStyleType]],
-          .isH2 = [self isStyleActive:[H2Style getStyleType]],
-          .isH3 = [self isStyleActive:[H3Style getStyleType]],
-          .isH4 = [self isStyleActive:[H4Style getStyleType]],
-          .isH5 = [self isStyleActive:[H5Style getStyleType]],
-          .isH6 = [self isStyleActive:[H6Style getStyleType]],
-          .isUnorderedList =
-              [self isStyleActive:[UnorderedListStyle getStyleType]],
-          .isOrderedList = [self isStyleActive:[OrderedListStyle getStyleType]],
-          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
-          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
-          .isImage = [self isStyleActive:[ImageStyle getStyleType]],
+        .isBold = [_activeStyles containsObject:@([BoldStyle getStyleType])],
+        .isItalic =
+            [_activeStyles containsObject:@([ItalicStyle getStyleType])],
+        .isUnderline =
+            [_activeStyles containsObject:@([UnderlineStyle getStyleType])],
+        .isStrikeThrough =
+            [_activeStyles containsObject:@([StrikethroughStyle getStyleType])],
+        .isColored = [_activeStyles containsObject: @([ColorStyle getStyleType])],
+        .isInlineCode =
+            [_activeStyles containsObject:@([InlineCodeStyle getStyleType])],
+        .isLink = [_activeStyles containsObject:@([LinkStyle getStyleType])],
+        .isMention =
+            [_activeStyles containsObject:@([MentionStyle getStyleType])],
+        .isH1 = [_activeStyles containsObject:@([H1Style getStyleType])],
+        .isH2 = [_activeStyles containsObject:@([H2Style getStyleType])],
+        .isH3 = [_activeStyles containsObject:@([H3Style getStyleType])],
+        .isH4 = [_activeStyles containsObject:@([H4Style getStyleType])],
+        .isH5 = [_activeStyles containsObject:@([H5Style getStyleType])],
+        .isH6 = [_activeStyles containsObject:@([H6Style getStyleType])],
+        .isUnorderedList =
+            [_activeStyles containsObject:@([UnorderedListStyle getStyleType])],
+        .isOrderedList =
+            [_activeStyles containsObject:@([OrderedListStyle getStyleType])],
+        .isBlockQuote =
+            [_activeStyles containsObject:@([BlockQuoteStyle getStyleType])],
+        .isCodeBlock =
+            [_activeStyles containsObject:@([CodeBlockStyle getStyleType])],
+        .isImage = [_activeStyles containsObject:@([ImageStyle getStyleType])],
       });
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+           .colored = GET_STYLE_STATE([ColorStyle getStyleType]),
            .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
            .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
            .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getStyleType]),
@@ -1084,7 +1099,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
   }
-
+  [self emitCurrentSelectionColorIfChanged];
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
 }
@@ -1135,19 +1150,23 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"setValue"]) {
     NSString *value = (NSString *)args[0];
     [self setValue:value];
-  } else if ([commandName isEqualToString:@"toggleBold"]) {
-    [self toggleRegularStyle:[BoldStyle getStyleType]];
-  } else if ([commandName isEqualToString:@"toggleItalic"]) {
-    [self toggleRegularStyle:[ItalicStyle getStyleType]];
-  } else if ([commandName isEqualToString:@"toggleUnderline"]) {
-    [self toggleRegularStyle:[UnderlineStyle getStyleType]];
-  } else if ([commandName isEqualToString:@"toggleStrikeThrough"]) {
-    [self toggleRegularStyle:[StrikethroughStyle getStyleType]];
-  } else if ([commandName isEqualToString:@"toggleInlineCode"]) {
-    [self toggleRegularStyle:[InlineCodeStyle getStyleType]];
-  } else if ([commandName isEqualToString:@"addLink"]) {
-    NSInteger start = [((NSNumber *)args[0]) integerValue];
-    NSInteger end = [((NSNumber *)args[1]) integerValue];
+  } else if([commandName isEqualToString:@"toggleBold"]) {
+    [self toggleRegularStyle: [BoldStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleItalic"]) {
+    [self toggleRegularStyle: [ItalicStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleUnderline"]) {
+    [self toggleRegularStyle: [UnderlineStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleStrikeThrough"]) {
+    [self toggleRegularStyle: [StrikethroughStyle getStyleType]];
+  } else if([commandName isEqualToString:@"toggleColor"]) {
+    NSString *colorText = (NSString *)args[0];
+    UIColor *color = [UIColor colorFromString: colorText];
+    [self toggleColorStyle: color];
+  } else if([commandName isEqualToString:@"toggleInlineCode"]) {
+    [self toggleRegularStyle: [InlineCodeStyle getStyleType]];
+  } else if([commandName isEqualToString:@"addLink"]) {
+    NSInteger start = [((NSNumber*)args[0]) integerValue];
+    NSInteger end = [((NSNumber*)args[1]) integerValue];
     NSString *text = (NSString *)args[2];
     NSString *url = (NSString *)args[3];
     [self addLinkAt:start end:end text:text url:url];
@@ -1282,9 +1301,50 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)emitOnMentionDetectedEvent:(NSString *)text
-                         indicator:(NSString *)indicator
-                        attributes:(NSString *)attributes {
+- (void)emitCurrentSelectionColorIfChanged {
+  NSRange selRange = textView.selectedRange;
+  UIColor *uniformColor = nil;
+  
+  if (selRange.length == 0) {
+    id colorAttr = textView.typingAttributes[NSForegroundColorAttributeName];
+    uniformColor = colorAttr ? (UIColor *)colorAttr : [config primaryColor];
+  } else {
+    // Selection range: check for uniform color
+    __block UIColor *firstColor = nil;
+    __block BOOL hasMultiple = NO;
+    
+    [textView.textStorage enumerateAttribute:NSForegroundColorAttributeName
+                                    inRange:selRange
+                                    options:0
+                                 usingBlock:^(id _Nullable value, NSRange range, BOOL *_Nonnull stop) {
+      UIColor *thisColor = value ? (UIColor *)value : [config primaryColor];
+      if (firstColor == nil) {
+        firstColor = thisColor;
+      } else if (![firstColor isEqual:thisColor]) {
+        hasMultiple = YES;
+        *stop = YES;
+      }
+    }];
+    
+    if (!hasMultiple && firstColor != nil) {
+      uniformColor = firstColor;
+    }
+  }
+  
+  NSString *hexColor = uniformColor ? [uniformColor hexString] : [config.primaryColor hexString];
+  
+  if(![_recentlyEmittedColor isEqual: hexColor]) {
+    auto emitter = [self getEventEmitter];
+    if(emitter != nullptr) {
+      emitter->onColorChangeInSelection({
+        .color = [hexColor toCppString]
+      });
+    }
+    _recentlyEmittedColor = hexColor;
+  }
+}
+
+- (void)emitOnMentionDetectedEvent:(NSString *)text indicator:(NSString *)indicator attributes:(NSString *)attributes {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     emitter->onMentionDetected({.text = [text toCppString],
@@ -1340,6 +1400,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 // MARK: - Styles manipulation
+
+- (void)toggleColorStyle:(UIColor *)color {
+  ColorStyle *colorStyle = stylesDict[@(Colored)];
+  
+  [colorStyle applyStyle:textView.selectedRange color: color];
+  [self anyTextMayHaveBeenModified];
+}
 
 - (void)toggleRegularStyle:(StyleType)type {
   id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
@@ -1712,15 +1779,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (_emitFocusBlur) {
       emitter->onInputFocus({});
     }
-
-    NSString *textAtSelection =
-        [[[NSMutableString alloc] initWithString:textView.textStorage.string]
-            substringWithRange:textView.selectedRange];
-    emitter->onChangeSelection(
-        {.start = static_cast<int>(textView.selectedRange.location),
-         .end = static_cast<int>(textView.selectedRange.location +
-                                 textView.selectedRange.length),
-         .text = [textAtSelection toCppString]});
+    
+    NSString *textAtSelection = [[[NSMutableString alloc] initWithString:textView.textStorage.string] substringWithRange: textView.selectedRange];
+    emitter->onChangeSelection({
+      .start = static_cast<int>(textView.selectedRange.location),
+      .end = static_cast<int>(textView.selectedRange.location + textView.selectedRange.length),
+      .text = [textAtSelection toCppString]
+    });
+    [self emitCurrentSelectionColorIfChanged];
   }
   // manage selection changes since textViewDidChangeSelection sometimes doesn't
   // run on focus
