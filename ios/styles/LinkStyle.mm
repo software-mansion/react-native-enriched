@@ -297,7 +297,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     return;
   }
   
-  // we don't recognize links among codeblock
+  // we don't recognize links in codeblocks
   if ([codeBlockStyle anyOccurence:wordRange]) {
     return;
   }

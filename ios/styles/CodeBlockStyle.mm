@@ -137,7 +137,7 @@
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
-  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat isEqual:@"codeblock"];
+  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat isEqualToString:@"codeblock"];
 }
 
 - (BOOL)detectStyle:(NSRange)range {

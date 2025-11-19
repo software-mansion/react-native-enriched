@@ -1223,7 +1223,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleNewlinesInRange:range replacementText:text] ||
     [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self] ||
     [ParagraphAttributesUtils handleBackspaceInRange:range replacementText:text input:self] ||
-    // this callback HAS TO be always evaluated last
+    // CRITICAL: This callback HAS TO be always evaluated last.
+    //
+    // This function is the "Generic Fallback": if no specific style claims the backspace action
+    // to change its state, only then do we proceed to physically delete the newline and merge paragraphs.
     [ParagraphAttributesUtils handleNewlineBackspaceInRange:range replacementText:text input:self]
   ) {
     [self anyTextMayHaveBeenModified];

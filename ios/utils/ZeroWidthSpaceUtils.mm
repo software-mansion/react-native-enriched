@@ -44,7 +44,7 @@
       BlockQuoteStyle *bqStyle = input->stylesDict[@([BlockQuoteStyle getStyleType])];
       CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
       
-      // zero width spaces with no lists/blockquote styles on them get removed
+      // zero width spaces with no lists/blockquotes/codeblocks on them get removed
       if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange] && ![cbStyle detectStyle:characterRange]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
