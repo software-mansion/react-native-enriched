@@ -5,6 +5,7 @@ import type {
   EnrichedTextInputInstance,
 } from 'react-native-enriched';
 import type { FC } from 'react';
+import { ToolbarColorButton } from './ToolbarColorButton';
 
 const STYLE_ITEMS = [
   {
@@ -67,6 +68,16 @@ const STYLE_ITEMS = [
     name: 'ordered-list',
     icon: 'list-ol',
   },
+  {
+    name: 'color',
+    value: '#FF0000',
+    text: 'A',
+  },
+  {
+    name: 'color',
+    value: '#E6FF5C',
+    text: 'A',
+  },
 ] as const;
 
 type Item = (typeof STYLE_ITEMS)[number];
@@ -77,6 +88,7 @@ export interface ToolbarProps {
   editorRef?: React.RefObject<EnrichedTextInputInstance | null>;
   onOpenLinkModal: () => void;
   onSelectImage: () => void;
+  selectionColor: string | null;
 }
 
 export const Toolbar: FC<ToolbarProps> = ({
@@ -84,6 +96,7 @@ export const Toolbar: FC<ToolbarProps> = ({
   editorRef,
   onOpenLinkModal,
   onSelectImage,
+  selectionColor,
 }) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
@@ -138,6 +151,10 @@ export const Toolbar: FC<ToolbarProps> = ({
     }
   };
 
+  const handleColorButtonPress = (color: string) => {
+    editorRef?.current?.toggleColor(color);
+  };
+
   const isActive = (item: Item) => {
     switch (item.name) {
       case 'bold':
@@ -176,7 +193,14 @@ export const Toolbar: FC<ToolbarProps> = ({
   };
 
   const renderItem = ({ item }: ListRenderItemInfo<Item>) => {
-    return (
+    return item.name === 'color' ? (
+      <ToolbarColorButton
+        onPress={handleColorButtonPress}
+        color={item.value}
+        text={item.text}
+        isActive={stylesState.isColored && selectionColor === item.value}
+      />
+    ) : (
       <ToolbarButton
         {...item}
         isActive={isActive(item)}
@@ -185,7 +209,8 @@ export const Toolbar: FC<ToolbarProps> = ({
     );
   };
 
-  const keyExtractor = (item: Item) => item.name;
+  const keyExtractor = (item: Item) =>
+    item.name === 'color' ? item.value : item.name;
 
   return (
     <FlatList
