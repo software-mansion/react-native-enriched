@@ -54,6 +54,7 @@ class EnrichedTextInputView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
+  var scrollEnabled: Boolean = true
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -70,6 +71,8 @@ class EnrichedTextInputView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+  private var defaultValue: CharSequence? = null
+  private var defaultValueDirty: Boolean = false
 
   private var inputMethodManager: InputMethodManager? = null
 
@@ -135,6 +138,14 @@ class EnrichedTextInputView : AppCompatEditText {
     }
 
     return super.onTouchEvent(ev)
+  }
+
+  override fun canScrollVertically(direction: Int): Boolean {
+    return scrollEnabled
+  }
+
+  override fun canScrollHorizontally(direction: Int): Boolean {
+    return scrollEnabled
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
@@ -360,7 +371,24 @@ class EnrichedTextInputView : AppCompatEditText {
     return false
   }
 
-  fun updateTypeface() {
+  fun afterUpdateTransaction() {
+    updateTypeface()
+    updateDefaultValue()
+  }
+
+  fun setDefaultValue(value: CharSequence?) {
+    defaultValue = value
+    defaultValueDirty = true
+  }
+
+  private fun updateDefaultValue() {
+    if (!defaultValueDirty) return
+
+    defaultValueDirty = false
+    setValue(defaultValue ?: "")
+  }
+
+  private fun updateTypeface() {
     if (!typefaceDirty) return
     typefaceDirty = false
 
@@ -438,7 +466,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun verifyStyle(name: String): Boolean {
-    val mergingConfig = EnrichedSpans.mergingConfig[name] ?: return true
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(name, htmlStyle) ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
     val isEnabling = spanState?.getStart(name) == null

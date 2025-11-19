@@ -1,7 +1,6 @@
 package com.swmansion.enriched
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -78,7 +77,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
 
   @ReactProp(name = "defaultValue")
   override fun setDefaultValue(view: EnrichedTextInputView?, value: String?) {
-    view?.setValue(value)
+    view?.setDefaultValue(value)
   }
 
   @ReactProp(name = "placeholder")
@@ -155,9 +154,14 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.setFontStyle(style)
   }
 
+  @ReactProp(name = "scrollEnabled")
+  override fun setScrollEnabled(view: EnrichedTextInputView, scrollEnabled: Boolean) {
+    view.scrollEnabled = scrollEnabled
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextInputView) {
     super.onAfterUpdateTransaction(view)
-    view.updateTypeface()
+    view.afterUpdateTransaction()
   }
 
   override fun setPadding(

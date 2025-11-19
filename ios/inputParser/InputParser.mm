@@ -3,6 +3,7 @@
 #import "StyleHeaders.h"
 #import "UIView+React.h"
 #import "TextInsertionUtils.h"
+#import "StringExtension.h"
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
@@ -217,8 +218,8 @@
         [result appendString: [NSString stringWithFormat:@"<%@>", tagContent]];
       }
       
-      // append the letter
-      [result appendString:currentCharacterStr];
+      // append the letter and escape it if needed
+      [result appendString: [NSString stringByEscapingHtml:currentCharacterStr]];
       
       // save current styles for next character's checks
       previousActiveStyles = currentActiveStyles;
@@ -511,6 +512,7 @@
   BOOL closingTag = NO;
   NSMutableString *currentTagName = [[NSMutableString alloc] initWithString:@""];
   NSMutableString *currentTagParams = [[NSMutableString alloc] initWithString:@""];
+  NSDictionary *htmlEntitiesDict = [NSString getEscapedCharactersInfoFrom:fixedHtml];
   
   // firstly, extract text and initially processed tags
   for(int i = 0; i < fixedHtml.length; i++) {
@@ -532,7 +534,7 @@
       } else if(!closingTag) {
         // we finish opening tag - get its location and optionally params and put them under tag name key in ongoingTags
         NSMutableArray *tagArr = [[NSMutableArray alloc] init];
-        [tagArr addObject:[NSNumber numberWithInt:plainText.length]];
+        [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
         if(currentTagParams.length > 0) {
           [tagArr addObject:[currentTagParams copy]];
         }
@@ -571,8 +573,19 @@
       currentTagParams = [[NSMutableString alloc] initWithString:@""];
     } else {
       if(!insideTag) {
-        // no tags logic - just append text
-        [plainText appendString:currentCharacterStr];
+        // no tags logic - just append the right text
+        
+        // html entity on the index; use unescaped character and forward iterator accordingly
+        NSArray *entityInfo = htmlEntitiesDict[@(i)];
+        if(entityInfo != nullptr) {
+          NSString *escaped = entityInfo[0];
+          NSString *unescaped = entityInfo[1];
+          [plainText appendString:unescaped];
+          // the iterator will forward by 1 itself
+          i += escaped.length - 1;
+        } else {
+          [plainText appendString:currentCharacterStr];
+        }
       } else {
         if(gettingTagName) {
           if(currentCharacterChar == ' ') {

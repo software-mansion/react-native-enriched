@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
   @public BOOL blockEmitting;
-  @public BOOL emitHtml;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url range:(NSRange)range;
