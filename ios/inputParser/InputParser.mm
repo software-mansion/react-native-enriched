@@ -623,6 +623,7 @@
       
       NSRange hrefRange = match.range;
       [styleArr addObject:@([LinkStyle getStyleType])];
+      // cut only the url from the href="..." string
       NSString *url = [params substringWithRange:NSMakeRange(hrefRange.location + 6, hrefRange.length - 7)];
       stylePair.styleValue = url;
     } else if([tagName isEqualToString:@"mention"]) {
