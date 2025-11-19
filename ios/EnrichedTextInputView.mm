@@ -1081,8 +1081,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleImproperHeadings];
   }
   
-  // additionally, manage selection based changes
-  [self manageSelectionBasedChanges];
+  // manage mention editing also here
+  MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyle != nullptr) {
+    [mentionStyle manageMentionEditing];
+  }
   
   // placholder management
   if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
