@@ -17,6 +17,7 @@ namespace facebook::react {
         Size measure(
                 SurfaceId surfaceId,
                 int viewTag,
+                const EnrichedTextInputViewProps& props,
                 LayoutConstraints layoutConstraints) const;
 
     private:
