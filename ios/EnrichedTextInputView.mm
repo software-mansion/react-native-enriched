@@ -95,7 +95,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H3Style getStyleType]): [[H3Style alloc] initWithInput:self],
     @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self]
+    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self],
+    @([ImageStyle getStyleType]): [[ImageStyle alloc] initWithInput:self]
   };
   
   _conflictingStyles = @{
@@ -103,7 +104,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
+    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType]), @([ImageStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
     @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
@@ -111,7 +112,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])]
+    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
+    @([ImageStyle getStyleType]) : @[]
   };
   
   _blockingStyles = @{
@@ -119,15 +121,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[],
-    @([LinkStyle getStyleType]): @[],
-    @([MentionStyle getStyleType]): @[],
+    @([InlineCodeStyle getStyleType]) : @[@([ImageStyle getStyleType])],
+    @([LinkStyle getStyleType]): @[@([ImageStyle getStyleType])],
+    @([MentionStyle getStyleType]): @[@([ImageStyle getStyleType])],
     @([H1Style getStyleType]): @[],
     @([H2Style getStyleType]): @[],
     @([H3Style getStyleType]): @[],
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
+    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
   };
   
   parser = [[InputParser alloc] initWithInput:self];
@@ -345,6 +348,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [newConfig setLinkColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.a.color)];
       stylePropChanged = YES;
     }
+  }
+  
+  if(newViewProps.htmlStyle.img.width != oldViewProps.htmlStyle.img.width) {
+    [newConfig setImageWidth:newViewProps.htmlStyle.img.width];
+    stylePropChanged = YES;
+  }
+
+  if(newViewProps.htmlStyle.img.height != oldViewProps.htmlStyle.img.height) {
+    [newConfig setImageHeight:newViewProps.htmlStyle.img.height];
+    stylePropChanged = YES;
   }
   
   if(newViewProps.htmlStyle.a.textDecorationLine != oldViewProps.htmlStyle.a.textDecorationLine) {
@@ -703,7 +716,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
         .isBlockQuote = [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
         .isCodeBlock = NO, // [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
-        .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]])],
+        .isImage = [_activeStyles containsObject: @([ImageStyle getStyleType])],
       });
     }
   }
@@ -774,6 +787,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
+  } else if([commandName isEqualToString:@"addImage"]) {
+    NSString *uri = (NSString *)args[0];
+    [self addImage:uri];
   }
 }
 
@@ -909,6 +925,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
+    [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)addImage:(NSString *)uri
+{
+  ImageStyle *imageStyleClass = (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
+  if(imageStyleClass == nullptr) { return; }
+  
+  if([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType] range:textView.selectedRange]) {
+    [imageStyleClass addImage:uri];
     [self anyTextMayHaveBeenModified];
   }
 }

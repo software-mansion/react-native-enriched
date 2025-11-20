@@ -74,3 +74,7 @@
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (void)manageBlockquoteColor;
 @end
+
+@interface ImageStyle : NSObject<BaseStyleProtocol>
+- (void)addImage:(NSString *)uri;
+@end

@@ -64,4 +64,8 @@
 - (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue;
 - (void)setMentionStyleProps:(NSDictionary *)newValue;
 - (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator;
+- (void)setImageWidth:(CGFloat)newValue;
+- (CGFloat)imageWidth;
+- (void)setImageHeight:(CGFloat)newValue;
+- (CGFloat)imageHeight;
 @end

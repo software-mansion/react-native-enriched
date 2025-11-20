@@ -36,6 +36,8 @@
   UIColor *_linkColor;
   TextDecorationLineEnum _linkDecorationLine;
   NSDictionary *_mentionProperties;
+  CGFloat _imageWidth;
+  CGFloat _imageHeight;
 }
 
 - (instancetype) init {
@@ -79,6 +81,8 @@
   copy->_linkColor = [_linkColor copy];
   copy->_linkDecorationLine = [_linkDecorationLine copy];
   copy->_mentionProperties = [_mentionProperties mutableCopy];
+  copy->_imageWidth = _imageWidth;
+  copy->_imageHeight = _imageHeight;
   return copy;
 }
 
@@ -377,6 +381,22 @@
   fallbackProps.backgroundColor = [UIColor yellowColor];
   fallbackProps.decorationLine = DecorationUnderline;
   return fallbackProps;
+}
+
+- (CGFloat)imageWidth {
+  return _imageWidth;
+}
+
+- (void)setImageWidth:(CGFloat)newValue {
+  _imageWidth = newValue;
+}
+
+- (CGFloat)imageHeight {
+  return _imageHeight;
+}
+
+- (void)setImageHeight:(CGFloat)newValue {
+  _imageHeight = newValue;
 }
 
 @end

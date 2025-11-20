@@ -4,6 +4,7 @@ import {
   Text,
   type NativeSyntheticEvent,
   ScrollView,
+  Platform,
 } from 'react-native';
 import {
   EnrichedTextInput,
@@ -202,7 +203,13 @@ export default function App() {
       selectionLimit: 1,
     });
 
-    const imageUri = response.assets?.[0]?.originalPath;
+    let imageUri;
+    if (Platform.OS === 'android') {
+      imageUri = response.assets?.[0]?.originalPath;
+    } else {
+      imageUri = response.assets?.[0]?.uri;
+    }
+
     if (!imageUri) return;
 
     ref.current?.setImage(imageUri);
