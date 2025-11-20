@@ -2349,7 +2349,7 @@ PODS:
     - React-perflogger (= 0.82.1)
     - React-utils (= 0.82.1)
     - SocketRocket
-  - ReactNativeEnriched (0.1.5):
+  - ReactNativeEnriched (0.1.6):
     - boost
     - DoubleConversion
     - fast_float
@@ -2690,7 +2690,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: cc2795efe30a023c3a505676b9c748b664b9c0a1
   ReactCodegen: 897bad2d2f722ff4dc46fc144f9cc018db0e2ce4
   ReactCommon: c5803af00bd3737dc1631749b1f1da5beba5b049
-  ReactNativeEnriched: 9b9a2496bd301eca5df9a5c1ea208033d4d25b55
+  ReactNativeEnriched: c96634c617190d2cd94f9a474d68430dfc8d6dc0
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 689c8e04277f3ad631e60fe2a08e41d411daf8eb
 
