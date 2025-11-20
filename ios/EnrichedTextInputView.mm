@@ -113,7 +113,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
-    @([ImageStyle getStyleType]) : @[]
+    @([ImageStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
   };
   
   _blockingStyles = @{
@@ -130,7 +130,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([UnorderedListStyle getStyleType]): @[],
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
-    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
+    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType])]
   };
   
   parser = [[InputParser alloc] initWithInput:self];

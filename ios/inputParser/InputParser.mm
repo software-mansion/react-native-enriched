@@ -85,6 +85,9 @@
         
         // append closing tags
         for(NSNumber *style in sortedEndedStyles) {
+          if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+            continue;
+          }
           NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
           [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
         }
@@ -189,6 +192,9 @@
       
       // append closing tags
       for(NSNumber *style in sortedEndedStyles) {
+        if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+          continue;
+        }
         NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
         [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
       }

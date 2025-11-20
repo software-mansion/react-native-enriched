@@ -34,13 +34,15 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
   [_input->textView.textStorage removeAttribute:ImageAttributeName range:range];
+  [_input->textView.textStorage removeAttribute:NSAttachmentAttributeName range:range];
   [_input->textView.textStorage endEditing];
 }
 
 - (void)removeTypingAttributes {
-    NSMutableDictionary *currentAttributes = [_input->textView.typingAttributes mutableCopy];
-    [currentAttributes removeObjectForKey:ImageAttributeName];
-    _input->textView.typingAttributes = currentAttributes;
+  NSMutableDictionary *currentAttributes = [_input->textView.typingAttributes mutableCopy];
+  [currentAttributes removeObjectForKey:ImageAttributeName];
+  [currentAttributes removeObjectForKey:NSAttachmentAttributeName];
+  _input->textView.typingAttributes = currentAttributes;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
@@ -104,9 +106,15 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   ImageData *data = [[ImageData alloc] init];
   data.uri = uri;
   
+  UIFont *usedFont = _input->textView.typingAttributes[NSFontAttributeName];
+  if (!usedFont) {
+    usedFont = [_input->config primaryFont];
+  }
+  
   NSMutableDictionary *attributes = [@{
-        NSAttachmentAttributeName: [self prepareSpacerAttachement],
-        ImageAttributeName: data
+    NSAttachmentAttributeName: [self prepareSpacerAttachement],
+    ImageAttributeName: data,
+    NSFontAttributeName: usedFont,
   } mutableCopy];
   
   // Use the Object Replacement Character for Image.
@@ -124,6 +132,18 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   
   [_input->textView.textStorage beginEditing];
   [_input->textView.textStorage addAttributes:attributes range:imageRange];
+  
+  // remove typing attributes
+  NSMutableDictionary *cleanTypingAttrs = [_input->textView.typingAttributes mutableCopy];
+  [cleanTypingAttrs removeObjectForKey:ImageAttributeName];
+  [cleanTypingAttrs removeObjectForKey:NSAttachmentAttributeName];
+  
+  // Explicitly restore the font in typing attributes.
+  // Specific Case: When the input is empty, there is no "previous character" to inherit the font from.
+  // Without this, the cursor falls back to the system default (tiny 12pt), looking broken next to the image.
+  cleanTypingAttrs[NSFontAttributeName] = usedFont;
+  
+  _input->textView.typingAttributes = cleanTypingAttrs;
   
   [_input->textView.textStorage endEditing];
 }
