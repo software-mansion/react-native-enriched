@@ -1,6 +1,7 @@
 package com.swmansion.enriched
 
 import android.content.Context
+import android.util.Log
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -279,7 +280,11 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     heightMode: YogaMeasureMode?,
     attachmentsPositions: FloatArray?
   ): Long {
-    return MeasurementStore.getMeasureById(localData?.getInt("viewTag"), width)
+    val id = localData?.getInt("viewTag")
+    val size = MeasurementStore.getMeasureById(context, id, width, props)
+
+    Log.d("IGOR", "MEASURE RESULT for id=$id: $size")
+    return size
   }
 
   companion object {
