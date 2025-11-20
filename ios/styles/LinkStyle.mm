@@ -239,7 +239,10 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     inRange:inputRange
   ];
   
-  return manualUrl == nil ? automaticLinkRange : manualLinkRange;
+  return
+    manualLink == nullptr
+      ? automaticLink == nullptr ? NSMakeRange(0,0) : automaticLinkRange
+      : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
