@@ -224,20 +224,22 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  [_input->textView.textStorage
+  NSString *manualLink = [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
     inRange:inputRange
   ];
-  [_input->textView.textStorage
+  NSString *automaticLink = [_input->textView.textStorage
     attribute:AutomaticLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
     inRange:inputRange
   ];
   
-  return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
+  return manualLink == nullptr
+    ? automaticLink == nullptr ? NSMakeRange(0, 0) : automaticLinkRange
+    : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
