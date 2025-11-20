@@ -75,7 +75,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
-  _recentlyEmittedHtml = @"";
+  _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
@@ -1056,6 +1056,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleImproperHeadings];
   }
   
+  // mentions removal management
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass != nullptr) {
+    [mentionStyleClass handleExistingMentions];
+  }
+  
   // placholder management
   if(!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
     [self setPlaceholderLabelShown:NO];
@@ -1064,12 +1070,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-    // mentions removal management
-    MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-    if(mentionStyleClass != nullptr) {
-      [mentionStyleClass handleExistingMentions];
-    }
-    
     // modified words handling
     NSArray *modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:recentlyChangedRange];
     if(modifiedWords != nullptr) {
@@ -1091,13 +1091,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if(emitter != nullptr) {
+      // set the recently emitted string only if the emitter is defined
+      _recentlyEmittedString = stringToBeEmitted;
+      
       emitter->onChangeText({
         .value = [stringToBeEmitted toCppString]
       });
     }
-    
-    // set the recently emitted string
-    _recentlyEmittedString = stringToBeEmitted;
   }
   
   // update height on each character change
