@@ -152,8 +152,10 @@
   return occurences;
 }
 
-+ (NSArray *_Nonnull)getRangesWithout:(NSArray<NSNumber *> *_Nonnull)types withInput:(EnrichedTextInputView* _Nonnull)input
-    inRange:(NSRange)range
++ (NSArray *_Nonnull)getRangesWithout
+  :(NSArray<NSNumber *> *_Nonnull)types
+  withInput:(EnrichedTextInputView* _Nonnull)input
+  inRange:(NSRange)range
 {
   NSMutableArray<id> *activeStyleObjects = [[NSMutableArray alloc] init];
   for(NSNumber *type in types) {
