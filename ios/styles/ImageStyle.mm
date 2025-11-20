@@ -1,6 +1,5 @@
 #import "StyleHeaders.h"
 #import "EnrichedTextInputView.h"
-#import "ImageData.h"
 #import "OccurenceUtils.h"
 #import "TextInsertionUtils.h"
 
@@ -78,6 +77,27 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
           return [self styleCondition:value :range];
       }
   ];
+}
+
+- (ImageData *)getImageDataAt:(NSUInteger)location
+{
+  NSRange imageRange = NSMakeRange(0, 0);
+  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
+  
+  // don't search at the very end of input
+  NSUInteger searchLocation = location;
+  if(searchLocation == _input->textView.textStorage.length) {
+    return nullptr;
+  }
+  
+  ImageData *imageData = [_input->textView.textStorage
+    attribute:ImageAttributeName
+    atIndex:searchLocation
+    longestEffectiveRange: &imageRange
+    inRange:inputRange
+  ];
+  
+  return imageData;
 }
 
 - (void)addImage:(NSString *)uri {
