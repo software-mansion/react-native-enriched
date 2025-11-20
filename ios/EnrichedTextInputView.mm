@@ -711,9 +711,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if(detectedLinkData != nullptr) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url range:detectedLinkRange];
-    
-    _recentlyActiveLinkData = detectedLinkData;
-    _recentlyActiveLinkRange = detectedLinkRange;
   }
   
   if(detectedMentionParams != nullptr) {
@@ -812,6 +809,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
+    // update recently active link info
+    LinkData *newLinkData = [[LinkData alloc] init];
+    newLinkData.text = text;
+    newLinkData.url = url;
+    _recentlyActiveLinkData = newLinkData;
+    _recentlyActiveLinkRange = range;
+  
     emitter->onLinkDetected({
       .text = [text toCppString],
       .url = [url toCppString],
