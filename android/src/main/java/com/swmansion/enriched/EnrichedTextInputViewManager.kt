@@ -281,10 +281,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     attachmentsPositions: FloatArray?
   ): Long {
     val id = localData?.getInt("viewTag")
-    val size = MeasurementStore.getMeasureById(context, id, width, props)
-
-    Log.d("IGOR", "MEASURE RESULT for id=$id: $size")
-    return size
+    return MeasurementStore.getMeasureById(context, id, width, props)
   }
 
   companion object {
