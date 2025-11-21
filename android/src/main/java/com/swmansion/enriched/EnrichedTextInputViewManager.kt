@@ -279,7 +279,8 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     heightMode: YogaMeasureMode?,
     attachmentsPositions: FloatArray?
   ): Long {
-    return MeasurementStore.getMeasureById(localData?.getInt("viewTag"), width)
+    val id = localData?.getInt("viewTag")
+    return MeasurementStore.getMeasureById(context, id, width, props)
   }
 
   companion object {

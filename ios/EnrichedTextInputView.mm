@@ -73,7 +73,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   recentlyChangedRange = NSMakeRange(0, 0);
   _recentlyEmittedString = @"";
-  _recentlyEmittedHtml = @"";
+  _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
@@ -731,9 +731,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if(detectedLinkData != nullptr) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData.text url:detectedLinkData.url range:detectedLinkRange];
-    
-    _recentlyActiveLinkData = detectedLinkData;
-    _recentlyActiveLinkRange = detectedLinkRange;
   }
   
   if(detectedMentionParams != nullptr) {
@@ -834,6 +831,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)emitOnLinkDetectedEvent:(NSString *)text url:(NSString *)url range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if(emitter != nullptr) {
+    // update recently active link info
+    LinkData *newLinkData = [[LinkData alloc] init];
+    newLinkData.text = text;
+    newLinkData.url = url;
+    _recentlyActiveLinkData = newLinkData;
+    _recentlyActiveLinkRange = range;
+  
     emitter->onLinkDetected({
       .text = [text toCppString],
       .url = [url toCppString],
@@ -1081,10 +1085,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleImproperHeadings];
   }
   
-  // manage mention editing also here
-  MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
-  if(mentionStyle != nullptr) {
-    [mentionStyle manageMentionEditing];
+  // mentions removal management
+  MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+  if(mentionStyleClass != nullptr) {
+    [mentionStyleClass handleExistingMentions];
   }
   
   // placholder management
@@ -1095,12 +1099,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   
   if(![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
-    // mentions removal management
-    MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-    if(mentionStyleClass != nullptr) {
-      [mentionStyleClass handleExistingMentions];
-    }
-    
     // modified words handling
     NSArray *modifiedWords = [WordsUtils getAffectedWordsFromText:textView.textStorage.string modificationRange:recentlyChangedRange];
     if(modifiedWords != nullptr) {
@@ -1122,13 +1120,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if(emitter != nullptr) {
+      // set the recently emitted string only if the emitter is defined
+      _recentlyEmittedString = stringToBeEmitted;
+      
       emitter->onChangeText({
         .value = [stringToBeEmitted toCppString]
       });
     }
-    
-    // set the recently emitted string
-    _recentlyEmittedString = stringToBeEmitted;
   }
   
   // update height on each character change

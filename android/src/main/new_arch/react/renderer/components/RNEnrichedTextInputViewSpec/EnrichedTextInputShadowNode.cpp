@@ -27,7 +27,7 @@ extern const char EnrichedTextInputComponentName[] = "EnrichedTextInputView";
     Size EnrichedTextInputShadowNode::measureContent(
             const LayoutContext &layoutContext,
             const LayoutConstraints &layoutConstraints) const {
-        return measurementsManager_->measure(getSurfaceId(), getTag(), layoutConstraints);
+        return measurementsManager_->measure(getSurfaceId(), getTag(), getConcreteProps(), layoutConstraints);
     }
 
 } // namespace facebook::react
