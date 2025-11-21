@@ -184,6 +184,25 @@
         }
       }
       
+      // if a style begins but there is a style inner to it that is (and was previously) active, it also should be closed and readded
+      
+      // newly added styles
+      NSMutableSet *newStyles = [currentActiveStyles mutableCopy];
+      [newStyles minusSet: previousActiveStyles];
+      // styles that were and still are active
+      NSMutableSet *stillActiveStyles = [previousActiveStyles mutableCopy];
+      [stillActiveStyles intersectSet:currentActiveStyles];
+      
+      for(NSNumber *style in newStyles) {
+        for(NSNumber *ongoingStyle in stillActiveStyles) {
+          if([ongoingStyle integerValue] > [style integerValue]) {
+            // the prev style is inner; needs to be closed and re-added later
+            [fixedEndedStyles addObject:ongoingStyle];
+            [stylesToBeReAdded addObject:ongoingStyle];
+          }
+        }
+      }
+      
       // they are sorted in a descending order
       NSArray<NSNumber*> *sortedEndedStyles = [fixedEndedStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
       
@@ -193,9 +212,8 @@
         [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
       }
       
-      // get styles that have begun: they are sorted in a ascending manner to properly keep tags' FILO order
-      NSMutableSet<NSNumber *> *newStyles = [currentActiveStyles mutableCopy];
-      [newStyles minusSet: previousActiveStyles];
+      // all styles that have begun: new styles + the ones that need to be re-added
+      // they are sorted in a ascending manner to properly keep tags' FILO order
       [newStyles unionSet: stylesToBeReAdded];
       NSArray<NSNumber*> *sortedNewStyles = [newStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:YES]]];
       
