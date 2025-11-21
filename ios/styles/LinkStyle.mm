@@ -167,7 +167,6 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   [self manageLinkTypingAttributes];
-  [_input anyTextMayHaveBeenModified];
 }
 
 // get exact link data at the given location if it exists
@@ -224,20 +223,22 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  [_input->textView.textStorage
+  NSString *manualLink = [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
     inRange:inputRange
   ];
-  [_input->textView.textStorage
+  NSString *automaticLink = [_input->textView.textStorage
     attribute:AutomaticLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
     inRange:inputRange
   ];
   
-  return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
+  return manualLink == nullptr
+    ? automaticLink == nullptr ? NSMakeRange(0, 0) : automaticLinkRange
+    : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
@@ -349,10 +350,9 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
     if(addStyle) {
       [self addLink:word url:regexPassedUrl range:wordRange manual:NO];
+      // emit onLinkDetected if style was added
+      [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
     }
-  
-    // emit onLinkDetected
-    [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
   }
 }
 
