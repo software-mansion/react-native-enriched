@@ -107,7 +107,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   data.uri = uri;
   
   NSMutableDictionary *attributes = [@{
-    NSAttachmentAttributeName: [self prepareSpacerAttachement],
+    NSAttachmentAttributeName: [self prepareImageAttachement:uri],
     ImageAttributeName: data,
   } mutableCopy];
   
@@ -129,21 +129,17 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   [_input->textView.textStorage endEditing];
 }
 
--(NSTextAttachment *)prepareSpacerAttachement
+-(NSTextAttachment *)prepareImageAttachement:(NSString *)uri
 {
-  NSTextAttachment *spacerAttachment = [[NSTextAttachment alloc] init];
-  spacerAttachment.bounds = CGRectMake(0, 0, [_input->config imageWidth], [_input->config imageHeight]);
-  spacerAttachment.image = [self prepareTransparentImage];
+  NSURL *url = [NSURL URLWithString:uri];
+  NSData *imgData = [NSData dataWithContentsOfURL:url];
+  UIImage *image = [UIImage imageWithData:imgData];
   
-  return spacerAttachment;
-}
+  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+  attachment.image = image;
+  attachment.bounds = CGRectMake(0, 0, [_input->config imageWidth], [_input->config imageHeight]);
 
-// Helper to create a 1x1 transparent image
-- (UIImage *)prepareTransparentImage {
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
-    UIImage *blank = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return blank;
+  return attachment;
 }
 
 @end

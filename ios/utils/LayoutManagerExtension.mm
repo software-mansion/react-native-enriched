@@ -3,7 +3,6 @@
 #import "EnrichedTextInputView.h"
 #import "StyleHeaders.h"
 #import "ParagraphsUtils.h"
-#import "ImageData.h"
 
 @implementation NSLayoutManager (LayoutManagerExtension)
 
@@ -57,8 +56,6 @@ static void const *kInputKey = &kInputKey;
   if(bqStyle == nullptr) { return; }
   
   NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
-  
-  [self drawImages:typedInput origin:origin inputRange:inputRange];
   
   // it isn't the most performant but we have to check for all the blockquotes each time and redraw them
   NSArray *allBlockquotes = [bqStyle findAllOccurences:inputRange];
@@ -133,48 +130,6 @@ static void const *kInputKey = &kInputKey;
       ];
     }
   }
-}
-
--(void)drawImages:(EnrichedTextInputView *)typedInput origin:(CGPoint)origin inputRange:(NSRange)inputRange
-{
-  ImageStyle *imgStyle = typedInput->stylesDict[@([ImageStyle getStyleType])];
-  
-  if (imgStyle == nullptr) { return; }
-    NSArray *allImages = [imgStyle findAllOccurences:inputRange];
-      
-    for (StylePair *pair in allImages) {
-      ImageData *imageData = (ImageData *)pair.styleValue;
-      NSRange imageCharRange = [pair.rangeValue rangeValue];
-      
-      // Convert Character Range to Glyph Range
-      NSRange imageGlyphRange = [self glyphRangeForCharacterRange:imageCharRange actualCharacterRange:NULL];
-      
-      // Get the Text Container (needed for rect calculation)
-      NSTextContainer *textContainer = [self textContainerForGlyphAtIndex:imageGlyphRange.location effectiveRange:NULL];
-      
-      // boundingRectForGlyphRange gives us the calculated space for the \uFFFC character
-      CGRect imageRect = [self boundingRectForGlyphRange:imageGlyphRange inTextContainer:textContainer];
-      
-      imageRect.origin.x += origin.x;
-      imageRect.origin.y += origin.y;
-      imageRect.size.width = [typedInput->config imageWidth];
-      imageRect.size.height = [typedInput->config imageHeight];
-            
-      UIImage *imageToDraw = nil;
-      
-      if (imageData.uri) {
-        NSURL *url = [NSURL URLWithString:imageData.uri];
-        imageToDraw = [UIImage imageWithContentsOfFile:url.path];
-      }
-      
-      if (imageToDraw) {
-        [imageToDraw drawInRect:imageRect];
-      } else {
-        // Draw a placeholder box if image failed to load
-        [[UIColor lightGrayColor] setFill];
-        UIRectFill(imageRect);
-      }
-    }
 }
 
 - (NSString *)markerForList:(NSTextList *)list charIndex:(NSUInteger)index input:(EnrichedTextInputView *)input {
