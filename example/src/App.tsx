@@ -203,12 +203,10 @@ export default function App() {
       selectionLimit: 1,
     });
 
-    let imageUri;
-    if (Platform.OS === 'android') {
-      imageUri = response.assets?.[0]?.originalPath;
-    } else {
-      imageUri = response.assets?.[0]?.uri;
-    }
+    const imageUri =
+      Platform.OS === 'android'
+        ? response.assets?.[0]?.originalPath
+        : response.assets?.[0]?.uri;
 
     if (!imageUri) return;
 
