@@ -12,6 +12,8 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 
 + (StyleType)getStyleType { return Image; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -114,11 +116,15 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   // This tells TextKit "something non-text goes here".
   NSString *imagePlaceholder = @"\uFFFC";
   
-  [TextInsertionUtils replaceText:imagePlaceholder
-                               at:_input->textView.selectedRange
-             additionalAttributes:_input->defaultTypingAttributes
-                            input:_input
-                    withSelection:YES];
+  if (_input->textView.selectedRange.length == 0) {
+    [TextInsertionUtils insertText:imagePlaceholder at:_input->textView.selectedRange.location additionalAttributes:nullptr input:_input withSelection:YES];
+  } else {
+    [TextInsertionUtils replaceText:imagePlaceholder
+                                 at:_input->textView.selectedRange
+               additionalAttributes:nullptr
+                              input:_input
+                      withSelection:YES];
+  }
   
   NSRange newSelection = _input->textView.selectedRange;
   NSRange imageRange = NSMakeRange(newSelection.location - 1, 1);
