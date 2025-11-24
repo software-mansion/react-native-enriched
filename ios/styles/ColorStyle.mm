@@ -20,6 +20,8 @@
 - (void)applyStyle:(NSRange)range {
 }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (void)applyStyle:(NSRange)range color:(UIColor *)color {
   BOOL isStylePresent = [self detectStyle:range color:color];
   
@@ -136,6 +138,12 @@
           : [style detectStyle:range]);
 }
 
+- (BOOL)isInCodeBlockAndHasTheSameColor:(id)value :(NSRange)range {
+  BOOL isInCodeBlock = [self isInStyle:range styleType: CodeBlock];
+  
+  return isInCodeBlock && [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
+}
+
 - (BOOL)inLinkAndForegroundColorIsLinkColor:(id)value :(NSRange)range {
   BOOL isInLink = [self isInStyle:range styleType: Link];
   
@@ -176,6 +184,7 @@
   if ([self inLinkAndForegroundColorIsLinkColor:value :range]) { return NO; }
   if ([self inInlineCodeAndHasTheSameColor:value :range]) { return NO; }
   if ([self inMentionAndHasTheSameColor:value :range]) { return NO; }
+  if ([self isInCodeBlockAndHasTheSameColor:value :range]) { return NO; }
   
   return YES;
 }
