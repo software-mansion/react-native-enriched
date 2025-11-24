@@ -34,6 +34,7 @@ void EnrichedTextInputViewShadowNode::setupMockTextInputView_() {
   const int mockSize = 1000;
   mockTextInputView_ = [[EnrichedTextInputView alloc] initWithFrame:(CGRectMake(veryFarAway, veryFarAway, mockSize, mockSize))];
   const auto props = this->getProps();
+  ((EnrichedTextInputView *)mockTextInputView_)->blockEmitting = YES;
   [mockTextInputView_ updateProps:props oldProps:nullptr];
 }
 
