@@ -36,6 +36,9 @@
   UIColor *_linkColor;
   TextDecorationLineEnum _linkDecorationLine;
   NSDictionary *_mentionProperties;
+  UIColor *_codeBlockFgColor;
+  CGFloat _codeBlockBorderRadius;
+  UIColor *_codeBlockBgColor;
 }
 
 - (instancetype) init {
@@ -79,6 +82,9 @@
   copy->_linkColor = [_linkColor copy];
   copy->_linkDecorationLine = [_linkDecorationLine copy];
   copy->_mentionProperties = [_mentionProperties mutableCopy];
+  copy->_codeBlockFgColor = [_codeBlockFgColor copy];
+  copy->_codeBlockBgColor = [_codeBlockBgColor copy];
+  copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
   return copy;
 }
 
@@ -377,6 +383,30 @@
   fallbackProps.backgroundColor = [UIColor yellowColor];
   fallbackProps.decorationLine = DecorationUnderline;
   return fallbackProps;
+}
+
+- (UIColor *)codeBlockFgColor {
+  return _codeBlockFgColor;
+}
+
+- (void)setCodeBlockFgColor:(UIColor *)newValue {
+  _codeBlockFgColor = newValue;
+}
+
+- (UIColor *)codeBlockBgColor {
+  return _codeBlockBgColor;
+}
+
+- (void)setCodeBlockBgColor:(UIColor *)newValue {
+  _codeBlockBgColor = newValue;
+}
+
+- (CGFloat)codeBlockBorderRadius {
+  return _codeBlockBorderRadius;
+}
+
+- (void)setCodeBlockBorderRadius:(CGFloat)newValue {
+  _codeBlockBorderRadius = newValue;
 }
 
 @end

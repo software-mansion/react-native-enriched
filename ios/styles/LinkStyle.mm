@@ -15,6 +15,8 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 
 + (StyleType)getStyleType { return Link; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -280,6 +282,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
   InlineCodeStyle *inlineCodeStyle = [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
   MentionStyle *mentionStyle = [_input->stylesDict objectForKey:@([MentionStyle getStyleType])];
+  CodeBlockStyle *codeBlockStyle = [_input->stylesDict objectForKey:@([CodeBlockStyle getStyleType])];
   
   if (inlineCodeStyle == nullptr || mentionStyle == nullptr) {
     return;
@@ -292,6 +295,11 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   // we don't recognize links among inline code
   if ([inlineCodeStyle anyOccurence:wordRange]) {
+    return;
+  }
+  
+  // we don't recognize links in codeblocks
+  if ([codeBlockStyle anyOccurence:wordRange]) {
     return;
   }
   

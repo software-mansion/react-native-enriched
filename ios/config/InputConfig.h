@@ -64,4 +64,10 @@
 - (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue;
 - (void)setMentionStyleProps:(NSDictionary *)newValue;
 - (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator;
+- (UIColor *)codeBlockFgColor;
+- (void)setCodeBlockFgColor:(UIColor *)newValue;
+- (UIColor *)codeBlockBgColor;
+- (void)setCodeBlockBgColor:(UIColor *)newValue;
+- (CGFloat)codeBlockBorderRadius;
+- (void)setCodeBlockBorderRadius:(CGFloat)newValue;
 @end
