@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
   @public InputParser *parser;
   @public NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
   @public NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
+  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
   @public BOOL blockEmitting;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
@@ -25,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)anyTextMayHaveBeenModified;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
+- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types range:(NSRange)range;
 @end
 
 NS_ASSUME_NONNULL_END

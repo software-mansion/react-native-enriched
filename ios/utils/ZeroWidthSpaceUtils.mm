@@ -42,9 +42,10 @@
       UnorderedListStyle *ulStyle = input->stylesDict[@([UnorderedListStyle getStyleType])];
       OrderedListStyle *olStyle = input->stylesDict[@([OrderedListStyle getStyleType])];
       BlockQuoteStyle *bqStyle = input->stylesDict[@([BlockQuoteStyle getStyleType])];
+      CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
       
-      // zero width spaces with no lists/blockquote styles on them get removed
-      if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange]) {
+      // zero width spaces with no lists/blockquotes/codeblocks on them get removed
+      if(![ulStyle detectStyle:characterRange] && ![olStyle detectStyle:characterRange] && ![bqStyle detectStyle:characterRange] && ![cbStyle detectStyle:characterRange]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -76,6 +77,7 @@
   UnorderedListStyle *ulStyle = input->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle = input->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = input->stylesDict[@([BlockQuoteStyle getStyleType])];
+  CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = input->textView.selectedRange;
   
@@ -87,7 +89,7 @@
       NSRange paragraphRange = [input->textView.textStorage.string paragraphRangeForRange:characterRange];
       
       if(paragraphRange.length == 1) {
-        if([ulStyle detectStyle:characterRange] || [olStyle detectStyle:characterRange] || [bqStyle detectStyle:characterRange]) {
+        if([ulStyle detectStyle:characterRange] || [olStyle detectStyle:characterRange] || [bqStyle detectStyle:characterRange] || [cbStyle detectStyle:characterRange]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -114,7 +116,7 @@
   // additional check for last index of the input
   NSRange lastRange = NSMakeRange(input->textView.textStorage.string.length, 0);
   NSRange lastParagraphRange = [input->textView.textStorage.string paragraphRangeForRange:lastRange];
-  if(lastParagraphRange.length == 0 && ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] || [bqStyle detectStyle:lastRange])) {
+  if(lastParagraphRange.length == 0 && ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] || [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange])) {
     [TextInsertionUtils insertText:@"\u200B" at:lastRange.location additionalAttributes:nullptr input:input withSelection:NO];
   }
   
@@ -146,19 +148,29 @@
       styleRemovalRange = NSMakeRange(paragraphRange.location, 1);
     }
     
-    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
-    
     // and then remove associated styling
     
     UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
     OrderedListStyle *olStyle = typedInput->stylesDict[@([OrderedListStyle getStyleType])];
     BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
+    CodeBlockStyle *cbStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
     
-    if([ulStyle detectStyle:styleRemovalRange]) {
+    if([cbStyle detectStyle:removalRange]) {
+      // code blocks are being handled differently; we want to remove previous newline if there is a one
+      if(range.location > 0) {
+        removalRange = NSMakeRange(removalRange.location - 1, removalRange.length + 1);
+      }
+      [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
+      return YES;
+    }
+    
+    [TextInsertionUtils replaceText:@"" at:removalRange additionalAttributes:nullptr input:typedInput withSelection:YES];
+    
+    if ([ulStyle detectStyle:styleRemovalRange]) {
       [ulStyle removeAttributes:styleRemovalRange];
-    } else if([olStyle detectStyle:styleRemovalRange]) {
+    } else if ([olStyle detectStyle:styleRemovalRange]) {
       [olStyle removeAttributes:styleRemovalRange];
-    } else if([bqStyle detectStyle:styleRemovalRange]) {
+    } else if ([bqStyle detectStyle:styleRemovalRange]) {
       [bqStyle removeAttributes:styleRemovalRange];
     }
     
@@ -166,5 +178,5 @@
   }
   return NO;
 }
-@end
 
+@end

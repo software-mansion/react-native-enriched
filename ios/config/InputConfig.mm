@@ -36,6 +36,9 @@
   UIColor *_linkColor;
   TextDecorationLineEnum _linkDecorationLine;
   NSDictionary *_mentionProperties;
+  UIColor *_codeBlockFgColor;
+  CGFloat _codeBlockBorderRadius;
+  UIColor *_codeBlockBgColor;
   CGFloat _imageWidth;
   CGFloat _imageHeight;
 }
@@ -81,6 +84,9 @@
   copy->_linkColor = [_linkColor copy];
   copy->_linkDecorationLine = [_linkDecorationLine copy];
   copy->_mentionProperties = [_mentionProperties mutableCopy];
+  copy->_codeBlockFgColor = [_codeBlockFgColor copy];
+  copy->_codeBlockBgColor = [_codeBlockBgColor copy];
+  copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
   copy->_imageWidth = _imageWidth;
   copy->_imageHeight = _imageHeight;
   return copy;
@@ -381,6 +387,30 @@
   fallbackProps.backgroundColor = [UIColor yellowColor];
   fallbackProps.decorationLine = DecorationUnderline;
   return fallbackProps;
+}
+
+- (UIColor *)codeBlockFgColor {
+  return _codeBlockFgColor;
+}
+
+- (void)setCodeBlockFgColor:(UIColor *)newValue {
+  _codeBlockFgColor = newValue;
+}
+
+- (UIColor *)codeBlockBgColor {
+  return _codeBlockBgColor;
+}
+
+- (void)setCodeBlockBgColor:(UIColor *)newValue {
+  _codeBlockBgColor = newValue;
+}
+
+- (CGFloat)codeBlockBorderRadius {
+  return _codeBlockBorderRadius;
+}
+
+- (void)setCodeBlockBorderRadius:(CGFloat)newValue {
+  _codeBlockBorderRadius = newValue;
 }
 
 - (CGFloat)imageWidth {

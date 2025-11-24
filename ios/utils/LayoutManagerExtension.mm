@@ -3,6 +3,7 @@
 #import "EnrichedTextInputView.h"
 #import "StyleHeaders.h"
 #import "ParagraphsUtils.h"
+#import "ColorExtension.h"
 
 @implementation NSLayoutManager (LayoutManagerExtension)
 
@@ -52,10 +53,121 @@ static void const *kInputKey = &kInputKey;
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)self.input;
   if(typedInput == nullptr) { return; }
   
+  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
+    
+  [self drawBlockQuotes:typedInput origin:origin inputRange:inputRange];
+  [self drawLists:typedInput origin:origin inputRange:inputRange];
+  [self drawCodeBlocks:typedInput origin:origin inputRange:inputRange];
+}
+
+- (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput origin:(CGPoint)origin inputRange:(NSRange)inputRange
+{
+  CodeBlockStyle *codeBlockStyle = typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+  if(codeBlockStyle == nullptr) { return; }
+  
+  NSArray<StylePair *> *allCodeBlocks = [codeBlockStyle findAllOccurences:inputRange];
+  NSArray<StylePair *> *mergedCodeBlocks = [self mergeContiguousStylePairs:allCodeBlocks];
+  UIColor *bgColor = [[typedInput->config codeBlockBgColor] colorWithAlphaIfNotTransparent:0.4];
+  CGFloat radius = [typedInput->config codeBlockBorderRadius];
+  [bgColor setFill];
+  
+  for (StylePair *pair in mergedCodeBlocks) {
+    NSRange blockCharacterRange = [pair.rangeValue rangeValue];
+    if (blockCharacterRange.length == 0) continue;
+    
+    NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:typedInput->textView range:blockCharacterRange];
+    if (paragraphs.count == 0) continue;
+    
+    NSRange firstParagraphRange = [((NSValue *)[paragraphs firstObject]) rangeValue];
+    NSRange lastParagraphRange = [((NSValue *)[paragraphs lastObject]) rangeValue];
+
+    for (NSValue *paragraphValue in paragraphs) {
+      NSRange paragraphCharacterRange = [paragraphValue rangeValue];
+      
+      BOOL isFirstParagraph = NSEqualRanges(paragraphCharacterRange, firstParagraphRange);
+      BOOL isLastParagraph = NSEqualRanges(paragraphCharacterRange, lastParagraphRange);
+      
+      NSRange paragraphGlyphRange = [self glyphRangeForCharacterRange:paragraphCharacterRange actualCharacterRange:NULL];
+      
+      __block BOOL isFirstLineOfParagraph = YES;
+      
+      [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
+                                     usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer * _Nonnull textContainer, NSRange glyphRange, BOOL * _Nonnull stop) {
+        
+        CGRect lineBgRect = rect;
+        lineBgRect.origin.x = origin.x;
+        lineBgRect.origin.y += origin.y;
+        lineBgRect.size.width = textContainer.size.width;
+        
+        UIRectCorner cornersForThisLine = 0;
+        
+        if (isFirstParagraph && isFirstLineOfParagraph) {
+          cornersForThisLine = UIRectCornerTopLeft | UIRectCornerTopRight;
+        }
+        
+        BOOL isLastLineOfParagraph = (NSMaxRange(glyphRange) >= NSMaxRange(paragraphGlyphRange));
+        
+        if (isLastParagraph && isLastLineOfParagraph) {
+          cornersForThisLine = cornersForThisLine | UIRectCornerBottomLeft | UIRectCornerBottomRight;
+        }
+        
+        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:lineBgRect
+                                                   byRoundingCorners:cornersForThisLine
+                                                         cornerRadii:CGSizeMake(radius, radius)];
+        [path fill];
+        
+        isFirstLineOfParagraph = NO;
+      }];
+    }
+  }
+}
+
+- (NSArray<StylePair *> *)mergeContiguousStylePairs:(NSArray<StylePair *> *)pairs
+{
+  if (pairs.count == 0) {
+    return @[];
+  }
+  
+  NSMutableArray<StylePair *> *mergedPairs = [[NSMutableArray alloc] init];
+  StylePair *currentPair = pairs[0];
+  NSRange currentRange = [currentPair.rangeValue rangeValue];
+  for (NSUInteger i = 1; i < pairs.count; i++) {
+    StylePair *nextPair = pairs[i];
+    NSRange nextRange = [nextPair.rangeValue rangeValue];
+
+    // The Gap Check:
+    // NSMaxRange(currentRange) is where the current block ends.
+    // nextRange.location is where the next block starts.
+    if (NSMaxRange(currentRange) == nextRange.location) {
+      // They touch perfectly (no gap). Merge them.
+      currentRange.length += nextRange.length;
+    } else {
+      // There is a gap (indices don't match).
+      // 1. Save the finished block.
+      StylePair *mergedPair = [[StylePair alloc] init];
+      mergedPair.rangeValue = [NSValue valueWithRange:currentRange];
+      mergedPair.styleValue = currentPair.styleValue;
+      [mergedPairs addObject:mergedPair];
+      
+      // 2. Start a brand new block.
+      currentPair = nextPair;
+      currentRange = nextRange;
+    }
+  }
+
+  // Add the final block
+  StylePair *lastPair = [[StylePair alloc] init];
+  lastPair.rangeValue = [NSValue valueWithRange:currentRange];
+  lastPair.styleValue = currentPair.styleValue;
+  [mergedPairs addObject:lastPair];
+
+  return mergedPairs;
+}
+
+- (void)drawBlockQuotes:(EnrichedTextInputView *)typedInput origin:(CGPoint)origin inputRange:(NSRange)inputRange
+{
   BlockQuoteStyle *bqStyle = typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   if(bqStyle == nullptr) { return; }
-  
-  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
   
   // it isn't the most performant but we have to check for all the blockquotes each time and redraw them
   NSArray *allBlockquotes = [bqStyle findAllOccurences:inputRange];
@@ -78,7 +190,10 @@ static void const *kInputKey = &kInputKey;
       }
     ];
   }
-    
+}
+
+- (void)drawLists:(EnrichedTextInputView *)typedInput origin:(CGPoint)origin inputRange:(NSRange)inputRange
+{
   UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle = typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   if(ulStyle == nullptr || olStyle == nullptr) { return; }

@@ -76,6 +76,11 @@
 - (void)manageBlockquoteColor;
 @end
 
+@interface CodeBlockStyle : NSObject<BaseStyleProtocol>
+- (void)manageCodeBlockFontAndColor;
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@end
+
 @interface ImageStyle : NSObject<BaseStyleProtocol>
 - (void)addImage:(NSString *)uri;
 - (ImageData *)getImageDataAt:(NSUInteger)location;

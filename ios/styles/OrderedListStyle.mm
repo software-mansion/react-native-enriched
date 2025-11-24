@@ -11,6 +11,8 @@
 
 + (StyleType)getStyleType { return OrderedList; }
 
++ (BOOL)isParagraphStyle { return YES; }
+
 - (CGFloat)getHeadIndent {
   // lists are drawn manually
   // margin before marker + gap between marker and paragraph

@@ -29,6 +29,7 @@
   BOOL inUnorderedList = NO;
   BOOL inOrderedList = NO;
   BOOL inBlockQuote = NO;
+  BOOL inCodeBlock = NO;
   unichar lastCharacter = 0;
   
   for(int i = 0; i < text.length; i++) {
@@ -98,7 +99,8 @@
            [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
            [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
            [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
-           [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
+           [previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])] ||
+           [previousActiveStyles containsObject:@([CodeBlockStyle getStyleType])]
         ) {
           // do nothing, proper closing paragraph tags have been already appended
         } else {
@@ -131,6 +133,11 @@
           inBlockQuote = NO;
           [result appendString:@"\n</blockquote>"];
         }
+        // handle ending codeblock
+        if(inCodeBlock && ![currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+          inCodeBlock = NO;
+          [result appendString:@"\n</codeblock>"];
+        }
         
         // handle starting unordered list
         if(!inUnorderedList && [currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])]) {
@@ -147,6 +154,11 @@
           inBlockQuote = YES;
           [result appendString:@"\n<blockquote>"];
         }
+        // handle starting codeblock
+        if(!inCodeBlock && [currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+          inCodeBlock = YES;
+          [result appendString:@"\n<codeblock>"];
+        }
         
         // don't add the <p> tag if some paragraph styles are present
         if([currentActiveStyles containsObject:@([UnorderedListStyle getStyleType])] ||
@@ -154,7 +166,8 @@
            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
            [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
-           [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]
+           [currentActiveStyles containsObject:@([BlockQuoteStyle getStyleType])] ||
+           [currentActiveStyles containsObject:@([CodeBlockStyle getStyleType])]
         ) {
           [result appendString:@"\n"];
         } else {
@@ -187,6 +200,25 @@
         }
       }
       
+      // if a style begins but there is a style inner to it that is (and was previously) active, it also should be closed and readded
+      
+      // newly added styles
+      NSMutableSet *newStyles = [currentActiveStyles mutableCopy];
+      [newStyles minusSet: previousActiveStyles];
+      // styles that were and still are active
+      NSMutableSet *stillActiveStyles = [previousActiveStyles mutableCopy];
+      [stillActiveStyles intersectSet:currentActiveStyles];
+      
+      for(NSNumber *style in newStyles) {
+        for(NSNumber *ongoingStyle in stillActiveStyles) {
+          if([ongoingStyle integerValue] > [style integerValue]) {
+            // the prev style is inner; needs to be closed and re-added later
+            [fixedEndedStyles addObject:ongoingStyle];
+            [stylesToBeReAdded addObject:ongoingStyle];
+          }
+        }
+      }
+      
       // they are sorted in a descending order
       NSArray<NSNumber*> *sortedEndedStyles = [fixedEndedStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:NO]]];
       
@@ -199,9 +231,8 @@
         [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
       }
       
-      // get styles that have begun: they are sorted in a ascending manner to properly keep tags' FILO order
-      NSMutableSet<NSNumber *> *newStyles = [currentActiveStyles mutableCopy];
-      [newStyles minusSet: previousActiveStyles];
+      // all styles that have begun: new styles + the ones that need to be re-added
+      // they are sorted in a ascending manner to properly keep tags' FILO order
       [newStyles unionSet: stylesToBeReAdded];
       NSArray<NSNumber*> *sortedNewStyles = [newStyles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"intValue" ascending:YES]]];
       
@@ -248,6 +279,8 @@
       [result appendString:@"\n</ol>"];
     } else if([previousActiveStyles containsObject:@([BlockQuoteStyle getStyleType])]) {
       [result appendString:@"\n</blockquote>"];
+    } else if([previousActiveStyles containsObject:@([CodeBlockStyle getStyleType])]) {
+      [result appendString:@"\n</codeblock>"];
     } else if(
       [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
       [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
@@ -270,6 +303,10 @@
     if(inBlockQuote) {
       inBlockQuote = NO;
       [result appendString:@"\n</blockquote>"];
+    }
+    if(inCodeBlock) {
+      inCodeBlock = NO;
+      [result appendString:@"\n</codeblock>"];
     }
   }
   
@@ -354,8 +391,8 @@
     return @"h3";
   } else if([style isEqualToNumber:@([UnorderedListStyle getStyleType])] || [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
-  } else if([style isEqualToNumber:@([BlockQuoteStyle getStyleType])]) {
-    // blockquotes use <p> tags the same way lists use <li>
+  } else if([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] || [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
+    // blockquotes and codeblock use <p> tags the same way lists use <li>
     return @"p";
   }
   return @"";
@@ -473,6 +510,8 @@
     fixedHtml = [self stringByAddingNewlinesToTag:@"</ol>" inString:fixedHtml leading:YES trailing:YES];
     fixedHtml = [self stringByAddingNewlinesToTag:@"<blockquote>" inString:fixedHtml leading:YES trailing:YES];
     fixedHtml = [self stringByAddingNewlinesToTag:@"</blockquote>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<codeblock>" inString:fixedHtml leading:YES trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</codeblock>" inString:fixedHtml leading:YES trailing:YES];
     
     // line opening tags
     fixedHtml = [self stringByAddingNewlinesToTag:@"<p>" inString:fixedHtml leading:YES trailing:NO];
@@ -546,14 +585,14 @@
         ongoingTags[currentTagName] = tagArr;
         
         // skip one newline after opening tags that are in separate lines intentionally
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"] || [currentTagName isEqualToString:@"codeblock"]) {
           i += 1;
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
         
         // skip one newline that was added before some closing tags that are in separate lines
-        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"]) {
+        if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"] || [currentTagName isEqualToString:@"codeblock"]) {
           plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
         }
         
@@ -713,6 +752,8 @@
       [styleArr addObject:@([OrderedListStyle getStyleType])];
     } else if([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
+    } else if([tagName isEqualToString:@"codeblock"]) {
+      [styleArr addObject:@([CodeBlockStyle getStyleType])];
     } else {
       // some other external tags like span just don't get put into the processed styles
       continue;
