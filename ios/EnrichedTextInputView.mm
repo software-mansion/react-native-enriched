@@ -104,7 +104,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType]), @([ImageStyle getStyleType])],
+    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
     @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
@@ -117,10 +117,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   };
   
   _blockingStyles = @{
-    @([BoldStyle getStyleType]) : @[],
-    @([ItalicStyle getStyleType]) : @[],
-    @([UnderlineStyle getStyleType]) : @[],
-    @([StrikethroughStyle getStyleType]) : @[],
+    @([BoldStyle getStyleType]) : @[@[@([ImageStyle getStyleType])]],
+    @([ItalicStyle getStyleType]) : @[@[@([ImageStyle getStyleType])]],
+    @([UnderlineStyle getStyleType]) : @[@[@([ImageStyle getStyleType])]],
+    @([StrikethroughStyle getStyleType]) : @[@[@([ImageStyle getStyleType])]],
     @([InlineCodeStyle getStyleType]) : @[@([ImageStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([ImageStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([ImageStyle getStyleType])],

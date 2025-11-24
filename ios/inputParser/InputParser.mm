@@ -630,9 +630,20 @@
     } else if([tagName isEqualToString:@"i"]) {
       [styleArr addObject:@([ItalicStyle getStyleType])];
     } else if([tagName isEqualToString:@"img"]) {
+      NSRegularExpression *srcRegex = [NSRegularExpression regularExpressionWithPattern:@"src=\".+\""
+        options:0
+        error:nullptr
+      ];
+      NSTextCheckingResult* match = [srcRegex firstMatchInString:params options:0 range: NSMakeRange(0, params.length)];
+      
+      if(match == nullptr) {
+        continue;
+      }
+      
+      NSRange srcRange = match.range;
       [styleArr addObject:@([ImageStyle getStyleType])];
       // cut only the uri from the src="..." string
-      NSString *uri = [params substringWithRange:NSMakeRange(5, params.length - 6)];
+      NSString *uri = [params substringWithRange:NSMakeRange(srcRange.location + 5, srcRange.length - 6)];
       ImageData *imageData = [[ImageData alloc] init];
       imageData.uri = uri;
       

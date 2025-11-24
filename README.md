@@ -212,6 +212,9 @@ You can insert an image into the input using [setImage](docs/API_REFERENCE.md#se
 
 The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
+> [!NOTE]
+> The iOS doesn't support inline images just yet, but it's planned in the near future!
+
 ## Style Detection
 
 All of the above styles can be detected with the use of [onChangeState](docs/API_REFERENCE.md#onchangestate) event payload.

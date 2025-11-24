@@ -6,7 +6,6 @@
 // custom NSAttributedStringKey to differentiate the image
 static NSString *const ImageAttributeName = @"ImageAttributeName";
 
-
 @implementation ImageStyle {
   EnrichedTextInputView *_input;
 }
