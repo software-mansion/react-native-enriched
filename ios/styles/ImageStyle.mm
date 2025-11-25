@@ -103,12 +103,14 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return imageData;
 }
 
-- (void)addImage:(NSString *)uri {
+- (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
   ImageData *data = [[ImageData alloc] init];
   data.uri = uri;
+  data.width = width;
+  data.height = height;
   
   NSMutableDictionary *attributes = [@{
-    NSAttachmentAttributeName: [self prepareImageAttachement:uri],
+    NSAttachmentAttributeName: [self prepareImageAttachement:uri width:width height:height],
     ImageAttributeName: data,
   } mutableCopy];
   
@@ -134,7 +136,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   [_input->textView.textStorage endEditing];
 }
 
--(NSTextAttachment *)prepareImageAttachement:(NSString *)uri
+-(NSTextAttachment *)prepareImageAttachement:(NSString *)uri width:(CGFloat)width height:(CGFloat)height
 {
   NSURL *url = [NSURL URLWithString:uri];
   NSData *imgData = [NSData dataWithContentsOfURL:url];
@@ -142,7 +144,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   
   NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
   attachment.image = image;
-  attachment.bounds = CGRectMake(0, 0, [_input->config imageWidth], [_input->config imageHeight]);
+  attachment.bounds = CGRectMake(0, 0, width, height);
 
   return attachment;
 }

@@ -6,7 +6,7 @@ import { Icon } from './Icon';
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (width: number, height: number) => void;
+  onSubmit: (width?: number, height?: number) => void;
 }
 
 export const ImageModal: FC<ImageModalProps> = ({
@@ -20,8 +20,8 @@ export const ImageModal: FC<ImageModalProps> = ({
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
     const parsedHeight = parseFloat(height);
-    const finalWidth = isNaN(parsedWidth) ? 0 : parsedWidth;
-    const finalHeight = isNaN(parsedHeight) ? 0 : parsedHeight;
+    const finalWidth = isNaN(parsedWidth) ? undefined : parsedWidth;
+    const finalHeight = isNaN(parsedHeight) ? undefined : parsedHeight;
 
     onSubmit(finalWidth, finalHeight);
   };

@@ -207,8 +207,7 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async (width: number, height: number) => {
-    closeImageModal();
+  const selectImage = async (width?: number, height?: number) => {
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
@@ -219,9 +218,11 @@ export default function App() {
         ? response.assets?.[0]?.originalPath
         : response.assets?.[0]?.uri;
 
-    if (!imageUri) return;
+    if (imageUri) {
+      ref.current?.setImage(imageUri, width, height);
+    }
 
-    ref.current?.setImage(imageUri, width, height);
+    closeImageModal();
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {

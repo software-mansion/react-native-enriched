@@ -329,7 +329,7 @@
       if(imageStyle != nullptr) {
         ImageData *data = [imageStyle getImageDataAt:location];
         if(data != nullptr && data.uri != nullptr) {
-          return [NSString stringWithFormat:@"img src=\"%@\"", data.uri];
+          return [NSString stringWithFormat:@"img src=\"%@\" width=\"%f\" height=\"%f\"", data.uri, data.width, data.height];
         }
       }
       return @"img";
@@ -685,6 +685,22 @@
       NSString *uri = [params substringWithRange:NSMakeRange(srcRange.location + 5, srcRange.length - 6)];
       ImageData *imageData = [[ImageData alloc] init];
       imageData.uri = uri;
+      
+      NSRegularExpression *widthRegex = [NSRegularExpression regularExpressionWithPattern:@"width=\"([0-9.]+)\"" options:0 error:nil];
+      NSTextCheckingResult *widthMatch = [widthRegex firstMatchInString:params options:0 range:NSMakeRange(0, params.length)];
+
+      if (widthMatch) {
+        NSString *widthString = [params substringWithRange:[widthMatch rangeAtIndex:1]];
+        imageData.width = [widthString floatValue];
+      }
+
+      NSRegularExpression *heightRegex = [NSRegularExpression regularExpressionWithPattern:@"height=\"([0-9.]+)\"" options:0 error:nil];
+      NSTextCheckingResult *heightMatch = [heightRegex firstMatchInString:params options:0 range:NSMakeRange(0, params.length)];
+
+      if (heightMatch) {
+        NSString *heightString = [params substringWithRange:[heightMatch rangeAtIndex:1]];
+        imageData.height = [heightString floatValue];
+      }
       
       stylePair.styleValue = imageData;
     } else if([tagName isEqualToString:@"u"]) {

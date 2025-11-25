@@ -808,7 +808,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
   } else if([commandName isEqualToString:@"addImage"]) {
     NSString *uri = (NSString *)args[0];
-    [self addImage:uri];
+    NSNumber *widthNum = ((NSNumber*)args[1]);
+    NSNumber *heightNum = ((NSNumber*)args[2]);
+    
+    CGFloat imgWidth = [widthNum isKindOfClass:[NSNull class]] ? config.imageWidth : [widthNum floatValue];
+    CGFloat imgHeight = [heightNum isKindOfClass:[NSNull class]] ? config.imageHeight : [heightNum floatValue];
+    
+    [self addImage:uri width:imgWidth height:imgHeight];
   }
 }
 
@@ -955,13 +961,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)addImage:(NSString *)uri
+- (void)addImage:(NSString *)uri width:(float)width height:(float)height
 {
   ImageStyle *imageStyleClass = (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
   if(imageStyleClass == nullptr) { return; }
   
   if([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType] range:textView.selectedRange]) {
-    [imageStyleClass addImage:uri];
+    [imageStyleClass addImage:uri width:width height:height];
     [self anyTextMayHaveBeenModified];
   }
 }

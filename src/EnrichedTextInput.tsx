@@ -52,7 +52,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
-  setImage: (src: string, width: number, height: number) => void;
+  setImage: (src: string, width?: number, height?: number) => void;
   startMention: (indicator: string) => void;
   setMention: (
     indicator: string,

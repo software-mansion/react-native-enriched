@@ -82,6 +82,6 @@
 @end
 
 @interface ImageStyle : NSObject<BaseStyleProtocol>
-- (void)addImage:(NSString *)uri;
+- (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
 - (ImageData *)getImageDataAt:(NSUInteger)location;
 @end
