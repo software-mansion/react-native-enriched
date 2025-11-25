@@ -412,7 +412,6 @@ class HtmlToSpannedConverter implements ContentHandler {
   }
 
   private void handleStartTag(String tag, Attributes attributes) {
-    isEmptyTag = false;
     if (tag.equalsIgnoreCase("br")) {
       // We don't need to handle this. TagSoup will ensure that there's a </br> for each <br>
       // so we can safely emit the linebreaks when we handle the close tag.
