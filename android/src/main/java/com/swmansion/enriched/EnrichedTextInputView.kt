@@ -527,11 +527,11 @@ class EnrichedTextInputView : AppCompatEditText {
     parametrizedStyles?.setLinkSpan(start, end, text, url)
   }
 
-  fun addImage(src: String) {
+  fun addImage(src: String, width: Float?, height: Float?) {
     val isValid = verifyStyle(EnrichedSpans.IMAGE)
     if (!isValid) return
 
-    parametrizedStyles?.setImageSpan(src)
+    parametrizedStyles?.setImageSpan(src, width, height)
     layoutManager.invalidateLayout()
   }
 

@@ -255,8 +255,8 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.addLink(start, end, text, url)
   }
 
-  override fun addImage(view: EnrichedTextInputView?, src: String) {
-    view?.addImage(src)
+  override fun addImage(view: EnrichedTextInputView?, src: String, width: Float, height: Float) {
+    view?.addImage(src, width, height)
   }
 
   override fun startMention(view: EnrichedTextInputView?, indicator: String) {

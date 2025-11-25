@@ -11,10 +11,13 @@ import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+  private var width: Float = 0F
+  private var height: Float = 0F
   private var htmlStyle: HtmlStyle? = null
 
-  constructor(context: Context, uri: Uri, htmlStyle: HtmlStyle, ) : super(context, uri, ALIGN_BASELINE) {
-    this.htmlStyle = htmlStyle
+  constructor(context: Context, uri: Uri, width: Float, height: Float) : super(context, uri, ALIGN_BASELINE) {
+    this.width = width
+    this.height = height
   }
 
   constructor(drawable: Drawable, source: String, htmlStyle: HtmlStyle) : super(drawable, source, ALIGN_BASELINE) {
@@ -35,7 +38,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, htmlStyle!!.imgWidth, htmlStyle!!.imgHeight)
+    drawable.setBounds(0, 0, width.toInt(), height.toInt())
     return drawable
   }
 }

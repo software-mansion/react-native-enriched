@@ -43,8 +43,8 @@ class HtmlStyle {
   var ulBulletSize: Int = 8
   var ulBulletColor: Int = Color.BLACK
 
-  var imgWidth: Int = 200
-  var imgHeight: Int = 200
+  var imgWidth: Float = 200F
+  var imgHeight: Float = 200F
 
   var aColor: Int = Color.BLACK
   var aUnderline: Boolean = true
@@ -101,8 +101,8 @@ class HtmlStyle {
     ulBulletSize = parseFloat(ulStyle, "bulletSize").toInt()
 
     val imgStyle = style.getMap("img")
-    imgWidth = parseFloat(imgStyle, "width").toInt()
-    imgHeight = parseFloat(imgStyle, "height").toInt()
+    imgWidth = parseFloat(imgStyle, "width")
+    imgHeight = parseFloat(imgStyle, "height")
 
     val aStyle = style.getMap("a")
     aColor = parseColor(aStyle, "color")
@@ -124,8 +124,8 @@ class HtmlStyle {
   private fun parseFloat(map: ReadableMap?, key: String): Float {
     val safeMap = ensureValueIsSet(map, key)
 
-    val fontSize = safeMap.getDouble(key)
-    return ceil(PixelUtil.toPixelFromSP(fontSize))
+    val value = safeMap.getDouble(key)
+    return ceil(PixelUtil.toPixelFromSP(value))
   }
 
   private fun parseColorWithOpacity(map: ReadableMap?, key: String, opacity: Int): Int {
