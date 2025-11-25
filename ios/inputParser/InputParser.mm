@@ -86,6 +86,9 @@
         
         // append closing tags
         for(NSNumber *style in sortedEndedStyles) {
+          if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+            continue;
+          }
           NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
           [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
         }
@@ -221,6 +224,9 @@
       
       // append closing tags
       for(NSNumber *style in sortedEndedStyles) {
+        if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+          continue;
+        }
         NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:currentRange.location];
         [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
       }
@@ -233,7 +239,11 @@
       // append opening tags
       for(NSNumber *style in sortedNewStyles) {
         NSString *tagContent = [self tagContentForStyle:style openingTag:YES location:currentRange.location];
-        [result appendString: [NSString stringWithFormat:@"<%@>", tagContent]];
+        if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+          [result appendString: [NSString stringWithFormat:@"<%@/>", tagContent]];
+        } else {
+          [result appendString: [NSString stringWithFormat:@"<%@>", tagContent]];
+        }
       }
       
       // append the letter and escape it if needed
@@ -254,6 +264,9 @@
       
     // append closing tags
     for(NSNumber *style in sortedEndedStyles) {
+      if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+        continue;
+      }
       NSString *tagContent = [self tagContentForStyle:style openingTag:NO location:_input->textView.textStorage.string.length - 1];
       [result appendString: [NSString stringWithFormat:@"</%@>", tagContent]];
     }
@@ -310,6 +323,19 @@
     return @"b";
   } else if([style isEqualToNumber: @([ItalicStyle getStyleType])]) {
     return @"i";
+  } else if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
+    if(openingTag) {
+      ImageStyle *imageStyle = (ImageStyle *)_input->stylesDict[@([ImageStyle getStyleType])];
+      if(imageStyle != nullptr) {
+        ImageData *data = [imageStyle getImageDataAt:location];
+        if(data != nullptr && data.uri != nullptr) {
+          return [NSString stringWithFormat:@"img src=\"%@\"", data.uri];
+        }
+      }
+      return @"img";
+    } else {
+      return @"";
+    }
   } else if([style isEqualToNumber: @([UnderlineStyle getStyleType])]) {
     return @"u";
   } else if([style isEqualToNumber: @([StrikethroughStyle getStyleType])]) {
@@ -642,6 +668,25 @@
       [styleArr addObject:@([BoldStyle getStyleType])];
     } else if([tagName isEqualToString:@"i"]) {
       [styleArr addObject:@([ItalicStyle getStyleType])];
+    } else if([tagName isEqualToString:@"img"]) {
+      NSRegularExpression *srcRegex = [NSRegularExpression regularExpressionWithPattern:@"src=\".+\""
+        options:0
+        error:nullptr
+      ];
+      NSTextCheckingResult* match = [srcRegex firstMatchInString:params options:0 range: NSMakeRange(0, params.length)];
+      
+      if(match == nullptr) {
+        continue;
+      }
+      
+      NSRange srcRange = match.range;
+      [styleArr addObject:@([ImageStyle getStyleType])];
+      // cut only the uri from the src="..." string
+      NSString *uri = [params substringWithRange:NSMakeRange(srcRange.location + 5, srcRange.length - 6)];
+      ImageData *imageData = [[ImageData alloc] init];
+      imageData.uri = uri;
+      
+      stylePair.styleValue = imageData;
     } else if([tagName isEqualToString:@"u"]) {
       [styleArr addObject:@([UnderlineStyle getStyleType])];
     } else if([tagName isEqualToString:@"s"]) {

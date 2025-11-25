@@ -70,4 +70,8 @@
 - (void)setCodeBlockBgColor:(UIColor *)newValue;
 - (CGFloat)codeBlockBorderRadius;
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue;
+- (void)setImageWidth:(CGFloat)newValue;
+- (CGFloat)imageWidth;
+- (void)setImageHeight:(CGFloat)newValue;
+- (CGFloat)imageHeight;
 @end

@@ -94,7 +94,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
     @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self]
+    @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self],
+    @([ImageStyle getStyleType]): [[ImageStyle alloc] initWithInput:self]
   };
   
   conflictingStyles = @{
@@ -112,7 +113,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
     @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([CodeBlockStyle getStyleType])],
     @([CodeBlockStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]),
-        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])]
+        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])],
+    @([ImageStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
   };
   
   blockingStyles = @{
@@ -120,9 +122,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([StrikethroughStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
+    @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
+    @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
+    @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
     @([H1Style getStyleType]): @[],
     @([H2Style getStyleType]): @[],
     @([H3Style getStyleType]): @[],
@@ -130,6 +132,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([OrderedListStyle getStyleType]): @[],
     @([BlockQuoteStyle getStyleType]): @[],
     @([CodeBlockStyle getStyleType]): @[],
+    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType])]
   };
   
   parser = [[InputParser alloc] initWithInput:self];
@@ -365,6 +368,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   
   if(newViewProps.htmlStyle.codeblock.borderRadius != oldViewProps.htmlStyle.codeblock.borderRadius) {
     [newConfig setCodeBlockBorderRadius:newViewProps.htmlStyle.codeblock.borderRadius];
+    stylePropChanged = YES;
+  }
+  
+  if(newViewProps.htmlStyle.img.width != oldViewProps.htmlStyle.img.width) {
+    [newConfig setImageWidth:newViewProps.htmlStyle.img.width];
+    stylePropChanged = YES;
+  }
+
+  if(newViewProps.htmlStyle.img.height != oldViewProps.htmlStyle.img.height) {
+    [newConfig setImageHeight:newViewProps.htmlStyle.img.height];
     stylePropChanged = YES;
   }
   
@@ -723,7 +736,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
         .isBlockQuote = [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
         .isCodeBlock = [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
-        .isImage = NO // [_activeStyles containsObject: @([ImageStyle getStyleType]])],
+        .isImage = [_activeStyles containsObject: @([ImageStyle getStyleType])],
       });
     }
   }
@@ -793,6 +806,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleCodeBlock"]) {
     [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
+  } else if([commandName isEqualToString:@"addImage"]) {
+    NSString *uri = (NSString *)args[0];
+    [self addImage:uri];
   }
 }
 
@@ -935,6 +951,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   
   if([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType] range:[[mentionStyleClass getActiveMentionRange] rangeValue]]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
+    [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)addImage:(NSString *)uri
+{
+  ImageStyle *imageStyleClass = (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
+  if(imageStyleClass == nullptr) { return; }
+  
+  if([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType] range:textView.selectedRange]) {
+    [imageStyleClass addImage:uri];
     [self anyTextMayHaveBeenModified];
   }
 }

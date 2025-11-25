@@ -2,6 +2,7 @@
 #import "BaseStyleProtocol.h"
 #import "LinkData.h"
 #import "MentionParams.h"
+#import "ImageData.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>
 @end
@@ -78,4 +79,9 @@
 @interface CodeBlockStyle : NSObject<BaseStyleProtocol>
 - (void)manageCodeBlockFontAndColor;
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@end
+
+@interface ImageStyle : NSObject<BaseStyleProtocol>
+- (void)addImage:(NSString *)uri;
+- (ImageData *)getImageDataAt:(NSUInteger)location;
 @end

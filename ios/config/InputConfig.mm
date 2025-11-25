@@ -39,6 +39,8 @@
   UIColor *_codeBlockFgColor;
   CGFloat _codeBlockBorderRadius;
   UIColor *_codeBlockBgColor;
+  CGFloat _imageWidth;
+  CGFloat _imageHeight;
 }
 
 - (instancetype) init {
@@ -85,6 +87,8 @@
   copy->_codeBlockFgColor = [_codeBlockFgColor copy];
   copy->_codeBlockBgColor = [_codeBlockBgColor copy];
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
+  copy->_imageWidth = _imageWidth;
+  copy->_imageHeight = _imageHeight;
   return copy;
 }
 
@@ -407,6 +411,22 @@
 
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue {
   _codeBlockBorderRadius = newValue;
+}
+
+- (CGFloat)imageWidth {
+  return _imageWidth;
+}
+
+- (void)setImageWidth:(CGFloat)newValue {
+  _imageWidth = newValue;
+}
+
+- (CGFloat)imageHeight {
+  return _imageHeight;
+}
+
+- (void)setImageHeight:(CGFloat)newValue {
+  _imageHeight = newValue;
 }
 
 @end
