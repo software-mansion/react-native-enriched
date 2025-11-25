@@ -194,8 +194,8 @@ interface NativeCommands {
   addImage: (
     viewRef: React.ElementRef<ComponentType>,
     uri: string,
-    width: Float | null,
-    height: Float | null
+    width: Float,
+    height: Float
   ) => void;
   startMention: (
     viewRef: React.ElementRef<ComponentType>,

@@ -808,11 +808,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
   } else if([commandName isEqualToString:@"addImage"]) {
     NSString *uri = (NSString *)args[0];
-    NSNumber *widthNum = ((NSNumber*)args[1]);
-    NSNumber *heightNum = ((NSNumber*)args[2]);
-    
-    CGFloat imgWidth = [widthNum isKindOfClass:[NSNull class]] ? config.imageWidth : [widthNum floatValue];
-    CGFloat imgHeight = [heightNum isKindOfClass:[NSNull class]] ? config.imageHeight : [heightNum floatValue];
+    CGFloat imgWidth = [(NSNumber*)args[1] floatValue];
+    CGFloat imgHeight = [(NSNumber*)args[2] floatValue];
     
     [self addImage:uri width:imgWidth height:imgHeight];
   }

@@ -170,7 +170,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  fun setImageSpan(src: String, width: Float?, height: Float?) {
+  fun setImageSpan(src: String, width: Float, height: Float) {
     if (view.selection == null) return
 
     val spannable = view.text as SpannableStringBuilder
@@ -188,10 +188,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
 
     val uri = Uri.fromFile(File(src))
 
-    val imageWidth = width ?: view.htmlStyle.imgWidth
-    val imageHeight = height ?: view.htmlStyle.imgHeight
-
-    val span = EnrichedImageSpan(view.context, uri, imageWidth.toInt(), imageHeight.toInt())
+    val span = EnrichedImageSpan(view.context, uri, width.toInt(), height.toInt())
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }

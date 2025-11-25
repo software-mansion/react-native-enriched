@@ -207,7 +207,7 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async (width?: number, height?: number) => {
+  const selectImage = async (width: number, height: number) => {
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
