@@ -8,20 +8,19 @@ import android.net.Uri
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
-import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
-  private var width: Float = 0F
-  private var height: Float = 0F
-  private var htmlStyle: HtmlStyle? = null
+  private var width: Int = 0
+  private var height: Int = 0
 
-  constructor(context: Context, uri: Uri, width: Float, height: Float) : super(context, uri, ALIGN_BASELINE) {
+  constructor(context: Context, uri: Uri, width: Int, height: Int) : super(context, uri, ALIGN_BASELINE) {
     this.width = width
     this.height = height
   }
 
-  constructor(drawable: Drawable, source: String, htmlStyle: HtmlStyle) : super(drawable, source, ALIGN_BASELINE) {
-    this.htmlStyle = htmlStyle
+  constructor(drawable: Drawable, source: String, width: Int, height: Int) : super(drawable, source, ALIGN_BASELINE) {
+    this.width = width
+    this.height = height
   }
 
   override fun draw(
@@ -38,7 +37,15 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, width.toInt(), height.toInt())
+    drawable.setBounds(0, 0, width, height)
     return drawable
+  }
+
+  fun getWidth(): Int {
+    return width
+  }
+
+  fun getHeight(): Int {
+    return height
   }
 }

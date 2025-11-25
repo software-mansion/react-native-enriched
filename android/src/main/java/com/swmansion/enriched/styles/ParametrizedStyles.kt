@@ -191,7 +191,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     val imageWidth = width ?: view.htmlStyle.imgWidth
     val imageHeight = height ?: view.htmlStyle.imgHeight
 
-    val span = EnrichedImageSpan(view.context, uri, imageWidth, imageHeight)
+    val span = EnrichedImageSpan(view.context, uri, imageWidth.toInt(), imageHeight.toInt())
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }

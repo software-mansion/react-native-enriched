@@ -275,7 +275,15 @@ public class EnrichedParser {
         if (style[j] instanceof EnrichedImageSpan) {
           out.append("<img src=\"");
           out.append(((EnrichedImageSpan) style[j]).getSource());
-          out.append("\">");
+
+          out.append(" width=\"");
+          out.append(((EnrichedImageSpan) style[j]).getWidth());
+          out.append("\"");
+
+          out.append(" height=\"");
+          out.append(((EnrichedImageSpan) style[j]).getHeight());
+
+          out.append("\"/>");
           // Don't output the placeholder character underlying the image.
           i = next;
         }
@@ -454,7 +462,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("h3")) {
       startHeading(mSpannableStringBuilder, 3);
     } else if (tag.equalsIgnoreCase("img")) {
-      startImg(mSpannableStringBuilder, attributes, mImageGetter, mStyle);
+      startImg(mSpannableStringBuilder, attributes, mImageGetter);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -679,8 +687,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void startImg(Editable text, Attributes attributes, EnrichedParser.ImageGetter img, HtmlStyle style) {
+  private static void startImg(Editable text, Attributes attributes, EnrichedParser.ImageGetter img) {
     String src = attributes.getValue("", "src");
+    String width = attributes.getValue("", "width");
+    String height = attributes.getValue("", "height");
+
     Drawable d = null;
     if (img != null) {
       d = img.getDrawable(src);
@@ -692,7 +703,7 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     int len = text.length();
     text.append("￼");
-    text.setSpan(new EnrichedImageSpan(d, src, style), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    text.setSpan(new EnrichedImageSpan(d, src, Integer.parseInt(width), Integer.parseInt(height)), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
 
   private static void startA(Editable text, Attributes attributes) {
