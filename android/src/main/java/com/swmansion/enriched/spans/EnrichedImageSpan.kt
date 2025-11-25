@@ -1,6 +1,7 @@
 package com.swmansion.enriched.spans
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
@@ -37,7 +38,9 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, width, height)
+    val scale = Resources.getSystem().displayMetrics.density
+    
+    drawable.setBounds(0, 0, (width * scale).toInt() , (height * scale).toInt())
     return drawable
   }
 
