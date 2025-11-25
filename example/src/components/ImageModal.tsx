@@ -44,11 +44,13 @@ export const ImageModal: FC<ImageModalProps> = ({
             <TextInput
               placeholder="Width"
               style={styles.input}
+              value={width}
               onChangeText={setWidth}
             />
             <TextInput
               placeholder="Height"
               style={styles.input}
+              value={height}
               onChangeText={setHeight}
             />
             <Button
