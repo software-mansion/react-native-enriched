@@ -99,10 +99,6 @@ export interface HtmlStyle {
     textDecorationLine?: 'underline' | 'none';
   };
   mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  img?: {
-    width?: number;
-    height?: number;
-  };
   ol?: {
     gapWidth?: number;
     marginLeft?: number;

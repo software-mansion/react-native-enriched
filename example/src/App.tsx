@@ -400,10 +400,6 @@ const htmlStyle: HtmlStyle = {
       textDecorationLine: 'none',
     },
   },
-  img: {
-    width: 50,
-    height: 50,
-  },
   ol: {
     gapWidth: 16,
     marginLeft: 24,

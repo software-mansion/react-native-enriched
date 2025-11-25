@@ -43,9 +43,6 @@ class HtmlStyle {
   var ulBulletSize: Int = 8
   var ulBulletColor: Int = Color.BLACK
 
-  var imgWidth: Float = 200F
-  var imgHeight: Float = 200F
-
   var aColor: Int = Color.BLACK
   var aUnderline: Boolean = true
 
@@ -99,10 +96,6 @@ class HtmlStyle {
     ulGapWidth = parseFloat(ulStyle, "gapWidth").toInt()
     ulMarginLeft = parseFloat(ulStyle, "marginLeft").toInt()
     ulBulletSize = parseFloat(ulStyle, "bulletSize").toInt()
-
-    val imgStyle = style.getMap("img")
-    imgWidth = parseFloat(imgStyle, "width")
-    imgHeight = parseFloat(imgStyle, "height")
 
     val aStyle = style.getMap("a")
     aColor = parseColor(aStyle, "color")

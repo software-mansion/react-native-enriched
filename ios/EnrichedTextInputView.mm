@@ -371,16 +371,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
   
-  if(newViewProps.htmlStyle.img.width != oldViewProps.htmlStyle.img.width) {
-    [newConfig setImageWidth:newViewProps.htmlStyle.img.width];
-    stylePropChanged = YES;
-  }
-
-  if(newViewProps.htmlStyle.img.height != oldViewProps.htmlStyle.img.height) {
-    [newConfig setImageHeight:newViewProps.htmlStyle.img.height];
-    stylePropChanged = YES;
-  }
-  
   if(newViewProps.htmlStyle.a.textDecorationLine != oldViewProps.htmlStyle.a.textDecorationLine) {
     NSString *objcString = [NSString fromCppString:newViewProps.htmlStyle.a.textDecorationLine];
     if([objcString isEqualToString:DecorationUnderline]) {

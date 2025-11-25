@@ -105,10 +105,6 @@ export interface HtmlStyleInternal {
   // This is a workaround for the fact that codegen does not support Records.
   // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.
   mention?: UnsafeMixed;
-  img?: {
-    width?: Float;
-    height?: Float;
-  };
   ol?: {
     gapWidth?: Float;
     marginLeft?: Float;

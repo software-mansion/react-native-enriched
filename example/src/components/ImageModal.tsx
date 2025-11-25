@@ -9,6 +9,9 @@ interface ImageModalProps {
   onSubmit: (width: number, height: number) => void;
 }
 
+const DEFAULT_IMAGE_WIDTH = 80;
+const DEFAULT_IMAGE_HEIGHT = 80;
+
 export const ImageModal: FC<ImageModalProps> = ({
   isOpen,
   onClose,
@@ -20,8 +23,10 @@ export const ImageModal: FC<ImageModalProps> = ({
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
     const parsedHeight = parseFloat(height);
-    const finalWidth = isNaN(parsedWidth) ? 0 : parsedWidth;
-    const finalHeight = isNaN(parsedHeight) ? 0 : parsedHeight;
+    const finalWidth = isNaN(parsedWidth) ? DEFAULT_IMAGE_WIDTH : parsedWidth;
+    const finalHeight = isNaN(parsedHeight)
+      ? DEFAULT_IMAGE_HEIGHT
+      : parsedHeight;
 
     onSubmit(finalWidth, finalHeight);
   };
@@ -47,7 +52,7 @@ export const ImageModal: FC<ImageModalProps> = ({
               onChangeText={setHeight}
             />
             <Button
-              title="Save"
+              title="Choose Image"
               onPress={handleSave}
               style={styles.saveButton}
             />
