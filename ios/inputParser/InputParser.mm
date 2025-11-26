@@ -241,6 +241,7 @@
         NSString *tagContent = [self tagContentForStyle:style openingTag:YES location:currentRange.location];
         if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
           [result appendString: [NSString stringWithFormat:@"<%@/>", tagContent]];
+          [currentActiveStyles removeObject:@([ImageStyle getStyleType])];
         } else {
           [result appendString: [NSString stringWithFormat:@"<%@>", tagContent]];
         }
