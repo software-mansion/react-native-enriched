@@ -103,37 +103,35 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return imageData;
 }
 
-- (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
-  ImageData *data = [[ImageData alloc] init];
-  data.uri = uri;
-  data.width = width;
-  data.height = height;
-  
+- (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData
+{
   NSMutableDictionary *attributes = [@{
-    NSAttachmentAttributeName: [self prepareImageAttachement:uri width:width height:height],
-    ImageAttributeName: data,
+    NSAttachmentAttributeName: [self prepareImageAttachement:imageData.uri width:imageData.width height:imageData.height],
+    ImageAttributeName: imageData,
   } mutableCopy];
   
   // Use the Object Replacement Character for Image.
   // This tells TextKit "something non-text goes here".
   NSString *imagePlaceholder = @"\uFFFC";
   
-  if (_input->textView.selectedRange.length == 0) {
-    [TextInsertionUtils insertText:imagePlaceholder at:_input->textView.selectedRange.location additionalAttributes:nullptr input:_input withSelection:YES];
+  if (range.length == 0) {
+    [TextInsertionUtils insertText:imagePlaceholder at:range.location additionalAttributes:attributes input:_input withSelection:YES];
   } else {
     [TextInsertionUtils replaceText:imagePlaceholder
-                                 at:_input->textView.selectedRange
-               additionalAttributes:nullptr
+                                 at:range
+               additionalAttributes:attributes
                               input:_input
                       withSelection:YES];
   }
+}
+
+- (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
+  ImageData *data = [[ImageData alloc] init];
+  data.uri = uri;
+  data.width = width;
+  data.height = height;
   
-  NSRange newSelection = _input->textView.selectedRange;
-  NSRange imageRange = NSMakeRange(newSelection.location - 1, 1);
-  
-  [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage addAttributes:attributes range:imageRange];
-  [_input->textView.textStorage endEditing];
+  [self addImageAtRange:_input->textView.selectedRange imageData:data];
 }
 
 -(NSTextAttachment *)prepareImageAttachement:(NSString *)uri width:(CGFloat)width height:(CGFloat)height
