@@ -299,45 +299,127 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     return;
   }
   
-  // get the current word if it exists
-  // we can be using current word only thanks to the fact that ongoing mentions are always one word (in contrast to ready, added mentions)
-  NSDictionary *currentWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string range:_input->textView.selectedRange];
-  if(currentWord == nullptr) {
-    [self removeActiveMentionRange];
-    return;
+  NSDictionary *currentWord, *previousWord;
+  NSString *currentWordText, *previousWordText, *finalText;
+  NSValue *currentWordRange, *previousWordRange;
+  NSRange finalRange;
+  
+  // word at the current selection
+  currentWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string range:_input->textView.selectedRange];
+  if(currentWord != nullptr ) {
+    currentWordText = (NSString *)[currentWord objectForKey:@"word"];
+    currentWordRange = (NSValue *)[currentWord objectForKey:@"range"];
+  }
+    
+  if(currentWord != nullptr) {
+    // current word exists
+    unichar currentFirstChar = [currentWordText characterAtIndex:0];
+    
+    if([[_input->config mentionIndicators] containsObject:@(currentFirstChar)]) {
+      // current word exists and has a mention indicator; no need to check for the previous word
+      finalText = currentWordText;
+      finalRange = [currentWordRange rangeValue];
+    } else {
+      // current word exists but no traces of mention indicator; get the previous word
+      
+      NSInteger previousWordSearchLocation = [currentWordRange rangeValue].location - 1;
+      if(previousWordSearchLocation < 0) {
+        // previous word can't exist
+        [self removeActiveMentionRange];
+        return;
+      }
+      
+      unichar separatorChar = [_input->textView.textStorage.string characterAtIndex:previousWordSearchLocation];
+      if(![[NSCharacterSet whitespaceCharacterSet] characterIsMember:separatorChar]) {
+        // we want to check for the previous word ONLY if the separating character was a space
+        // newlines don't make it
+        [self removeActiveMentionRange];
+        return;
+      }
+      
+      previousWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string range:NSMakeRange(previousWordSearchLocation, 0)];
+      
+      if(previousWord != nullptr) {
+        // previous word exists; get its properties
+        previousWordText = (NSString *)[previousWord objectForKey:@"word"];
+        previousWordRange = (NSValue *)[previousWord objectForKey:@"range"];
+      
+        // check for the mention indicators in the previous word
+        unichar previousFirstChar = [previousWordText characterAtIndex:0];
+        
+        if([[_input->config mentionIndicators] containsObject:@(previousFirstChar) ]) {
+          // previous word has a proper mention indicator: treat both words as an editable mention
+          finalText = [NSString stringWithFormat:@"%@ %@", previousWordText, currentWordText];
+          // range length is both words' lengths + 1 for a space between them
+          finalRange = NSMakeRange(
+            [previousWordRange rangeValue].location,
+            [previousWordRange rangeValue].length + [currentWordRange rangeValue].length + 1
+          );
+        } else {
+          // neither current nor previous words have a mention indicator
+          [self removeActiveMentionRange];
+          return;
+        }
+      } else {
+        // previous word doesn't exist and no mention indicators in the current word
+        [self removeActiveMentionRange];
+        return;
+      }
+    }
+  } else {
+    // current word doesn't exist; try getting the previous one
+    
+    NSInteger previousWordSearchLocation = _input->textView.selectedRange.location - 1;
+    if(previousWordSearchLocation < 0) {
+      // previous word can't exist
+      [self removeActiveMentionRange];
+      return;
+    }
+    
+    unichar separatorChar = [_input->textView.textStorage.string characterAtIndex:previousWordSearchLocation];
+    if(![[NSCharacterSet whitespaceCharacterSet] characterIsMember:separatorChar]) {
+      // we want to check for the previous word ONLY if the separating character was a space
+      // newlines don't make it
+      [self removeActiveMentionRange];
+      return;
+    }
+    
+    previousWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string range:NSMakeRange(previousWordSearchLocation, 0)];
+      
+    if(previousWord != nullptr) {
+      // previous word exists; get its properties
+      previousWordText = (NSString *)[previousWord objectForKey:@"word"];
+      previousWordRange = (NSValue *)[previousWord objectForKey:@"range"];
+      
+      // check for the mention indicators in the previous word
+      unichar previousFirstChar = [previousWordText characterAtIndex:0];
+      
+      if([[_input->config mentionIndicators] containsObject:@(previousFirstChar)]) {
+        // previous word has a proper mention indicator; treat previous word + a space as a editable mention
+        finalText = [NSString stringWithFormat:@"%@ ", previousWordText];
+        // the range length is previous word length + 1 for a space
+        finalRange = NSMakeRange([previousWordRange rangeValue].location, [previousWordRange rangeValue].length + 1);
+      } else {
+        // no current word, previous has no mention indicators
+        [self removeActiveMentionRange];
+        return;
+      }
+    } else {
+      // no current word, no previous word
+      [self removeActiveMentionRange];
+      return;
+    }
   }
   
-  // get word properties
-  NSString *wordText = (NSString *)[currentWord objectForKey:@"word"];
-  NSValue *wordRangeValue = (NSValue *)[currentWord objectForKey:@"range"];
-  if(wordText == nullptr || wordRangeValue == nullptr) {
-    [self removeActiveMentionRange];
-    return;
-  }
-  NSRange wordRange = [wordRangeValue rangeValue];
-  
-  // check for mentionIndicators - no sign of them means we shouldn't be editing a mention
-  unichar firstChar = [wordText characterAtIndex:0];
-  if(![[_input->config mentionIndicators] containsObject: @(firstChar)]) {
-    [self removeActiveMentionRange];
-    return;
-  }
-  
-  // check for existing mentions - we don't edit them
-  if([self detectStyle:wordRange]) {
-    [self removeActiveMentionRange];
-    return;
-  }
-  
-  // get style classes that the mention shouldn't be recognized in
+  // get style classes that the mention shouldn't be recognized in, together with other mentions
   NSArray *conflicts = _input->conflictingStyles[@([MentionStyle getStyleType])];
   NSArray *blocks = _input->blockingStyles[@([MentionStyle getStyleType])];
-  NSArray *allConflicts = [conflicts arrayByAddingObjectsFromArray:blocks];
+  NSArray *allConflicts = [[conflicts arrayByAddingObjectsFromArray:blocks] arrayByAddingObject:@([MentionStyle getStyleType])];
   BOOL conflictingStyle = NO;
   
   for(NSNumber *styleType in allConflicts) {
     id<BaseStyleProtocol> styleClass = _input->stylesDict[styleType];
-    if(styleClass != nullptr && [styleClass anyOccurence:wordRange]) {
+    if(styleClass != nullptr && [styleClass anyOccurence:finalRange]) {
       conflictingStyle = YES;
       break;
     }
@@ -350,7 +432,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   }
   
   // everything checks out - we are indeed editing a mention
-  [self setActiveMentionRange:wordRange text:wordText];
+  [self setActiveMentionRange:finalRange text:finalText];
 }
 
 // used to fix mentions' typing attributes

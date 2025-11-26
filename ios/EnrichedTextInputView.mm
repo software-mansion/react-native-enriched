@@ -1112,10 +1112,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleImproperHeadings];
   }
   
-  // mentions removal management
+  // mentions management: removal and editing
   MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyleClass != nullptr) {
     [mentionStyleClass handleExistingMentions];
+    [mentionStyleClass manageMentionEditing];
   }
   
   // placholder management
