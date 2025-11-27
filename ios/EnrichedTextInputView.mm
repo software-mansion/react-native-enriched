@@ -1035,7 +1035,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyleClass != nullptr) {
     [mentionStyleClass manageMentionTypingAttributes];
-    [mentionStyleClass manageMentionEditing];
+    
+    // mention editing runs if only a selection was done (no text change)
+    // otherwise we would double-emit with a second call in the anyTextMayHaveBeenModified method
+    if([_recentlyEmittedString isEqualToString:[textView.textStorage.string copy]]) {
+      [mentionStyleClass manageMentionEditing];
+    }
   }
   
   // typing attributes for empty lines selection reset
@@ -1112,10 +1117,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [h3Style handleImproperHeadings];
   }
   
-  // mentions removal management
+  // mentions management: removal and editing
   MentionStyle *mentionStyleClass = (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
   if(mentionStyleClass != nullptr) {
     [mentionStyleClass handleExistingMentions];
+    [mentionStyleClass manageMentionEditing];
   }
   
   // placholder management
