@@ -127,7 +127,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([StrikethroughStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([ColorStyle getStyleType]): @[@(CodeBlockStyle getStyleType)],
+    @([ColorStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
     @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
     @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
     @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType])],
