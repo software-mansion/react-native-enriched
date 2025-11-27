@@ -459,7 +459,7 @@
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange params:params];
       } else if([styleType isEqualToNumber: @([ImageStyle getStyleType])]) {
         ImageData *imgData = (ImageData *)stylePair.styleValue;
-        [((ImageStyle *)baseStyle) addImageAtRange:styleRange imageData:imgData];
+        [((ImageStyle *)baseStyle) addImageAtRange:styleRange imageData:imgData withSelection:NO];
       } else {
         [baseStyle addAttributes:styleRange];
       }

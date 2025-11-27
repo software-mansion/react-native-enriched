@@ -103,7 +103,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return imageData;
 }
 
-- (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData
+- (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData withSelection:(BOOL)withSelection
 {
   UIImage *img = [self prepareImageFromUri:imageData.uri];
   
@@ -112,7 +112,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
     return;
   }
   
-  NSMutableDictionary *attributes = [@{
+  NSDictionary *attributes = [@{
     NSAttachmentAttributeName: [self prepareImageAttachement:img width:imageData.width height:imageData.height],
     ImageAttributeName: imageData,
   } mutableCopy];
@@ -122,13 +122,13 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   NSString *imagePlaceholder = @"\uFFFC";
   
   if (range.length == 0) {
-    [TextInsertionUtils insertText:imagePlaceholder at:range.location additionalAttributes:attributes input:_input withSelection:YES];
+    [TextInsertionUtils insertText:imagePlaceholder at:range.location additionalAttributes:attributes input:_input withSelection:withSelection];
   } else {
     [TextInsertionUtils replaceText:imagePlaceholder
                                  at:range
                additionalAttributes:attributes
                               input:_input
-                      withSelection:YES];
+                      withSelection:withSelection];
   }
 }
 
@@ -138,7 +138,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   data.width = width;
   data.height = height;
   
-  [self addImageAtRange:_input->textView.selectedRange imageData:data];
+  [self addImageAtRange:_input->textView.selectedRange imageData:data withSelection:YES];
 }
 
 -(NSTextAttachment *)prepareImageAttachement:(UIImage *)image width:(CGFloat)width height:(CGFloat)height
