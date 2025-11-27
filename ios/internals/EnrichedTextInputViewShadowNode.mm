@@ -8,7 +8,6 @@
 namespace facebook::react {
 
 extern const char EnrichedTextInputViewComponentName[] = "EnrichedTextInputView";
-id EnrichedTextInputViewShadowNode::mockTextInputView_ = nullptr;
 
 EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   const ShadowNodeFragment& fragment,
@@ -16,26 +15,18 @@ EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   ShadowNodeTraits traits
 ): ConcreteViewShadowNode(fragment, family, traits) {
   localForceHeightRecalculationCounter_ = 0;
-  
-  // mock text input needs to be initialized on the main thread
-  if([NSThread isMainThread]) {
-    setupMockTextInputView_();
-  } else {
-    dispatch_sync(dispatch_get_main_queue(), ^{
-      setupMockTextInputView_();
-    });
-  }
 }
 
 // mock input is used for the first measure calls that need to be done when the real input isn't defined yet
-void EnrichedTextInputViewShadowNode::setupMockTextInputView_() {
+id EnrichedTextInputViewShadowNode::setupMockTextInputView_() const {
   // it's rendered far away from the viewport
   const int veryFarAway = 20000;
   const int mockSize = 1000;
-  mockTextInputView_ = [[EnrichedTextInputView alloc] initWithFrame:(CGRectMake(veryFarAway, veryFarAway, mockSize, mockSize))];
+  EnrichedTextInputView *mockTextInputView_ = [[EnrichedTextInputView alloc] initWithFrame:(CGRectMake(veryFarAway, veryFarAway, mockSize, mockSize))];
   const auto props = this->getProps();
-  ((EnrichedTextInputView *)mockTextInputView_)->blockEmitting = YES;
+  mockTextInputView_->blockEmitting = YES;
   [mockTextInputView_ updateProps:props oldProps:nullptr];
+  return mockTextInputView_;
 }
 
 EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
@@ -65,11 +56,6 @@ Size EnrichedTextInputViewShadowNode::measureContent(const LayoutContext& layout
     EnrichedTextInputView *typedComponentObject = (EnrichedTextInputView *) componentObject;
     
     if(typedComponentObject != nullptr) {
-      // remove the mock input on the first render with a defined real input
-      if(mockTextInputView_ != nullptr) {
-        mockTextInputView_ = nullptr;
-      }
-    
       __block CGSize estimatedSize;
       
       // synchronously dispatch to main thread if needed
@@ -87,18 +73,16 @@ Size EnrichedTextInputViewShadowNode::measureContent(const LayoutContext& layout
       };
     }
   } else {
-    if(mockTextInputView_ == nullptr) {
-      return Size();
-    }
-  
     __block CGSize estimatedSize;
       
     // synchronously dispatch to main thread if needed
     if([NSThread isMainThread]) {
-      estimatedSize = [mockTextInputView_ measureSize:layoutConstraints.maximumSize.width];
+      EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
+      estimatedSize = [mockTextInputView measureSize:layoutConstraints.maximumSize.width];
     } else {
       dispatch_sync(dispatch_get_main_queue(), ^{
-        estimatedSize = [mockTextInputView_ measureSize:layoutConstraints.maximumSize.width];
+        EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
+        estimatedSize = [mockTextInputView measureSize:layoutConstraints.maximumSize.width];
       });
     }
 
