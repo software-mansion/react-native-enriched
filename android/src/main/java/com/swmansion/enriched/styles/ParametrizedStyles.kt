@@ -58,13 +58,10 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
   }
 
   fun afterTextChanged(s: Editable, endCursorPosition: Int) {
-    val currentWord = getWordAtIndex(s, endCursorPosition) ?: return
-    afterTextChangedLinks(currentWord)
+    val result = getWordAtIndex(s, endCursorPosition) ?: return
 
-    val mentionText = getMentionTextAtIndex(s, endCursorPosition)
-    if (mentionText != null) {
-      afterTextChangedMentions(currentWord, mentionText)
-    }
+    afterTextChangedLinks(result)
+    afterTextChangedMentions(result)
   }
 
   fun detectAllLinks() {
@@ -86,33 +83,6 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
-  }
-
-  // Returns the mention string (max two words) along with its start and end indices
-  private fun getMentionTextAtIndex(s: Editable, index: Int): TextRange? {
-    if (index < 0 ) return null
-
-    var start = index
-    var end = index
-    var whitespaceReached = false
-
-    while (start > 0) {
-      if (Character.isWhitespace(s[start - 1])) {
-        // One whitespace is allowed for mentions (to cover two-word mentions)
-        if (whitespaceReached) break
-        whitespaceReached = true
-      }
-
-      start--
-    }
-
-    while (end < s.length && !Character.isWhitespace(s[end])) {
-      end++
-    }
-
-    val result = s.subSequence(start, end).toString()
-
-    return TextRange(result, start, end)
   }
 
   private fun getWordAtIndex(s: Editable, index: Int): TextRange? {
@@ -171,35 +141,33 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  private fun afterTextChangedMentions(currentWord: TextRange, mentionText: TextRange) {
+  private fun afterTextChangedMentions(result: TextRange) {
     val mentionHandler = view.mentionHandler ?: return
     val spannable = view.text as Spannable
+    val (word, start, end) = result
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
-    val mentionIndicatorRegex = Regex("($indicatorsPattern)")
+    val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
+    val mentionRegex= Regex("^($indicatorsPattern)\\w*")
 
-    val spans = spannable.getSpans(currentWord.start, currentWord.end, EnrichedMentionSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedMentionSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    val match = mentionIndicatorRegex.find(mentionText.text)
-    if (match == null) {
+    if (mentionRegex.matches(word)) {
+      val indicator = mentionIndicatorRegex.find(word)?.value ?: ""
+      val text = word.replaceFirst(indicator, "")
+
+      // Means we are starting mention
+      if (text.isEmpty()) {
+        mentionStart = start
+      }
+
+      mentionHandler.onMention(indicator, text)
+    } else {
       mentionHandler.endMention()
-      return
     }
-
-    val indicator = match.value
-    val indicatorIndexInWord = match.range.first
-    val textStart = indicatorIndexInWord + indicator.length
-    val text = if (textStart <= mentionText.text.length) mentionText.text.substring(textStart) else ""
-
-    // Means we are starting mention (indicator present but no text after it)
-    if (text.isEmpty()) {
-      mentionStart = mentionText.start + indicatorIndexInWord
-    }
-
-    mentionHandler.onMention(indicator, text)
   }
 
   fun setImageSpan(src: String) {
