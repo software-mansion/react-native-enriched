@@ -8,7 +8,7 @@
 
 // if the user backspaces the last character in a line, the iOS applies typing attributes from the previous line
 // in the case of some paragraph styles it works especially bad when a list point just appears
-// hence the solution - reset typing attributes
+// this method handles that case differently with or without present paragraph styles
 + (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text input:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   UnorderedListStyle *ulStyle = typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
@@ -35,21 +35,25 @@
   
   NSRange nonNewlineRange = [(NSValue *)paragraphs.firstObject rangeValue];
   
-  // if the backspace removes the whole content of a paragraph (possibly more but has to start where the paragraph starts), we remove the typing attributes
+  // the backspace removes the whole content of a paragraph (possibly more but has to start where the paragraph starts)
   if(range.location == nonNewlineRange.location && range.length >= nonNewlineRange.length) {
-    // for lists, quotes and codeblocks we want to remove the characters but keep the attributes so that a zero width space appears here
-    // so we do the removing manually and reapply attributes
+    
+    // for lists, quotes and codeblocks present we do the following:
+    // - manually do the removing
+    // - reset typing attribtues so that the previous line styles don't get applied
+    // - reapply the paragraph style that was present so that a zero width space appears here
     NSArray *handledStyles = @[ulStyle, olStyle, bqStyle, cbStyle];
     for(id<BaseStyleProtocol> style in handledStyles) {
       if([style detectStyle:nonNewlineRange]) {
         [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
+        typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
+        [style addAttributes:NSMakeRange(range.location, 0)];
         return YES;
       }
     }
   
-    // do the replacement manually
+    // otherwise (no paragraph styles present), we just do the replacement manually and reset typing attribtues
     [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
-    // reset typing attribtues
     typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
     return YES;
   }
