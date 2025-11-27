@@ -105,8 +105,15 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 
 - (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData
 {
+  UIImage *img = [self prepareImageFromUri:imageData.uri];
+  
+  if (img == nil) {
+    // Could not create image from URI, stop here to avoid the "OBJ" icon
+    return;
+  }
+  
   NSMutableDictionary *attributes = [@{
-    NSAttachmentAttributeName: [self prepareImageAttachement:imageData.uri width:imageData.width height:imageData.height],
+    NSAttachmentAttributeName: [self prepareImageAttachement:img width:imageData.width height:imageData.height],
     ImageAttributeName: imageData,
   } mutableCopy];
   
@@ -134,17 +141,23 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   [self addImageAtRange:_input->textView.selectedRange imageData:data];
 }
 
--(NSTextAttachment *)prepareImageAttachement:(NSString *)uri width:(CGFloat)width height:(CGFloat)height
+-(NSTextAttachment *)prepareImageAttachement:(UIImage *)image width:(CGFloat)width height:(CGFloat)height
 {
-  NSURL *url = [NSURL URLWithString:uri];
-  NSData *imgData = [NSData dataWithContentsOfURL:url];
-  UIImage *image = [UIImage imageWithData:imgData];
   
   NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
   attachment.image = image;
   attachment.bounds = CGRectMake(0, 0, width, height);
 
   return attachment;
+}
+
+- (UIImage *)prepareImageFromUri:(NSString *)uri
+{
+  NSURL *url = [NSURL URLWithString:uri];
+  NSData *imgData = [NSData dataWithContentsOfURL:url];
+  UIImage *image = [UIImage imageWithData:imgData];
+  
+  return image;
 }
 
 @end
