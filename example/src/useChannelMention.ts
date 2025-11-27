@@ -13,6 +13,10 @@ const MOCKED_DATA = [
     id: '3',
     name: 'Engineering',
   },
+  {
+    id: '4',
+    name: 'Private channel',
+  },
 ];
 
 export const useChannelMention = () => {
