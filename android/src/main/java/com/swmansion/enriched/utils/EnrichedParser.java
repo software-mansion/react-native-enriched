@@ -3,9 +3,7 @@ package com.swmansion.enriched.utils;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
@@ -15,6 +13,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
+import android.util.Log;
 
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
@@ -735,7 +734,7 @@ class HtmlToSpannedConverter implements ContentHandler {
       }
     } catch (Exception e) {
       // Failed to load file
-      android.util.Log.e("EnrichedParser", "Failed to load image from path: " + cleanPath, e);
+      Log.e("EnrichedParser", "Failed to load image from path: " + cleanPath, e);
     }
 
     return drawable;

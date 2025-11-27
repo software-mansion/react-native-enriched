@@ -187,11 +187,11 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
       spannable.replace(start, originalEnd, "\uFFFC")
     }
 
-    val imageEnd = start + 1;
+    val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
     val uri = Uri.fromFile(File(src))
 
     val span = EnrichedImageSpan(view.context, uri, width.toInt(), height.toInt())
-    spannable.setSpan(span, start, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {
