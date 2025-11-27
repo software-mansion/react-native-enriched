@@ -1,6 +1,7 @@
 package com.swmansion.enriched.spans
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
@@ -8,17 +9,19 @@ import android.net.Uri
 import android.text.style.ImageSpan
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
-import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
-  private var htmlStyle: HtmlStyle? = null
+  private var width: Int = 0
+  private var height: Int = 0
 
-  constructor(context: Context, uri: Uri, htmlStyle: HtmlStyle, ) : super(context, uri, ALIGN_BASELINE) {
-    this.htmlStyle = htmlStyle
+  constructor(context: Context, uri: Uri, width: Int, height: Int) : super(context, uri, ALIGN_BASELINE) {
+    this.width = width
+    this.height = height
   }
 
-  constructor(drawable: Drawable, source: String, htmlStyle: HtmlStyle) : super(drawable, source, ALIGN_BASELINE) {
-    this.htmlStyle = htmlStyle
+  constructor(drawable: Drawable, source: String, width: Int, height: Int) : super(drawable, source, ALIGN_BASELINE) {
+    this.width = width
+    this.height = height
   }
 
   override fun draw(
@@ -35,7 +38,17 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   override fun getDrawable(): Drawable {
     val drawable = super.getDrawable()
-    drawable.setBounds(0, 0, htmlStyle!!.imgWidth, htmlStyle!!.imgHeight)
+    val scale = Resources.getSystem().displayMetrics.density
+    
+    drawable.setBounds(0, 0, (width * scale).toInt() , (height * scale).toInt())
     return drawable
+  }
+
+  fun getWidth(): Int {
+    return width
+  }
+
+  fun getHeight(): Int {
+    return height
   }
 }

@@ -371,16 +371,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
   
-  if(newViewProps.htmlStyle.img.width != oldViewProps.htmlStyle.img.width) {
-    [newConfig setImageWidth:newViewProps.htmlStyle.img.width];
-    stylePropChanged = YES;
-  }
-
-  if(newViewProps.htmlStyle.img.height != oldViewProps.htmlStyle.img.height) {
-    [newConfig setImageHeight:newViewProps.htmlStyle.img.height];
-    stylePropChanged = YES;
-  }
-  
   if(newViewProps.htmlStyle.a.textDecorationLine != oldViewProps.htmlStyle.a.textDecorationLine) {
     NSString *objcString = [NSString fromCppString:newViewProps.htmlStyle.a.textDecorationLine];
     if([objcString isEqualToString:DecorationUnderline]) {
@@ -808,7 +798,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
   } else if([commandName isEqualToString:@"addImage"]) {
     NSString *uri = (NSString *)args[0];
-    [self addImage:uri];
+    CGFloat imgWidth = [(NSNumber*)args[1] floatValue];
+    CGFloat imgHeight = [(NSNumber*)args[2] floatValue];
+    
+    [self addImage:uri width:imgWidth height:imgHeight];
   }
 }
 
@@ -955,13 +948,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)addImage:(NSString *)uri
+- (void)addImage:(NSString *)uri width:(float)width height:(float)height
 {
   ImageStyle *imageStyleClass = (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
   if(imageStyleClass == nullptr) { return; }
   
   if([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType] range:textView.selectedRange]) {
-    [imageStyleClass addImage:uri];
+    [imageStyleClass addImage:uri width:width height:height];
     [self anyTextMayHaveBeenModified];
   }
 }

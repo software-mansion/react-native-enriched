@@ -1,5 +1,9 @@
 package com.swmansion.enriched.utils;
 
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
@@ -9,6 +13,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
+import android.util.Log;
 
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
@@ -275,7 +280,16 @@ public class EnrichedParser {
         if (style[j] instanceof EnrichedImageSpan) {
           out.append("<img src=\"");
           out.append(((EnrichedImageSpan) style[j]).getSource());
-          out.append("\">");
+          out.append("\"");
+
+          out.append(" width=\"");
+          out.append(((EnrichedImageSpan) style[j]).getWidth());
+          out.append("\"");
+
+          out.append(" height=\"");
+          out.append(((EnrichedImageSpan) style[j]).getHeight());
+
+          out.append("\"/>");
           // Don't output the placeholder character underlying the image.
           i = next;
         }
@@ -453,7 +467,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("h3")) {
       startHeading(mSpannableStringBuilder, 3);
     } else if (tag.equalsIgnoreCase("img")) {
-      startImg(mSpannableStringBuilder, attributes, mImageGetter, mStyle);
+      startImg(mSpannableStringBuilder, attributes, mImageGetter);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -678,11 +692,18 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void startImg(Editable text, Attributes attributes, EnrichedParser.ImageGetter img, HtmlStyle style) {
+  private static void startImg(Editable text, Attributes attributes, EnrichedParser.ImageGetter img) {
     String src = attributes.getValue("", "src");
+    String width = attributes.getValue("", "width");
+    String height = attributes.getValue("", "height");
+
     Drawable d = null;
     if (img != null) {
       d = img.getDrawable(src);
+    }
+
+    if (d == null) {
+      d = HtmlToSpannedConverter.prepareDrawableForImage(src);
     }
 
     if (d == null) {
@@ -691,7 +712,31 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     int len = text.length();
     text.append("￼");
-    text.setSpan(new EnrichedImageSpan(d, src, style), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    text.setSpan(new EnrichedImageSpan(d, src, Integer.parseInt(width), Integer.parseInt(height)), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+  }
+
+  private static BitmapDrawable prepareDrawableForImage(String src) {
+    String cleanPath = src;
+    if (cleanPath.startsWith("file://")) {
+      cleanPath = cleanPath.substring(7);
+    }
+
+    BitmapDrawable drawable = null;
+
+    try {
+      Bitmap bitmap = BitmapFactory.decodeFile(cleanPath);
+      if (bitmap != null) {
+        drawable = new BitmapDrawable(Resources.getSystem(), bitmap);
+        // set bounds so it knows how big it is naturally,
+        // though EnrichedImageSpan will override this with the HTML width/height later.
+        drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+      }
+    } catch (Exception e) {
+      // Failed to load file
+      Log.e("EnrichedParser", "Failed to load image from path: " + cleanPath, e);
+    }
+
+    return drawable;
   }
 
   private static void startA(Editable text, Attributes attributes) {

@@ -105,10 +105,6 @@ export interface HtmlStyleInternal {
   // This is a workaround for the fact that codegen does not support Records.
   // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.
   mention?: UnsafeMixed;
-  img?: {
-    width?: Float;
-    height?: Float;
-  };
   ol?: {
     gapWidth?: Float;
     marginLeft?: Float;
@@ -191,7 +187,12 @@ interface NativeCommands {
     text: string,
     url: string
   ) => void;
-  addImage: (viewRef: React.ElementRef<ComponentType>, uri: string) => void;
+  addImage: (
+    viewRef: React.ElementRef<ComponentType>,
+    uri: string,
+    width: Float,
+    height: Float
+  ) => void;
   startMention: (
     viewRef: React.ElementRef<ComponentType>,
     indicator: string

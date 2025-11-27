@@ -241,6 +241,7 @@
         NSString *tagContent = [self tagContentForStyle:style openingTag:YES location:currentRange.location];
         if ([style isEqualToNumber: @([ImageStyle getStyleType])]) {
           [result appendString: [NSString stringWithFormat:@"<%@/>", tagContent]];
+          [currentActiveStyles removeObject:@([ImageStyle getStyleType])];
         } else {
           [result appendString: [NSString stringWithFormat:@"<%@>", tagContent]];
         }
@@ -329,7 +330,7 @@
       if(imageStyle != nullptr) {
         ImageData *data = [imageStyle getImageDataAt:location];
         if(data != nullptr && data.uri != nullptr) {
-          return [NSString stringWithFormat:@"img src=\"%@\"", data.uri];
+          return [NSString stringWithFormat:@"img src=\"%@\" width=\"%f\" height=\"%f\"", data.uri, data.width, data.height];
         }
       }
       return @"img";
@@ -456,6 +457,9 @@
       } else if([styleType isEqualToNumber: @([MentionStyle getStyleType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange params:params];
+      } else if([styleType isEqualToNumber: @([ImageStyle getStyleType])]) {
+        ImageData *imgData = (ImageData *)stylePair.styleValue;
+        [((ImageStyle *)baseStyle) addImageAtRange:styleRange imageData:imgData withSelection:NO];
       } else {
         [baseStyle addAttributes:styleRange];
       }
@@ -546,6 +550,24 @@
   return str;
 }
 
+- (void)finalizeTagEntry:(NSMutableString *)tagName ongoingTags:(NSMutableDictionary *)ongoingTags initiallyProcessedTags:(NSMutableArray *)processedTags plainText:(NSMutableString *)plainText
+{
+  NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
+  
+  NSArray *tagData = ongoingTags[tagName];
+  NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
+  NSRange tagRange = NSMakeRange(tagLocation, plainText.length - tagLocation);
+  
+  [tagEntry addObject:[tagName copy]];
+  [tagEntry addObject:[NSValue valueWithRange:tagRange]];
+  if(tagData.count > 1) {
+      [tagEntry addObject:[(NSString *)tagData[1] copy]];
+  }
+  
+  [processedTags addObject:tagEntry];
+  [ongoingTags removeObjectForKey:tagName];
+}
+
 - (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
   NSMutableString *plainText = [[NSMutableString alloc] initWithString: @""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
@@ -573,6 +595,14 @@
       gettingTagName = NO;
       gettingTagParams = NO;
       
+      BOOL isSelfClosing = NO;
+        
+      // Check if params ended with '/' (e.g. <img src="" />)
+      if ([currentTagParams hasSuffix:@"/"]) {
+        [currentTagParams deleteCharactersInRange:NSMakeRange(currentTagParams.length - 1, 1)];
+        isSelfClosing = YES;
+      }
+      
       if([currentTagName isEqualToString:@"p"] || [currentTagName isEqualToString:@"br"] || [currentTagName isEqualToString:@"li"]) {
         // do nothing, we don't include these tags in styles
       } else if(!closingTag) {
@@ -588,6 +618,10 @@
         if([currentTagName isEqualToString:@"ul"] || [currentTagName isEqualToString:@"ol"] || [currentTagName isEqualToString:@"blockquote"] || [currentTagName isEqualToString:@"codeblock"]) {
           i += 1;
         }
+        
+        if (isSelfClosing) {
+          [self finalizeTagEntry:currentTagName ongoingTags:ongoingTags initiallyProcessedTags:initiallyProcessedTags plainText:plainText];
+        }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag params into an entry that goes inside initiallyProcessedTags
         
@@ -596,20 +630,7 @@
           plainText = [[plainText substringWithRange: NSMakeRange(0, plainText.length - 1)] mutableCopy];
         }
         
-        NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
-      
-        NSArray *tagData = ongoingTags[currentTagName];
-        NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
-        NSRange tagRange = NSMakeRange(tagLocation, plainText.length - tagLocation);
-        
-        [tagEntry addObject:[currentTagName copy]];
-        [tagEntry addObject:[NSValue valueWithRange:tagRange]];
-        if(tagData.count > 1) {
-          [tagEntry addObject:[(NSString *)tagData[1] copy]];
-        }
-        
-        [initiallyProcessedTags addObject:tagEntry];
-        [ongoingTags removeObjectForKey:currentTagName];
+        [self finalizeTagEntry:currentTagName ongoingTags:ongoingTags initiallyProcessedTags:initiallyProcessedTags plainText:plainText];
       }
       // post-tag cleanup
       closingTag = NO;
@@ -669,7 +690,7 @@
     } else if([tagName isEqualToString:@"i"]) {
       [styleArr addObject:@([ItalicStyle getStyleType])];
     } else if([tagName isEqualToString:@"img"]) {
-      NSRegularExpression *srcRegex = [NSRegularExpression regularExpressionWithPattern:@"src=\".+\""
+      NSRegularExpression *srcRegex = [NSRegularExpression regularExpressionWithPattern:@"src=\"([^\"]+)\""
         options:0
         error:nullptr
       ];
@@ -685,6 +706,22 @@
       NSString *uri = [params substringWithRange:NSMakeRange(srcRange.location + 5, srcRange.length - 6)];
       ImageData *imageData = [[ImageData alloc] init];
       imageData.uri = uri;
+      
+      NSRegularExpression *widthRegex = [NSRegularExpression regularExpressionWithPattern:@"width=\"([0-9.]+)\"" options:0 error:nil];
+      NSTextCheckingResult *widthMatch = [widthRegex firstMatchInString:params options:0 range:NSMakeRange(0, params.length)];
+
+      if (widthMatch) {
+        NSString *widthString = [params substringWithRange:[widthMatch rangeAtIndex:1]];
+        imageData.width = [widthString floatValue];
+      }
+
+      NSRegularExpression *heightRegex = [NSRegularExpression regularExpressionWithPattern:@"height=\"([0-9.]+)\"" options:0 error:nil];
+      NSTextCheckingResult *heightMatch = [heightRegex firstMatchInString:params options:0 range:NSMakeRange(0, params.length)];
+
+      if (heightMatch) {
+        NSString *heightString = [params substringWithRange:[heightMatch rangeAtIndex:1]];
+        imageData.height = [heightString floatValue];
+      }
       
       stylePair.styleValue = imageData;
     } else if([tagName isEqualToString:@"u"]) {

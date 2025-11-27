@@ -170,26 +170,28 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  fun setImageSpan(src: String) {
+  fun setImageSpan(src: String, width: Float, height: Float) {
     if (view.selection == null) return
 
     val spannable = view.text as SpannableStringBuilder
-    var (start, end) = view.selection.getInlineSelection()
-    val spans = spannable.getSpans(start, end, EnrichedImageSpan::class.java)
+    val (start, originalEnd) = view.selection.getInlineSelection()
 
-    for (s in spans) {
-      spannable.removeSpan(s)
-    }
-
-    if (start == end) {
+    if (start == originalEnd) {
       spannable.insert(start, "\uFFFC")
-      end++
+    } else {
+      val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
+      for (s in spans) {
+        spannable.removeSpan(s)
+      }
+
+      spannable.replace(start, originalEnd, "\uFFFC")
     }
 
+    val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
     val uri = Uri.fromFile(File(src))
-    val span = EnrichedImageSpan(view.context, uri, view.htmlStyle)
-    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
-    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    val span = EnrichedImageSpan(view.context, uri, width.toInt(), height.toInt())
+    spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {

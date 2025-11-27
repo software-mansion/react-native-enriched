@@ -42,10 +42,6 @@ const defaultStyle: Required<HtmlStyle> = {
     backgroundColor: 'yellow',
     textDecorationLine: 'underline',
   },
-  img: {
-    width: 80,
-    height: 80,
-  },
   ol: {
     gapWidth: 16,
     marginLeft: 16,

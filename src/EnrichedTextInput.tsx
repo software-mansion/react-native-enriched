@@ -52,7 +52,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
-  setImage: (src: string) => void;
+  setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;
   setMention: (
     indicator: string,
@@ -99,10 +99,6 @@ export interface HtmlStyle {
     textDecorationLine?: 'underline' | 'none';
   };
   mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  img?: {
-    width?: number;
-    height?: number;
-  };
   ol?: {
     gapWidth?: number;
     marginLeft?: number;
@@ -272,8 +268,8 @@ export const EnrichedTextInput = ({
     setLink: (start: number, end: number, text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);
     },
-    setImage: (uri: string) => {
-      Commands.addImage(nullthrows(nativeRef.current), uri);
+    setImage: (uri: string, width: number, height: number) => {
+      Commands.addImage(nullthrows(nativeRef.current), uri, width, height);
     },
     setMention: (
       indicator: string,

@@ -103,48 +103,61 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return imageData;
 }
 
-- (void)addImage:(NSString *)uri {
-  ImageData *data = [[ImageData alloc] init];
-  data.uri = uri;
+- (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData withSelection:(BOOL)withSelection
+{
+  UIImage *img = [self prepareImageFromUri:imageData.uri];
   
-  NSMutableDictionary *attributes = [@{
-    NSAttachmentAttributeName: [self prepareImageAttachement:uri],
-    ImageAttributeName: data,
+  if (img == nil) {
+    // Could not create image from URI, stop here to avoid the "OBJ" icon
+    return;
+  }
+  
+  NSDictionary *attributes = [@{
+    NSAttachmentAttributeName: [self prepareImageAttachement:img width:imageData.width height:imageData.height],
+    ImageAttributeName: imageData,
   } mutableCopy];
   
   // Use the Object Replacement Character for Image.
   // This tells TextKit "something non-text goes here".
   NSString *imagePlaceholder = @"\uFFFC";
   
-  if (_input->textView.selectedRange.length == 0) {
-    [TextInsertionUtils insertText:imagePlaceholder at:_input->textView.selectedRange.location additionalAttributes:nullptr input:_input withSelection:YES];
+  if (range.length == 0) {
+    [TextInsertionUtils insertText:imagePlaceholder at:range.location additionalAttributes:attributes input:_input withSelection:withSelection];
   } else {
     [TextInsertionUtils replaceText:imagePlaceholder
-                                 at:_input->textView.selectedRange
-               additionalAttributes:nullptr
+                                 at:range
+               additionalAttributes:attributes
                               input:_input
-                      withSelection:YES];
+                      withSelection:withSelection];
   }
-  
-  NSRange newSelection = _input->textView.selectedRange;
-  NSRange imageRange = NSMakeRange(newSelection.location - 1, 1);
-  
-  [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage addAttributes:attributes range:imageRange];
-  [_input->textView.textStorage endEditing];
 }
 
--(NSTextAttachment *)prepareImageAttachement:(NSString *)uri
+- (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
+  ImageData *data = [[ImageData alloc] init];
+  data.uri = uri;
+  data.width = width;
+  data.height = height;
+  
+  [self addImageAtRange:_input->textView.selectedRange imageData:data withSelection:YES];
+}
+
+-(NSTextAttachment *)prepareImageAttachement:(UIImage *)image width:(CGFloat)width height:(CGFloat)height
+{
+  
+  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+  attachment.image = image;
+  attachment.bounds = CGRectMake(0, 0, width, height);
+
+  return attachment;
+}
+
+- (UIImage *)prepareImageFromUri:(NSString *)uri
 {
   NSURL *url = [NSURL URLWithString:uri];
   NSData *imgData = [NSData dataWithContentsOfURL:url];
   UIImage *image = [UIImage imageWithData:imgData];
   
-  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-  attachment.image = image;
-  attachment.bounds = CGRectMake(0, 0, [_input->config imageWidth], [_input->config imageHeight]);
-
-  return attachment;
+  return image;
 }
 
 @end

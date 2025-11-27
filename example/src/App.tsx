@@ -27,6 +27,7 @@ import { type MentionItem, MentionPopup } from './components/MentionPopup';
 import { useUserMention } from './useUserMention';
 import { useChannelMention } from './useChannelMention';
 import { HtmlSection } from './components/HtmlSection';
+import { ImageModal } from './components/ImageModal';
 
 type StylesState = OnChangeStateEvent;
 
@@ -75,6 +76,7 @@ export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
 
@@ -123,6 +125,14 @@ export default function App() {
 
   const closeLinkModal = () => {
     setIsLinkModalOpen(false);
+  };
+
+  const openImageModal = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
   };
 
   const openUserMentionPopup = () => {
@@ -197,7 +207,7 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async () => {
+  const selectImage = async (width: number, height: number) => {
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
@@ -208,9 +218,11 @@ export default function App() {
         ? response.assets?.[0]?.originalPath
         : response.assets?.[0]?.uri;
 
-    if (!imageUri) return;
+    if (imageUri) {
+      ref.current?.setImage(imageUri, width, height);
+    }
 
-    ref.current?.setImage(imageUri);
+    closeImageModal();
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
@@ -294,7 +306,7 @@ export default function App() {
             stylesState={stylesState}
             editorRef={ref}
             onOpenLinkModal={openLinkModal}
-            onSelectImage={selectImage}
+            onSelectImage={openImageModal}
           />
         </View>
         <View style={styles.buttonStack}>
@@ -317,6 +329,11 @@ export default function App() {
         editedUrl={insideCurrentLink ? currentLink.url : ''}
         onSubmit={submitLink}
         onClose={closeLinkModal}
+      />
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onSubmit={selectImage}
+        onClose={closeImageModal}
       />
       <ValueModal
         isOpen={isValueModalOpen}
@@ -382,10 +399,6 @@ const htmlStyle: HtmlStyle = {
       backgroundColor: 'lightgreen',
       textDecorationLine: 'none',
     },
-  },
-  img: {
-    width: 50,
-    height: 50,
   },
   ol: {
     gapWidth: 16,
