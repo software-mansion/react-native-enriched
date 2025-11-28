@@ -79,6 +79,8 @@ export default function App() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
+  const [currentHtmlStyle, setCurrentHtmlStyle] =
+    useState<HtmlStyle>(htmlStyle);
 
   const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
@@ -250,6 +252,12 @@ export default function App() {
     closeChannelMentionPopup();
   };
 
+  const handleChangeHtmlStyle = () => {
+    setCurrentHtmlStyle((style) =>
+      style === htmlStyle ? anotherHtmlStyle : htmlStyle
+    );
+  };
+
   const handleFocusEvent = () => {
     console.log('Input focused');
   };
@@ -281,7 +289,7 @@ export default function App() {
             ref={ref}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
-            htmlStyle={htmlStyle}
+            htmlStyle={currentHtmlStyle}
             placeholder="Type something here..."
             placeholderTextColor="rgb(0, 26, 114)"
             selectionColor="deepskyblue"
@@ -313,6 +321,11 @@ export default function App() {
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
         </View>
+        <Button
+          title="Change HTML Style"
+          onPress={handleChangeHtmlStyle}
+          style={styles.valueButton}
+        />
         <Button
           title="Set input's value"
           onPress={openValueModal}
@@ -355,6 +368,68 @@ export default function App() {
     </>
   );
 }
+
+const anotherHtmlStyle: HtmlStyle = {
+  h1: {
+    fontSize: 100,
+    bold: false,
+  },
+  h2: {
+    fontSize: 50,
+    bold: false,
+  },
+  h3: {
+    fontSize: 30,
+    bold: false,
+  },
+  blockquote: {
+    borderColor: 'orange',
+    borderWidth: 1,
+    gapWidth: 4,
+    color: 'orange',
+  },
+  codeblock: {
+    color: 'red',
+    borderRadius: 0,
+    backgroundColor: 'black',
+  },
+  code: {
+    color: 'yellow',
+    backgroundColor: 'purple',
+  },
+  a: {
+    color: 'red',
+    textDecorationLine: 'none',
+  },
+  mention: {
+    '#': {
+      color: 'darkred',
+      backgroundColor: 'lightcoral',
+      textDecorationLine: 'none',
+    },
+    '@': {
+      color: 'darkgreen',
+      backgroundColor: 'transparent',
+      textDecorationLine: 'underline',
+    },
+  },
+  img: {
+    width: 200,
+    height: 200,
+  },
+  ol: {
+    gapWidth: 4,
+    marginLeft: 8,
+    markerColor: 'orange',
+    markerFontWeight: 'normal',
+  },
+  ul: {
+    bulletColor: 'black',
+    bulletSize: 2,
+    marginLeft: 8,
+    gapWidth: 4,
+  },
+};
 
 const htmlStyle: HtmlStyle = {
   h1: {
