@@ -36,7 +36,6 @@ using namespace facebook::react;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
-  CGSize _lastMeasuredSize;
 }
 
 // MARK: - Component utils
@@ -78,7 +77,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
-  _lastMeasuredSize = CGSizeZero;
   
   defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
   
@@ -601,10 +599,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     context: nullptr
   ];
 
-  CGSize contentSize = CGSizeMake(textView.frame.size.width, ceil(boundingBox.size.height));
-  _lastMeasuredSize = contentSize;
-
-  return contentSize;
+  return CGSizeMake(textView.frame.size.width, ceil(boundingBox.size.height));
 }
 
 // make sure the newest state is kept in _state property
@@ -1187,17 +1182,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self->textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
     [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
     [self->textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
-    
-    // We have to explicitly set contentSize, so textView knows if content overflows and if it should be scrollable
-    if (CGSizeEqualToSize(CGSizeZero, self->_lastMeasuredSize)) {
-      // That should be the case only for inputs with fixed dimensions
-      // In such scenario Yoga won't call measureSize, so we have to do it ourselves
-      // At that point, frames.size.width should equal to max content width
-      CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
-      self->textView.contentSize = measuredSize;
-    } else {
-      self->textView.contentSize = self->_lastMeasuredSize;
-    }
+        
+    // We have to explicitly set contentSize
+    // That way textView knows if content overflows and if should be scrollable
+    // We recall measureSize here because value returned from previous measureSize may not be up-to date at that point
+    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
+    self->textView.contentSize = measuredSize;
   });
 }
 
