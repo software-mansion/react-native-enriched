@@ -15,6 +15,7 @@
 #import "LayoutManagerExtension.h"
 #import "ZeroWidthSpaceUtils.h"
 #import "ParagraphAttributesUtils.h"
+#import "EnrichedTextInputStyles.h"
 
 using namespace facebook::react;
 
@@ -80,60 +81,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   
   defaultTypingAttributes = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
   
-  stylesDict = @{
-    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
-    @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithInput:self],
-    @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithInput:self],
-    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithInput:self],
-    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithInput:self],
-    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithInput:self],
-    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithInput:self],
-    @([H1Style getStyleType]): [[H1Style alloc] initWithInput:self],
-    @([H2Style getStyleType]): [[H2Style alloc] initWithInput:self],
-    @([H3Style getStyleType]): [[H3Style alloc] initWithInput:self],
-    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
-    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self],
-    @([ImageStyle getStyleType]): [[ImageStyle alloc] initWithInput:self]
-  };
-  
-  conflictingStyles = @{
-    @([BoldStyle getStyleType]) : @[],
-    @([ItalicStyle getStyleType]) : @[],
-    @([UnderlineStyle getStyleType]) : @[],
-    @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([CodeBlockStyle getStyleType])],
-    @([CodeBlockStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]),
-        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([ImageStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
-  };
-  
-  blockingStyles = @{
-    @([BoldStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([StrikethroughStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([H1Style getStyleType]): @[],
-    @([H2Style getStyleType]): @[],
-    @([H3Style getStyleType]): @[],
-    @([UnorderedListStyle getStyleType]): @[],
-    @([OrderedListStyle getStyleType]): @[],
-    @([BlockQuoteStyle getStyleType]): @[],
-    @([CodeBlockStyle getStyleType]): @[],
-    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType])]
-  };
+  stylesDict = EnrichedTextInputMakeStyles(self);
+  conflictingStyles = EnrichedTextInputConflictingStyles();
+  blockingStyles = EnrichedTextInputBlockingStyles();
   
   parser = [[InputParser alloc] initWithInput:self];
 }
