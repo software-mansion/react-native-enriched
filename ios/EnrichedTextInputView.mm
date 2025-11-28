@@ -1,9 +1,10 @@
 #import "EnrichedTextInputView.h"
+#import "EnrichedTextInputViewShadowNode.h"
+#import "EnrichedTextInputViewComponentDescriptor.h"
 #import "RCTFabricComponentsPlugins.h"
-#import <ReactNativeEnriched/EnrichedTextInputViewComponentDescriptor.h>
-#import <ReactNativeEnriched/EventEmitters.h>
-#import <ReactNativeEnriched/Props.h>
-#import <ReactNativeEnriched/RCTComponentViewHelpers.h>
+#import <react/renderer/components/RNEnrichedTextInputViewSpec/EventEmitters.h>
+#import <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
+#import <react/renderer/components/RNEnrichedTextInputViewSpec/RCTComponentViewHelpers.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <folly/dynamic.h>
 #import "UIView+React.h"
