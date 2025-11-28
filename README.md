@@ -152,9 +152,6 @@ Supported styles:
 - ordered list
 - unordered list
 
-> [!NOTE]
-> The iOS doesn't support codeblocks just yet, but it's planned in the near future!
-
 Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 
 Each call toggles the style within the current text selection. We can still divide styles into two categories based on how they treat the selection:
@@ -211,9 +208,6 @@ Whenever you feel ready with the currently edited mention (so most likely user c
 You can insert an image into the input using [setImage](docs/API_REFERENCE.md#setimage) ref method.
 
 The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
-
-> [!NOTE]
-> The iOS doesn't support inline images just yet, but it's planned in the near future!
 
 ## Style Detection
 
