@@ -599,7 +599,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     context: nullptr
   ];
 
-  return CGSizeMake(textView.frame.size.width, ceil(boundingBox.size.height));
+  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
 }
 
 // make sure the newest state is kept in _state property
