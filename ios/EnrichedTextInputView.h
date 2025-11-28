@@ -5,6 +5,7 @@
 #import "InputParser.h"
 #import "BaseStyleProtocol.h"
 #import "InputTextView.h"
+#import "RCTI18nUtil.h"
 
 #ifndef EnrichedTextInputViewNativeComponent_h
 #define EnrichedTextInputViewNativeComponent_h
