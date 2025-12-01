@@ -598,7 +598,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     options: NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
     context: nullptr
   ];
-  
+
   return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
 }
 
@@ -1182,6 +1182,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self->textView.layoutManager invalidateLayoutForCharacterRange:wholeRange actualCharacterRange:&actualRange];
     [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
     [self->textView.layoutManager invalidateDisplayForCharacterRange:wholeRange];
+        
+    // We have to explicitly set contentSize
+    // That way textView knows if content overflows and if should be scrollable
+    // We recall measureSize here because value returned from previous measureSize may not be up-to date at that point
+    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
+    self->textView.contentSize = measuredSize;
   });
 }
 
