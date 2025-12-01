@@ -29,6 +29,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
+import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
@@ -254,11 +255,29 @@ class EnrichedTextInputView : AppCompatEditText {
       val newText = parseText(value)
       setText(newText)
 
+      observeAsyncImages()
       // Assign SpanWatcher one more time as our previous spannable has been replaced
       addSpanWatcher(EnrichedSpanWatcher(this))
 
       // Scroll to the last line of text
       setSelection(text?.length ?: 0)
+    }
+  }
+
+  /**
+   * Finds all async images in the current text and sets up listeners
+   * to redraw the text layout when they finish downloading.
+   */
+  private fun observeAsyncImages() {
+    val liveText = text
+    if (liveText == null) {
+      return
+    }
+
+    val spans = liveText.getSpans(0, liveText.length, EnrichedImageSpan::class.java)
+
+    for (span in spans) {
+      span.observeAsyncDrawableLoaded(liveText)
     }
   }
 

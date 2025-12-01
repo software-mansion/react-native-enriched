@@ -1,0 +1,77 @@
+package com.swmansion.enriched.utils
+
+import android.content.res.Resources
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.ColorFilter
+import android.graphics.PixelFormat
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import java.net.URL
+import java.util.concurrent.Executors
+import androidx.core.graphics.drawable.toDrawable
+
+class AsyncDrawable (
+  private val url: String,
+) : Drawable() {
+  private var internalDrawable: Drawable = Color.TRANSPARENT.toDrawable()
+  private val mainHandler = Handler(Looper.getMainLooper())
+  private val executor = Executors.newSingleThreadExecutor()
+  var isLoaded = false;
+
+  init {
+    internalDrawable.bounds = bounds
+
+    load()
+  }
+
+  private fun load() {
+    executor.execute {
+      try {
+        val inputStream = URL(url).openStream()
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+
+        // Switch to Main Thread to update UI
+        mainHandler.post {
+          if (bitmap != null) {
+            val d = bitmap.toDrawable(Resources.getSystem())
+            d.bounds = bounds
+            internalDrawable = d
+
+            isLoaded = true;
+            onLoaded?.invoke()
+          }
+        }
+      } catch (e: Exception) {
+        Log.e("UrlDrawable", "Failed to load: $url", e)
+      }
+    }
+  }
+
+  override fun draw(canvas: Canvas) {
+    internalDrawable.draw(canvas)
+  }
+
+  override fun setAlpha(alpha: Int) {
+    internalDrawable.alpha = alpha
+  }
+
+  override fun setColorFilter(colorFilter: ColorFilter?) {
+    internalDrawable.colorFilter = colorFilter
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun getOpacity(): Int {
+    return PixelFormat.TRANSLUCENT
+  }
+
+  override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
+    super.setBounds(left, top, right, bottom)
+    internalDrawable.setBounds(left, top, right, bottom)
+  }
+
+  var onLoaded: (() -> Unit)? = null
+}
