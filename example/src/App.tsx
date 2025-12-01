@@ -207,7 +207,17 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async (width: number, height: number) => {
+  const selectImage = async (
+    width: number,
+    height: number,
+    remoteUrl?: string
+  ) => {
+    if (remoteUrl) {
+      ref.current?.setImage(remoteUrl, width, height);
+      closeImageModal();
+      return;
+    }
+
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,

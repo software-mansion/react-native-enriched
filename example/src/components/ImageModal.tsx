@@ -6,7 +6,7 @@ import { Icon } from './Icon';
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (width: number, height: number) => void;
+  onSubmit: (width: number, height: number, url?: string) => void;
 }
 
 const DEFAULT_IMAGE_WIDTH = 80;
@@ -19,6 +19,7 @@ export const ImageModal: FC<ImageModalProps> = ({
 }) => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
+  const [url, setUrl] = useState('');
 
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
@@ -28,7 +29,7 @@ export const ImageModal: FC<ImageModalProps> = ({
       ? DEFAULT_IMAGE_HEIGHT
       : parsedHeight;
 
-    onSubmit(finalWidth, finalHeight);
+    onSubmit(finalWidth, finalHeight, url.trim() === '' ? undefined : url);
   };
 
   return (
@@ -53,6 +54,12 @@ export const ImageModal: FC<ImageModalProps> = ({
               value={height}
               onChangeText={setHeight}
             />
+            <TextInput
+              placeholder="Remote URL"
+              style={styles.input}
+              value={url}
+              onChangeText={setUrl}
+            />
             <Button
               title="Choose Image"
               onPress={handleSave}
@@ -74,7 +81,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: 300,
-    height: 240,
+    height: 320,
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
