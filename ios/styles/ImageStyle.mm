@@ -106,12 +106,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 - (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData withSelection:(BOOL)withSelection
 {
   UIImage *img = [self prepareImageFromUri:imageData.uri];
-  
-  if (img == nil) {
-    // Could not create image from URI, stop here to avoid the "OBJ" icon
-    return;
-  }
-  
+    
   NSDictionary *attributes = [@{
     NSAttachmentAttributeName: [self prepareImageAttachement:img width:imageData.width height:imageData.height],
     ImageAttributeName: imageData,
