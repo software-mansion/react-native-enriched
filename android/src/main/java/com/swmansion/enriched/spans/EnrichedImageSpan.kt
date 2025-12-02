@@ -1,5 +1,6 @@
 package com.swmansion.enriched.spans
 
+import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -9,52 +10,23 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.util.Log
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.utils.AsyncDrawable
 import androidx.core.graphics.drawable.toDrawable
 import com.swmansion.enriched.utils.ForceRedrawSpan
 
-fun prepareDrawableForImage(src: String): Drawable {
-  var cleanPath = src
-
-  if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
-    return AsyncDrawable(cleanPath)
-  }
-
-  if (cleanPath.startsWith("file://")) {
-    cleanPath = cleanPath.substring(7)
-  }
-
-  var drawable: BitmapDrawable? = null
-
-  try {
-    val bitmap = BitmapFactory.decodeFile(cleanPath)
-    if (bitmap != null) {
-      drawable = bitmap.toDrawable(Resources.getSystem())
-      // set bounds so it knows how big it is naturally,
-      // though EnrichedImageSpan will override this with the HTML width/height later.
-      drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight())
-    }
-  } catch (e: Exception) {
-    // Failed to load file
-    Log.e("EnrichedParser", "Failed to load image from path: $cleanPath", e)
-  }
-
-  if (drawable != null) {
-    return drawable
-  }
-
-  return Color.TRANSPARENT.toDrawable()
-}
-
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   private var width: Int = 0
   private var height: Int = 0
 
-  constructor(source: String, width: Int, height: Int) : super(prepareDrawableForImage(source), source, ALIGN_BASELINE) {
+  constructor(drawable: Drawable, source: String, width: Int, height: Int) : super(drawable, source, ALIGN_BASELINE) {
     this.width = width
     this.height = height
   }
@@ -96,20 +68,20 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   private fun registerDrawableLoadCallback (d: AsyncDrawable, text: Editable?) {
     d.onLoaded = onLoaded@{
-      val text = text as? Spannable
+      val spannable = text as? Spannable
 
-      if (text == null) {
+      if (spannable == null) {
         return@onLoaded
       }
 
-      val start = text.getSpanStart(this@EnrichedImageSpan)
-      val end = text.getSpanEnd(this@EnrichedImageSpan)
+      val start = spannable.getSpanStart(this@EnrichedImageSpan)
+      val end = spannable.getSpanEnd(this@EnrichedImageSpan)
 
       if (start != -1 && end != -1) {
         // trick for adding empty span to force redraw when image is loaded
         val redrawSpan = ForceRedrawSpan()
-        text.setSpan(redrawSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
-        text.removeSpan(redrawSpan)
+        spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+        spannable.removeSpan(redrawSpan)
       }
     }
   }
@@ -120,5 +92,48 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
 
   fun getHeight(): Int {
     return height
+  }
+
+  companion object {
+    @SuppressLint("UseCompatLoadingForDrawables")
+    fun createEnrichedImageSpan(src: String, width: Int, height: Int): EnrichedImageSpan {
+      var imgDrawable = prepareDrawableForImage(src)
+
+      if (imgDrawable == null) {
+        val systemIcon = Resources.getSystem().getDrawable(android.R.drawable.ic_menu_report_image)
+        imgDrawable = DrawableCompat.wrap(systemIcon.mutate())
+      }
+
+      return EnrichedImageSpan(imgDrawable, src, width, height)
+    }
+
+    private fun prepareDrawableForImage(src: String): Drawable? {
+      var cleanPath = src
+
+      if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+        return AsyncDrawable(cleanPath)
+      }
+
+      if (cleanPath.startsWith("file://")) {
+        cleanPath = cleanPath.substring(7)
+      }
+
+      var drawable: BitmapDrawable? = null
+
+      try {
+        val bitmap = BitmapFactory.decodeFile(cleanPath)
+        if (bitmap != null) {
+          drawable = bitmap.toDrawable(Resources.getSystem())
+          // set bounds so it knows how big it is naturally,
+          // though EnrichedImageSpan will override this with the HTML width/height later.
+          drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight())
+        }
+      } catch (e: Exception) {
+        // Failed to load file
+        Log.e("EnrichedParser", "Failed to load image from path: $cleanPath", e)
+      }
+
+      return drawable
+    }
   }
 }

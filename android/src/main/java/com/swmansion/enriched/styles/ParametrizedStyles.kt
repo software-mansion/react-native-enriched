@@ -194,7 +194,6 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
 
   fun setImageSpan(src: String, width: Float, height: Float) {
     if (view.selection == null) return
-
     val spannable = view.text as SpannableStringBuilder
     val (start, originalEnd) = view.selection.getInlineSelection()
 
@@ -210,8 +209,9 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
-    val span = EnrichedImageSpan( src, width.toInt(), height.toInt())
+    val span = EnrichedImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
     span.observeAsyncDrawableLoaded(view.text)
+
     spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 

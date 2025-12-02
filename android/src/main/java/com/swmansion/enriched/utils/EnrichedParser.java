@@ -693,8 +693,8 @@ class HtmlToSpannedConverter implements ContentHandler {
     String height = attributes.getValue("", "height");
 
     int len = text.length();
+    EnrichedImageSpan span = EnrichedImageSpan.Companion.createEnrichedImageSpan(src, Integer.parseInt(width), Integer.parseInt(height));
     text.append("￼");
-    EnrichedImageSpan span = new EnrichedImageSpan(src, Integer.parseInt(width), Integer.parseInt(height));
     text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
 

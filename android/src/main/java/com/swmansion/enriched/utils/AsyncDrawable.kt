@@ -1,5 +1,6 @@
 package com.swmansion.enriched.utils
 
+import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -10,6 +11,7 @@ import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.graphics.drawable.DrawableCompat
 import java.net.URL
 import java.util.concurrent.Executors
 import androidx.core.graphics.drawable.toDrawable
@@ -20,7 +22,7 @@ class AsyncDrawable (
   private var internalDrawable: Drawable = Color.TRANSPARENT.toDrawable()
   private val mainHandler = Handler(Looper.getMainLooper())
   private val executor = Executors.newSingleThreadExecutor()
-  var isLoaded = false;
+  var isLoaded = false
 
   init {
     internalDrawable.bounds = bounds
@@ -31,6 +33,7 @@ class AsyncDrawable (
   private fun load() {
     executor.execute {
       try {
+        isLoaded = false
         val inputStream = URL(url).openStream()
         val bitmap = BitmapFactory.decodeStream(inputStream)
 
@@ -40,15 +43,28 @@ class AsyncDrawable (
             val d = bitmap.toDrawable(Resources.getSystem())
             d.bounds = bounds
             internalDrawable = d
-
-            isLoaded = true;
-            onLoaded?.invoke()
+          } else {
+            loadPlaceholderImage()
           }
+          isLoaded = true
+          onLoaded?.invoke()
         }
       } catch (e: Exception) {
         Log.e("UrlDrawable", "Failed to load: $url", e)
+
+        isLoaded = true
+        loadPlaceholderImage()
+        onLoaded?.invoke()
       }
     }
+  }
+
+  @SuppressLint("UseCompatLoadingForDrawables")
+  private fun loadPlaceholderImage() {
+    val systemIcon = Resources.getSystem().getDrawable(android.R.drawable.ic_menu_report_image)
+    val errorDrawable = DrawableCompat.wrap(systemIcon.mutate())
+
+    internalDrawable = errorDrawable
   }
 
   override fun draw(canvas: Canvas) {
