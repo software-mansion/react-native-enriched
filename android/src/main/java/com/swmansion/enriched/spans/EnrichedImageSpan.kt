@@ -51,19 +51,31 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     return drawable
   }
 
-  fun observeAsyncDrawableLoaded(text: Editable?) {
+  override fun getSize(
+    paint: Paint,
+    text: CharSequence?,
+    start: Int,
+    end: Int,
+    fm: Paint.FontMetricsInt?
+  ): Int {
     val d = drawable
+    val rect = d.bounds
 
-    if (d !is AsyncDrawable) {
-      return
+    if (fm != null) {
+      val imageHeight = rect.bottom - rect.top
+
+      // We want the image bottom to sit on the baseline (0).
+      // Therefore, the image top will be at: -imageHeight.
+      val targetTop = -imageHeight
+
+      // Expand the line UPWARDS if the image is taller than the current font
+      if (targetTop < fm.ascent) {
+        fm.ascent = targetTop
+        fm.top = targetTop
+      }
     }
 
-    registerDrawableLoadCallback(d, text)
-
-    // If it's already loaded (race condition), run logic immediately
-    if (d.isLoaded) {
-      d.onLoaded?.invoke()
-    }
+    return rect.right
   }
 
   private fun registerDrawableLoadCallback (d: AsyncDrawable, text: Editable?) {
@@ -83,6 +95,21 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
         spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
         spannable.removeSpan(redrawSpan)
       }
+    }
+  }
+
+  fun observeAsyncDrawableLoaded(text: Editable?) {
+    val d = drawable
+
+    if (d !is AsyncDrawable) {
+      return
+    }
+
+    registerDrawableLoadCallback(d, text)
+
+    // If it's already loaded (race condition), run logic immediately
+    if (d.isLoaded) {
+      d.onLoaded?.invoke()
     }
   }
 
