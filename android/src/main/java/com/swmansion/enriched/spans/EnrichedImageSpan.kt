@@ -92,7 +92,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
       if (start != -1 && end != -1) {
         // trick for adding empty span to force redraw when image is loaded
         val redrawSpan = ForceRedrawSpan()
-        spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         spannable.removeSpan(redrawSpan)
       }
     }
