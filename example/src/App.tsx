@@ -22,7 +22,7 @@ import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
 import { ValueModal } from './components/ValueModal';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
 import { useUserMention } from './useUserMention';
 import { useChannelMention } from './useChannelMention';
@@ -63,6 +63,9 @@ const DEFAULT_LINK_STATE = {
   start: 0,
   end: 0,
 };
+
+const DEFAULT_IMAGE_WIDTH = 80;
+const DEFAULT_IMAGE_HEIGHT = 80;
 
 const DEBUG_SCROLLABLE = false;
 
@@ -208,12 +211,16 @@ export default function App() {
   };
 
   const selectImage = async (
-    width: number,
-    height: number,
+    width: number | undefined,
+    height: number | undefined,
     remoteUrl?: string
   ) => {
     if (remoteUrl) {
-      ref.current?.setImage(remoteUrl, width, height);
+      ref.current?.setImage(
+        remoteUrl,
+        width ?? DEFAULT_IMAGE_WIDTH,
+        height ?? DEFAULT_IMAGE_HEIGHT
+      );
       closeImageModal();
       return;
     }
@@ -223,13 +230,20 @@ export default function App() {
       selectionLimit: 1,
     });
 
-    const imageUri =
-      Platform.OS === 'android'
-        ? response.assets?.[0]?.originalPath
-        : response.assets?.[0]?.uri;
+    if (response?.assets?.[0] !== undefined) {
+      const asset = response.assets[0];
+      const imageUri =
+        Platform.OS === 'android' ? asset.originalPath : asset.uri;
 
-    if (imageUri) {
-      ref.current?.setImage(imageUri, width, height);
+      const { finalWidth, finalHeight } = prepareImageDimensions(
+        asset,
+        width,
+        height
+      );
+
+      if (imageUri) {
+        ref.current?.setImage(imageUri, finalWidth, finalHeight);
+      }
     }
 
     closeImageModal();
@@ -365,6 +379,50 @@ export default function App() {
     </>
   );
 }
+
+const prepareImageDimensions = (
+  asset: Asset,
+  width: number | undefined,
+  height: number | undefined
+) => {
+  const imgWidth = asset.width;
+  const imgHeight = asset.height;
+
+  const ratio = imgWidth && imgHeight ? imgWidth / imgHeight : 1;
+
+  if (width && height) {
+    return {
+      finalWidth: width,
+      finalHeight: height,
+    };
+  }
+
+  if (width) {
+    return {
+      finalWidth: width,
+      finalHeight: width / ratio,
+    };
+  }
+
+  if (height) {
+    return {
+      finalHeight: height,
+      finalWidth: height * ratio,
+    };
+  }
+
+  if (imgWidth && imgHeight) {
+    return {
+      finalWidth: DEFAULT_IMAGE_WIDTH,
+      finalHeight: DEFAULT_IMAGE_WIDTH / ratio,
+    };
+  }
+
+  return {
+    finalWidth: DEFAULT_IMAGE_WIDTH,
+    finalHeight: DEFAULT_IMAGE_HEIGHT,
+  };
+};
 
 const htmlStyle: HtmlStyle = {
   h1: {

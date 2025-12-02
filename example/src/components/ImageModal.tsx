@@ -6,11 +6,12 @@ import { Icon } from './Icon';
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (width: number, height: number, url?: string) => void;
+  onSubmit: (
+    width: number | undefined,
+    height: number | undefined,
+    url?: string
+  ) => void;
 }
-
-const DEFAULT_IMAGE_WIDTH = 80;
-const DEFAULT_IMAGE_HEIGHT = 80;
 
 export const ImageModal: FC<ImageModalProps> = ({
   isOpen,
@@ -24,12 +25,14 @@ export const ImageModal: FC<ImageModalProps> = ({
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
     const parsedHeight = parseFloat(height);
-    const finalWidth = isNaN(parsedWidth) ? DEFAULT_IMAGE_WIDTH : parsedWidth;
-    const finalHeight = isNaN(parsedHeight)
-      ? DEFAULT_IMAGE_HEIGHT
-      : parsedHeight;
+    const finalWidth = isNaN(parsedWidth) ? '' : parsedWidth;
+    const finalHeight = isNaN(parsedHeight) ? '' : parsedHeight;
 
-    onSubmit(finalWidth, finalHeight, url.trim() === '' ? undefined : url);
+    onSubmit(
+      finalWidth === '' ? undefined : finalWidth,
+      finalHeight === '' ? undefined : finalHeight,
+      url.trim() === '' ? undefined : url
+    );
   };
 
   return (
