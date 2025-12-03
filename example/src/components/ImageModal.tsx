@@ -25,14 +25,23 @@ export const ImageModal: FC<ImageModalProps> = ({
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
     const parsedHeight = parseFloat(height);
-    const finalWidth = isNaN(parsedWidth) ? '' : parsedWidth;
-    const finalHeight = isNaN(parsedHeight) ? '' : parsedHeight;
+    const finalWidth = isNaN(parsedWidth) ? undefined : parsedWidth;
+    const finalHeight = isNaN(parsedHeight) ? undefined : parsedHeight;
 
-    onSubmit(
-      finalWidth === '' ? undefined : finalWidth,
-      finalHeight === '' ? undefined : finalHeight,
-      url.trim() === '' ? undefined : url
-    );
+    onSubmit(finalWidth, finalHeight, url.trim() === '' ? undefined : url);
+    onClose();
+    resetState();
+  };
+
+  const closeModal = () => {
+    onClose();
+    resetState();
+  };
+
+  const resetState = () => {
+    setWidth('');
+    setHeight('');
+    setUrl('');
   };
 
   return (
@@ -40,7 +49,7 @@ export const ImageModal: FC<ImageModalProps> = ({
       <View style={styles.container}>
         <View style={styles.modal}>
           <View style={styles.header}>
-            <Pressable onPress={onClose} style={styles.closeButton}>
+            <Pressable onPress={closeModal} style={styles.closeButton}>
               <Icon name="close" color="rgb(0, 26, 114)" size={20} />
             </Pressable>
           </View>

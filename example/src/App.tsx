@@ -22,12 +22,17 @@ import { Button } from './components/Button';
 import { Toolbar } from './components/Toolbar';
 import { LinkModal } from './components/LinkModal';
 import { ValueModal } from './components/ValueModal';
-import { launchImageLibrary, type Asset } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
-import { useUserMention } from './useUserMention';
-import { useChannelMention } from './useChannelMention';
+import { useUserMention } from './hooks/useUserMention';
+import { useChannelMention } from './hooks/useChannelMention';
 import { HtmlSection } from './components/HtmlSection';
 import { ImageModal } from './components/ImageModal';
+import {
+  DEFAULT_IMAGE_HEIGHT,
+  DEFAULT_IMAGE_WIDTH,
+  prepareImageDimensions,
+} from './utils/prepareImageDimensions';
 
 type StylesState = OnChangeStateEvent;
 
@@ -63,9 +68,6 @@ const DEFAULT_LINK_STATE = {
   start: 0,
   end: 0,
 };
-
-const DEFAULT_IMAGE_WIDTH = 80;
-const DEFAULT_IMAGE_HEIGHT = 80;
 
 const DEBUG_SCROLLABLE = false;
 
@@ -221,7 +223,6 @@ export default function App() {
         width ?? DEFAULT_IMAGE_WIDTH,
         height ?? DEFAULT_IMAGE_HEIGHT
       );
-      closeImageModal();
       return;
     }
 
@@ -230,23 +231,21 @@ export default function App() {
       selectionLimit: 1,
     });
 
-    if (response?.assets?.[0] !== undefined) {
-      const asset = response.assets[0];
-      const imageUri =
-        Platform.OS === 'android' ? asset.originalPath : asset.uri;
+    if (response?.assets?.[0] === undefined) {
+      return;
+    }
 
+    const asset = response.assets[0];
+    const imageUri = Platform.OS === 'android' ? asset.originalPath : asset.uri;
+
+    if (imageUri) {
       const { finalWidth, finalHeight } = prepareImageDimensions(
         asset,
         width,
         height
       );
-
-      if (imageUri) {
-        ref.current?.setImage(imageUri, finalWidth, finalHeight);
-      }
+      ref.current?.setImage(imageUri, finalWidth, finalHeight);
     }
-
-    closeImageModal();
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
@@ -379,50 +378,6 @@ export default function App() {
     </>
   );
 }
-
-const prepareImageDimensions = (
-  asset: Asset,
-  width: number | undefined,
-  height: number | undefined
-) => {
-  const imgWidth = asset.width;
-  const imgHeight = asset.height;
-
-  const ratio = imgWidth && imgHeight ? imgWidth / imgHeight : 1;
-
-  if (width && height) {
-    return {
-      finalWidth: width,
-      finalHeight: height,
-    };
-  }
-
-  if (width) {
-    return {
-      finalWidth: width,
-      finalHeight: width / ratio,
-    };
-  }
-
-  if (height) {
-    return {
-      finalHeight: height,
-      finalWidth: height * ratio,
-    };
-  }
-
-  if (imgWidth && imgHeight) {
-    return {
-      finalWidth: DEFAULT_IMAGE_WIDTH,
-      finalHeight: DEFAULT_IMAGE_WIDTH / ratio,
-    };
-  }
-
-  return {
-    finalWidth: DEFAULT_IMAGE_WIDTH,
-    finalHeight: DEFAULT_IMAGE_HEIGHT,
-  };
-};
 
 const htmlStyle: HtmlStyle = {
   h1: {
