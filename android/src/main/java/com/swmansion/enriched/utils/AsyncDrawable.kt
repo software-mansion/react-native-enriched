@@ -11,10 +11,12 @@ import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import java.net.URL
 import java.util.concurrent.Executors
 import androidx.core.graphics.drawable.toDrawable
+import com.swmansion.enriched.R
 
 class AsyncDrawable (
   private val url: String,
@@ -41,6 +43,7 @@ class AsyncDrawable (
         mainHandler.post {
           if (bitmap != null) {
             val d = bitmap.toDrawable(Resources.getSystem())
+
             d.bounds = bounds
             internalDrawable = d
           } else {
@@ -58,12 +61,8 @@ class AsyncDrawable (
     }
   }
 
-  @SuppressLint("UseCompatLoadingForDrawables")
   private fun loadPlaceholderImage() {
-    val systemIcon = Resources.getSystem().getDrawable(android.R.drawable.ic_menu_report_image)
-    val errorDrawable = DrawableCompat.wrap(systemIcon.mutate())
-
-    internalDrawable = errorDrawable
+    internalDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
   }
 
   override fun draw(canvas: Canvas) {

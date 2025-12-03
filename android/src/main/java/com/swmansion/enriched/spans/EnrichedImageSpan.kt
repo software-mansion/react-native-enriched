@@ -16,7 +16,9 @@ import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.utils.AsyncDrawable
 import androidx.core.graphics.drawable.toDrawable
+import com.swmansion.enriched.R
 import com.swmansion.enriched.spans.utils.ForceRedrawSpan
+import com.swmansion.enriched.utils.ResourceManager
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   private var width: Int = 0
@@ -118,13 +120,11 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   }
 
   companion object {
-    @SuppressLint("UseCompatLoadingForDrawables")
     fun createEnrichedImageSpan(src: String, width: Int, height: Int): EnrichedImageSpan {
       var imgDrawable = prepareDrawableForImage(src)
 
       if (imgDrawable == null) {
-        val systemIcon = Resources.getSystem().getDrawable(android.R.drawable.ic_menu_report_image)
-        imgDrawable = DrawableCompat.wrap(systemIcon.mutate())
+        imgDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
       }
 
       return EnrichedImageSpan(imgDrawable, src, width, height)
