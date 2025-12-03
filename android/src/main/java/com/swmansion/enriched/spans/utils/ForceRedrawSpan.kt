@@ -1,4 +1,4 @@
-package com.swmansion.enriched.utils
+package com.swmansion.enriched.spans.utils
 
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
@@ -11,5 +11,3 @@ class ForceRedrawSpan:  MetricAffectingSpan() {
     // Do nothing
   }
 }
-
-

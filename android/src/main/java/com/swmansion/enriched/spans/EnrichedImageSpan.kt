@@ -4,23 +4,19 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.Spannable
-import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.util.Log
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.utils.AsyncDrawable
 import androidx.core.graphics.drawable.toDrawable
-import com.swmansion.enriched.utils.ForceRedrawSpan
+import com.swmansion.enriched.spans.utils.ForceRedrawSpan
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   private var width: Int = 0
