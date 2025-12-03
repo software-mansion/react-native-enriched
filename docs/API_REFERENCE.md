@@ -422,9 +422,6 @@ Toggles bold formatting at the current selection.
 
 ### `.toggleCodeBlock()`
 
-> [!NOTE]
-> This function is Android only as iOS doesn't support codeblocks just yet.
-
 ```ts
 toggleCodeBlock: () => void;
 ```
