@@ -50,7 +50,7 @@ class AsyncDrawable (
           onLoaded?.invoke()
         }
       } catch (e: Exception) {
-        Log.e("UrlDrawable", "Failed to load: $url", e)
+        Log.e("AsyncDrawable", "Failed to load: $url", e)
 
         isLoaded = true
         loadPlaceholderImage()
