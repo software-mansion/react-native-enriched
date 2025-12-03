@@ -269,10 +269,7 @@ class EnrichedTextInputView : AppCompatEditText {
    * to redraw the text layout when they finish downloading.
    */
   private fun observeAsyncImages() {
-    val liveText = text
-    if (liveText == null) {
-      return
-    }
+    val liveText = text ?: return
 
     val spans = liveText.getSpans(0, liveText.length, EnrichedImageSpan::class.java)
 
