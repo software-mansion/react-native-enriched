@@ -157,7 +157,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
         }
       } catch (e: Exception) {
         // Failed to load file
-        Log.e("EnrichedParser", "Failed to load image from path: $cleanPath", e)
+        Log.e("EnrichedImageSpan", "Failed to load image from path: $cleanPath", e)
       }
 
       return drawable
