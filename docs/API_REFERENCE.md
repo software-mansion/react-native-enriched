@@ -339,11 +339,16 @@ Focuses the input.
 setImage: (src: string, width: number, height: number) => void;
 ```
 
-Sets the [inline image](#inline-images) at the current selection.
+Sets the [inline image](../README.md#inline-images) at the current selection.
 
-- `src: string` - the absolute path to the image.
+- `src: string` - absolute path to a file or remote image address.
 - `width: number` - width of the image.
 - `height: number` - height of the image.
+
+> [!NOTE]
+> It's developer responsibility to provide proper width and height, which may require calculating aspect ratio.
+> Also, keep in mind that in case of providing incorrect image source, static placeholder will be displayed.
+> We may consider adding automatic image size detection and improved error handling in future releases.
 
 ### `.setLink()`
 
