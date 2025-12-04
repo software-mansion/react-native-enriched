@@ -4,11 +4,9 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
-import com.swmansion.enriched.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.spans.EnrichedSpans
-import com.swmansion.enriched.spans.ParagraphSpanConfig
-import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
@@ -41,16 +39,13 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
   }
 
   /**
-   * Applies a code block span to the specified range.
-   *
-   * If the new range touches existing code block spans, they are coalesced into a single
-   * span to prevent visual fragmentation (to maintain single set of rounded corners).
+   * Applies a continuous span to the specified range.
+   * If the new range touches existing continuous spans, they are coalesced into a single span
    */
-  private fun setCodeBlockSpan(spannable: Spannable, start: Int, end: Int) {
-    val codeBlockClazz = EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz ?: return
-    val span = codeBlockClazz.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
-    val previousSpan = getPreviousParagraphSpan(spannable, start, codeBlockClazz)
-    val nextSpan = getNextParagraphSpan(spannable, end, codeBlockClazz)
+  private fun <T>setContinuousSpan(spannable: Spannable, start: Int, end: Int, type: Class<T>) {
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+    val previousSpan = getPreviousParagraphSpan(spannable, start, type)
+    val nextSpan = getNextParagraphSpan(spannable, end, type)
     var newStart = start
     var newEnd = end
 
@@ -70,8 +65,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
 
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    if (type == EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz) {
-      setCodeBlockSpan(spannable, start, end)
+    if (type == EnrichedBlockQuoteSpan::class.java || type == EnrichedCodeBlockSpan::class.java) {
+      setContinuousSpan(spannable, start, end, type)
       return
     }
 
@@ -159,17 +154,16 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     return spans.isNotEmpty()
   }
 
-  private fun mergeNearbyCodeBlocks(s: Editable, endCursorPosition: Int) {
+  private fun <T>mergeAdjacentStyleSpans(s: Editable, endCursorPosition: Int, type: Class<T>) {
     val (start, end) = s.getParagraphBounds(endCursorPosition)
-    val codeBlockClazz = EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz ?: return
-    val currParagraphSpans = s.getSpans(start, end, codeBlockClazz)
+    val currParagraphSpans = s.getSpans(start, end, type)
 
     if (currParagraphSpans.isEmpty()) {
       return
     }
 
     val currSpan = currParagraphSpans[0]
-    val nextSpan = getNextParagraphSpan(s, end, codeBlockClazz)
+    val nextSpan = getNextParagraphSpan(s, end, type)
 
     if (nextSpan == null) {
       return
@@ -182,7 +176,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     s.removeSpan(currSpan)
 
     val (safeStart, safeEnd) = s.getSafeSpanBoundaries(newStart, newEnd)
-    val span = codeBlockClazz.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
 
     s.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
@@ -197,8 +191,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
       val styleStart = spanState.getStart(style)
 
       if (styleStart == null) {
-        if (style == EnrichedSpans.CODE_BLOCK) {
-          mergeNearbyCodeBlocks(s, endCursorPosition)
+        if (config.isContinuous) {
+          mergeAdjacentStyleSpans(s, endCursorPosition, config.clazz)
         }
         continue
       }
