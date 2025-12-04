@@ -4,11 +4,43 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
+import com.swmansion.enriched.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.spans.ParagraphSpanConfig
+import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
 class ParagraphStyles(private val view: EnrichedTextInputView) {
+  private fun <T>getPreviousParagraphSpan(spannable: Spannable, start: Int, type: Class<T>): T? {
+    if (start <= 0) return null
+
+    val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(start - 1)
+    val spans = spannable.getSpans(previousParagraphStart, previousParagraphEnd, type)
+
+    if (spans.isNotEmpty()) {
+      return spans.last()
+    }
+
+    return null
+  }
+
+  private fun <T>getNextParagraphSpan(spannable: Spannable, end: Int, type: Class<T>): T? {
+    if (end >= spannable.length) return null
+
+    val checkPosition = end.coerceAtMost(spannable.length - 1)
+    val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(checkPosition)
+
+    val spans = spannable.getSpans(nextParagraphStart, nextParagraphEnd, type)
+
+    if (spans.isNotEmpty()) {
+      return spans.first()
+    }
+
+    return null
+  }
+
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
     val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
@@ -94,6 +126,37 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     return spans.isNotEmpty()
   }
 
+  private fun mergeNearbyCodeBlocks(s: Editable, endCursorPosition: Int, spanState: EnrichedSpanState) {
+    val (start, end) = s.getParagraphBounds(endCursorPosition)
+    val codeBlockClazz = EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz ?: return
+    val currParagraphSpans = s.getSpans(start, end, codeBlockClazz)
+
+    if (currParagraphSpans.size == 0) {
+      return
+    }
+
+    val currSpan = currParagraphSpans[0]
+    val (nextParagraphStart, nextParagraphEnd) = s.getParagraphBounds(endCursorPosition + 1)
+    val nextParagraphSpans = s.getSpans(nextParagraphStart, nextParagraphEnd, codeBlockClazz)
+
+    if (nextParagraphSpans.size == 0) {
+      return
+    }
+
+    val nextSpan = nextParagraphSpans[0]
+    val newStart = s.getSpanStart(currSpan)
+    val newEnd = s.getSpanEnd(nextSpan)
+
+    s.removeSpan(nextSpan)
+    s.removeSpan(currSpan)
+
+    val (safeStart, safeEnd) = s.getSafeSpanBoundaries(newStart, newEnd)
+    val span = codeBlockClazz.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+
+    spanState.setStart(EnrichedSpans.CODE_BLOCK, safeStart)
+    s.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+  }
+
   fun afterTextChanged(s: Editable, endPosition: Int, previousTextLength: Int) {
     var endCursorPosition = endPosition
     val isBackspace = s.length < previousTextLength
@@ -101,7 +164,14 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
     for ((style, config) in EnrichedSpans.paragraphSpans) {
       val spanState = view.spanState ?: continue
-      val styleStart = spanState.getStart(style) ?: continue
+      val styleStart = spanState.getStart(style)
+
+      if (styleStart == null) {
+        if (style == EnrichedSpans.CODE_BLOCK) {
+          mergeNearbyCodeBlocks(s, endCursorPosition, spanState)
+        }
+        continue
+      }
 
       if (isNewLine) {
         if (!config.isContinuous) {
