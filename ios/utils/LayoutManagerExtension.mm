@@ -177,12 +177,17 @@ static void const *kInputKey = &kInputKey;
     NSRange paragraphGlyphRange = [self glyphRangeForCharacterRange:paragraphRange actualCharacterRange:nullptr];
     [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
       usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer * _Nonnull textContainer, NSRange glyphRange, BOOL * _Nonnull stop) {
-        CGFloat paddingLeft = origin.x;
-        CGFloat paddingTop = origin.y;
-        CGFloat x = paddingLeft;
-        CGFloat y = paddingTop + rect.origin.y;
+        BOOL isRTL = [[RCTI18nUtil sharedInstance] isRTL];
         CGFloat width = [typedInput->config blockquoteBorderWidth];
         CGFloat height = rect.size.height;
+      
+        CGFloat x = 0;
+        if (isRTL) {
+          x = origin.x + rect.size.width - width;
+        } else {
+          x = origin.x;
+        }
+        CGFloat y = origin.y + rect.origin.y;
         
         CGRect lineRect = CGRectMake(x, y, width, height);
         [[typedInput->config blockquoteBorderColor] setFill];
@@ -218,18 +223,34 @@ static void const *kInputKey = &kInputKey;
       [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
         usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
           NSString *marker = [self markerForList:pStyle.textLists.firstObject charIndex:[self characterIndexForGlyphAtIndex:lineGlyphRange.location] input:typedInput];
+          BOOL isRTL = [[RCTI18nUtil sharedInstance] isRTL];
+
+          CGFloat textStartLeft = usedRect.origin.x;
+          CGFloat textEndRight = usedRect.origin.x + usedRect.size.width;
           
           if(pStyle.textLists.firstObject.markerFormat == NSTextListMarkerDecimal) {
             CGFloat gapWidth = [typedInput->config orderedListGapWidth];
             CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-            CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth/2;
+            CGFloat markerX = 0;
+            
+            if (isRTL) {
+              markerX = textEndRight + gapWidth;
+            } else {
+              markerX = textStartLeft - gapWidth - markerWidth / 2;
+            }
             
             [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y) withAttributes:markerAttributes];
           } else {
             CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
             CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
-            CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize/2;
             CGFloat centerY = CGRectGetMidY(usedRect);
+            CGFloat bulletX = 0;
+                
+            if (isRTL) {
+              bulletX = textEndRight + gapWidth + (bulletSize / 2.0);
+            } else {
+              bulletX = textStartLeft - gapWidth - (bulletSize / 2.0);
+            }
             
             CGContextRef context = UIGraphicsGetCurrentContext();
             CGContextSaveGState(context); {
@@ -276,8 +297,13 @@ static void const *kInputKey = &kInputKey;
       
       itemNumber = prevParagraphsCount + 1;
     }
+    BOOL isRTL = [[RCTI18nUtil sharedInstance] isRTL];
     
-    return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
+    if (isRTL) {
+      return [NSString stringWithFormat:@".%ld", (long)(itemNumber)];
+    } else {
+      return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
+    }
   } else {
     return @"•";
   }
