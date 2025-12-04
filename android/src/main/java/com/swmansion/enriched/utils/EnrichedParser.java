@@ -1,9 +1,5 @@
 package com.swmansion.enriched.utils;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
@@ -13,7 +9,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
-import android.util.Log;
 
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
@@ -697,46 +692,10 @@ class HtmlToSpannedConverter implements ContentHandler {
     String width = attributes.getValue("", "width");
     String height = attributes.getValue("", "height");
 
-    Drawable d = null;
-    if (img != null) {
-      d = img.getDrawable(src);
-    }
-
-    if (d == null) {
-      d = HtmlToSpannedConverter.prepareDrawableForImage(src);
-    }
-
-    if (d == null) {
-      return;
-    }
-
     int len = text.length();
+    EnrichedImageSpan span = EnrichedImageSpan.Companion.createEnrichedImageSpan(src, Integer.parseInt(width), Integer.parseInt(height));
     text.append("￼");
-    text.setSpan(new EnrichedImageSpan(d, src, Integer.parseInt(width), Integer.parseInt(height)), len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-  }
-
-  private static BitmapDrawable prepareDrawableForImage(String src) {
-    String cleanPath = src;
-    if (cleanPath.startsWith("file://")) {
-      cleanPath = cleanPath.substring(7);
-    }
-
-    BitmapDrawable drawable = null;
-
-    try {
-      Bitmap bitmap = BitmapFactory.decodeFile(cleanPath);
-      if (bitmap != null) {
-        drawable = new BitmapDrawable(Resources.getSystem(), bitmap);
-        // set bounds so it knows how big it is naturally,
-        // though EnrichedImageSpan will override this with the HTML width/height later.
-        drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-      }
-    } catch (Exception e) {
-      // Failed to load file
-      Log.e("EnrichedParser", "Failed to load image from path: " + cleanPath, e);
-    }
-
-    return drawable;
+    text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
 
   private static void startA(Editable text, Attributes attributes) {
