@@ -13,24 +13,23 @@ import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
 class ParagraphStyles(private val view: EnrichedTextInputView) {
-  private fun <T>getPreviousParagraphSpan(spannable: Spannable, start: Int, type: Class<T>): T? {
-    if (start <= 0) return null
+  private fun <T>getPreviousParagraphSpan(spannable: Spannable, paragraphStart: Int, type: Class<T>): T? {
+    if (paragraphStart <= 0) return null
 
-    val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(start - 1)
+    val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(paragraphStart - 1)
     val spans = spannable.getSpans(previousParagraphStart, previousParagraphEnd, type)
 
     if (spans.isNotEmpty()) {
-      return spans.last()
+      return spans.first()
     }
 
     return null
   }
 
-  private fun <T>getNextParagraphSpan(spannable: Spannable, end: Int, type: Class<T>): T? {
-    if (end >= spannable.length) return null
+  private fun <T>getNextParagraphSpan(spannable: Spannable, paragraphEnd: Int, type: Class<T>): T? {
+    if (paragraphEnd >= spannable.length - 1) return null
 
-    val checkPosition = end.coerceAtMost(spannable.length - 1)
-    val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(checkPosition)
+    val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(paragraphEnd + 1)
 
     val spans = spannable.getSpans(nextParagraphStart, nextParagraphEnd, type)
 
@@ -41,7 +40,41 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     return null
   }
 
+  /**
+   * Applies a code block span to the specified range.
+   *
+   * If the new range touches existing code block spans, they are coalesced into a single
+   * span to prevent visual fragmentation (to maintain single set of rounded corners).
+   */
+  private fun setCodeBlockSpan(spannable: Spannable, start: Int, end: Int) {
+    val codeBlockClazz = EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz ?: return
+    val span = codeBlockClazz.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+    val previousSpan = getPreviousParagraphSpan(spannable, start, codeBlockClazz)
+    val nextSpan = getNextParagraphSpan(spannable, end, codeBlockClazz)
+    var newStart = start
+    var newEnd = end
+
+    if (previousSpan != null) {
+      newStart = spannable.getSpanStart(previousSpan)
+      spannable.removeSpan(previousSpan)
+    }
+
+    if (nextSpan != null) {
+      newEnd = spannable.getSpanEnd(nextSpan)
+      spannable.removeSpan(nextSpan)
+    }
+
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(newStart, newEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+  }
+
+
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
+    if (type == EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz) {
+      setCodeBlockSpan(spannable, start, end)
+      return
+    }
+
     val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -126,24 +159,22 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     return spans.isNotEmpty()
   }
 
-  private fun mergeNearbyCodeBlocks(s: Editable, endCursorPosition: Int, spanState: EnrichedSpanState) {
+  private fun mergeNearbyCodeBlocks(s: Editable, endCursorPosition: Int) {
     val (start, end) = s.getParagraphBounds(endCursorPosition)
     val codeBlockClazz = EnrichedSpans.paragraphSpans[EnrichedSpans.CODE_BLOCK]?.clazz ?: return
     val currParagraphSpans = s.getSpans(start, end, codeBlockClazz)
 
-    if (currParagraphSpans.size == 0) {
+    if (currParagraphSpans.isEmpty()) {
       return
     }
 
     val currSpan = currParagraphSpans[0]
-    val (nextParagraphStart, nextParagraphEnd) = s.getParagraphBounds(endCursorPosition + 1)
-    val nextParagraphSpans = s.getSpans(nextParagraphStart, nextParagraphEnd, codeBlockClazz)
+    val nextSpan = getNextParagraphSpan(s, end, codeBlockClazz)
 
-    if (nextParagraphSpans.size == 0) {
+    if (nextSpan == null) {
       return
     }
 
-    val nextSpan = nextParagraphSpans[0]
     val newStart = s.getSpanStart(currSpan)
     val newEnd = s.getSpanEnd(nextSpan)
 
@@ -153,7 +184,6 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     val (safeStart, safeEnd) = s.getSafeSpanBoundaries(newStart, newEnd)
     val span = codeBlockClazz.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
 
-    spanState.setStart(EnrichedSpans.CODE_BLOCK, safeStart)
     s.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
@@ -168,7 +198,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
       if (styleStart == null) {
         if (style == EnrichedSpans.CODE_BLOCK) {
-          mergeNearbyCodeBlocks(s, endCursorPosition, spanState)
+          mergeNearbyCodeBlocks(s, endCursorPosition)
         }
         continue
       }
