@@ -61,6 +61,15 @@
 @interface H3Style : HeadingStyleBase
 @end
 
+@interface H4Style : HeadingStyleBase
+@end
+
+@interface H5Style : HeadingStyleBase
+@end
+
+@interface H6Style : HeadingStyleBase
+@end
+
 @interface UnorderedListStyle : NSObject<BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;

@@ -28,6 +28,15 @@ class HtmlStyle {
   var h3FontSize: Int = 56
   var h3Bold: Boolean = false
 
+  var h4FontSize: Int = 48
+  var h4Bold: Boolean = false
+
+  var h5FontSize: Int = 40
+  var h5Bold: Boolean = false
+
+  var h6FontSize: Int = 32
+  var h6Bold: Boolean = false
+
   var blockquoteColor: Int? = null
   var blockquoteBorderColor: Int = Color.BLACK
   var blockquoteStripeWidth: Int = 2
@@ -76,6 +85,18 @@ class HtmlStyle {
     val h3Style = style.getMap("h3")
     h3FontSize = parseFloat(h3Style, "fontSize").toInt()
     h3Bold = h3Style?.getBoolean("bold") == true
+
+    val h4Style = style.getMap("h4")
+    h4FontSize = parseFloat(h4Style, "fontSize").toInt()
+    h4Bold = h4Style?.getBoolean("bold") == true
+
+    val h5Style = style.getMap("h5")
+    h5FontSize = parseFloat(h5Style, "fontSize").toInt()
+    h5Bold = h5Style?.getBoolean("bold") == true
+
+    val h6Style = style.getMap("h6")
+    h6FontSize = parseFloat(h6Style, "fontSize").toInt()
+    h6Bold = h6Style?.getBoolean("bold") == true
 
     val blockquoteStyle = style.getMap("blockquote")
     blockquoteColor = parseOptionalColor(blockquoteStyle, "color")
