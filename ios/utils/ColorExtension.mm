@@ -55,7 +55,6 @@
         @"grey": [UIColor grayColor],
         @"transparent": [UIColor clearColor],
         @"aliceblue": [UIColor colorWithRed:0.941 green:0.973 blue:1.0 alpha:1.0],
-        // Add additional CSS names here, e.g., "chartreuse": [UIColor colorWithRed:0.498 green:1.0 blue:0.0 alpha:1.0],
     };
     
     UIColor *namedColor = namedColors[input];
@@ -169,7 +168,7 @@
         b = components[2];
     } else {
         // Unsupported color space (e.g., pattern colors)
-        return @"#FFFFFF"; // Or return nil for better error handling
+        return @"#FFFFFF";
     }
     
     int red = (int)lroundf(r * 255.0f);

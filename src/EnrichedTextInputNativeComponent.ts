@@ -341,10 +341,8 @@ interface NativeCommands {
     viewRef: React.ElementRef<ComponentType>,
     requestId: Int32
   ) => void;
-  toggleColor: (
-    viewRef: React.ElementRef<ComponentType>,
-    color: string
-  ) => void;
+  setColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
+  removeColor: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -376,7 +374,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'startMention',
     'addMention',
     'requestHTML',
-    'toggleColor',
+    'setColor',
+    'removeColor',
   ],
 });
 

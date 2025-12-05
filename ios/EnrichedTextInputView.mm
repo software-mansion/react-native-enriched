@@ -1158,10 +1158,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleRegularStyle: [UnderlineStyle getStyleType]];
   } else if([commandName isEqualToString:@"toggleStrikeThrough"]) {
     [self toggleRegularStyle: [StrikethroughStyle getStyleType]];
-  } else if([commandName isEqualToString:@"toggleColor"]) {
+  } else if([commandName isEqualToString:@"setColor"]) {
     NSString *colorText = (NSString *)args[0];
     UIColor *color = [UIColor colorFromString: colorText];
-    [self toggleColorStyle: color];
+    [self setColor: color];
+  } else if ([commandName isEqualToString:@"removeColor"]) {
+    ColorStyle *colorStyle = stylesDict[@([ColorStyle getStyleType])];
+    [colorStyle removeAttributes: textView.selectedRange];
   } else if([commandName isEqualToString:@"toggleInlineCode"]) {
     [self toggleRegularStyle: [InlineCodeStyle getStyleType]];
   } else if([commandName isEqualToString:@"addLink"]) {
@@ -1401,7 +1404,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 // MARK: - Styles manipulation
 
-- (void)toggleColorStyle:(UIColor *)color {
+- (void)setColor:(UIColor *)color {
   ColorStyle *colorStyle = stylesDict[@(Colored)];
   
   [colorStyle applyStyle:textView.selectedRange color: color];

@@ -264,12 +264,15 @@
       NSMutableSet *fixedEndedStyles = [endedStyles mutableCopy];
       NSMutableSet *stylesToBeReAdded = [[NSMutableSet alloc] init];
       
-      for (NSNumber *style in endedStyles) {
+      for(NSNumber *style in endedStyles) {
         NSInteger styleBeginning = [currentActiveStylesBeginning[style] integerValue];
         
         for(NSNumber *activeStyle in currentActiveStyles) {
           NSInteger activeStyleBeginning = [currentActiveStylesBeginning[activeStyle] integerValue];
-          
+
+          // we end the styles that began after the currently ended style but not at the "i" (cause the old style ended at exactly "i-1"
+          // also the ones that began in the exact same place but are "inner" in relation to them due to StyleTypeEnum integer values
+
           if((activeStyleBeginning > styleBeginning && activeStyleBeginning < i) ||
              (activeStyleBeginning == styleBeginning && activeStyleBeginning < i && [activeStyle integerValue]  > [style integerValue])) {
             [fixedEndedStyles addObject:activeStyle];

@@ -27,7 +27,7 @@ import {
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
 import type { OnChangeColorEvent } from '../../src/EnrichedTextInputNativeComponent';
-import ColorPreview from './components/ColorPreview';
+import { ColorPreview } from './components/ColorPreview';
 
 type StylesState = OnChangeStateEvent;
 
@@ -305,6 +305,10 @@ export default function App() {
     }
   };
 
+  const handleRemoveColor = () => {
+    ref.current?.removeColor();
+  };
+
   return (
     <>
       <ScrollView
@@ -355,6 +359,11 @@ export default function App() {
         <Button
           title="Set input's value"
           onPress={openValueModal}
+          style={styles.valueButton}
+        />
+        <Button
+          title="Remove color"
+          onPress={handleRemoveColor}
           style={styles.valueButton}
         />
         <HtmlSection currentHtml={currentHtml} />
