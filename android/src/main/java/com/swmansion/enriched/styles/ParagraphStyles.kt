@@ -3,6 +3,7 @@ package com.swmansion.enriched.styles
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.util.Log
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
@@ -17,6 +18,12 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(paragraphStart - 1)
     val spans = spannable.getSpans(previousParagraphStart, previousParagraphEnd, type)
 
+    // A paragraph implies a single cohesive style. having multiple spans of the
+    // same type (e.g., two codeblock spans) in one paragraph is an invalid state in current library logic
+    if (spans.size > 1) {
+      Log.w("ParagraphStyles", "getPreviousParagraphSpan(): Found more than one span in the paragraph!")
+    }
+
     if (spans.isNotEmpty()) {
       return spans.first()
     }
@@ -30,6 +37,12 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(paragraphEnd + 1)
 
     val spans = spannable.getSpans(nextParagraphStart, nextParagraphEnd, type)
+
+    // A paragraph implies a single cohesive style. having multiple spans of the
+    // same type (e.g., two codeblock spans) in one paragraph is an invalid state in current library logic
+    if (spans.size > 1) {
+      Log.w("ParagraphStyles", "getNextParagraphSpan(): Found more than one span in the paragraph!")
+    }
 
     if (spans.isNotEmpty()) {
       return spans.first()
@@ -65,7 +78,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
 
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
-    if (type == EnrichedBlockQuoteSpan::class.java || type == EnrichedCodeBlockSpan::class.java) {
+    if (EnrichedSpans.isTypeContinuous(type)) {
       setContinuousSpan(spannable, start, end, type)
       return
     }
@@ -248,8 +261,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
     if (start == end) {
       spannable.insert(start, "\u200B")
-      view.spanState?.setStart(name, start + 1)
       setAndMergeSpans(spannable, type, start, end + 1)
+      view.selection.validateStyles()
 
       return
     }
@@ -264,8 +277,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
       currentStart = currentEnd + 1
     }
 
-    view.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
+    view.selection.validateStyles()
   }
 
   fun getStyleRange(): Pair<Int, Int> {
