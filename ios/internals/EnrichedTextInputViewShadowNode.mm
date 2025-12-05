@@ -17,6 +17,18 @@ EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   localForceHeightRecalculationCounter_ = 0;
 }
 
+// mock input is used for the first measure calls that need to be done when the real input isn't defined yet
+id EnrichedTextInputViewShadowNode::setupMockTextInputView_() const {
+  // it's rendered far away from the viewport
+  const int veryFarAway = 20000;
+  const int mockSize = 1000;
+  EnrichedTextInputView *mockTextInputView_ = [[EnrichedTextInputView alloc] initWithFrame:(CGRectMake(veryFarAway, veryFarAway, mockSize, mockSize))];
+  const auto props = this->getProps();
+  mockTextInputView_->blockEmitting = YES;
+  [mockTextInputView_ updateProps:props oldProps:nullptr];
+  return mockTextInputView_;
+}
+
 EnrichedTextInputViewShadowNode::EnrichedTextInputViewShadowNode(
   const ShadowNode& sourceShadowNode,
   const ShadowNodeFragment& fragment
@@ -61,23 +73,23 @@ Size EnrichedTextInputViewShadowNode::measureContent(const LayoutContext& layout
       };
     }
   } else {
-    // on the very first call there is no componentView that we can query for the component height
-    // thus, a little heuristic: just put a height that is exactly height of letter "I" with default apple font and size from props
-    // in a lot of cases it will be the desired height
-    // in others, the jump on the second call will at least be smaller
-    const auto props = this->getProps();
-    const auto &typedProps = *std::static_pointer_cast<EnrichedTextInputViewProps const>(props);
-    NSAttributedString *attrStr = [[NSAttributedString alloc] initWithString:@"I" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:typedProps.fontSize]}];
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attrStr);
-    const CGSize &suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
-      framesetter,
-      CFRangeMake(0, 1),
-      nullptr,
-      CGSizeMake(layoutConstraints.maximumSize.width, DBL_MAX),
-      nullptr
-    );
-    
-    return {suggestedSize.width, suggestedSize.height};
+    __block CGSize estimatedSize;
+      
+    // synchronously dispatch to main thread if needed
+    if([NSThread isMainThread]) {
+      EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
+      estimatedSize = [mockTextInputView measureSize:layoutConstraints.maximumSize.width];
+    } else {
+      dispatch_sync(dispatch_get_main_queue(), ^{
+        EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
+        estimatedSize = [mockTextInputView measureSize:layoutConstraints.maximumSize.width];
+      });
+    }
+
+    return {
+      estimatedSize.width,
+      MIN(estimatedSize.height, layoutConstraints.maximumSize.height)
+    };
   }
   
   return Size();

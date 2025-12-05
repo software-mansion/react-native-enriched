@@ -8,6 +8,8 @@
 
 + (StyleType)getStyleType { return Underline; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

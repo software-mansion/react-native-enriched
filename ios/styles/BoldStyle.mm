@@ -9,6 +9,8 @@
 
 + (StyleType)getStyleType { return Bold; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;

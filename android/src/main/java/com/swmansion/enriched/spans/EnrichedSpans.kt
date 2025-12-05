@@ -1,5 +1,7 @@
 package com.swmansion.enriched.spans
 
+import com.swmansion.enriched.styles.HtmlStyle
+
 data class BaseSpanConfig(val clazz: Class<*>)
 data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
 data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
@@ -62,50 +64,63 @@ object EnrichedSpans {
     MENTION to BaseSpanConfig(EnrichedMentionSpan::class.java),
   )
 
-  val mergingConfig: Map<String, StylesMergingConfig> = mapOf(
-    BOLD to StylesMergingConfig(
-      blockingStyles = arrayOf(CODE_BLOCK)
-    ),
-    ITALIC to StylesMergingConfig(
-      blockingStyles = arrayOf(CODE_BLOCK)
-    ),
-    UNDERLINE to StylesMergingConfig(
-      blockingStyles = arrayOf(CODE_BLOCK)
-    ),
-    STRIKETHROUGH to StylesMergingConfig(
-      blockingStyles = arrayOf(CODE_BLOCK)
-    ),
-    INLINE_CODE to StylesMergingConfig(
-      conflictingStyles = arrayOf(MENTION, LINK),
-      blockingStyles = arrayOf(CODE_BLOCK)
-    ),
-    H1 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
-    ),
-    H2 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
-    ),
-    H3 to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK),
-    ),
-    BLOCK_QUOTE to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),
-    ),
-    CODE_BLOCK to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE, INLINE_CODE),
-    ),
-    UNORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
-    ),
-    ORDERED_LIST to StylesMergingConfig(
-      conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
-    ),
-    LINK to StylesMergingConfig(
-      blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, MENTION)
-    ),
-    IMAGE to StylesMergingConfig(),
-    MENTION to StylesMergingConfig(
-      blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, LINK)
-    ),
-  )
+  fun getMergingConfigForStyle(style: String, htmlStyle: HtmlStyle): StylesMergingConfig? {
+    return when (style) {
+      BOLD -> {
+        val blockingStyles = mutableListOf(CODE_BLOCK)
+        if (htmlStyle.h1Bold) blockingStyles.add(H1)
+        if (htmlStyle.h2Bold) blockingStyles.add(H2)
+        if (htmlStyle.h3Bold) blockingStyles.add(H3)
+        StylesMergingConfig(blockingStyles = blockingStyles.toTypedArray())
+      }
+      ITALIC -> StylesMergingConfig(
+        blockingStyles = arrayOf(CODE_BLOCK)
+      )
+      UNDERLINE -> StylesMergingConfig(
+        blockingStyles = arrayOf(CODE_BLOCK)
+      )
+      STRIKETHROUGH -> StylesMergingConfig(
+        blockingStyles = arrayOf(CODE_BLOCK)
+      )
+      INLINE_CODE -> StylesMergingConfig(
+        conflictingStyles = arrayOf(MENTION, LINK),
+        blockingStyles = arrayOf(CODE_BLOCK)
+      )
+      H1 -> {
+        val conflictingStyles = mutableListOf(H2, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        if (htmlStyle.h1Bold) conflictingStyles.add(BOLD)
+        StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
+      }
+      H2 -> {
+        val conflictingStyles = mutableListOf(H1, H3, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        if (htmlStyle.h2Bold) conflictingStyles.add(BOLD)
+        StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
+      }
+      H3 -> {
+        val conflictingStyles = mutableListOf(H1, H2, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        if (htmlStyle.h3Bold) conflictingStyles.add(BOLD)
+        StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
+      }
+      BLOCK_QUOTE -> StylesMergingConfig(
+        conflictingStyles = arrayOf(H1, H2, H3, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST)
+      )
+      CODE_BLOCK -> StylesMergingConfig(
+        conflictingStyles = arrayOf(H1, H2, H3, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, UNORDERED_LIST, ORDERED_LIST, BLOCK_QUOTE, INLINE_CODE)
+      )
+      UNORDERED_LIST -> StylesMergingConfig(
+        conflictingStyles = arrayOf(H1, H2, H3, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE)
+      )
+      ORDERED_LIST -> StylesMergingConfig(
+        conflictingStyles = arrayOf(H1, H2, H3, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
+      )
+      LINK -> StylesMergingConfig(
+        blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, MENTION)
+      )
+      IMAGE -> StylesMergingConfig()
+      MENTION -> StylesMergingConfig(
+        blockingStyles = arrayOf(INLINE_CODE, CODE_BLOCK, LINK)
+      )
+      else -> null
+    }
+  }
 }

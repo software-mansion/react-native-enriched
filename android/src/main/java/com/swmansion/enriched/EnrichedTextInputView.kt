@@ -29,6 +29,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
+import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
@@ -54,6 +55,7 @@ class EnrichedTextInputView : AppCompatEditText {
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
+  var scrollEnabled: Boolean = true
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -76,6 +78,8 @@ class EnrichedTextInputView : AppCompatEditText {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+  private var defaultValue: CharSequence? = null
+  private var defaultValueDirty: Boolean = false
 
   private var inputMethodManager: InputMethodManager? = null
 
@@ -141,6 +145,14 @@ class EnrichedTextInputView : AppCompatEditText {
     }
 
     return super.onTouchEvent(ev)
+  }
+
+  override fun canScrollVertically(direction: Int): Boolean {
+    return scrollEnabled
+  }
+
+  override fun canScrollHorizontally(direction: Int): Boolean {
+    return scrollEnabled
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {
@@ -249,11 +261,26 @@ class EnrichedTextInputView : AppCompatEditText {
       val newText = parseText(value)
       setText(newText)
 
+      observeAsyncImages()
       // Assign SpanWatcher one more time as our previous spannable has been replaced
       addSpanWatcher(EnrichedSpanWatcher(this))
 
       // Scroll to the last line of text
       setSelection(text?.length ?: 0)
+    }
+  }
+
+  /**
+   * Finds all async images in the current text and sets up listeners
+   * to redraw the text layout when they finish downloading.
+   */
+  private fun observeAsyncImages() {
+    val liveText = text ?: return
+
+    val spans = liveText.getSpans(0, liveText.length, EnrichedImageSpan::class.java)
+
+    for (span in spans) {
+      span.observeAsyncDrawableLoaded(liveText)
     }
   }
 
@@ -366,7 +393,24 @@ class EnrichedTextInputView : AppCompatEditText {
     return false
   }
 
-  fun updateTypeface() {
+  fun afterUpdateTransaction() {
+    updateTypeface()
+    updateDefaultValue()
+  }
+
+  fun setDefaultValue(value: CharSequence?) {
+    defaultValue = value
+    defaultValueDirty = true
+  }
+
+  private fun updateDefaultValue() {
+    if (!defaultValueDirty) return
+
+    defaultValueDirty = false
+    setValue(defaultValue ?: "")
+  }
+
+  private fun updateTypeface() {
     if (!typefaceDirty) return
     typefaceDirty = false
 
@@ -444,7 +488,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun verifyStyle(name: String): Boolean {
-    val mergingConfig = EnrichedSpans.mergingConfig[name] ?: return true
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(name, htmlStyle) ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
     val blockingStyles = mergingConfig.blockingStyles
     val isEnabling = spanState?.getStart(name) == null
@@ -505,11 +549,11 @@ class EnrichedTextInputView : AppCompatEditText {
     parametrizedStyles?.setLinkSpan(start, end, text, url)
   }
 
-  fun addImage(src: String) {
+  fun addImage(src: String, width: Float, height: Float) {
     val isValid = verifyStyle(EnrichedSpans.IMAGE)
     if (!isValid) return
 
-    parametrizedStyles?.setImageSpan(src)
+    parametrizedStyles?.setImageSpan(src, width, height)
     layoutManager.invalidateLayout()
   }
 

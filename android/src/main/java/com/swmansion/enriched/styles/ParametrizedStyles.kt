@@ -1,6 +1,5 @@
 package com.swmansion.enriched.styles
 
-import android.net.Uri
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -11,7 +10,6 @@ import com.swmansion.enriched.spans.EnrichedLinkSpan
 import com.swmansion.enriched.spans.EnrichedMentionSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
-import java.io.File
 
 class ParametrizedStyles(private val view: EnrichedTextInputView) {
   private var mentionStart: Int? = null
@@ -85,7 +83,7 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  private fun getWordAtIndex(s: Editable, index: Int): Triple<String, Int, Int>? {
+  private fun getWordAtIndex(s: CharSequence, index: Int): TextRange? {
     if (index < 0 ) return null
 
     var start = index
@@ -101,18 +99,34 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
 
     val result = s.subSequence(start, end).toString()
 
-    return Triple(result, start, end)
+    return TextRange(result, start, end)
   }
 
-  private fun afterTextChangedLinks(result: Triple<String, Int, Int>) {
+  private fun canLinkBeApplied(): Boolean {
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle)?: return true
+    val conflictingStyles = mergingConfig.conflictingStyles
+    val blockingStyles = mergingConfig.blockingStyles
+
+    for (style in blockingStyles) {
+      if (view.spanState?.getStart(style) != null) return false
+    }
+
+    for (style in conflictingStyles) {
+      if (view.spanState?.getStart(style) != null) return false
+    }
+
+    return true
+  }
+
+  private fun afterTextChangedLinks(result: TextRange) {
     // Do not detect link if it's applied manually
-    if (isSettingLinkSpan) return
+    if (isSettingLinkSpan || !canLinkBeApplied()) return
+
     val spannable = view.text as Spannable
     val (word, start, end) = result
 
     // TODO: Consider using more reliable regex, this one matches almost anything
     val urlPattern = android.util.Patterns.WEB_URL.matcher(word)
-
     val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
@@ -125,55 +139,80 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  private fun afterTextChangedMentions(result: Triple<String, Int, Int>) {
+  private fun afterTextChangedMentions(currentWord: TextRange) {
     val mentionHandler = view.mentionHandler ?: return
     val spannable = view.text as Spannable
-    val (word, start, end) = result
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
     val mentionRegex= Regex("^($indicatorsPattern)\\w*")
 
-    val spans = spannable.getSpans(start, end, EnrichedMentionSpan::class.java)
+    val spans = spannable.getSpans(currentWord.start, currentWord.end, EnrichedMentionSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    if (mentionRegex.matches(word)) {
-      val indicator = mentionIndicatorRegex.find(word)?.value ?: ""
-      val text = word.replaceFirst(indicator, "")
+    var indicator: String
+    var finalStart: Int
+    val finalEnd = currentWord.end
 
-      // Means we are starting mention
-      if (text.isEmpty()) {
-        mentionStart = start
+    // No mention in the current word, check previous one
+    if (!mentionRegex.matches(currentWord.text)) {
+      val previousWord = getWordAtIndex(spannable, currentWord.start - 1)
+
+      // No previous word -> no mention to be detected
+      if (previousWord == null) {
+        mentionHandler.endMention()
+        return
       }
 
-      mentionHandler.onMention(indicator, text)
+      // Previous word is not a mention -> end mention
+      if (!mentionRegex.matches(previousWord.text)) {
+        mentionHandler.endMention()
+        return
+      }
+
+      // Previous word is a mention -> use it
+      finalStart = previousWord.start
+      indicator = mentionIndicatorRegex.find(previousWord.text)?.value ?: ""
     } else {
-      mentionHandler.endMention()
+      // Current word is a mention -> use it
+      finalStart = currentWord.start
+      indicator = mentionIndicatorRegex.find(currentWord.text)?.value ?: ""
     }
+
+    // Extract text without indicator
+    val text = spannable.subSequence(finalStart, finalEnd).toString().replaceFirst(indicator, "")
+
+    // Means we are starting mention
+    if (text.isEmpty()) {
+      mentionStart = finalStart
+    }
+
+    mentionHandler.onMention(indicator, text)
   }
 
-  fun setImageSpan(src: String) {
+  fun setImageSpan(src: String, width: Float, height: Float) {
     if (view.selection == null) return
-
     val spannable = view.text as SpannableStringBuilder
-    var (start, end) = view.selection.getInlineSelection()
-    val spans = spannable.getSpans(start, end, EnrichedImageSpan::class.java)
+    val (start, originalEnd) = view.selection.getInlineSelection()
 
-    for (s in spans) {
-      spannable.removeSpan(s)
-    }
-
-    if (start == end) {
+    if (start == originalEnd) {
       spannable.insert(start, "\uFFFC")
-      end++
+    } else {
+      val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
+      for (s in spans) {
+        spannable.removeSpan(s)
+      }
+
+      spannable.replace(start, originalEnd, "\uFFFC")
     }
 
-    val uri = Uri.fromFile(File(src))
-    val span = EnrichedImageSpan(view.context, uri, view.htmlStyle)
-    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
-    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
+    val span = EnrichedImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
+    span.observeAsyncDrawableLoaded(view.text)
+
+    spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
   fun startMention(indicator: String) {
@@ -228,5 +267,9 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     val config = EnrichedSpans.parametrizedStyles[name] ?: return false
     val spannable = view.text as Spannable
     return removeSpansForRange(spannable, start, end, config.clazz)
+  }
+
+  companion object {
+    data class TextRange(val text: String, val start: Int, val end: Int)
   }
 }

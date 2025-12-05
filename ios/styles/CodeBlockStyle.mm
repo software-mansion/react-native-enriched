@@ -4,24 +4,21 @@
 #import "OccurenceUtils.h"
 #import "ParagraphsUtils.h"
 #import "TextInsertionUtils.h"
+#import "ColorExtension.h"
 
-@implementation UnorderedListStyle {
+@implementation CodeBlockStyle {
   EnrichedTextInputView *_input;
+  NSArray *_stylesToExclude;
 }
 
-+ (StyleType)getStyleType { return UnorderedList; }
++ (StyleType)getStyleType { return CodeBlock; }
 
 + (BOOL)isParagraphStyle { return YES; }
-
-- (CGFloat)getHeadIndent {
-  // lists are drawn manually
-  // margin before bullet + gap between bullet and paragraph
-  return [_input->config unorderedListMarginLeft] + [_input->config unorderedListGapWidth];
-}
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _stylesToExclude = @[ @(InlineCode), @(Mention), @(Link) ];
   return self;
 }
 
@@ -34,38 +31,32 @@
   }
 }
 
-// we assume correct paragraph range is already given
 - (void)addAttributes:(NSRange)range {
-  NSTextList *bullet = [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDisc options:0];
+  NSTextList *codeBlockList = [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:range];
   // if we fill empty lines with zero width spaces, we need to offset later ranges
   NSInteger offset = 0;
-  // needed for range adjustments
   NSRange preModificationRange = _input->textView.selectedRange;
   
-  // let's not emit some weird selection changes or text/html changes
+  // to not emit any space filling selection/text changes
   _input->blockEmitting = YES;
-  
-  for(NSValue *value in paragraphs) {
-    // take previous offsets into consideration
-    NSRange fixedRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
-    
+
+  for (NSValue *value in paragraphs) {
+    NSRange pRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
     // length 0 with first line, length 1 and newline with some empty lines in the middle
-    if(fixedRange.length == 0 ||
-      (fixedRange.length == 1 &&
-      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_input->textView.textStorage.string characterAtIndex:fixedRange.location]])
+    if(pRange.length == 0 ||
+      (pRange.length == 1 &&
+      [[NSCharacterSet newlineCharacterSet] characterIsMember: [_input->textView.textStorage.string characterAtIndex:pRange.location]])
     ) {
-      [TextInsertionUtils insertText:@"\u200B" at:fixedRange.location additionalAttributes:nullptr input:_input withSelection:NO];
-      fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
+      [TextInsertionUtils insertText:@"\u200B" at:pRange.location additionalAttributes:nullptr input:_input withSelection:NO];
+      pRange = NSMakeRange(pRange.location, pRange.length + 1);
       offset += 1;
     }
     
-    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:fixedRange options:0
+    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
-        pStyle.textLists = @[bullet];
-        pStyle.headIndent = [self getHeadIndent];
-        pStyle.firstLineHeadIndent = [self getHeadIndent];
+        pStyle.textLists = @[codeBlockList];
         [_input->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
@@ -85,14 +76,12 @@
   // also add typing attributes
   NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-  pStyle.textLists = @[bullet];
-  pStyle.headIndent = [self getHeadIndent];
-  pStyle.firstLineHeadIndent = [self getHeadIndent];
+  pStyle.textLists = @[codeBlockList];
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+  
   _input->textView.typingAttributes = typingAttrs;
 }
 
-// does pretty much the same as normal addAttributes, just need to get the range
 - (void)addTypingAttributes {
   [self addAttributes:_input->textView.selectedRange];
 }
@@ -103,31 +92,29 @@
   [_input->textView.textStorage beginEditing];
   
   for(NSValue *value in paragraphs) {
-    NSRange range = [value rangeValue];
-    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:range options:0
+    NSRange pRange = [value rangeValue];
+    
+    [_input->textView.textStorage enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
       usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
         NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
         pStyle.textLists = @[];
-        pStyle.headIndent = 0;
-        pStyle.firstLineHeadIndent = 0;
         [_input->textView.textStorage addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
       }
     ];
   }
   
   [_input->textView.textStorage endEditing];
-    
+  
   // also remove typing attributes
   NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
   NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
   pStyle.textLists = @[];
-  pStyle.headIndent = 0;
-  pStyle.firstLineHeadIndent = 0;
+  
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+  
   _input->textView.typingAttributes = typingAttrs;
 }
 
-// needed for the sake of style conflicts, needs to do exactly the same as removeAttribtues
 - (void)removeTypingAttributes {
   [self removeAttributes:_input->textView.selectedRange];
 }
@@ -139,39 +126,10 @@
     NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:_input->textView.selectedRange];
     
     if(NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0))) {
-      // a backspace on the very first input's line list point
+      // a backspace on the very first input's line quote
       // it doesn't run textVieDidChange so we need to manually remove attributes
       [self removeAttributes:paragraphRange];
       return YES;
-    } else if(range.location == paragraphRange.location - 1) {
-      // same case in other lines; here, the removed range location will be exactly 1 less than paragraph range location
-      [self removeAttributes:paragraphRange];
-      return YES;
-    }
-  }
-  return NO;
-}
-
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text {
-  NSRange paragraphRange = [_input->textView.textStorage.string paragraphRangeForRange:range];
-  // space was added - check if we are both at the paragraph beginning + 1 character (which we want to be a dash)
-  if([text isEqualToString:@" "] && range.location - 1 == paragraphRange.location) {
-    unichar charBefore = [_input->textView.textStorage.string characterAtIndex:range.location - 1];
-    if(charBefore == '-') {
-      // we got a match - add a list if possible
-      if([_input handleStyleBlocksAndConflicts:[[self class] getStyleType] range:paragraphRange]) {
-        // don't emit during the replacing
-        _input->blockEmitting = YES;
-        
-        // remove the dash
-        [TextInsertionUtils replaceText:@"" at:NSMakeRange(paragraphRange.location, 1) additionalAttributes:nullptr input:_input withSelection:YES];
-        
-        _input->blockEmitting = NO;
-        
-        // add attributes on the dashless paragraph
-        [self addAttributes:NSMakeRange(paragraphRange.location, paragraphRange.length - 1)];
-        return YES;
-      }
     }
   }
   return NO;
@@ -179,7 +137,7 @@
 
 - (BOOL)styleCondition:(id _Nullable)value :(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
-  return paragraph != nullptr && paragraph.textLists.count == 1 && paragraph.textLists.firstObject.markerFormat == NSTextListMarkerDisc;
+  return paragraph != nullptr && paragraph.textLists.count == 1 && [paragraph.textLists.firstObject.markerFormat isEqualToString:@"codeblock"];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -212,6 +170,59 @@
       return [self styleCondition:value :range];
     }
   ];
+}
+
+- (void)manageCodeBlockFontAndColor {
+  if([[_input->config codeBlockFgColor] isEqualToColor:[_input->config primaryColor]]) {
+    return;
+  }
+
+  NSRange wholeRange = NSMakeRange(0, _input->textView.textStorage.string.length);
+  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:wholeRange];
+  
+  for(NSValue *pValue in paragraphs) {
+    NSRange paragraphRange = [pValue rangeValue];
+    NSArray *properRanges = [OccurenceUtils getRangesWithout:_stylesToExclude withInput:_input inRange:paragraphRange];
+    
+    for(NSValue *value in properRanges) {
+      NSRange currRange = [value rangeValue];
+      BOOL selfDetected = [self detectStyle:currRange];
+      
+      [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:currRange options:0
+                                            usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIFont *currentFont = (UIFont *)value;
+        UIFont *newFont = nullptr;
+        
+        BOOL isCodeFont = [[currentFont familyName] isEqualToString:[[_input->config monospacedFont] familyName]];
+        
+        if (isCodeFont && !selfDetected) {
+          newFont = [[[_input->config primaryFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+        } else if (!isCodeFont && selfDetected) {
+          newFont = [[[_input->config monospacedFont] withFontTraits:currentFont] setSize:currentFont.pointSize];
+        }
+        
+        if (newFont != nullptr) {
+          [_input->textView.textStorage addAttribute:NSFontAttributeName value:newFont range:range];
+        }
+      }];
+      
+      [_input->textView.textStorage enumerateAttribute:NSForegroundColorAttributeName inRange:currRange options:0
+                                            usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        UIColor *newColor = nullptr;
+        BOOL colorApplied = [(UIColor *)value isEqualToColor:[_input->config codeBlockFgColor]];
+
+        if(colorApplied && !selfDetected) {
+          newColor = [_input->config primaryColor];
+        } else if(!colorApplied && selfDetected) {
+          newColor = [_input->config codeBlockFgColor];
+        }
+
+        if(newColor != nullptr) {
+          [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName value:newColor range:range];
+        }
+      }];
+    }
+  }
 }
 
 @end

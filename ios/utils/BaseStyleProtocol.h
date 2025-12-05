@@ -4,6 +4,7 @@
 
 @protocol BaseStyleProtocol <NSObject>
 + (StyleType)getStyleType;
++ (BOOL)isParagraphStyle;
 - (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
 - (void)applyStyle:(NSRange)range;
 - (void)addAttributes:(NSRange)range;

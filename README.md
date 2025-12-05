@@ -101,11 +101,11 @@ export default function App() {
     <View style={styles.container}>
       <EnrichedTextInput
         ref={ref}
-        onChangeState={(e) => setStylesState(e.nativeEvent)}
+        onChangeState={e => setStylesState(e.nativeEvent)}
         style={styles.input}
       />
       <Button
-        title="Toggle bold"
+        title={stylesState?.isBold ? 'Unbold' : 'Bold'}
         color={stylesState?.isBold ? 'green' : 'gray'}
         onPress={() => ref.current?.toggleBold()}
       />

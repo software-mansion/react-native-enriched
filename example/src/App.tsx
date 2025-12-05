@@ -4,6 +4,7 @@ import {
   Text,
   type NativeSyntheticEvent,
   ScrollView,
+  Platform,
 } from 'react-native';
 import {
   EnrichedTextInput,
@@ -23,9 +24,15 @@ import { LinkModal } from './components/LinkModal';
 import { ValueModal } from './components/ValueModal';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
-import { useUserMention } from './useUserMention';
-import { useChannelMention } from './useChannelMention';
+import { useUserMention } from './hooks/useUserMention';
+import { useChannelMention } from './hooks/useChannelMention';
 import { HtmlSection } from './components/HtmlSection';
+import { ImageModal } from './components/ImageModal';
+import {
+  DEFAULT_IMAGE_HEIGHT,
+  DEFAULT_IMAGE_WIDTH,
+  prepareImageDimensions,
+} from './utils/prepareImageDimensions';
 
 type StylesState = OnChangeStateEvent;
 
@@ -66,12 +73,15 @@ const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
 // However, it's still experimental and not tested well.
-const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = true;
+// Disabled for now, as it's causing some strange issues.
+// See: https://github.com/software-mansion/react-native-enriched/issues/229
+const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = false;
 
 export default function App() {
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [currentHtmlStyle, setCurrentHtmlStyle] =
@@ -81,10 +91,6 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
-
-  const [key, setKey] = useState(0);
-  const incrementKey = () => setKey((v) => v + 1);
-  const collectGarbage = () => global.gc?.();
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -126,6 +132,14 @@ export default function App() {
 
   const closeLinkModal = () => {
     setIsLinkModalOpen(false);
+  };
+
+  const openImageModal = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
   };
 
   const openUserMentionPopup = () => {
@@ -200,16 +214,40 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async () => {
+  const selectImage = async (
+    width: number | undefined,
+    height: number | undefined,
+    remoteUrl?: string
+  ) => {
+    if (remoteUrl) {
+      ref.current?.setImage(
+        remoteUrl,
+        width ?? DEFAULT_IMAGE_WIDTH,
+        height ?? DEFAULT_IMAGE_HEIGHT
+      );
+      return;
+    }
+
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
     });
 
-    const imageUri = response.assets?.[0]?.originalPath;
-    if (!imageUri) return;
+    if (response?.assets?.[0] === undefined) {
+      return;
+    }
 
-    ref.current?.setImage(imageUri);
+    const asset = response.assets[0];
+    const imageUri = Platform.OS === 'android' ? asset.originalPath : asset.uri;
+
+    if (imageUri) {
+      const { finalWidth, finalHeight } = prepareImageDimensions(
+        asset,
+        width,
+        height
+      );
+      ref.current?.setImage(imageUri, finalWidth, finalHeight);
+    }
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
@@ -272,7 +310,6 @@ export default function App() {
         <View style={styles.editor}>
           <EnrichedTextInput
             ref={ref}
-            key={key}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={currentHtmlStyle}
@@ -300,20 +337,12 @@ export default function App() {
             stylesState={stylesState}
             editorRef={ref}
             onOpenLinkModal={openLinkModal}
-            onSelectImage={selectImage}
+            onSelectImage={openImageModal}
           />
         </View>
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
-        </View>
-        <View style={styles.buttonStack}>
-          <Button
-            title="Bump key"
-            onPress={incrementKey}
-            style={styles.button}
-          />
-          <Button title="GC" onPress={collectGarbage} style={styles.button} />
         </View>
         <Button
           title="Change HTML Style"
@@ -336,6 +365,11 @@ export default function App() {
         editedUrl={insideCurrentLink ? currentLink.url : ''}
         onSubmit={submitLink}
         onClose={closeLinkModal}
+      />
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onSubmit={selectImage}
+        onClose={closeImageModal}
       />
       <ValueModal
         isOpen={isValueModalOpen}
@@ -463,10 +497,6 @@ const htmlStyle: HtmlStyle = {
       backgroundColor: 'lightgreen',
       textDecorationLine: 'none',
     },
-  },
-  img: {
-    width: 50,
-    height: 50,
   },
   ol: {
     gapWidth: 16,

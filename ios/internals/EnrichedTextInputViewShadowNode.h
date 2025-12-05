@@ -35,6 +35,7 @@ class EnrichedTextInputViewShadowNode : public ConcreteViewShadowNode<
     
     private:
     int localForceHeightRecalculationCounter_;
+    id setupMockTextInputView_() const;
 };
 
 } // namespace facebook::react

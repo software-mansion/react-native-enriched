@@ -15,6 +15,8 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 
 + (StyleType)getStyleType { return Link; }
 
++ (BOOL)isParagraphStyle { return NO; }
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -167,7 +169,6 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   }
   
   [self manageLinkTypingAttributes];
-  [_input anyTextMayHaveBeenModified];
 }
 
 // get exact link data at the given location if it exists
@@ -224,20 +225,22 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
   }
   
-  [_input->textView.textStorage
+  NSString *manualLink = [_input->textView.textStorage
     attribute:ManualLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &manualLinkRange
     inRange:inputRange
   ];
-  [_input->textView.textStorage
+  NSString *automaticLink = [_input->textView.textStorage
     attribute:AutomaticLinkAttributeName
     atIndex:searchLocation
     longestEffectiveRange: &automaticLinkRange
     inRange:inputRange
   ];
   
-  return manualLinkRange.length == 0 ? automaticLinkRange : manualLinkRange;
+  return manualLink == nullptr
+    ? automaticLink == nullptr ? NSMakeRange(0, 0) : automaticLinkRange
+    : manualLinkRange;
 }
 
 - (void)manageLinkTypingAttributes {
@@ -279,6 +282,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
   InlineCodeStyle *inlineCodeStyle = [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
   MentionStyle *mentionStyle = [_input->stylesDict objectForKey:@([MentionStyle getStyleType])];
+  CodeBlockStyle *codeBlockStyle = [_input->stylesDict objectForKey:@([CodeBlockStyle getStyleType])];
   
   if (inlineCodeStyle == nullptr || mentionStyle == nullptr) {
     return;
@@ -291,6 +295,11 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   // we don't recognize links among inline code
   if ([inlineCodeStyle anyOccurence:wordRange]) {
+    return;
+  }
+  
+  // we don't recognize links in codeblocks
+  if ([codeBlockStyle anyOccurence:wordRange]) {
     return;
   }
   
@@ -349,10 +358,9 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
     }
     if(addStyle) {
       [self addLink:word url:regexPassedUrl range:wordRange manual:NO];
+      // emit onLinkDetected if style was added
+      [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
     }
-  
-    // emit onLinkDetected
-    [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
   }
 }
 

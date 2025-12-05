@@ -16,8 +16,6 @@
     @"&": @"&amp;",
     @"<": @"&lt;",
     @">": @"&gt;",
-    @"\"": @"&quot;",
-    @"'": @"&apos;"
   };
   
   for(NSString *key in escapeMap) {
@@ -26,20 +24,31 @@
   return escaped;
 }
 
-+ (NSString *)stringByUnescapingHtml:(NSString *)html {
-  NSMutableString *unescaped = [html mutableCopy];
++ (NSDictionary *)getEscapedCharactersInfoFrom:(NSString *)text {
   NSDictionary *unescapeMap = @{
     @"&amp;": @"&",
     @"&lt;": @"<",
     @"&gt;": @">",
-    @"&quot;": @"\"",
-    @"&apos;": @"'",
   };
   
+  NSMutableDictionary *results = [[NSMutableDictionary alloc] init];
+  
   for(NSString *key in unescapeMap) {
-    [unescaped replaceOccurrencesOfString:key withString:unescapeMap[key] options:NSLiteralSearch range:NSMakeRange(0, unescaped.length)];
+    NSRange searchRange = NSMakeRange(0, text.length);
+    NSRange foundRange;
+
+    while(searchRange.location < text.length) {
+      foundRange = [text rangeOfString:key options:0 range:searchRange];
+      if(foundRange.location == NSNotFound) {
+        break;
+      }
+      results[@(foundRange.location)] = @[key, unescapeMap[key]];
+      searchRange.location = foundRange.location + foundRange.length;
+      searchRange.length = text.length - searchRange.location;
+    }
   }
-  return unescaped;
+  
+  return results;
 }
 
 @end
