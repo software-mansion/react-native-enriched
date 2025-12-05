@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { type FC } from 'react';
 
 type Props = {
   color: string;
 };
 
-const ColorPreview: React.FC<Props> = ({ color }) => {
+export const ColorPreview: FC<Props> = ({ color }) => {
   return (
     <>
       <View
@@ -28,5 +29,3 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 });
-
-export default ColorPreview;

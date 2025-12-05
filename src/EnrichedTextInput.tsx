@@ -60,7 +60,8 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
-  toggleColor: (color: string) => void;
+  setColor: (color: string) => void;
+  removeColor: () => void;
 }
 
 export interface OnChangeMentionEvent {
@@ -299,8 +300,11 @@ export const EnrichedTextInput = ({
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
     },
-    toggleColor: (color: string) => {
-      Commands.toggleColor(nullthrows(nativeRef.current), color);
+    setColor: (color: string) => {
+      Commands.setColor(nullthrows(nativeRef.current), color);
+    },
+    removeColor: () => {
+      Commands.removeColor(nullthrows(nativeRef.current));
     },
   }));
 

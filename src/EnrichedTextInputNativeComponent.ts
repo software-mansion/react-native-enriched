@@ -209,10 +209,8 @@ interface NativeCommands {
     text: string,
     payload: string
   ) => void;
-  toggleColor: (
-    viewRef: React.ElementRef<ComponentType>,
-    color: string
-  ) => void;
+  setColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
+  removeColor: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -239,7 +237,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'addImage',
     'startMention',
     'addMention',
-    'toggleColor',
+    'setColor',
+    'removeColor',
   ],
 });
 

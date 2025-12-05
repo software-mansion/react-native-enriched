@@ -152,7 +152,7 @@ export const Toolbar: FC<ToolbarProps> = ({
   };
 
   const handleColorButtonPress = (color: string) => {
-    editorRef?.current?.toggleColor(color);
+    editorRef?.current?.setColor(color);
   };
 
   const isActive = (item: Item) => {
