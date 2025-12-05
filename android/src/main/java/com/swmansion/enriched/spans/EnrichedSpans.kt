@@ -123,4 +123,8 @@ object EnrichedSpans {
       else -> null
     }
   }
+
+  fun isTypeContinuous(type: Class<*>): Boolean {
+    return paragraphSpans.values.find { it.clazz == type }?.isContinuous == true
+  }
 }
