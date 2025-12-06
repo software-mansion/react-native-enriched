@@ -14,4 +14,8 @@ class EnrichedH1Span(private val style: HtmlStyle) : AbsoluteSizeSpan(style.h1Fo
       tp.typeface = Typeface.create(tp.typeface, Typeface.BOLD)
     }
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedH1Span {
+    return EnrichedH1Span(htmlStyle)
+  }
 }

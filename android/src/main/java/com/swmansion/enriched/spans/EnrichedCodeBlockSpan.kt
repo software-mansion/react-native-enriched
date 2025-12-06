@@ -74,4 +74,8 @@ class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingS
     canvas.drawPath(path, p)
     p.color = previousColor
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan {
+    return EnrichedCodeBlockSpan(htmlStyle)
+  }
 }

@@ -78,4 +78,8 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
   fun setIndex(i: Int) {
     index = i
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedOrderedListSpan {
+    return EnrichedOrderedListSpan(index, htmlStyle)
+  }
 }

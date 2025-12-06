@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
@@ -32,6 +33,7 @@ import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
@@ -599,24 +601,22 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   private fun reapplyTextWithNewStyles() {
-    val currentText = text
-    if (currentText != null && currentText.isNotEmpty()) {
-      runAsATransaction {
-        val currentHtml = EnrichedParser.toHtml(currentText as Spannable)
-        val newText = parseText(currentHtml)
+    val spannable = text as? Spannable ?: return
+    if (spannable.isEmpty()) return
+    val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
 
-        val currentSelectionStart = selectionStart
-        val currentSelectionEnd = selectionEnd
+    for (span in spans) {
+      spannable.apply {
+        val start = getSpanStart(span)
+        val end = getSpanEnd(span)
+        val flags = getSpanFlags(span)
 
-        setText(newText)
-
-        val newLength = text?.length ?: 0
-        val safeStart = currentSelectionStart.coerceIn(0, newLength)
-        val safeEnd = currentSelectionEnd.coerceIn(0, newLength)
-        setSelection(safeStart, safeEnd)
-        layoutManager.invalidateLayout()
+        removeSpan(span)
+        val newSpan = span.rebuildWith(htmlStyle)
+        setSpan(newSpan, start, end, flags)
       }
     }
+    layoutManager.invalidateLayout()
   }
 
   override fun onAttachedToWindow() {
