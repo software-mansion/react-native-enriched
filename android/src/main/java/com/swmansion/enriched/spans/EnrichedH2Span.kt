@@ -14,4 +14,8 @@ class EnrichedH2Span(private val htmlStyle: HtmlStyle) : AbsoluteSizeSpan(htmlSt
       tp.typeface = Typeface.create(tp.typeface, Typeface.BOLD)
     }
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedH2Span {
+    return EnrichedH2Span(htmlStyle)
+  }
 }

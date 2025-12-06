@@ -35,4 +35,8 @@ class EnrichedBlockQuoteSpan(private val htmlStyle: HtmlStyle) : MetricAffecting
       textPaint?.color = color
     }
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedBlockQuoteSpan {
+    return EnrichedBlockQuoteSpan(htmlStyle)
+  }
 }

@@ -56,4 +56,8 @@ class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffect
       paint.style = style
     }
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedUnorderedListSpan {
+    return EnrichedUnorderedListSpan(htmlStyle)
+  }
 }

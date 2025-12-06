@@ -7,4 +7,7 @@ import com.swmansion.enriched.styles.HtmlStyle
 
 @Suppress("UNUSED_PARAMETER")
 class EnrichedItalicSpan(private val htmlStyle: HtmlStyle) : StyleSpan(Typeface.ITALIC), EnrichedInlineSpan {
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedItalicSpan {
+    return EnrichedItalicSpan(htmlStyle)
+  }
 }

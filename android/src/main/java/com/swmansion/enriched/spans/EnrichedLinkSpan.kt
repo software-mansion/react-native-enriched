@@ -21,4 +21,8 @@ class EnrichedLinkSpan(private val url: String, private val htmlStyle: HtmlStyle
   fun getUrl(): String {
     return url
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedLinkSpan {
+    return EnrichedLinkSpan(url, htmlStyle)
+  }
 }

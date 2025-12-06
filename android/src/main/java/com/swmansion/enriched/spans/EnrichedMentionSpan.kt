@@ -33,4 +33,8 @@ class EnrichedMentionSpan(private val text: String, private val indicator: Strin
   fun getIndicator(): String {
     return indicator
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedMentionSpan {
+    return EnrichedMentionSpan(text, indicator, attributes, htmlStyle)
+  }
 }

@@ -18,4 +18,8 @@ class EnrichedInlineCodeSpan(private val htmlStyle: HtmlStyle) : MetricAffecting
     val typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
     textPaint.typeface = typeface
   }
+
+  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedInlineCodeSpan {
+    return EnrichedInlineCodeSpan(htmlStyle)
+  }
 }
