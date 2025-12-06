@@ -1162,9 +1162,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *colorText = (NSString *)args[0];
     [self setColor: colorText];
   } else if ([commandName isEqualToString:@"removeColor"]) {
-    ColorStyle *colorStyle = stylesDict[@([ColorStyle getStyleType])];
-    [colorStyle removeAttributes: textView.selectedRange];
-    [self anyTextMayHaveBeenModified];
+    [self removeColor];
   } else if([commandName isEqualToString:@"toggleInlineCode"]) {
     [self toggleRegularStyle: [InlineCodeStyle getStyleType]];
   } else if([commandName isEqualToString:@"addLink"]) {
