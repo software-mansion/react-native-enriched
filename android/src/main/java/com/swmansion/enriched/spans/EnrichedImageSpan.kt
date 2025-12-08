@@ -122,9 +122,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     return height
   }
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan {
-    return this
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan = this
 
   companion object {
     fun createEnrichedImageSpan(src: String, width: Int, height: Int): EnrichedImageSpan {

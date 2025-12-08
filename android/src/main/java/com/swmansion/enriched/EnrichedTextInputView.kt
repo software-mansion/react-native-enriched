@@ -70,7 +70,7 @@ class EnrichedTextInputView : AppCompatEditText {
         if (field != value) {
             val prev = field
             field = value
-            reapplyTextWithNewStyles(prev, value)
+            reApplyHtmlStyleForSpans(prev, value)
         }
     }
   var spanWatcher: EnrichedSpanWatcher? = null
@@ -605,14 +605,14 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun reapplyTextWithNewStyles(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
+  private fun reApplyHtmlStyleForSpans(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
     val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
     val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
     val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
     val spannable = text as? Spannable ?: return
     if (spannable.isEmpty()) return
-    val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
     runAsATransaction {
+      val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
       for (span in spans) {
         if(!span.dependsOnHtmlStyle) {
           continue
