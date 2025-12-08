@@ -31,6 +31,10 @@ import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.spans.EnrichedBoldSpan
+import com.swmansion.enriched.spans.EnrichedH1Span
+import com.swmansion.enriched.spans.EnrichedH2Span
+import com.swmansion.enriched.spans.EnrichedH3Span
 import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.interfaces.EnrichedSpan
@@ -64,8 +68,9 @@ class EnrichedTextInputView : AppCompatEditText {
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
     set(value) {
         if (field != value) {
+            val prev = field
             field = value
-            reapplyTextWithNewStyles()
+            reapplyTextWithNewStyles(prev, value)
         }
     }
   var spanWatcher: EnrichedSpanWatcher? = null
@@ -600,20 +605,32 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun reapplyTextWithNewStyles() {
+  private fun reapplyTextWithNewStyles(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
+    val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
+    val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
+    val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
     val spannable = text as? Spannable ?: return
     if (spannable.isEmpty()) return
     val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
+    runAsATransaction {
+      for (span in spans) {
+        if(!span.dependsOnHtmlStyle) {
+          continue
+        }
 
-    for (span in spans) {
-      spannable.apply {
-        val start = getSpanStart(span)
-        val end = getSpanEnd(span)
-        val flags = getSpanFlags(span)
+        spannable.apply {
+          val start = getSpanStart(span)
+          val end = getSpanEnd(span)
+          val flags = getSpanFlags(span)
 
-        removeSpan(span)
-        val newSpan = span.rebuildWith(htmlStyle)
-        setSpan(newSpan, start, end, flags)
+          if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
+            removeStyle(EnrichedSpans.BOLD, start, end)
+          }
+
+          removeSpan(span)
+          val newSpan = span.rebuildWithStyle(htmlStyle)
+          setSpan(newSpan, start, end, flags)
+        }
       }
     }
     layoutManager.invalidateLayout()

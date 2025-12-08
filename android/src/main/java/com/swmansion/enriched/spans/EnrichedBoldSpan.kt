@@ -8,7 +8,9 @@ import com.swmansion.enriched.styles.HtmlStyle
 
 @Suppress("UNUSED_PARAMETER")
 class EnrichedBoldSpan(htmlStyle: HtmlStyle) : StyleSpan(Typeface.BOLD), EnrichedInlineSpan {
-  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedBoldSpan {
+  override val dependsOnHtmlStyle: Boolean = false
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedBoldSpan {
     return EnrichedBoldSpan(htmlStyle)
   }
 }

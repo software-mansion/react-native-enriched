@@ -289,64 +289,6 @@ export default function App() {
     setSelection(sel);
   };
 
-  const anotherHtmlStyle: HtmlStyle = {
-    h1: {
-      fontSize: 100,
-      bold: false,
-    },
-    h2: {
-      fontSize: 50,
-      bold: false,
-    },
-    h3: {
-      fontSize: 30,
-      bold: false,
-    },
-    blockquote: {
-      borderColor: 'orange',
-      borderWidth: 1,
-      gapWidth: 4,
-      color: 'orange',
-    },
-    codeblock: {
-      color: 'red',
-      borderRadius: 0,
-      backgroundColor: 'black',
-    },
-    code: {
-      color: 'yellow',
-      backgroundColor: 'purple',
-    },
-    a: {
-      color: 'red',
-      textDecorationLine: 'none',
-    },
-    mention: {
-      '#': {
-        color: 'darkred',
-        backgroundColor: 'lightcoral',
-        textDecorationLine: 'none',
-      },
-      '@': {
-        color: 'darkgreen',
-        backgroundColor: 'transparent',
-        textDecorationLine: 'underline',
-      },
-    },
-    ol: {
-      gapWidth: 16,
-      marginLeft: 24,
-      markerColor: 'navy',
-      markerFontWeight: 'bold',
-    },
-    ul: {
-      bulletColor: 'black',
-      bulletSize: 10,
-      marginLeft: 8,
-      gapWidth: 4,
-    },
-  };
-
   return (
     <>
       <ScrollView
@@ -439,6 +381,64 @@ export default function App() {
     </>
   );
 }
+
+const anotherHtmlStyle: HtmlStyle = {
+  h1: {
+    fontSize: 100,
+    bold: false,
+  },
+  h2: {
+    fontSize: 50,
+    bold: false,
+  },
+  h3: {
+    fontSize: 30,
+    bold: false,
+  },
+  blockquote: {
+    borderColor: 'orange',
+    borderWidth: 1,
+    gapWidth: 4,
+    color: 'orange',
+  },
+  codeblock: {
+    color: 'red',
+    borderRadius: 0,
+    backgroundColor: 'black',
+  },
+  code: {
+    color: 'yellow',
+    backgroundColor: 'purple',
+  },
+  a: {
+    color: 'red',
+    textDecorationLine: 'none',
+  },
+  mention: {
+    '#': {
+      color: 'darkred',
+      backgroundColor: 'lightcoral',
+      textDecorationLine: 'none',
+    },
+    '@': {
+      color: 'darkgreen',
+      backgroundColor: 'transparent',
+      textDecorationLine: 'underline',
+    },
+  },
+  ol: {
+    gapWidth: 16,
+    marginLeft: 24,
+    markerColor: 'navy',
+    markerFontWeight: 'bold',
+  },
+  ul: {
+    bulletColor: 'black',
+    bulletSize: 10,
+    marginLeft: 8,
+    gapWidth: 4,
+  },
+};
 
 const htmlStyle: HtmlStyle = {
   h1: {

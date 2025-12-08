@@ -13,6 +13,8 @@ import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LineBackgroundSpan, EnrichedBlockSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateDrawState(paint: TextPaint) {
     paint.typeface = Typeface.MONOSPACE
     paint.color = htmlStyle.codeBlockColor
@@ -75,7 +77,7 @@ class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingS
     p.color = previousColor
   }
 
-  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan {
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan {
     return EnrichedCodeBlockSpan(htmlStyle)
   }
 }
