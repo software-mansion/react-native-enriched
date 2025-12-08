@@ -974,6 +974,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
 
     [self addImage:uri width:imgWidth height:imgHeight];
+  } else if([commandName isEqualToString:@"setSelection"]) {
+    NSInteger start = [((NSNumber*)args[0]) integerValue];
+    NSInteger length = [((NSNumber*)args[1]) integerValue];
+    
+    textView.selectedRange = NSRange(start, length);
   }
 }
 

@@ -166,6 +166,11 @@ interface NativeCommands {
   focus: (viewRef: React.ElementRef<ComponentType>) => void;
   blur: (viewRef: React.ElementRef<ComponentType>) => void;
   setValue: (viewRef: React.ElementRef<ComponentType>, text: string) => void;
+  setSelection: (
+    viewRef: React.ElementRef<ComponentType>,
+    start: Int32,
+    length: Int32
+  ) => string;
 
   // Text formatting commands
   toggleBold: (viewRef: React.ElementRef<ComponentType>) => void;
@@ -211,6 +216,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'focus',
     'blur',
     'setValue',
+    'setSelection',
 
     // Text formatting commands
     'toggleBold',

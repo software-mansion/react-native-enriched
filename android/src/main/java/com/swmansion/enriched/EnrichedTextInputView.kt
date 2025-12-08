@@ -265,6 +265,10 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
+  fun setCustomSelection(start: Int, end: Int) {
+    setSelection(start, end)
+  }
+
   /**
    * Finds all async images in the current text and sets up listeners
    * to redraw the text layout when they finish downloading.
