@@ -22,6 +22,8 @@ import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.ResourceManager
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+  override val dependsOnHtmlStyle: Boolean = false
+
   private var width: Int = 0
   private var height: Int = 0
 
@@ -120,7 +122,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     return height
   }
 
-  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedImageSpan {
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan {
     return this
   }
 

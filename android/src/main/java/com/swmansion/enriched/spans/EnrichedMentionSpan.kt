@@ -8,6 +8,8 @@ import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedMentionSpan(private val text: String, private val indicator: String, private val attributes: Map<String, String>, private val htmlStyle: HtmlStyle) :
   ClickableSpan(), EnrichedInlineSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun onClick(view: View) {
     // Do nothing. Mentions inside the input are not clickable.
     // We are using `ClickableSpan` to allow the text to be styled as a clickable element.
@@ -34,7 +36,7 @@ class EnrichedMentionSpan(private val text: String, private val indicator: Strin
     return indicator
   }
 
-  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedMentionSpan {
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedMentionSpan {
     return EnrichedMentionSpan(text, indicator, attributes, htmlStyle)
   }
 }

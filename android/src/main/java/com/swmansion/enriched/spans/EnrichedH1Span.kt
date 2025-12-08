@@ -7,6 +7,8 @@ import com.swmansion.enriched.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedH1Span(private val style: HtmlStyle) : AbsoluteSizeSpan(style.h1FontSize), EnrichedHeadingSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
     val bold = style.h1Bold
@@ -15,7 +17,7 @@ class EnrichedH1Span(private val style: HtmlStyle) : AbsoluteSizeSpan(style.h1Fo
     }
   }
 
-  override fun rebuildWith(htmlStyle: HtmlStyle): EnrichedH1Span {
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedH1Span {
     return EnrichedH1Span(htmlStyle)
   }
 }
