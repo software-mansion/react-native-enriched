@@ -970,7 +970,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)removeColor {
   ColorStyle *colorStyle = stylesDict[@(Colored)];
-  [colorStyle removeAttributes: textView.selectedRange];
+  [colorStyle removeColorInSelectedRange];
   [self anyTextMayHaveBeenModified];
 }
 

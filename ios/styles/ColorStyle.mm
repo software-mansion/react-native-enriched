@@ -303,4 +303,14 @@
     return baseColor;
 }
 
+- (void)removeColorInSelectedRange {
+  NSRange selectedRange = _input->textView.selectedRange;
+  
+  if(selectedRange.length > 0) {
+    [self removeAttributes: selectedRange];
+  } else {
+    [self removeTypingAttributes];
+  }
+}
+
 @end
