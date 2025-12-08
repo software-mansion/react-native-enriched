@@ -1,4 +1,4 @@
-import { useMemo, type FC } from 'react';
+import { type FC } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 interface ColorButtonProps {
@@ -18,16 +18,14 @@ export const ToolbarColorButton: FC<ColorButtonProps> = ({
     onPress(color);
   };
 
-  const containerStyle = useMemo(
-    () => [
-      styles.container,
-      { backgroundColor: isActive ? color : 'rgba(0, 26, 114, 0.8)' },
-    ],
-    [isActive, color]
-  );
-
   return (
-    <Pressable style={containerStyle} onPress={handlePress}>
+    <Pressable
+      style={[
+        styles.container,
+        { backgroundColor: isActive ? color : 'rgba(0, 26, 114, 0.8)' },
+      ]}
+      onPress={handlePress}
+    >
       <Text style={[styles.text, !isActive && { color }]}>{text}</Text>
     </Pressable>
   );
