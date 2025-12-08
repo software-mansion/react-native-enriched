@@ -1,6 +1,5 @@
 package com.swmansion.enriched.styles
 
-import android.net.Uri
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -11,7 +10,6 @@ import com.swmansion.enriched.spans.EnrichedLinkSpan
 import com.swmansion.enriched.spans.EnrichedMentionSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
-import java.io.File
 
 class ParametrizedStyles(private val view: EnrichedTextInputView) {
   private var mentionStart: Int? = null
@@ -196,7 +194,6 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
 
   fun setImageSpan(src: String, width: Float, height: Float) {
     if (view.selection == null) return
-
     val spannable = view.text as SpannableStringBuilder
     val (start, originalEnd) = view.selection.getInlineSelection()
 
@@ -212,9 +209,9 @@ class ParametrizedStyles(private val view: EnrichedTextInputView) {
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
-    val uri = Uri.fromFile(File(src))
+    val span = EnrichedImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
+    span.observeAsyncDrawableLoaded(view.text)
 
-    val span = EnrichedImageSpan(view.context, uri, width.toInt(), height.toInt())
     spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 

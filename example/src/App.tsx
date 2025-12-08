@@ -24,10 +24,15 @@ import { LinkModal } from './components/LinkModal';
 import { ValueModal } from './components/ValueModal';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
-import { useUserMention } from './useUserMention';
-import { useChannelMention } from './useChannelMention';
+import { useUserMention } from './hooks/useUserMention';
+import { useChannelMention } from './hooks/useChannelMention';
 import { HtmlSection } from './components/HtmlSection';
 import { ImageModal } from './components/ImageModal';
+import {
+  DEFAULT_IMAGE_HEIGHT,
+  DEFAULT_IMAGE_WIDTH,
+  prepareImageDimensions,
+} from './utils/prepareImageDimensions';
 
 type StylesState = OnChangeStateEvent;
 
@@ -207,22 +212,40 @@ export default function App() {
     closeValueModal();
   };
 
-  const selectImage = async (width: number, height: number) => {
+  const selectImage = async (
+    width: number | undefined,
+    height: number | undefined,
+    remoteUrl?: string
+  ) => {
+    if (remoteUrl) {
+      ref.current?.setImage(
+        remoteUrl,
+        width ?? DEFAULT_IMAGE_WIDTH,
+        height ?? DEFAULT_IMAGE_HEIGHT
+      );
+      return;
+    }
+
     const response = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
     });
 
-    const imageUri =
-      Platform.OS === 'android'
-        ? response.assets?.[0]?.originalPath
-        : response.assets?.[0]?.uri;
-
-    if (imageUri) {
-      ref.current?.setImage(imageUri, width, height);
+    if (response?.assets?.[0] === undefined) {
+      return;
     }
 
-    closeImageModal();
+    const asset = response.assets[0];
+    const imageUri = Platform.OS === 'android' ? asset.originalPath : asset.uri;
+
+    if (imageUri) {
+      const { finalWidth, finalHeight } = prepareImageDimensions(
+        asset,
+        width,
+        height
+      );
+      ref.current?.setImage(imageUri, finalWidth, finalHeight);
+    }
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {

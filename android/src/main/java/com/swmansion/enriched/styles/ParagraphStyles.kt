@@ -3,15 +3,88 @@ package com.swmansion.enriched.styles
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.util.Log
 import androidx.core.text.getSpans
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan
+import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.ParagraphSpanConfig
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
 class ParagraphStyles(private val view: EnrichedTextInputView) {
+  private fun <T>getPreviousParagraphSpan(spannable: Spannable, paragraphStart: Int, type: Class<T>): T? {
+    if (paragraphStart <= 0) return null
+
+    val (previousParagraphStart, previousParagraphEnd) = spannable.getParagraphBounds(paragraphStart - 1)
+    val spans = spannable.getSpans(previousParagraphStart, previousParagraphEnd, type)
+
+    // A paragraph implies a single cohesive style. having multiple spans of the
+    // same type (e.g., two codeblock spans) in one paragraph is an invalid state in current library logic
+    if (spans.size > 1) {
+      Log.w("ParagraphStyles", "getPreviousParagraphSpan(): Found more than one span in the paragraph!")
+    }
+
+    if (spans.isNotEmpty()) {
+      return spans.first()
+    }
+
+    return null
+  }
+
+  private fun <T>getNextParagraphSpan(spannable: Spannable, paragraphEnd: Int, type: Class<T>): T? {
+    if (paragraphEnd >= spannable.length - 1) return null
+
+    val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(paragraphEnd + 1)
+
+    val spans = spannable.getSpans(nextParagraphStart, nextParagraphEnd, type)
+
+    // A paragraph implies a single cohesive style. having multiple spans of the
+    // same type (e.g., two codeblock spans) in one paragraph is an invalid state in current library logic
+    if (spans.size > 1) {
+      Log.w("ParagraphStyles", "getNextParagraphSpan(): Found more than one span in the paragraph!")
+    }
+
+    if (spans.isNotEmpty()) {
+      return spans.first()
+    }
+
+    return null
+  }
+
+  /**
+   * Applies a continuous span to the specified range.
+   * If the new range touches existing continuous spans, they are coalesced into a single span
+   */
+  private fun <T>setContinuousSpan(spannable: Spannable, start: Int, end: Int, type: Class<T>) {
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+    val previousSpan = getPreviousParagraphSpan(spannable, start, type)
+    val nextSpan = getNextParagraphSpan(spannable, end, type)
+    var newStart = start
+    var newEnd = end
+
+    if (previousSpan != null) {
+      newStart = spannable.getSpanStart(previousSpan)
+      spannable.removeSpan(previousSpan)
+    }
+
+    if (nextSpan != null) {
+      newEnd = spannable.getSpanEnd(nextSpan)
+      spannable.removeSpan(nextSpan)
+    }
+
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(newStart, newEnd)
+    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+  }
+
+
   private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
+    if (EnrichedSpans.isTypeContinuous(type)) {
+      setContinuousSpan(spannable, start, end, type)
+      return
+    }
+
     val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -96,6 +169,33 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     return spans.isNotEmpty()
   }
 
+  private fun <T>mergeAdjacentStyleSpans(s: Editable, endCursorPosition: Int, type: Class<T>) {
+    val (start, end) = s.getParagraphBounds(endCursorPosition)
+    val currParagraphSpans = s.getSpans(start, end, type)
+
+    if (currParagraphSpans.isEmpty()) {
+      return
+    }
+
+    val currSpan = currParagraphSpans[0]
+    val nextSpan = getNextParagraphSpan(s, end, type)
+
+    if (nextSpan == null) {
+      return
+    }
+
+    val newStart = s.getSpanStart(currSpan)
+    val newEnd = s.getSpanEnd(nextSpan)
+
+    s.removeSpan(nextSpan)
+    s.removeSpan(currSpan)
+
+    val (safeStart, safeEnd) = s.getSafeSpanBoundaries(newStart, newEnd)
+    val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+
+    s.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+  }
+
   private fun handleConflictsDuringNewlineDeletion(s: Editable, style: String, paragraphStart: Int, paragraphEnd: Int): Boolean {
     val spanState = view.spanState ?: return false
     val styleStart =  spanState.getStart(style) ?: return false
@@ -145,7 +245,14 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
     for ((style, config) in EnrichedSpans.paragraphSpans) {
       val spanState = view.spanState ?: continue
-      val styleStart = spanState.getStart(style) ?: continue
+      val styleStart = spanState.getStart(style)
+
+      if (styleStart == null) {
+        if (config.isContinuous) {
+          mergeAdjacentStyleSpans(s, endCursorPosition, config.clazz)
+        }
+        continue
+      }
 
       if (isNewLine) {
         if (!config.isContinuous) {
@@ -206,8 +313,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
     if (start == end) {
       spannable.insert(start, "\u200B")
-      view.spanState?.setStart(name, start + 1)
       setAndMergeSpans(spannable, type, start, end + 1)
+      view.selection.validateStyles()
 
       return
     }
@@ -222,8 +329,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
       currentStart = currentEnd + 1
     }
 
-    view.spanState?.setStart(name, start)
     setAndMergeSpans(spannable, type, start, currentEnd)
+    view.selection.validateStyles()
   }
 
   fun getStyleRange(): Pair<Int, Int> {
