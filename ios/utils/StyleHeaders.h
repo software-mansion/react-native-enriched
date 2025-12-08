@@ -25,6 +25,7 @@
 - (UIColor *)getColorAt:(NSUInteger)location;
 - (void)applyStyle:(NSRange)range color:(UIColor *)color;
 - (BOOL)detectExcludingColor:(UIColor *)excludedColor inRange:(NSRange)range;
+- (void)removeColorInSelectedRange;
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>

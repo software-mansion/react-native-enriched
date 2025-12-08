@@ -60,19 +60,30 @@
       }
     }
     
-    // Handle valued styles changes
     UIColor *currentColor = nil;
-    
+        
     if([currentActiveStyles containsObject:@(Colored)]) {
       ColorStyle *colorStyle = _input->stylesDict[@(Colored)];
       currentColor = [colorStyle getColorAt:currentRange.location];
-      if(previousColor && ![currentColor isEqual:previousColor]) {
-        // Treat as end of previous color and start of new
-        [currentActiveStyles removeObject:@(Colored)];
-        currentActiveStylesBeginning[@(Colored)] = [NSNumber numberWithInt:i];
+       // If the end of one color overlaps exactly with the start of the next
+       // the previous font tag should be closed and a new one opened using the new color.
+      if (previousColor && ![currentColor isEqual:previousColor]) {
+          NSString *closeTag = [self tagContentForStyle:@(Colored)
+                                             openingTag:NO
+                                               location:currentRange.location];
+          [result appendFormat:@"</%@>", closeTag];
+          NSString *openTag = [self tagContentForStyle:@(Colored)
+                                            openingTag:YES
+                                              location:currentRange.location];
+          [result appendFormat:@"<%@>", openTag];
+          NSString *currentCharacterStr = [_input->textView.textStorage.string substringWithRange:currentRange];
+          [result appendString: currentCharacterStr];
+          previousColor = currentColor;
+          [currentActiveStyles addObject:@(Colored)];
+          continue;
       }
     }
-    
+
     NSString *currentCharacterStr = [_input->textView.textStorage.string substringWithRange:currentRange];
     unichar currentCharacterChar = [_input->textView.textStorage.string characterAtIndex:currentRange.location];
     
