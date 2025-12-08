@@ -24,7 +24,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   // no-op for image
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   // no-op for image
 }
 

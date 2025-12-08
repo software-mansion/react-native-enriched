@@ -30,13 +30,13 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if(range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range withTypingAttr:YES];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:range];
   // if we fill empty lines with zero width spaces, we need to offset later ranges
   NSInteger offset = 0;
@@ -80,17 +80,19 @@
   }
   
   // also add typing attributes
-  NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
-  NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-  pStyle.headIndent = [self getHeadIndent];
-  pStyle.firstLineHeadIndent = [self getHeadIndent];
-  typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-  _input->textView.typingAttributes = typingAttrs;
+  if (withTypingAttr) {
+    NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
+    NSMutableParagraphStyle *pStyle = [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
+    pStyle.headIndent = [self getHeadIndent];
+    pStyle.firstLineHeadIndent = [self getHeadIndent];
+    typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+    _input->textView.typingAttributes = typingAttrs;
+  }
 }
 
 // does pretty much the same as addAttributes
 - (void)addTypingAttributes {
-  [self addAttributes:_input->textView.selectedRange];
+  [self addAttributes:_input->textView.selectedRange withTypingAttr:YES];
 }
 
 - (void)removeAttributes:(NSRange)range {

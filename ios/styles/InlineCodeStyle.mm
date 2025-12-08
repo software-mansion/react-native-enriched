@@ -22,13 +22,13 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if(range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range withTypingAttr:YES];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   // we don't want to apply inline code to newline characters, it looks bad
   NSArray *nonNewlineRanges = [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:range];
   

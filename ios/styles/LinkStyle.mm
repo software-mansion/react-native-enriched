@@ -27,7 +27,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   // no-op for links
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   // no-op for links
 }
 
