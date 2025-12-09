@@ -310,6 +310,7 @@ export default function App() {
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
             autoCapitalize="sentences"
+            defaultValue='<html><h1>Link test</h1><p><a href="test.com">test link</a></p></html>'
             onChangeText={handleChangeText}
             onChangeHtml={handleChangeHtml}
             onChangeState={handleChangeState}

@@ -124,7 +124,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
 
 // MARK: - Public non-standard methods
 
-- (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual {
+- (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual withSelection:(BOOL)withSelection {
   NSString *currentText = [_input->textView.textStorage.string substringWithRange:range];
   
   NSMutableDictionary<NSAttributedStringKey, id> *newAttrs = [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
@@ -142,19 +142,19 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
   
   if(range.length == 0) {
     // insert link
-    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs input:_input withSelection:YES];
+    [TextInsertionUtils insertText:text at:range.location additionalAttributes:newAttrs input:_input withSelection:withSelection];
   } else if([currentText isEqualToString:text]) {
     // apply link attributes
     [_input->textView.textStorage addAttributes:newAttrs range:range];
     // TextInsertionUtils take care of the selection but here we have to manually set it behind the link
     // ONLY with manual links, automatic ones don't need the selection fix
-    if(manual) {
+    if(manual && withSelection) {
       [_input->textView reactFocus];
       _input->textView.selectedRange = NSMakeRange(range.location + text.length, 0);
     }
   } else {
     // replace text with link
-    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs input:_input withSelection:YES];
+    [TextInsertionUtils replaceText:text at:range additionalAttributes:newAttrs input:_input withSelection:withSelection];
   }
   
   // mandatory connected links check
@@ -357,7 +357,7 @@ static NSString *const AutomaticLinkAttributeName = @"AutomaticLinkAttributeName
       }
     }
     if(addStyle) {
-      [self addLink:word url:regexPassedUrl range:wordRange manual:NO];
+      [self addLink:word url:regexPassedUrl range:wordRange manual:NO withSelection:YES];
       // emit onLinkDetected if style was added
       [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
     }

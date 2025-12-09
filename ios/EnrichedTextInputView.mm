@@ -932,7 +932,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // translate the output start-end notation to range
   NSRange linkRange = NSMakeRange(start, end - start);
   if([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType] range:linkRange]) {
-    [linkStyleClass addLink:text url:url range:linkRange manual:YES];
+    [linkStyleClass addLink:text url:url range:linkRange manual:YES withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
 }
