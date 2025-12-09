@@ -6,11 +6,12 @@ import { Icon } from './Icon';
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (width: number, height: number) => void;
+  onSubmit: (
+    width: number | undefined,
+    height: number | undefined,
+    url?: string
+  ) => void;
 }
-
-const DEFAULT_IMAGE_WIDTH = 80;
-const DEFAULT_IMAGE_HEIGHT = 80;
 
 export const ImageModal: FC<ImageModalProps> = ({
   isOpen,
@@ -19,16 +20,28 @@ export const ImageModal: FC<ImageModalProps> = ({
 }) => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
+  const [url, setUrl] = useState('');
 
   const handleSave = () => {
     const parsedWidth = parseFloat(width);
     const parsedHeight = parseFloat(height);
-    const finalWidth = isNaN(parsedWidth) ? DEFAULT_IMAGE_WIDTH : parsedWidth;
-    const finalHeight = isNaN(parsedHeight)
-      ? DEFAULT_IMAGE_HEIGHT
-      : parsedHeight;
+    const finalWidth = isNaN(parsedWidth) ? undefined : parsedWidth;
+    const finalHeight = isNaN(parsedHeight) ? undefined : parsedHeight;
 
-    onSubmit(finalWidth, finalHeight);
+    onSubmit(finalWidth, finalHeight, url.trim() === '' ? undefined : url);
+    onClose();
+    resetState();
+  };
+
+  const closeModal = () => {
+    onClose();
+    resetState();
+  };
+
+  const resetState = () => {
+    setWidth('');
+    setHeight('');
+    setUrl('');
   };
 
   return (
@@ -36,7 +49,7 @@ export const ImageModal: FC<ImageModalProps> = ({
       <View style={styles.container}>
         <View style={styles.modal}>
           <View style={styles.header}>
-            <Pressable onPress={onClose} style={styles.closeButton}>
+            <Pressable onPress={closeModal} style={styles.closeButton}>
               <Icon name="close" color="rgb(0, 26, 114)" size={20} />
             </Pressable>
           </View>
@@ -52,6 +65,12 @@ export const ImageModal: FC<ImageModalProps> = ({
               style={styles.input}
               value={height}
               onChangeText={setHeight}
+            />
+            <TextInput
+              placeholder="Remote URL"
+              style={styles.input}
+              value={url}
+              onChangeText={setUrl}
             />
             <Button
               title="Choose Image"
@@ -74,7 +93,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: 300,
-    height: 240,
+    height: 320,
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
