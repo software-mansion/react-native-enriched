@@ -52,6 +52,9 @@ class EnrichedSpanWatcher(private val view: EnrichedTextInputView) : SpanWatcher
   }
 
   fun emitEvent(s: Spannable, what: Any?) {
+    // Do not parse spannable and emit event if onChangeHtml is not provided
+    if (!view.shouldEmitHtml) return
+
     // Emit event only if we change one of ours spans
     if (what != null && what !is EnrichedSpan) return
 

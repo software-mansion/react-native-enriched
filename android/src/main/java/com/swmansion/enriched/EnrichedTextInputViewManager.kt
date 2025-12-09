@@ -177,7 +177,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   }
 
   override fun setIsOnChangeHtmlSet(view: EnrichedTextInputView?, value: Boolean) {
-    // this prop isn't used on Android as of now, but the setter must be present
+    view?.shouldEmitHtml = value
   }
 
   override fun setAutoCapitalize(view: EnrichedTextInputView?, flag: String?) {
