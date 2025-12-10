@@ -10,7 +10,7 @@ pre-commit:
     clang-format:
       glob: "*.{h,m,mm,cpp}"
       exclude: "(Pods|build|node_modules)"
-      run: clang-format --dry-run --Werror {staged_files}
+      run: npx clang-format -i {staged_files} && git add {staged_files}
 commit-msg:
   parallel: true
   commands:

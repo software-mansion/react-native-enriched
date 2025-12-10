@@ -12,7 +12,7 @@ public:
   EnrichedTextInputState(EnrichedTextInputState const &previousState,
                          folly::dynamic data)
       : forceHeightRecalculationCounter_(
-            (int)data["forceHeightRecalculationCounter"].getInt()) {};
+            (int)data["forceHeightRecalculationCounter"].getInt()){};
   folly::dynamic getDynamic() const { return {}; };
 
   int getForceHeightRecalculationCounter() const;

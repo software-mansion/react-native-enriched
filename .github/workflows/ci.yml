@@ -23,9 +23,6 @@ jobs:
       - name: Run ESLint (JS/TS)
         run: yarn lint
 
-      - name: Run Lint
-        run: clang-format --version
-
       - name: Run clang-format (C/C++ style check)
         run: yarn lint-clang
 
