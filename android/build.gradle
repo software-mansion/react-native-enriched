@@ -6,12 +6,15 @@ buildscript {
   repositories {
     google()
     mavenCentral()
+    gradlePluginPortal()
   }
 
   dependencies {
     classpath "com.android.tools.build:gradle:8.7.2"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
+    classpath "org.jlleitschuh.gradle:ktlint-gradle:13.1.0"
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:8.0.0'
   }
 }
 
@@ -20,6 +23,8 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 apply plugin: "com.facebook.react"
+
+apply from: "lint.gradle"
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["EnrichedTextInput_" + name]).toInteger()
