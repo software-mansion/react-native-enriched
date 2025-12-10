@@ -6,4 +6,5 @@
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
                          input:(id)input;
++ (NSInteger)getNumberOfZeroWidthSpacesInRange:(NSRange)range text:(NSString *)text;
 @end

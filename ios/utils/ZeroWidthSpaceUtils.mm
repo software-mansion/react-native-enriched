@@ -5,6 +5,24 @@
 #import "UIView+React.h"
 
 @implementation ZeroWidthSpaceUtils
++ (NSInteger)getNumberOfZeroWidthSpacesInRange:(NSRange)range text:(NSString*)text {
+  if (range.length > [text length]) {
+    return 0;
+  }
+
+  NSInteger count = 0;
+  
+  NSString *substring = [text substringWithRange:range];
+  
+  for (NSInteger i = 0; i < substring.length; i++) {
+      if ([substring characterAtIndex:i] == 0x200B) {
+          count++;
+      }
+  }
+  
+  return count;
+}
+
 + (void)handleZeroWidthSpacesInInput:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   if (typedInput == nullptr) {
