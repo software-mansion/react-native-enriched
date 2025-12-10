@@ -262,7 +262,6 @@ export default function App() {
       id: item.id,
       type: 'user',
     });
-    closeUserMentionPopup();
   };
 
   const handleChannelMentionSelected = (item: MentionItem) => {
@@ -270,7 +269,6 @@ export default function App() {
       id: item.id,
       type: 'channel',
     });
-    closeChannelMentionPopup();
   };
 
   const handleFocusEvent = () => {
