@@ -453,7 +453,7 @@
         NSString *text = [_input->textView.textStorage.string substringWithRange:styleRange];
         NSString *url = (NSString *)stylePair.styleValue;
         BOOL isManual = ![text isEqualToString:url];
-        [((LinkStyle *)baseStyle) addLink:text url:url range:styleRange manual:isManual];
+        [((LinkStyle *)baseStyle) addLink:text url:url range:styleRange manual:isManual withSelection:NO];
       } else if([styleType isEqualToNumber: @([MentionStyle getStyleType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange params:params];
