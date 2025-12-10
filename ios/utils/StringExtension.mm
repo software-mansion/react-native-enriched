@@ -13,41 +13,44 @@
 + (NSString *)stringByEscapingHtml:(NSString *)html {
   NSMutableString *escaped = [html mutableCopy];
   NSDictionary *escapeMap = @{
-    @"&": @"&amp;",
-    @"<": @"&lt;",
-    @">": @"&gt;",
+    @"&" : @"&amp;",
+    @"<" : @"&lt;",
+    @">" : @"&gt;",
   };
-  
-  for(NSString *key in escapeMap) {
-    [escaped replaceOccurrencesOfString:key withString:escapeMap[key] options:NSLiteralSearch range:NSMakeRange(0, escaped.length)];
+
+  for (NSString *key in escapeMap) {
+    [escaped replaceOccurrencesOfString:key
+                             withString:escapeMap[key]
+                                options:NSLiteralSearch
+                                  range:NSMakeRange(0, escaped.length)];
   }
   return escaped;
 }
 
 + (NSDictionary *)getEscapedCharactersInfoFrom:(NSString *)text {
   NSDictionary *unescapeMap = @{
-    @"&amp;": @"&",
-    @"&lt;": @"<",
-    @"&gt;": @">",
+    @"&amp;" : @"&",
+    @"&lt;" : @"<",
+    @"&gt;" : @">",
   };
-  
+
   NSMutableDictionary *results = [[NSMutableDictionary alloc] init];
-  
-  for(NSString *key in unescapeMap) {
+
+  for (NSString *key in unescapeMap) {
     NSRange searchRange = NSMakeRange(0, text.length);
     NSRange foundRange;
 
-    while(searchRange.location < text.length) {
+    while (searchRange.location < text.length) {
       foundRange = [text rangeOfString:key options:0 range:searchRange];
-      if(foundRange.location == NSNotFound) {
+      if (foundRange.location == NSNotFound) {
         break;
       }
-      results[@(foundRange.location)] = @[key, unescapeMap[key]];
+      results[@(foundRange.location)] = @[ key, unescapeMap[key] ];
       searchRange.location = foundRange.location + foundRange.length;
       searchRange.length = text.length - searchRange.location;
     }
   }
-  
+
   return results;
 }
 

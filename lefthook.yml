@@ -7,6 +7,10 @@ pre-commit:
     types:
       glob: "*.{js,ts, jsx, tsx}"
       run: npx tsc
+    clang-format:
+      glob: "*.{h,m,mm,cpp}"
+      exclude: "(Pods|build|node_modules)"
+      run: clang-format --dry-run --Werror {staged_files}
 commit-msg:
   parallel: true
   commands:
