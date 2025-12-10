@@ -412,7 +412,7 @@
   _input->textView.text = plainText;
   
   // re-apply the styles
-  [self applyProcessedStyles:stylesInfo offsetFromBeginning:0];
+  [self applyProcessedStyles:stylesInfo offsetFromBeginning:0 plainTextLength:plainText.length];
 }
 
 - (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range {
@@ -423,7 +423,7 @@
   // we can use ready replace util
   [TextInsertionUtils replaceText:plainText at:range additionalAttributes:nil input:_input withSelection:YES];
   
-  [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location];
+  [self applyProcessedStyles:stylesInfo offsetFromBeginning:range.location plainTextLength:plainText.length];
 }
 
 - (void)insertFromHtml:(NSString * _Nonnull)html location:(NSInteger)location {
@@ -434,10 +434,10 @@
   // same here, insertion utils got our back
   [TextInsertionUtils insertText:plainText at:location additionalAttributes:nil input:_input withSelection:YES];
   
-  [self applyProcessedStyles:stylesInfo offsetFromBeginning:location];
+  [self applyProcessedStyles:stylesInfo offsetFromBeginning:location plainTextLength:plainText.length];
 }
 
-- (void)applyProcessedStyles:(NSArray *)processedStyles offsetFromBeginning:(NSInteger)offset {
+- (void)applyProcessedStyles:(NSArray *)processedStyles offsetFromBeginning:(NSInteger)offset plainTextLength:(NSUInteger)plainTextLength {
   for(NSArray* arr in processedStyles) {
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
@@ -461,7 +461,8 @@
         ImageData *imgData = (ImageData *)stylePair.styleValue;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange imageData:imgData withSelection:NO];
       } else {
-        [baseStyle addAttributes:styleRange];
+        BOOL shouldAddTypingAttr = styleRange.location + styleRange.length == plainTextLength;
+        [baseStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
       }
     }
   }

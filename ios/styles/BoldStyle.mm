@@ -20,13 +20,13 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if(range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range withTypingAttr:YES];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   [_input->textView.textStorage beginEditing];
   [_input->textView.textStorage enumerateAttribute:NSFontAttributeName inRange:range options:0
     usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {

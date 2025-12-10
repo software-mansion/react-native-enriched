@@ -33,7 +33,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   // no-op for mentions
 }
 
-- (void)addAttributes:(NSRange)range {
+- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   // no-op for mentions
 }
 

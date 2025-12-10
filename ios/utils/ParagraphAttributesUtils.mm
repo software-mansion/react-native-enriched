@@ -47,7 +47,7 @@
       if([style detectStyle:nonNewlineRange]) {
         [TextInsertionUtils replaceText:text at:range additionalAttributes:nullptr input:typedInput withSelection:YES];
         typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
-        [style addAttributes:NSMakeRange(range.location, 0)];
+        [style addAttributes:NSMakeRange(range.location, 0) withTypingAttr:YES];
         return YES;
       }
     }
