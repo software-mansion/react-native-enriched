@@ -32,6 +32,7 @@ export interface OnChangeStateEvent {
   isLink: boolean;
   isImage: boolean;
   isMention: boolean;
+  isColored: boolean;
 }
 
 export interface OnLinkDetected {
@@ -68,6 +69,10 @@ export interface MentionStyleProperties {
   color?: ColorValue;
   backgroundColor?: ColorValue;
   textDecorationLine?: 'underline' | 'none';
+}
+
+export interface OnChangeColorEvent {
+  color: string | null;
 }
 
 export interface HtmlStyleInternal {
@@ -143,6 +148,7 @@ export interface NativeProps extends ViewProps {
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
+  onColorChangeInSelection?: DirectEventHandler<OnChangeColorEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -203,6 +209,8 @@ interface NativeCommands {
     text: string,
     payload: string
   ) => void;
+  setColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
+  removeColor: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -229,6 +237,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'addImage',
     'startMention',
     'addMention',
+    'setColor',
+    'removeColor',
   ],
 });
 

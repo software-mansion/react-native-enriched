@@ -251,6 +251,14 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.verifyAndToggleStyle(EnrichedSpans.UNORDERED_LIST)
   }
 
+  override fun setColor(view: EnrichedTextInputView?, color: String) {
+    // no-op for now
+  }
+
+  override fun removeColor(view: EnrichedTextInputView?) {
+    // no-op for now
+  }
+
   override fun addLink(view: EnrichedTextInputView?, start: Int, end: Int, text: String, url: String) {
     view?.addLink(start, end, text, url)
   }
