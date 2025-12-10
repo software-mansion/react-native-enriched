@@ -235,6 +235,18 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.verifyAndToggleStyle(EnrichedSpans.H3)
   }
 
+  override fun toggleH4(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H4)
+  }
+
+  override fun toggleH5(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H5)
+  }
+
+  override fun toggleH6(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H6)
+  }
+
   override fun toggleCodeBlock(view: EnrichedTextInputView?) {
     view?.verifyAndToggleStyle(EnrichedSpans.CODE_BLOCK)
   }
