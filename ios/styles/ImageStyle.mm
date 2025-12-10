@@ -2,6 +2,7 @@
 #import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
+#import "ImageAttachment.h"
 
 // custom NSAttributedStringKey to differentiate the image
 static NSString *const ImageAttributeName = @"ImageAttributeName";
@@ -32,15 +33,22 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   // no-op for image
 }
 
+- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  // no-op for image
+}
+
 - (void)addTypingAttributes {
   // no-op for image
 }
 
+- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  [attributedString removeAttribute:ImageAttributeName range:range];
+  [attributedString removeAttribute:NSAttachmentAttributeName range:range];
+}
+
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage removeAttribute:ImageAttributeName range:range];
-  [_input->textView.textStorage removeAttribute:NSAttachmentAttributeName
-                                          range:range];
+  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -65,14 +73,17 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                }];
 }
 
+- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  return [OccurenceUtils detect:ImageAttributeName inString:attributedString inRange:range
+      withCondition:^BOOL(id  _Nullable value, NSRange range) {
+          return [self styleCondition:value :range];
+      }
+  ];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
   if (range.length >= 1) {
-    return [OccurenceUtils detect:ImageAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
-                    }];
+    return [self detectStyleInAttributedString: _input->textView.textStorage range:range];
   } else {
     return [OccurenceUtils detect:ImageAttributeName
                         withInput:_input
@@ -114,63 +125,74 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection {
-  UIImage *img = [self prepareImageFromUri:imageData.uri];
+          withSelection:(BOOL)withSelection
+{
+    if (!imageData) return;
 
-  NSDictionary *attributes = [@{
-    NSAttachmentAttributeName : [self prepareImageAttachement:img
-                                                        width:imageData.width
-                                                       height:imageData.height],
-    ImageAttributeName : imageData,
-  } mutableCopy];
+    ImageAttachment *attachment =
+        [[ImageAttachment alloc] initWithImageData:imageData];
+    attachment.delegate = _input;
 
-  // Use the Object Replacement Character for Image.
-  // This tells TextKit "something non-text goes here".
-  NSString *imagePlaceholder = @"\uFFFC";
+    NSDictionary *attrs = @{
+        NSAttachmentAttributeName : attachment,
+        ImageAttributeName : imageData
+    };
 
-  if (range.length == 0) {
-    [TextInsertionUtils insertText:imagePlaceholder
-                                at:range.location
-              additionalAttributes:attributes
-                             input:_input
-                     withSelection:withSelection];
-  } else {
-    [TextInsertionUtils replaceText:imagePlaceholder
-                                 at:range
-               additionalAttributes:attributes
-                              input:_input
-                      withSelection:withSelection];
-  }
+    NSString *placeholderChar = @"\uFFFC";
+
+    if (range.length == 0) {
+        [TextInsertionUtils insertText:placeholderChar
+                                    at:range.location
+                   additionalAttributes:attrs
+                                  input:_input
+                          withSelection:withSelection];
+    } else {
+        [TextInsertionUtils replaceText:placeholderChar
+                                     at:range
+                   additionalAttributes:attrs
+                                  input:_input
+                          withSelection:withSelection];
+    }
 }
 
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
-  ImageData *data = [[ImageData alloc] init];
-  data.uri = uri;
-  data.width = width;
-  data.height = height;
+    ImageData *data = [[ImageData alloc] init];
+    data.uri = uri;
+    data.width = width;
+    data.height = height;
 
-  [self addImageAtRange:_input->textView.selectedRange
-              imageData:data
-          withSelection:YES];
+    [self addImageAtRange:_input->textView.selectedRange
+                imageData:data
+            withSelection:YES];
 }
 
-- (NSTextAttachment *)prepareImageAttachement:(UIImage *)image
-                                        width:(CGFloat)width
-                                       height:(CGFloat)height {
+- (void)addImageInAttributedString:(NSMutableAttributedString *)string
+                             range:(NSRange)range
+                         imageData:(ImageData *)imageData
+{
+    if (!imageData) return;
 
-  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-  attachment.image = image;
-  attachment.bounds = CGRectMake(0, 0, width, height);
+    ImageAttachment *attachment =
+        [[ImageAttachment alloc] initWithImageData:imageData];
+    attachment.delegate = _input;
 
-  return attachment;
+    NSMutableDictionary *attrs =
+        [_input->defaultTypingAttributes mutableCopy];
+    attrs[NSAttachmentAttributeName] = attachment;
+    attrs[ImageAttributeName] = imageData;
+
+    NSAttributedString *imgString =
+        [[NSAttributedString alloc] initWithString:@"\uFFFC"
+                                        attributes:attrs];
+
+    if (range.length == 0) {
+        [string insertAttributedString:imgString
+                               atIndex:range.location];
+    } else {
+        [string replaceCharactersInRange:range
+                     withAttributedString:imgString];
+    }
 }
 
-- (UIImage *)prepareImageFromUri:(NSString *)uri {
-  NSURL *url = [NSURL URLWithString:uri];
-  NSData *imgData = [NSData dataWithContentsOfURL:url];
-  UIImage *image = [UIImage imageWithData:imgData];
-
-  return image;
-}
 
 @end

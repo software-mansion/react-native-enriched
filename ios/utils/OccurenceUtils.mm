@@ -1,225 +1,332 @@
 #import "OccurenceUtils.h"
 
+@interface OccurenceUtils ()
++ (void)enumerateAttributes:(NSArray<NSAttributedStringKey> *)keys
+                  inString:(NSAttributedString *)string
+                    inRange:(NSRange)range
+                 withBlock:(void(NS_NOESCAPE ^)(NSAttributedStringKey key, id value, NSRange range, BOOL *stop))block;
+
++ (NSArray<StylePair *> *)collectAttributes:(NSArray<NSAttributedStringKey> *)keys
+                                  inString:(NSAttributedString *)string
+                                    inRange:(NSRange)range
+                              withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition;
+@end
+
+
 @implementation OccurenceUtils
 
-+ (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          inRange:(NSRange)range
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition {
-  __block NSInteger totalLength = 0;
-  [input->textView.textStorage
-      enumerateAttribute:key
-                 inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                if (condition(value, range)) {
-                  totalLength += range.length;
-                }
-              }];
-  return totalLength == range.length;
-}
++ (void)enumerateAttributes:(NSArray<NSAttributedStringKey> *)keys
+                  inString:(NSAttributedString *)string
+                    inRange:(NSRange)range
+                 withBlock:(void(NS_NOESCAPE ^)(NSAttributedStringKey key,
+                                                id value,
+                                                NSRange range,
+                                                BOOL *stop))block
+{
+    __block BOOL outerStop = NO;
 
-// checkPrevious flag is used for styles like lists or blockquotes
-// it means that first character of paragraph will be checked instead if the
-// detection is not in input's selected range and at the end of the input
-+ (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          atIndex:(NSUInteger)index
-    checkPrevious:(BOOL)checkPrev
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition {
-  NSRange detectionRange = NSMakeRange(index, 0);
-  id attrValue;
-  if (NSEqualRanges(input->textView.selectedRange, detectionRange)) {
-    attrValue = input->textView.typingAttributes[key];
-  } else if (index == input->textView.textStorage.string.length) {
-    if (checkPrev) {
-      NSRange paragraphRange = [input->textView.textStorage.string
-          paragraphRangeForRange:detectionRange];
-      if (paragraphRange.location == detectionRange.location) {
-        return NO;
-      } else {
-        return [self detect:key
-                  withInput:input
-                    inRange:NSMakeRange(paragraphRange.location, 1)
-              withCondition:condition];
-      }
-    } else {
-      return NO;
+    for (NSAttributedStringKey key in keys) {
+
+        [string enumerateAttribute:key
+                           inRange:range
+                           options:0
+                        usingBlock:^(id value, NSRange subRange, BOOL *innerStop)
+        {
+            block(key, value, subRange, &outerStop);
+            if (outerStop) {
+                *innerStop = YES;
+            }
+        }];
+
+        if (outerStop) break;
     }
-  } else {
-    NSRange attrRange = NSMakeRange(0, 0);
-    attrValue = [input->textView.textStorage attribute:key
-                                               atIndex:index
-                                        effectiveRange:&attrRange];
-  }
-  return condition(attrValue, detectionRange);
 }
 
-+ (BOOL)detectMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-             withInput:(EnrichedTextInputView *_Nonnull)input
-               inRange:(NSRange)range
-         withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                     NSRange range))condition {
-  __block NSInteger totalLength = 0;
-  for (NSString *key in keys) {
-    [input->textView.textStorage
-        enumerateAttribute:key
-                   inRange:range
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  if (condition(value, range)) {
-                    totalLength += range.length;
-                  }
-                }];
-  }
-  return totalLength == range.length;
++ (NSArray<StylePair *> *)collectAttributes:(NSArray<NSAttributedStringKey> *)keys
+                                  inString:(NSAttributedString *)string
+                                    inRange:(NSRange)range
+                              withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    NSMutableArray<StylePair *> *result = [NSMutableArray array];
+
+    [self enumerateAttributes:keys
+                     inString:string
+                       inRange:range
+                    withBlock:^(NSAttributedStringKey key, id value, NSRange attrRange, BOOL *stop)
+    {
+        if (condition(value, attrRange)) {
+            StylePair *pair = [StylePair new];
+            pair.rangeValue = [NSValue valueWithRange:attrRange];
+            pair.styleValue = value;
+            [result addObject:pair];
+        }
+    }];
+
+    return result;
 }
 
-+ (BOOL)any:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          inRange:(NSRange)range
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition {
-  __block BOOL found = NO;
-  [input->textView.textStorage
-      enumerateAttribute:key
-                 inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                if (condition(value, range)) {
-                  found = YES;
-                  *stop = YES;
-                }
-              }];
-  return found;
+
+#pragma mark - ============================================================
+#pragma mark Public API (Attributed String Versions)
+#pragma mark - ============================================================
+
++ (BOOL)detect:(NSAttributedStringKey)key
+      inString:(NSAttributedString *)string
+        inRange:(NSRange)range
+  withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    __block NSInteger total = 0;
+
+    [self enumerateAttributes:@[key]
+                     inString:string
+                       inRange:range
+                    withBlock:^(NSAttributedStringKey key, id value, NSRange r, BOOL *stop)
+    {
+        if (condition(value, r)) {
+            total += r.length;
+        }
+    }];
+
+    return total == range.length;
 }
 
-+ (BOOL)anyMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-          withInput:(EnrichedTextInputView *_Nonnull)input
-            inRange:(NSRange)range
-      withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                  NSRange range))condition {
-  __block BOOL found = NO;
-  for (NSString *key in keys) {
-    [input->textView.textStorage
-        enumerateAttribute:key
-                   inRange:range
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  if (condition(value, range)) {
-                    found = YES;
-                    *stop = YES;
-                  }
-                }];
-    if (found) {
-      return YES;
-    }
-  }
-  return NO;
++ (BOOL)detectMultiple:(NSArray<NSAttributedStringKey> *)keys
+              inString:(NSAttributedString *)string
+                inRange:(NSRange)range
+          withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    __block NSInteger total = 0;
+
+    [self enumerateAttributes:keys
+                     inString:string
+                       inRange:range
+                    withBlock:^(NSAttributedStringKey key, id value, NSRange r, BOOL *stop)
+    {
+        if (condition(value, r)) {
+            total += r.length;
+        }
+    }];
+
+    return total == range.length;
 }
 
-+ (NSArray<StylePair *> *_Nullable)all:(NSAttributedStringKey _Nonnull)key
-                             withInput:(EnrichedTextInputView *_Nonnull)input
++ (BOOL)any:(NSAttributedStringKey)key
+    inString:(NSAttributedString *)string
+      inRange:(NSRange)range
+withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    __block BOOL found = NO;
+
+    [self enumerateAttributes:@[key]
+                     inString:string
+                       inRange:range
+                    withBlock:^(NSAttributedStringKey key, id value, NSRange r, BOOL *stop)
+    {
+        if (condition(value, r)) {
+            found = YES;
+            *stop = YES;
+        }
+    }];
+
+    return found;
+}
+
++ (BOOL)anyMultiple:(NSArray<NSAttributedStringKey> *)keys
+           inString:(NSAttributedString *)string
+             inRange:(NSRange)range
+       withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    __block BOOL found = NO;
+
+    [self enumerateAttributes:keys
+                     inString:string
+                       inRange:range
+                    withBlock:^(NSAttributedStringKey key, id value, NSRange r, BOOL *stop)
+    {
+        if (condition(value, r)) {
+            found = YES;
+            *stop = YES;
+        }
+    }];
+
+    return found;
+}
+
++ (NSArray<StylePair *> *)all:(NSAttributedStringKey)key
+                     inString:(NSAttributedString *)string
+                       inRange:(NSRange)range
+                 withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self collectAttributes:@[key]
+                          inString:string
+                            inRange:range
+                      withCondition:condition];
+}
+
++ (NSArray<StylePair *> *)allMultiple:(NSArray<NSAttributedStringKey> *)keys
+                             inString:(NSAttributedString *)string
                                inRange:(NSRange)range
-                         withCondition:
-                             (BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                           NSRange range))
-                                 condition {
-  __block NSMutableArray<StylePair *> *occurences =
-      [[NSMutableArray<StylePair *> alloc] init];
-  [input->textView.textStorage
-      enumerateAttribute:key
+                         withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self collectAttributes:keys
+                          inString:string
+                            inRange:range
+                      withCondition:condition];
+}
+
+
+#pragma mark - ============================================================
+#pragma mark Public API (EnrichedTextInputView Versions)
+#pragma mark - ============================================================
+
+/// detects on a range using input->textView.textStorage
++ (BOOL)detect:(NSAttributedStringKey)key
+     withInput:(EnrichedTextInputView *)input
+       inRange:(NSRange)range
+ withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self detect:key
+               inString:input->textView.textStorage
                  inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                if (condition(value, range)) {
-                  StylePair *pair = [[StylePair alloc] init];
-                  pair.rangeValue = [NSValue valueWithRange:range];
-                  pair.styleValue = value;
-                  [occurences addObject:pair];
-                }
-              }];
-  return occurences;
+           withCondition:condition];
 }
 
-+ (NSArray<StylePair *> *_Nullable)
-      allMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          inRange:(NSRange)range
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition {
-  __block NSMutableArray<StylePair *> *occurences =
-      [[NSMutableArray<StylePair *> alloc] init];
-  for (NSString *key in keys) {
-    [input->textView.textStorage
-        enumerateAttribute:key
-                   inRange:range
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  if (condition(value, range)) {
-                    StylePair *pair = [[StylePair alloc] init];
-                    pair.rangeValue = [NSValue valueWithRange:range];
-                    pair.styleValue = value;
-                    [occurences addObject:pair];
-                  }
-                }];
-  }
-  return occurences;
+/// detects at index (typing attributes logic preserved)
++ (BOOL)detect:(NSAttributedStringKey)key
+     withInput:(EnrichedTextInputView *)input
+       atIndex:(NSUInteger)index
+  checkPrevious:(BOOL)checkPrev
+ withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    NSRange detectionRange = NSMakeRange(index, 0);
+    id attrValue;
+
+    if (NSEqualRanges(input->textView.selectedRange, detectionRange)) {
+        attrValue = input->textView.typingAttributes[key];
+
+    } else if (index == input->textView.textStorage.string.length) {
+
+        if (checkPrev) {
+            NSRange paragraph = [input->textView.textStorage.string paragraphRangeForRange:detectionRange];
+            if (paragraph.location == detectionRange.location) {
+                return NO;
+            } else {
+                return [self detect:key
+                           withInput:input
+                             inRange:NSMakeRange(paragraph.location, 1)
+                       withCondition:condition];
+            }
+        } else {
+            return NO;
+        }
+
+    } else {
+        NSRange eff;
+        attrValue = [input->textView.textStorage attribute:key
+                                                   atIndex:index
+                                            effectiveRange:&eff];
+    }
+
+    return condition(attrValue, detectionRange);
 }
 
-+ (NSArray *_Nonnull)getRangesWithout:(NSArray<NSNumber *> *_Nonnull)types
-                            withInput:(EnrichedTextInputView *_Nonnull)input
-                              inRange:(NSRange)range {
-  NSMutableArray<id> *activeStyleObjects = [[NSMutableArray alloc] init];
-  for (NSNumber *type in types) {
-    id<BaseStyleProtocol> styleClass = input->stylesDict[type];
-    [activeStyleObjects addObject:styleClass];
-  }
++ (BOOL)detectMultiple:(NSArray<NSAttributedStringKey> *)keys
+             withInput:(EnrichedTextInputView *)input
+               inRange:(NSRange)range
+         withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self detectMultiple:keys
+                       inString:input->textView.textStorage
+                         inRange:range
+                   withCondition:condition];
+}
 
-  if (activeStyleObjects.count == 0) {
-    return @[ [NSValue valueWithRange:range] ];
-  }
++ (BOOL)any:(NSAttributedStringKey)key
+   withInput:(EnrichedTextInputView *)input
+     inRange:(NSRange)range
+withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self any:key
+             inString:input->textView.textStorage
+               inRange:range
+         withCondition:condition];
+}
 
-  NSMutableArray<NSValue *> *newRanges = [[NSMutableArray alloc] init];
-  NSUInteger lastRangeLocation = range.location;
-  NSUInteger endLocation = range.location + range.length;
++ (BOOL)anyMultiple:(NSArray<NSAttributedStringKey> *)keys
+          withInput:(EnrichedTextInputView *)input
+            inRange:(NSRange)range
+      withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self anyMultiple:keys
+                     inString:input->textView.textStorage
+                       inRange:range
+                 withCondition:condition];
+}
 
-  for (NSUInteger i = range.location; i < endLocation; i++) {
-    NSRange currentRange = NSMakeRange(i, 1);
-    BOOL forbiddenStyleFound = NO;
++ (NSArray<StylePair *> *)all:(NSAttributedStringKey)key
+                    withInput:(EnrichedTextInputView *)input
+                      inRange:(NSRange)range
+                withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self all:key
+             inString:input->textView.textStorage
+               inRange:range
+         withCondition:condition];
+}
 
-    for (id style in activeStyleObjects) {
-      if ([style detectStyle:currentRange]) {
-        forbiddenStyleFound = YES;
-        break;
-      }
++ (NSArray<StylePair *> *)allMultiple:(NSArray<NSAttributedStringKey> *)keys
+                             withInput:(EnrichedTextInputView *)input
+                               inRange:(NSRange)range
+                         withCondition:(BOOL(NS_NOESCAPE ^)(id value, NSRange range))condition
+{
+    return [self allMultiple:keys
+                     inString:input->textView.textStorage
+                       inRange:range
+                 withCondition:condition];
+}
+
++ (NSArray *)getRangesWithout:(NSArray<NSNumber *> *)types
+                     withInput:(EnrichedTextInputView *)input
+                       inRange:(NSRange)range
+{
+    NSMutableArray *activeStyles = [NSMutableArray array];
+
+    for (NSNumber *type in types) {
+        id<BaseStyleProtocol> style = input->stylesDict[type];
+        [activeStyles addObject:style];
     }
 
-    if (forbiddenStyleFound) {
-      if (i > lastRangeLocation) {
-        NSRange cleanRange =
-            NSMakeRange(lastRangeLocation, i - lastRangeLocation);
-        [newRanges addObject:[NSValue valueWithRange:cleanRange]];
-      }
-      lastRangeLocation = i + 1;
+    if (activeStyles.count == 0) {
+        return @[[NSValue valueWithRange:range]];
     }
-  }
 
-  if (lastRangeLocation < endLocation) {
-    NSRange remainingRange =
-        NSMakeRange(lastRangeLocation, endLocation - lastRangeLocation);
-    [newRanges addObject:[NSValue valueWithRange:remainingRange]];
-  }
+    NSMutableArray<NSValue *> *newRanges = [NSMutableArray array];
+    NSUInteger lastLocation = range.location;
+    NSUInteger end = range.location + range.length;
 
-  return newRanges;
+    for (NSUInteger i = range.location; i < end; i++) {
+
+        BOOL forbidden = NO;
+        for (id style in activeStyles) {
+            if ([style detectStyle:NSMakeRange(i, 1)]) {
+                forbidden = YES;
+                break;
+            }
+        }
+
+        if (forbidden) {
+            if (i > lastLocation) {
+                [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastLocation, i - lastLocation)]];
+            }
+            lastLocation = i + 1;
+        }
+    }
+
+    if (lastLocation < end) {
+        [newRanges addObject:[NSValue valueWithRange:NSMakeRange(lastLocation, end - lastLocation)]];
+    }
+
+    return newRanges;
 }
 
 @end

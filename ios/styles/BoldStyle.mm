@@ -31,22 +31,25 @@
   }
 }
 
-- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
+- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attr
+                                  range:(NSRange)range
+{
+    [attr enumerateAttribute:NSFontAttributeName
+                     inRange:range
+                     options:0
+                  usingBlock:^(id value, NSRange subrange, BOOL *stop) {
+
+        UIFont *font = (UIFont *)value;
+        if (font != nil) {
+            UIFont *newFont = [font setBold];
+            [attr addAttribute:NSFontAttributeName value:newFont range:subrange];
+        }
+    }];
+}
+
+- (void)addAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage
-      enumerateAttribute:NSFontAttributeName
-                 inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                UIFont *font = (UIFont *)value;
-                if (font != nullptr) {
-                  UIFont *newFont = [font setBold];
-                  [_input->textView.textStorage addAttribute:NSFontAttributeName
-                                                       value:newFont
-                                                       range:range];
-                }
-              }];
+  [self addAttributesInAttributedString: _input->textView.textStorage range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -61,22 +64,23 @@
   }
 }
 
+- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  [attributedString enumerateAttribute:NSFontAttributeName
+                   inRange:range
+                   options:0
+                usingBlock:^(id value, NSRange subrange, BOOL *stop) {
+
+      UIFont *font = (UIFont *)value;
+      if (font != nil) {
+          UIFont *newFont = [font removeBold];
+          [attributedString addAttribute:NSFontAttributeName value:newFont range:subrange];
+      }
+  }];
+}
+
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage
-      enumerateAttribute:NSFontAttributeName
-                 inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                UIFont *font = (UIFont *)value;
-                if (font != nullptr) {
-                  UIFont *newFont = [font removeBold];
-                  [_input->textView.textStorage addAttribute:NSFontAttributeName
-                                                       value:newFont
-                                                       range:range];
-                }
-              }];
+  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -119,14 +123,17 @@
          ![self boldHeadingConflictsInRange:range type:H3];
 }
 
+- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+    return [OccurenceUtils detect:NSFontAttributeName inString:attributedString inRange:range
+      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
-  if (range.length >= 1) {
-    return [OccurenceUtils detect:NSFontAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
-                    }];
+  if(range.length >= 1) {
+    return [self detectStyleInAttributedString: _input->textView.textStorage range: range];
   } else {
     return [OccurenceUtils detect:NSFontAttributeName
                         withInput:_input

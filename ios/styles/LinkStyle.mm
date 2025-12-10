@@ -37,36 +37,47 @@ static NSString *const AutomaticLinkAttributeName =
   // no-op for links
 }
 
+- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  // no-op for links
+}
+
 - (void)addTypingAttributes {
   // no-op for links
 }
 
+- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attr
+                                     range:(NSRange)range
+{
+    NSArray<StylePair *> *links =
+    [OccurenceUtils allMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName]
+                       inString:attr
+                         inRange:range
+                   withCondition:^BOOL(id value, NSRange r) {
+        return [self styleCondition:value :r];
+    }];
+
+    for (StylePair *pair in links) {
+        NSRange fullRange = [self offline_fullLinkRangeInAttributedString:attr
+                                                                  atIndex:[pair.rangeValue rangeValue].location];
+
+        [attr removeAttribute:ManualLinkAttributeName range:fullRange];
+        [attr removeAttribute:AutomaticLinkAttributeName range:fullRange];
+
+        UIColor *primary = [_input->config primaryColor];
+        [attr addAttribute:NSForegroundColorAttributeName value:primary range:fullRange];
+        [attr addAttribute:NSUnderlineColorAttributeName value:primary range:fullRange];
+        [attr addAttribute:NSStrikethroughColorAttributeName value:primary range:fullRange];
+
+        if ([_input->config linkDecorationLine] == DecorationUnderline) {
+            [attr removeAttribute:NSUnderlineStyleAttributeName range:fullRange];
+        }
+    }
+}
+
 // we have to make sure all links in the range get fully removed here
 - (void)removeAttributes:(NSRange)range {
-  NSArray<StylePair *> *links = [self findAllOccurences:range];
   [_input->textView.textStorage beginEditing];
-  for (StylePair *pair in links) {
-    NSRange linkRange =
-        [self getFullLinkRangeAt:[pair.rangeValue rangeValue].location];
-    [_input->textView.textStorage removeAttribute:ManualLinkAttributeName
-                                            range:linkRange];
-    [_input->textView.textStorage removeAttribute:AutomaticLinkAttributeName
-                                            range:linkRange];
-    [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:linkRange];
-    [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:linkRange];
-    [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:linkRange];
-    if ([_input->config linkDecorationLine] == DecorationUnderline) {
-      [_input->textView.textStorage
-          removeAttribute:NSUnderlineStyleAttributeName
-                    range:linkRange];
-    }
-  }
+  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
   [_input->textView.textStorage endEditing];
 
   // adjust typing attributes as well
@@ -124,6 +135,21 @@ static NSString *const AutomaticLinkAttributeName =
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
   NSString *linkValue = (NSString *)value;
   return linkValue != nullptr;
+}
+
+- (BOOL)detectStyleInAttributedString:(NSAttributedString *)attrString
+                                range:(NSRange)range
+{
+    BOOL onlyLinks =
+    [OccurenceUtils detectMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName]
+                          inString:attrString
+                            inRange:range
+                      withCondition:^BOOL(id value, NSRange r) {
+        return [self styleCondition:value :r];
+    }];
+
+    if (!onlyLinks) return NO;
+    return [self offline_isSingleLinkIn:attrString range:range];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -582,6 +608,82 @@ static NSString *const AutomaticLinkAttributeName =
     [self removeAttributes:wordRange];
     [self manageLinkTypingAttributes];
   }
+}
+
+- (void)addLinkInAttributedString:(NSMutableAttributedString *)attr
+                            range:(NSRange)range
+                             text:(NSString *)text
+                              url:(NSString *)url
+                              manual:(BOOL) manual
+{
+    if (!text || !url) return;
+
+    NSDictionary *attrs = [self offline_linkAttributesForURL:url manual: manual];
+    [attr addAttributes:attrs range:range];
+}
+
+- (NSMutableDictionary *)offline_linkAttributesForURL:(NSString *)url manual:(BOOL)manual
+{
+    NSMutableDictionary *attrs =
+        [_input->defaultTypingAttributes mutableCopy];
+
+    attrs[NSForegroundColorAttributeName]     = [_input->config linkColor];
+    attrs[NSUnderlineColorAttributeName]      = [_input->config linkColor];
+    attrs[NSStrikethroughColorAttributeName]  = [_input->config linkColor];
+
+    if ([_input->config linkDecorationLine] == DecorationUnderline) {
+        attrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+    }
+    if(manual) {
+      attrs[ManualLinkAttributeName] = url;
+    } else {
+      attrs[AutomaticLinkAttributeName] = url;
+    }
+
+    return attrs;
+}
+
+
+- (NSRange)offline_fullLinkRangeInAttributedString:(NSAttributedString *)attr
+                                           atIndex:(NSUInteger)location
+{
+    NSRange fullManual = NSMakeRange(0,0);
+    NSRange fullAuto   = NSMakeRange(0,0);
+
+    NSRange bounds = NSMakeRange(0, attr.length);
+
+    if (location >= attr.length && attr.length > 0) {
+        location = attr.length - 1;
+    }
+
+    NSString *manual = [attr attribute:ManualLinkAttributeName
+                               atIndex:location
+                longestEffectiveRange:&fullManual
+                              inRange:bounds];
+
+    NSString *autoUrl = [attr attribute:AutomaticLinkAttributeName
+                               atIndex:location
+                longestEffectiveRange:&fullAuto
+                              inRange:bounds];
+
+    if (manual != nil) return fullManual;
+    if (autoUrl != nil) return fullAuto;
+
+    return NSMakeRange(0, 0);
+}
+
+- (BOOL)offline_isSingleLinkIn:(NSAttributedString *)attr
+                         range:(NSRange)range
+{
+    NSArray<StylePair *> *pairs =
+    [OccurenceUtils allMultiple:@[ManualLinkAttributeName, AutomaticLinkAttributeName]
+                       inString:attr
+                         inRange:range
+                   withCondition:^BOOL(id value, NSRange r) {
+        return [self styleCondition:value :r];
+    }];
+
+    return pairs.count == 1;
 }
 
 @end

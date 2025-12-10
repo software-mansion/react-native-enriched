@@ -42,30 +42,26 @@
 // the range will already be the proper full paragraph/s range
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   [[self typedInput]->textView.textStorage beginEditing];
-  [[self typedInput]->textView.textStorage
-      enumerateAttribute:NSFontAttributeName
-                 inRange:range
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                UIFont *font = (UIFont *)value;
-                if (font != nullptr) {
-                  UIFont *newFont = [font setSize:[self getHeadingFontSize]];
-                  if ([self isHeadingBold]) {
-                    newFont = [newFont setBold];
-                  }
-                  [[self typedInput]->textView.textStorage
-                      addAttribute:NSFontAttributeName
-                             value:newFont
-                             range:range];
-                }
-              }];
+  [self addAttributesInAttributedString: [self typedInput]->textView.textStorage range:range];
   [[self typedInput]->textView.textStorage endEditing];
-
+  
   // also toggle typing attributes
-  if (withTypingAttr) {
-    [self addTypingAttributes];
-  }
+  [self addTypingAttributes];
+}
+
+- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  [attributedString enumerateAttribute:NSFontAttributeName inRange:range options:0
+    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      UIFont *font = (UIFont *)value;
+      if(font != nullptr) {
+        UIFont *newFont = [font setSize:[self getHeadingFontSize]];
+        if([self isHeadingBold]) {
+          newFont = [newFont setBold];
+        }
+        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
+      }
+    }
+  ];
 }
 
 // will always be called on empty paragraphs so only typing attributes can be
@@ -84,6 +80,21 @@
     newTypingAttrs[NSFontAttributeName] = newFont;
     [self typedInput]->textView.typingAttributes = newTypingAttrs;
   }
+}
+
+- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  NSRange paragraphRange = [attributedString.string paragraphRangeForRange:range];
+  [attributedString enumerateAttribute:NSFontAttributeName inRange:paragraphRange options:0
+    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+      if([self styleCondition:value :range]) {
+        UIFont *newFont = [(UIFont *)value setSize:[[[self typedInput]->config primaryFontSize] floatValue]];
+        if([self isHeadingBold]) {
+          newFont = [newFont removeBold];
+        }
+        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
+      }
+    }
+  ];
 }
 
 // we need to remove the style from the whole paragraph
@@ -142,14 +153,17 @@
   return font != nullptr && font.pointSize == [self getHeadingFontSize];
 }
 
+- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+    return [OccurenceUtils detect:NSFontAttributeName inString:attributedString inRange:range
+      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+        return [self styleCondition:value :range];
+      }
+    ];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
-  if (range.length >= 1) {
-    return [OccurenceUtils detect:NSFontAttributeName
-                        withInput:[self typedInput]
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
-                    }];
+  if(range.length >= 1) {
+    return [self detectStyleInAttributedString: [self typedInput]->textView.textStorage range:range];
   } else {
     return [OccurenceUtils detect:NSFontAttributeName
                         withInput:[self typedInput]

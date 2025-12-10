@@ -40,6 +40,53 @@
   }
 }
 
+- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range
+{
+    NSTextList *numberBullet = [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDecimal options:0];
+    NSArray<NSValue *> *paragraphs =
+        [ParagraphsUtils getSeparateParagraphsRangesInAttributedString:attributedString range:range];
+
+    NSInteger offset = 0;
+
+    for (NSValue *val in paragraphs) {
+        NSRange p = val.rangeValue;
+        NSRange fixedRange = NSMakeRange(p.location + offset, p.length);
+
+        // Fill empty lines with ZWSP so the paragraph style can apply to at least 1 char
+        if (fixedRange.length == 0 ||
+           (fixedRange.length == 1 &&
+            [[NSCharacterSet newlineCharacterSet] characterIsMember:
+                [attributedString.string characterAtIndex:fixedRange.location]])) {
+
+            [TextInsertionUtils insertTextInAttributedString:@"\u200B"
+                                                         at:fixedRange.location
+                                     additionalAttributes:nil
+                                        attributedString:attributedString];
+
+            fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
+            offset += 1;
+        }
+
+        [attributedString enumerateAttribute:NSParagraphStyleAttributeName
+                                     inRange:fixedRange
+                                     options:0
+                                  usingBlock:^(id _Nullable value, NSRange subRange, BOOL * _Nonnull stop)
+        {
+            NSMutableParagraphStyle *pStyle = value ? [(NSParagraphStyle *)value mutableCopy]
+                                                    : [NSMutableParagraphStyle new];
+
+            pStyle.textLists = @[ numberBullet ];
+            pStyle.headIndent = [self getHeadIndent];
+            pStyle.firstLineHeadIndent = [self getHeadIndent];
+            NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
+            typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+            [attributedString addAttribute:NSParagraphStyleAttributeName value:pStyle range:subRange];
+        }];
+    }
+}
+
+
 // we assume correct paragraph range is already given
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   NSTextList *numberBullet =
@@ -128,33 +175,28 @@
   [self addAttributes:_input->textView.selectedRange withTypingAttr:YES];
 }
 
-- (void)removeAttributes:(NSRange)range {
-  NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
-
-  [_input->textView.textStorage beginEditing];
-
-  for (NSValue *value in paragraphs) {
+- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesInAttributedString:attributedString range:range];
+  
+  for(NSValue *value in paragraphs) {
     NSRange range = [value rangeValue];
-    [_input->textView.textStorage
-        enumerateAttribute:NSParagraphStyleAttributeName
-                   inRange:range
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  NSMutableParagraphStyle *pStyle =
-                      [(NSParagraphStyle *)value mutableCopy];
-                  pStyle.textLists = @[];
-                  pStyle.headIndent = 0;
-                  pStyle.firstLineHeadIndent = 0;
-                  [_input->textView.textStorage
-                      addAttribute:NSParagraphStyleAttributeName
-                             value:pStyle
-                             range:range];
-                }];
+    [attributedString enumerateAttribute:NSParagraphStyleAttributeName inRange:range options:0
+      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
+        pStyle.textLists = @[];
+        pStyle.headIndent = 0;
+        pStyle.firstLineHeadIndent = 0;
+        [attributedString addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
+      }
+    ];
   }
+}
 
+- (void)removeAttributes:(NSRange)range {
+  [_input->textView.textStorage beginEditing];
+  
+  [self removeAttributesInAttributedString:_input->textView.textStorage range:range];
+  
   [_input->textView.textStorage endEditing];
 
   // also remove typing attributes
@@ -242,14 +284,17 @@
              NSTextListMarkerDecimal;
 }
 
+- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+  return [OccurenceUtils detect:NSParagraphStyleAttributeName inString:attributedString inRange:range
+    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
+      return [self styleCondition:value :range];
+    }
+  ];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
-  if (range.length >= 1) {
-    return [OccurenceUtils detect:NSParagraphStyleAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
-                    }];
+  if(range.length >= 1) {
+    return [self detectStyleInAttributedString:_input->textView.textStorage range:range];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
                         withInput:_input
