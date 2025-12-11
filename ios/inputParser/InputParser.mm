@@ -592,17 +592,19 @@
 }
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
+  NSString *htmlWithoutSpaces = [self removeWhiteSpacesFromHtml:html];
   NSString *fixedHtml = nullptr;
 
-  if (html.length >= 13) {
-    NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
+
+  if (htmlWithoutSpaces.length >= 13) {
+    NSString *firstSix = [htmlWithoutSpaces substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven =
-        [html substringWithRange:NSMakeRange(html.length - 7, 7)];
+        [htmlWithoutSpaces substringWithRange:NSMakeRange(htmlWithoutSpaces.length - 7, 7)];
 
     if ([firstSix isEqualToString:@"<html>"] &&
         [lastSeven isEqualToString:@"</html>"]) {
       // remove html tags, might be with newlines or without them
-      fixedHtml = [html copy];
+      fixedHtml = [htmlWithoutSpaces copy];
       // firstly remove newlined html tags if any:
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n"
                                                        withString:@""];
@@ -616,13 +618,13 @@
     } else {
       // in other case we are most likely working with some external html - try
       // getting the styles from between body tags
-      NSRange openingBodyRange = [html rangeOfString:@"<body>"];
-      NSRange closingBodyRange = [html rangeOfString:@"</body>"];
+      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
+      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
 
       if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
         NSInteger newStart = openingBodyRange.location + 7;
         NSInteger newEnd = closingBodyRange.location - 1;
-        fixedHtml = [html
+        fixedHtml = [htmlWithoutSpaces
             substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
       }
     }
@@ -724,6 +726,70 @@
   }
 
   return fixedHtml;
+}
+
+- (NSString *)removeWhiteSpacesFromHtml:(NSString *)html
+{
+  NSSet *textTags = [NSSet setWithObjects:
+                     @"p", @"h1", @"h2", @"h3", @"h4", @"h5", @"h6",
+                     @"li", @"b", @"a", @"s", @"mention", @"code", @"u", @"i", nil];
+
+  NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
+  NSMutableString *currentTagBuffer = [NSMutableString string];
+  NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+  
+  BOOL isReadingTag = NO;
+  NSInteger textDepth = 0;
+  
+  for (NSUInteger i = 0; i < html.length; i++) {
+    unichar c = [html characterAtIndex:i];
+    
+    if (c == '<') {
+      isReadingTag = YES;
+      [currentTagBuffer setString:@""];
+      [output appendString:@"<"];
+    } else if (c == '>') {
+      isReadingTag = NO;
+      [output appendString:@">"];
+      
+      NSString *fullTag = [currentTagBuffer lowercaseString];
+      
+      NSString *cleanName = [fullTag stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
+      NSArray *parts = [cleanName componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+      NSString *tagName = parts.firstObject;
+      
+      if (![textTags containsObject:tagName]) {
+        continue;
+      }
+      
+      if ([fullTag hasPrefix:@"/"]) {
+        textDepth--;
+        if (textDepth < 0) textDepth = 0;
+      } else {
+        // Opening tag (e.g. <h1>) -> Enter Text Mode
+        // (Ignore self-closing tags like <img/> if they happen to be in the list)
+        if (![fullTag hasSuffix:@"/"]) {
+            textDepth++;
+        }
+      }
+    } else {
+      if (isReadingTag) {
+        [currentTagBuffer appendFormat:@"%C", c];
+        [output appendFormat:@"%C", c];
+        continue;
+      }
+      
+      if (textDepth > 0) {
+        [output appendFormat:@"%C", c];
+      } else {
+        if (![whitespaceSet characterIsMember:c]) {
+          [output appendFormat:@"%C", c];
+        }
+      }
+    }
+  }
+  
+  return output;
 }
 
 - (NSString *)stringByAddingNewlinesToTag:(NSString *)tag
