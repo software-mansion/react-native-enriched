@@ -439,7 +439,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
     defaultTypingAttributes[NSUnderlineColorAttributeName] = [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] = [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] = [[NSParagraphStyle alloc] init];
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = [self prepareDefaultParagraphStyle];
     textView.typingAttributes = defaultTypingAttributes;
     
     // update the placeholder as well
@@ -543,6 +543,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if(isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
+}
+
+- (NSMutableParagraphStyle * )prepareDefaultParagraphStyle
+{
+  NSMutableParagraphStyle *pStyle = [[NSMutableParagraphStyle alloc] init];
+  
+  BOOL isRTL = [[RCTI18nUtil sharedInstance] isRTL];
+
+  if (isRTL) {
+      pStyle.baseWritingDirection = NSWritingDirectionRightToLeft;
+  } else {
+      pStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
+  }
+  pStyle.baseWritingDirection = NSWritingDirectionRightToLeft;
+  
+  return pStyle;
 }
 
 - (void)setPlaceholderLabelShown:(BOOL)shown {
