@@ -67,7 +67,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
       spannable.removeSpan(previousSpan)
     }
 
-    if (nextSpan != null) {
+    if (nextSpan != null && start != end) {
       newEnd = spannable.getSpanEnd(nextSpan)
       spannable.removeSpan(nextSpan)
     }

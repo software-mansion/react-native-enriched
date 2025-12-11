@@ -2,7 +2,6 @@ package com.swmansion.enriched.styles
 
 import android.text.Editable
 import android.text.Spannable
-import android.util.Log
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
@@ -56,6 +55,8 @@ class InlineStyles(private val view: EnrichedTextInputView) {
       var finalStart: Int? = null
       var finalEnd: Int? = null
       if (spanStart == -1 || spanEnd == -1) continue
+
+      spannable.removeSpan(span)
 
       if (start == spanStart && end == spanEnd) {
         setSpanOnFinish = false

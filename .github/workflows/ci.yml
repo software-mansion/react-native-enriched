@@ -20,8 +20,11 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Lint files
+      - name: Run ESLint (JS/TS)
         run: yarn lint
+
+      - name: Run clang-format (C/C++ style check)
+        run: yarn lint-clang
 
       - name: Typecheck files
         run: yarn typecheck
