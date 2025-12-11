@@ -279,8 +279,8 @@ export default function App() {
     setCurrentLink(state);
   };
 
-  const handleSelectionChangeEvent = (selection: OnChangeSelectionEvent) => {
-    setSelection(selection);
+  const handleSelectionChangeEvent = (sel: OnChangeSelectionEvent) => {
+    setSelection(sel);
   };
 
   return (
