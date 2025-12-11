@@ -47,7 +47,7 @@
                                                 range:range
                                             imageData:pair.styleValue];
     } else {
-      [style addAttributesInAttributedString:attributedString range:r];
+      [style addAttributesInAttributedString:attributedString range:range];
     }
   }
 

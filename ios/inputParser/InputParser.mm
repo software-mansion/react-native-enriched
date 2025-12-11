@@ -36,6 +36,11 @@
   ConvertHtmlToPlainTextAndStylesResult *plainTextAndStyles =
       [_htmlHandler getTextAndStylesFromHtml:html];
 
+  if (plainTextAndStyles.text == nil) {
+    _input->textView.text = @"";
+    return;
+  }
+
   NSMutableAttributedString *attributedString =
       [[NSMutableAttributedString alloc]
           initWithString:plainTextAndStyles.text
@@ -56,8 +61,14 @@
 }
 
 - (void)replaceFromHtml:(NSString *)html range:(NSRange)range {
+  NSTextStorage *storage = _input->textView.textStorage;
   ConvertHtmlToPlainTextAndStylesResult *plainTextAndStyles =
       [_htmlHandler getTextAndStylesFromHtml:html];
+
+  if (plainTextAndStyles.text == nil) {
+    [storage replaceCharactersInRange:range withString:@""];
+    return;
+  }
 
   NSMutableAttributedString *inserted = [[NSMutableAttributedString alloc]
       initWithString:plainTextAndStyles.text
@@ -67,8 +78,6 @@
        toAttributedString:inserted
       offsetFromBeginning:0
         conflictingStyles:_input->conflictingStyles];
-
-  NSTextStorage *storage = _input->textView.textStorage;
 
   if (range.location > storage.length)
     range.location = storage.length;

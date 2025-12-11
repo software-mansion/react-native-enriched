@@ -48,7 +48,7 @@ static NSDictionary<NSString *, TagHandler> *TagHandlers;
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
   NSString *fixedHtml = nullptr;
 
-  if (html.length >= MIN_HTML_SIZE) {
+  if (html.length >= 13) {
     NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
     NSString *lastSeven =
         [html substringWithRange:NSMakeRange(html.length - 7, 7)];
@@ -57,16 +57,16 @@ static NSDictionary<NSString *, TagHandler> *TagHandlers;
         [lastSeven isEqualToString:@"</html>"]) {
       // remove html tags, might be with newlines or without them
       fixedHtml = [html copy];
-      NSRegularExpression *regex = [NSRegularExpression
-          regularExpressionWithPattern:@"<html>\\n?|</html>\\n?"
-                               options:0
-                                 error:nil];
-
-      fixedHtml =
-          [regex stringByReplacingMatchesInString:html
-                                          options:0
-                                            range:NSMakeRange(0, html.length)
-                                     withTemplate:@""];
+      // firstly remove newlined html tags if any:
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n"
+                                                       withString:@""];
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</html>"
+                                                       withString:@""];
+      // fallback; remove html tags without their newlines
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>"
+                                                       withString:@""];
+      fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>"
+                                                       withString:@""];
     } else {
       // in other case we are most likely working with some external html - try
       // getting the styles from between body tags
@@ -83,7 +83,7 @@ static NSDictionary<NSString *, TagHandler> *TagHandlers;
   }
 
   // second processing - try fixing htmls with wrong newlines' setup
-  if (fixedHtml) {
+  if (fixedHtml != nullptr) {
     // add <br> tag wherever needed
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p></p>"
                                                      withString:@"<br>"];

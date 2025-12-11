@@ -559,20 +559,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       newViewProps.defaultValue != oldViewProps.defaultValue;
 
   if (stylePropChanged) {
-    // all the text needs to be rebuilt
-    // we get the current html using old config, then switch to new config and
-    // replace text using the html this way, the newest config attributes are
-    // being used!
-
-    // the html needs to be generated using the old config
-    NSString *currentHtml = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
-
     // now set the new config
     config = newConfig;
+
     // we already applied html with styles in default value
     if (!defaultValueChanged) {
+      // all the text needs to be rebuilt
+      // we get the current html using old config, then switch to new config and
+      // replace text using the html this way, the newest config attributes are
+      // being used!
+
+      // the html needs to be generated using the old config
+      NSString *currentHtml = [parser
+          parseToHtmlFromRange:NSMakeRange(0,
+                                           textView.textStorage.string.length)];
       // no emitting during styles reload
       blockEmitting = YES;
 
