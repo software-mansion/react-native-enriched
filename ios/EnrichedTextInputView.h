@@ -3,16 +3,17 @@
 #import "InputConfig.h"
 #import "InputParser.h"
 #import "InputTextView.h"
+#import "MediaAttachment.h"
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
-#import "MediaAttachment.h"
 
 #ifndef EnrichedTextInputViewNativeComponent_h
 #define EnrichedTextInputViewNativeComponent_h
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EnrichedTextInputView : RCTViewComponentView<MediaAttachmentDelegate> {
+@interface EnrichedTextInputView
+    : RCTViewComponentView <MediaAttachmentDelegate> {
 @public
   InputTextView *textView;
 @public

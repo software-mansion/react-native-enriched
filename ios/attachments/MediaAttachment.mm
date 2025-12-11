@@ -3,31 +3,29 @@
 @implementation MediaAttachment
 
 - (instancetype)initWithURI:(NSString *)uri
-                       width:(CGFloat)width
-                      height:(CGFloat)height
-{
-    self = [super init];
-    if (!self) return nil;
+                      width:(CGFloat)width
+                     height:(CGFloat)height {
+  self = [super init];
+  if (!self)
+    return nil;
 
-    _uri = uri;
-    _width = width;
-    _height = height;
+  _uri = uri;
+  _width = width;
+  _height = height;
 
-    self.bounds = CGRectMake(0, 0, width, height);
+  self.bounds = CGRectMake(0, 0, width, height);
 
-    return self;
+  return self;
 }
 
-- (void)loadAsync
-{
+- (void)loadAsync {
   // no-op for base
 }
 
-- (void)notifyUpdate
-{
-    if ([self.delegate respondsToSelector:@selector(mediaAttachmentDidUpdate:)]) {
-        [self.delegate mediaAttachmentDidUpdate:self];
-    }
+- (void)notifyUpdate {
+  if ([self.delegate respondsToSelector:@selector(mediaAttachmentDidUpdate:)]) {
+    [self.delegate mediaAttachmentDidUpdate:self];
+  }
 }
 
 @end

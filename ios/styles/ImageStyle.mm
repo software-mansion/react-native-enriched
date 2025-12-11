@@ -1,8 +1,8 @@
 #import "EnrichedTextInputView.h"
+#import "ImageAttachment.h"
 #import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
-#import "ImageAttachment.h"
 
 // custom NSAttributedStringKey to differentiate the image
 static NSString *const ImageAttributeName = @"ImageAttributeName";
@@ -115,45 +115,43 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection
-{
-    if (!imageData) return;
+          withSelection:(BOOL)withSelection {
+  if (!imageData)
+    return;
 
-    ImageAttachment *attachment =
-        [[ImageAttachment alloc] initWithImageData:imageData];
-    attachment.delegate = _input;
+  ImageAttachment *attachment =
+      [[ImageAttachment alloc] initWithImageData:imageData];
+  attachment.delegate = _input;
 
-    NSDictionary *attributes = @{
-        NSAttachmentAttributeName : attachment,
-        ImageAttributeName : imageData
-    };
+  NSDictionary *attributes =
+      @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
 
-    NSString *placeholderChar = @"\uFFFC";
+  NSString *placeholderChar = @"\uFFFC";
 
-    if (range.length == 0) {
-        [TextInsertionUtils insertText:placeholderChar
-                                    at:range.location
-                   additionalAttributes:attributes
-                                  input:_input
-                          withSelection:withSelection];
-    } else {
-        [TextInsertionUtils replaceText:placeholderChar
-                                     at:range
-                   additionalAttributes:attributes
-                                  input:_input
-                          withSelection:withSelection];
-    }
+  if (range.length == 0) {
+    [TextInsertionUtils insertText:placeholderChar
+                                at:range.location
+              additionalAttributes:attributes
+                             input:_input
+                     withSelection:withSelection];
+  } else {
+    [TextInsertionUtils replaceText:placeholderChar
+                                 at:range
+               additionalAttributes:attributes
+                              input:_input
+                      withSelection:withSelection];
+  }
 }
 
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
-    ImageData *data = [[ImageData alloc] init];
-    data.uri = uri;
-    data.width = width;
-    data.height = height;
+  ImageData *data = [[ImageData alloc] init];
+  data.uri = uri;
+  data.width = width;
+  data.height = height;
 
-    [self addImageAtRange:_input->textView.selectedRange
-                imageData:data
-            withSelection:YES];
+  [self addImageAtRange:_input->textView.selectedRange
+              imageData:data
+          withSelection:YES];
 }
 
 @end

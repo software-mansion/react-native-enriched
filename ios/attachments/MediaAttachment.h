@@ -8,14 +8,14 @@
 
 @interface MediaAttachment : NSTextAttachment
 
-@property (nonatomic, weak) id<MediaAttachmentDelegate> delegate;
-@property (nonatomic, strong) NSString *uri;
-@property (nonatomic, assign) CGFloat width;
-@property (nonatomic, assign) CGFloat height;
+@property(nonatomic, weak) id<MediaAttachmentDelegate> delegate;
+@property(nonatomic, strong) NSString *uri;
+@property(nonatomic, assign) CGFloat width;
+@property(nonatomic, assign) CGFloat height;
 
 - (instancetype)initWithURI:(NSString *)uri
-                       width:(CGFloat)width
-                      height:(CGFloat)height;
+                      width:(CGFloat)width
+                     height:(CGFloat)height;
 
 - (void)loadAsync;
 - (void)notifyUpdate;
