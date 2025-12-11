@@ -31,10 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   BOOL blockEmitting;
 }
-@property(nonatomic, strong)
-    NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
-@property(nonatomic, strong)
-    NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
