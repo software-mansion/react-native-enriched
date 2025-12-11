@@ -16,6 +16,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionEvent,
   type OnMentionDetected,
   type OnMentionDetectedInternal,
+  type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
 } from './EnrichedTextInputNativeComponent';
 import type {
@@ -37,6 +38,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   focus: () => void;
   blur: () => void;
   setValue: (value: string) => void;
+  getHTML: () => Promise<string>;
 
   // Text formatting commands
   toggleBold: () => void;
@@ -162,6 +164,9 @@ const warnAboutMissconfiguredMentions = (indicator: string) => {
   );
 };
 
+let nextRequestId = 1;
+const pendingHtmlRequests = new Map<number, (html: string) => void>();
+
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const EnrichedTextInput = ({
@@ -228,6 +233,13 @@ export const EnrichedTextInput = ({
     },
     setValue: (value: string) => {
       Commands.setValue(nullthrows(nativeRef.current), value);
+    },
+    getHTML: () => {
+      return new Promise<string>((resolve) => {
+        const requestId = nextRequestId++;
+        pendingHtmlRequests.set(requestId, resolve);
+        Commands.requestHTML(nullthrows(nativeRef.current), requestId);
+      });
     },
     toggleBold: () => {
       Commands.toggleBold(nullthrows(nativeRef.current));
@@ -323,6 +335,17 @@ export const EnrichedTextInput = ({
     onMentionDetected?.({ text, indicator, attributes });
   };
 
+  const handleRequestHtmlResult = (
+    e: NativeSyntheticEvent<OnRequestHtmlResultEvent>
+  ) => {
+    const { requestId, html } = e.nativeEvent;
+    const resolve = pendingHtmlRequests.get(requestId);
+    if (resolve) {
+      pendingHtmlRequests.delete(requestId);
+      resolve(html);
+    }
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -347,6 +370,7 @@ export const EnrichedTextInput = ({
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
+      onRequestHtmlResult={handleRequestHtmlResult}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
