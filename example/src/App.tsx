@@ -70,7 +70,7 @@ const DEBUG_SCROLLABLE = false;
 // See: https://github.com/software-mansion/react-native-enriched/issues/229
 const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = false;
 
-const generateHugeHtml = (repeat = 10) => {
+const generateHugeHtml = (repeat = 200) => {
   const parts: string[] = [];
   parts.push('<html>');
 
@@ -106,11 +106,11 @@ const generateHugeHtml = (repeat = 10) => {
       `\n<br>`,
 
       // Unordered list
-      `\n<ul>`,
-      `\n<li>bullet A ${i}</li>`,
-      `\n<li>bullet B ${i}</li>`,
-      `\n<li>bullet C ${i}</li>`,
-      `\n</ul>`,
+      `<ul>`,
+      `<li>bullet A ${i}</li>`,
+      `<li>bullet B ${i}</li>`,
+      `<li>bullet C ${i}</li>`,
+      `</ul>`,
 
       // Ordered list
       `\n<ol>`,

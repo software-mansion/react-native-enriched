@@ -37,7 +37,6 @@ using namespace facebook::react;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
-  BOOL _initialMount;
 }
 
 // MARK: - Component utils
@@ -555,6 +554,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
 
+  BOOL defaultValueChanged =
+      newViewProps.defaultValue != oldViewProps.defaultValue;
+
   if (stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html using old config, then switch to new config and
@@ -568,18 +570,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // now set the new config
     config = newConfig;
+    // we already applied html with styles in default value
+    if (!defaultValueChanged) {
+      // no emitting during styles reload
+      blockEmitting = YES;
 
-    // no emitting during styles reload
-    blockEmitting = YES;
+      // make sure everything is sound in the html
+      NSString *initiallyProcessedHtml =
+          [parser initiallyProcessHtml:currentHtml];
+      if (initiallyProcessedHtml != nullptr) {
+        [parser replaceWholeFromHtml:initiallyProcessedHtml
+            notifyAnyTextMayHaveBeenModified:!isFirstMount];
+      }
 
-    // make sure everything is sound in the html
-    NSString *initiallyProcessedHtml =
-        [parser initiallyProcessHtml:currentHtml];
-    if (initiallyProcessedHtml != nullptr) {
-      [parser replaceWholeFromHtml:initiallyProcessedHtml];
+      blockEmitting = NO;
     }
-
-    blockEmitting = NO;
 
     // fill the typing attributes with style props
     defaultTypingAttributes[NSForegroundColorAttributeName] =
@@ -604,7 +609,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // default value - must be set before placeholder to make sure it correctly
   // shows on first mount
-  if (newViewProps.defaultValue != oldViewProps.defaultValue) {
+  if (defaultValueChanged) {
     NSString *newDefaultValue =
         [NSString fromCppString:newViewProps.defaultValue];
 
@@ -615,7 +620,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       textView.text = newDefaultValue;
     } else {
       // we've got some seemingly proper html
-      [parser replaceWholeFromHtml:initiallyProcessedHtml];
+      [parser replaceWholeFromHtml:initiallyProcessedHtml
+          notifyAnyTextMayHaveBeenModified:!isFirstMount];
     }
   }
 
@@ -695,8 +701,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _emitHtml = newViewProps.isOnChangeHtmlSet;
 
   [super updateProps:props oldProps:oldProps];
-  // run the changes callback
-  [self anyTextMayHaveBeenModified];
+
+  // if default value changed it will be fired in default value update
+  // if this is initial mount it will be called in didMoveToWindow
+  if (!defaultValueChanged && !isFirstMount) {
+    // run the changes callback
+    [self anyTextMayHaveBeenModified];
+  }
 
   // autofocus - needs to be done at the very end
   if (isFirstMount && newViewProps.autoFocus) {
@@ -1028,7 +1039,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.text = value;
   } else {
     // we've got some seemingly proper html
-    [parser replaceWholeFromHtml:initiallyProcessedHtml];
+    [parser replaceWholeFromHtml:initiallyProcessedHtml
+        notifyAnyTextMayHaveBeenModified:YES];
   }
 
   // set recentlyChangedRange and check for changes
@@ -1445,6 +1457,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)didMoveToWindow {
   [super didMoveToWindow];
   [self layoutIfNeeded];
+  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - UITextView delegate methods
