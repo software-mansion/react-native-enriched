@@ -64,26 +64,28 @@
   typedInput->recentlyChangedRange = NSMakeRange(range.location, text.length);
 }
 
-+ (void)insertTextInAttributedString:(NSString*)text
++ (void)insertTextInAttributedString:(NSString *)text
                                   at:(NSInteger)index
-               additionalAttributes:(NSDictionary<NSAttributedStringKey,id>*)additionalAttrs
-                   attributedString:(NSMutableAttributedString *)attributedString
-{
-    NSDictionary *baseAttributes = @{};
-    if (attributedString.length > 0 && index < attributedString.length) {
-        baseAttributes = [attributedString attributesAtIndex:index effectiveRange:nil];
-    }
+                additionalAttributes:
+                    (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
+                    attributedString:
+                        (NSMutableAttributedString *)attributedString {
+  NSDictionary *baseAttributes = @{};
+  if (attributedString.length > 0 && index < attributedString.length) {
+    baseAttributes = [attributedString attributesAtIndex:index
+                                          effectiveRange:nil];
+  }
 
-    NSMutableDictionary *attrs = [baseAttributes mutableCopy];
-    if (additionalAttrs) {
-        [attrs addEntriesFromDictionary:additionalAttrs];
-    }
+  NSMutableDictionary *attrs = [baseAttributes mutableCopy];
+  if (additionalAttrs) {
+    [attrs addEntriesFromDictionary:additionalAttrs];
+  }
 
-    NSAttributedString *newAttrString =
-        [[NSAttributedString alloc] initWithString:text attributes:attrs];
+  NSAttributedString *newAttrString =
+      [[NSAttributedString alloc] initWithString:text attributes:attrs];
 
-    // 4. Insert into the parent attributed string
-    [attributedString insertAttributedString:newAttrString atIndex:index];
+  // 4. Insert into the parent attributed string
+  [attributedString insertAttributedString:newAttrString atIndex:index];
 }
 
 @end

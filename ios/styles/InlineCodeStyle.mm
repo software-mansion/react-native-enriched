@@ -26,27 +26,43 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)currentRange {
-  [attributedString addAttribute:NSBackgroundColorAttributeName value:[[_input->config inlineCodeBgColor] colorWithAlphaIfNotTransparent:0.4] range:currentRange];
-  [attributedString addAttribute:NSForegroundColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
-  [attributedString addAttribute:NSUnderlineColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
-  [attributedString addAttribute:NSStrikethroughColorAttributeName value:[_input->config inlineCodeFgColor] range:currentRange];
-  [attributedString enumerateAttribute:NSFontAttributeName inRange:currentRange options:0
-    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr) {
-        UIFont *newFont = [[[_input->config monospacedFont] withFontTraits:font] setSize:font.pointSize];
-        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }
-  ];
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)currentRange {
+  [attributedString addAttribute:NSBackgroundColorAttributeName
+                           value:[[_input->config inlineCodeBgColor]
+                                     colorWithAlphaIfNotTransparent:0.4]
+                           range:currentRange];
+  [attributedString addAttribute:NSForegroundColorAttributeName
+                           value:[_input->config inlineCodeFgColor]
+                           range:currentRange];
+  [attributedString addAttribute:NSUnderlineColorAttributeName
+                           value:[_input->config inlineCodeFgColor]
+                           range:currentRange];
+  [attributedString addAttribute:NSStrikethroughColorAttributeName
+                           value:[_input->config inlineCodeFgColor]
+                           range:currentRange];
+  [attributedString
+      enumerateAttribute:NSFontAttributeName
+                 inRange:currentRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                UIFont *font = (UIFont *)value;
+                if (font != nullptr) {
+                  UIFont *newFont = [[[_input->config monospacedFont]
+                      withFontTraits:font] setSize:font.pointSize];
+                  [attributedString addAttribute:NSFontAttributeName
+                                           value:newFont
+                                           range:range];
+                }
+              }];
 }
 
 - (void)addAttributes:(NSRange)range {
@@ -57,7 +73,8 @@
   for (NSValue *value in nonNewlineRanges) {
     NSRange currentRange = [value rangeValue];
     [_input->textView.textStorage beginEditing];
-    [self addAttributesInAttributedString: _input->textView.textStorage range: currentRange];
+    [self addAttributesInAttributedString:_input->textView.textStorage
+                                    range:currentRange];
     [_input->textView.textStorage endEditing];
   }
 }
@@ -81,25 +98,40 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
   [attributedString removeAttribute:NSBackgroundColorAttributeName range:range];
-  [attributedString addAttribute:NSForegroundColorAttributeName value:[_input->config primaryColor] range:range];
-  [attributedString addAttribute:NSUnderlineColorAttributeName value:[_input->config primaryColor] range:range];
-  [attributedString addAttribute:NSStrikethroughColorAttributeName value:[_input->config primaryColor] range:range];
-  [attributedString enumerateAttribute:NSFontAttributeName inRange:range options:0
-    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr) {
-        UIFont *newFont = [[[_input->config primaryFont] withFontTraits:font] setSize:font.pointSize];
-        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }
-  ];
+  [attributedString addAttribute:NSForegroundColorAttributeName
+                           value:[_input->config primaryColor]
+                           range:range];
+  [attributedString addAttribute:NSUnderlineColorAttributeName
+                           value:[_input->config primaryColor]
+                           range:range];
+  [attributedString addAttribute:NSStrikethroughColorAttributeName
+                           value:[_input->config primaryColor]
+                           range:range];
+  [attributedString
+      enumerateAttribute:NSFontAttributeName
+                 inRange:range
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                UIFont *font = (UIFont *)value;
+                if (font != nullptr) {
+                  UIFont *newFont = [[[_input->config primaryFont]
+                      withFontTraits:font] setSize:font.pointSize];
+                  [attributedString addAttribute:NSFontAttributeName
+                                           value:newFont
+                                           range:range];
+                }
+              }];
 }
 
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -148,21 +180,26 @@
   return bgColor != nullptr && mStyle != nullptr && ![mStyle detectStyle:range];
 }
 
-- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
   // detect only in non-newline characters
-  NSArray *nonNewlineRanges = [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:range];
-  if(nonNewlineRanges.count == 0) {
+  NSArray *nonNewlineRanges =
+      [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:range];
+  if (nonNewlineRanges.count == 0) {
     return NO;
   }
-  
+
   BOOL detected = YES;
-  for(NSValue *value in nonNewlineRanges) {
+  for (NSValue *value in nonNewlineRanges) {
     NSRange currentRange = [value rangeValue];
-    BOOL currentDetected = [OccurenceUtils detect:NSBackgroundColorAttributeName inString:attributedString inRange:currentRange
-      withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-        return [self styleCondition:value :range];
-      }
-    ];
+    BOOL currentDetected =
+        [OccurenceUtils detect:NSBackgroundColorAttributeName
+                      inString:attributedString
+                       inRange:currentRange
+                 withCondition:^BOOL(id _Nullable value, NSRange range) {
+                   return [self styleCondition:value:range];
+                 }];
     detected = detected && currentDetected;
   }
 
@@ -170,8 +207,9 @@
 }
 
 - (BOOL)detectStyle:(NSRange)range {
-  if(range.length >= 1) {
-    return [self detectStyleInAttributedString:_input->textView.textStorage range:range];
+  if (range.length >= 1) {
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:NSBackgroundColorAttributeName
                         withInput:_input

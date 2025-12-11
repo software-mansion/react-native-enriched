@@ -24,28 +24,35 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  [attributedString enumerateAttribute:NSFontAttributeName inRange:range options:0
-    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr) {
-        UIFont *newFont = [font setItalic];
-        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }
-  ];
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range {
+  [attributedString enumerateAttribute:NSFontAttributeName
+                               inRange:range
+                               options:0
+                            usingBlock:^(id _Nullable value, NSRange range,
+                                         BOOL *_Nonnull stop) {
+                              UIFont *font = (UIFont *)value;
+                              if (font != nullptr) {
+                                UIFont *newFont = [font setItalic];
+                                [attributedString
+                                    addAttribute:NSFontAttributeName
+                                           value:newFont
+                                           range:range];
+                              }
+                            }];
 }
 
 - (void)addAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [self addAttributesInAttributedString:_input->textView.textStorage range:range];
+  [self addAttributesInAttributedString:_input->textView.textStorage
+                                  range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -60,21 +67,29 @@
   }
 }
 
-- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  [attributedString enumerateAttribute:NSFontAttributeName inRange:range options:0
-    usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-      UIFont *font = (UIFont *)value;
-      if(font != nullptr) {
-        UIFont *newFont = [font removeItalic];
-        [attributedString addAttribute:NSFontAttributeName value:newFont range:range];
-      }
-    }
-  ];
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
+  [attributedString enumerateAttribute:NSFontAttributeName
+                               inRange:range
+                               options:0
+                            usingBlock:^(id _Nullable value, NSRange range,
+                                         BOOL *_Nonnull stop) {
+                              UIFont *font = (UIFont *)value;
+                              if (font != nullptr) {
+                                UIFont *newFont = [font removeItalic];
+                                [attributedString
+                                    addAttribute:NSFontAttributeName
+                                           value:newFont
+                                           range:range];
+                              }
+                            }];
 }
 
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [self removeAttributesInAttributedString:_input->textView.textStorage range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -94,17 +109,21 @@
   return font != nullptr && [font isItalic];
 }
 
-- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  return [OccurenceUtils detect:NSFontAttributeName inString:attributedString inRange:range
-    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
-  ];
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
+  return [OccurenceUtils detect:NSFontAttributeName
+                       inString:attributedString
+                        inRange:range
+                  withCondition:^BOOL(id _Nullable value, NSRange range) {
+                    return [self styleCondition:value:range];
+                  }];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
-  if(range.length >= 1) {
-    return [self detectStyleInAttributedString: _input->textView.textStorage range:range];
+  if (range.length >= 1) {
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:NSFontAttributeName
                         withInput:_input

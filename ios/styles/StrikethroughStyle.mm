@@ -23,19 +23,23 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  [attributedString addAttribute:NSStrikethroughStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range {
+  [attributedString addAttribute:NSStrikethroughStyleAttributeName
+                           value:@(NSUnderlineStyleSingle)
+                           range:range];
 }
 
 - (void)addAttributes:(NSRange)range {
-  [self addAttributesInAttributedString: _input->textView.textStorage range:range];
+  [self addAttributesInAttributedString:_input->textView.textStorage
+                                  range:range];
 }
 
 - (void)addTypingAttributes {
@@ -45,12 +49,16 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  [attributedString removeAttribute:NSStrikethroughStyleAttributeName range:range];
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
+  [attributedString removeAttribute:NSStrikethroughStyleAttributeName
+                              range:range];
 }
 
 - (void)removeAttributes:(NSRange)range {
-  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
 }
 
 - (void)removeTypingAttributes {
@@ -66,17 +74,21 @@
          [strikethroughStyle intValue] != NSUnderlineStyleNone;
 }
 
-- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  return [OccurenceUtils detect:NSStrikethroughStyleAttributeName inString:attributedString inRange:range
-    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
-  ];
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
+  return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
+                       inString:attributedString
+                        inRange:range
+                  withCondition:^BOOL(id _Nullable value, NSRange range) {
+                    return [self styleCondition:value:range];
+                  }];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
-  if(range.length >= 1) {
-    return [self detectStyleInAttributedString:_input->textView.textStorage range:range];
+  if (range.length >= 1) {
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
                         withInput:_input

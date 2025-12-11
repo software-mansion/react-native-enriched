@@ -29,49 +29,71 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  NSTextList *codeBlockList = [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
-  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesInAttributedString:attributedString range:range];
-  // if we fill empty lines with zero width spaces, we need to offset later ranges
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range {
+  NSTextList *codeBlockList =
+      [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
+  NSArray *paragraphs = [ParagraphsUtils
+      getSeparateParagraphsRangesInAttributedString:attributedString
+                                              range:range];
+  // if we fill empty lines with zero width spaces, we need to offset later
+  // ranges
   NSInteger offset = 0;
-  
-  for(NSValue *value in paragraphs) {
-    NSRange pRange = NSMakeRange([value rangeValue].location + offset, [value rangeValue].length);
-    
-    // length 0 with first line, length 1 and newline with some empty lines in the middle
-    if(pRange.length == 0 ||
-      (pRange.length == 1 &&
-      [[NSCharacterSet newlineCharacterSet] characterIsMember: [attributedString.string characterAtIndex:pRange.location]])
-    ) {
-      [TextInsertionUtils insertTextInAttributedString:@"\u200B" at:pRange.location additionalAttributes:nullptr attributedString:attributedString];
+
+  for (NSValue *value in paragraphs) {
+    NSRange pRange = NSMakeRange([value rangeValue].location + offset,
+                                 [value rangeValue].length);
+
+    // length 0 with first line, length 1 and newline with some empty lines in
+    // the middle
+    if (pRange.length == 0 ||
+        (pRange.length == 1 &&
+         [[NSCharacterSet newlineCharacterSet]
+             characterIsMember:[attributedString.string
+                                   characterAtIndex:pRange.location]])) {
+      [TextInsertionUtils insertTextInAttributedString:@"\u200B"
+                                                    at:pRange.location
+                                  additionalAttributes:nullptr
+                                      attributedString:attributedString];
       pRange = NSMakeRange(pRange.location, pRange.length + 1);
       offset += 1;
     }
-    
-    [attributedString enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        NSMutableParagraphStyle *pStyle = value ? [(NSParagraphStyle *)value mutableCopy]
-                                            : [NSMutableParagraphStyle new];
-        NSMutableDictionary *typingAttrs = [_input->textView.typingAttributes mutableCopy];
-        pStyle.textLists = @[codeBlockList];
-        typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-        [attributedString addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
-      }
-    ];
+
+    [attributedString
+        enumerateAttribute:NSParagraphStyleAttributeName
+                   inRange:pRange
+                   options:0
+                usingBlock:^(id _Nullable value, NSRange range,
+                             BOOL *_Nonnull stop) {
+                  NSMutableParagraphStyle *pStyle =
+                      value ? [(NSParagraphStyle *)value mutableCopy]
+                            : [NSMutableParagraphStyle new];
+                  NSMutableDictionary *typingAttrs =
+                      [_input->textView.typingAttributes mutableCopy];
+                  pStyle.textLists = @[ codeBlockList ];
+                  typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+                  [attributedString addAttribute:NSParagraphStyleAttributeName
+                                           value:pStyle
+                                           range:range];
+                }];
   }
 }
 
 - (void)addAttributes:(NSRange)range {
-  NSTextList *codeBlockList = [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
-  NSArray *paragraphs = [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView range:range];
-  // if we fill empty lines with zero width spaces, we need to offset later ranges
+  NSTextList *codeBlockList =
+      [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
+  NSArray *paragraphs =
+      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
+                                               range:range];
+  // if we fill empty lines with zero width spaces, we need to offset later
+  // ranges
   NSInteger offset = 0;
   NSRange preModificationRange = _input->textView.selectedRange;
 
@@ -127,43 +149,51 @@
   }
 
   // also add typing attributes
-  if (withTypingAttr) {
-    NSMutableDictionary *typingAttrs =
-        [_input->textView.typingAttributes mutableCopy];
-    NSMutableParagraphStyle *pStyle =
-        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = @[ codeBlockList ];
-    typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+  NSMutableDictionary *typingAttrs =
+      [_input->textView.typingAttributes mutableCopy];
+  NSMutableParagraphStyle *pStyle =
+      [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
+  pStyle.textLists = @[ codeBlockList ];
+  typingAttrs[NSParagraphStyleAttributeName] = pStyle;
 
-    _input->textView.typingAttributes = typingAttrs;
-  }
+  _input->textView.typingAttributes = typingAttrs;
 }
 
 - (void)addTypingAttributes {
-  [self addAttributes:_input->textView.selectedRange withTypingAttr:YES];
+  [self addAttributes:_input->textView.selectedRange];
 }
 
-- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  NSArray *paragraphs = [ParagraphsUtils getNonNewlineRangesInAttributedString:attributedString range:range];
-  
-  for(NSValue *value in paragraphs) {
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
+  NSArray *paragraphs =
+      [ParagraphsUtils getNonNewlineRangesInAttributedString:attributedString
+                                                       range:range];
+
+  for (NSValue *value in paragraphs) {
     NSRange pRange = [value rangeValue];
-    
-    [attributedString enumerateAttribute:NSParagraphStyleAttributeName inRange:pRange options:0
-      usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-        NSMutableParagraphStyle *pStyle = [(NSParagraphStyle *)value mutableCopy];
-                          
-        pStyle.textLists = @[];
-        [attributedString addAttribute:NSParagraphStyleAttributeName value:pStyle range:range];
-      }
-    ];
+
+    [attributedString enumerateAttribute:NSParagraphStyleAttributeName
+                                 inRange:pRange
+                                 options:0
+                              usingBlock:^(id _Nullable value, NSRange range,
+                                           BOOL *_Nonnull stop) {
+                                NSMutableParagraphStyle *pStyle =
+                                    [(NSParagraphStyle *)value mutableCopy];
+
+                                pStyle.textLists = @[];
+                                [attributedString
+                                    addAttribute:NSParagraphStyleAttributeName
+                                           value:pStyle
+                                           range:range];
+                              }];
   }
 }
 
-
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
   [_input->textView.textStorage endEditing];
 
   // also remove typing attributes
@@ -207,17 +237,21 @@
              isEqualToString:@"codeblock"];
 }
 
-- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  return [OccurenceUtils detect:NSParagraphStyleAttributeName inString:attributedString inRange:range
-    withCondition: ^BOOL(id  _Nullable value, NSRange range) {
-      return [self styleCondition:value :range];
-    }
-  ];
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
+  return [OccurenceUtils detect:NSParagraphStyleAttributeName
+                       inString:attributedString
+                        inRange:range
+                  withCondition:^BOOL(id _Nullable value, NSRange range) {
+                    return [self styleCondition:value:range];
+                  }];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
-  if(range.length >= 1) {
-    return [self detectStyleInAttributedString:_input->textView.textStorage range:range];
+  if (range.length >= 1) {
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
                         withInput:_input

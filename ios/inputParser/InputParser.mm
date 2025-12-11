@@ -492,184 +492,189 @@
   return @"";
 }
 
-- (void)replaceWholeFromHtml:(NSString * _Nonnull)html {
-    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-    NSString *plainText = (NSString *)processingResult[0];
-    NSArray *stylesInfo = (NSArray *)processingResult[1];
+- (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
+  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+  NSString *plainText = (NSString *)processingResult[0];
+  NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-    NSMutableAttributedString *newAttr =
-        [[NSMutableAttributedString alloc] initWithString:plainText
-                                               attributes:_input->defaultTypingAttributes];
+  NSMutableAttributedString *newAttr = [[NSMutableAttributedString alloc]
+      initWithString:plainText
+          attributes:_input->defaultTypingAttributes];
 
-    [self applyProcessedStyles:stylesInfo
-           toAttributedString:newAttr
-        offsetFromBeginning:0];
+  [self applyProcessedStyles:stylesInfo
+          toAttributedString:newAttr
+         offsetFromBeginning:0];
 
-    NSTextStorage *storage = _input->textView.textStorage;
+  NSTextStorage *storage = _input->textView.textStorage;
 
-    [storage setAttributedString:newAttr];
- 
-    _input->textView.typingAttributes = _input->defaultTypingAttributes;
-    [_input anyTextMayHaveBeenModified];
+  [storage setAttributedString:newAttr];
+
+  _input->textView.typingAttributes = _input->defaultTypingAttributes;
+  [_input anyTextMayHaveBeenModified];
 }
 
-- (BOOL)styleType:(NSNumber *)type existsInStyles:(NSArray *)styles atRange:(NSRange)r {
-    for (NSArray *entry in styles) {
-        NSNumber *otherType = entry[0];
-        StylePair *pair = entry[1];
-        if ([otherType isEqualToNumber:type] &&
-            NSEqualRanges(pair.rangeValue.rangeValue, r)) {
-            return YES;
-        }
+- (BOOL)styleType:(NSNumber *)type
+    existsInStyles:(NSArray *)styles
+           atRange:(NSRange)r {
+  for (NSArray *entry in styles) {
+    NSNumber *otherType = entry[0];
+    StylePair *pair = entry[1];
+    if ([otherType isEqualToNumber:type] &&
+        NSEqualRanges(pair.rangeValue.rangeValue, r)) {
+      return YES;
     }
-    return NO;
+  }
+  return NO;
 }
 
 - (void)removeStyleType:(NSNumber *)type
-            fromStyles:(NSMutableArray *)styles
-               atRange:(NSRange)r
-{
-    NSMutableArray *remove = [NSMutableArray array];
+             fromStyles:(NSMutableArray *)styles
+                atRange:(NSRange)r {
+  NSMutableArray *remove = [NSMutableArray array];
 
-    for (NSArray *entry in styles) {
-        NSNumber *otherType = entry[0];
-        StylePair *pair = entry[1];
+  for (NSArray *entry in styles) {
+    NSNumber *otherType = entry[0];
+    StylePair *pair = entry[1];
 
-        if ([otherType isEqualToNumber:type] &&
-            NSEqualRanges(pair.rangeValue.rangeValue, r)) {
-            [remove addObject:entry];
-        }
+    if ([otherType isEqualToNumber:type] &&
+        NSEqualRanges(pair.rangeValue.rangeValue, r)) {
+      [remove addObject:entry];
     }
+  }
 
-    [styles removeObjectsInArray:remove];
+  [styles removeObjectsInArray:remove];
 }
 
 - (BOOL)shouldApplyStyle:(StyleType)styleType
-           existingStyles:(NSArray *)styles
-                     at:(NSRange)range
-{
-    NSArray<NSNumber *> *blocking = _input->blockingStyles[@(styleType)];
-    for (NSNumber *b in blocking) {
-        if ([self styleType:b existsInStyles:styles atRange:range]) {
-            return NO;
-        }
+          existingStyles:(NSArray *)styles
+                      at:(NSRange)range {
+  NSArray<NSNumber *> *blocking = _input->blockingStyles[@(styleType)];
+  for (NSNumber *b in blocking) {
+    if ([self styleType:b existsInStyles:styles atRange:range]) {
+      return NO;
     }
+  }
 
-    NSArray<NSNumber *> *conflicting = _input->conflictingStyles[@(styleType)];
-    for (NSNumber *c in conflicting) {
-        [self removeStyleType:c fromStyles:styles atRange:range];
-    }
+  NSArray<NSNumber *> *conflicting = _input->conflictingStyles[@(styleType)];
+  for (NSNumber *c in conflicting) {
+    [self removeStyleType:c fromStyles:styles atRange:range];
+  }
 
-    return YES;
+  return YES;
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles
-         toAttributedString:(NSMutableAttributedString *)attributedString
-        offsetFromBeginning:(NSInteger)offset
-{
-    NSArray *sorted =
-        [processedStyles sortedArrayUsingComparator:^NSComparisonResult(NSArray *a, NSArray *b) {
+          toAttributedString:(NSMutableAttributedString *)attributedString
+         offsetFromBeginning:(NSInteger)offset {
+  NSArray *sorted = [processedStyles
+      sortedArrayUsingComparator:^NSComparisonResult(NSArray *a, NSArray *b) {
         StylePair *pa = a[1];
         StylePair *pb = b[1];
 
         NSInteger la = offset + pa.rangeValue.rangeValue.location;
         NSInteger lb = offset + pb.rangeValue.rangeValue.location;
 
-        if (la > lb) return NSOrderedAscending;
-        if (la < lb) return NSOrderedDescending;
+        if (la > lb)
+          return NSOrderedAscending;
+        if (la < lb)
+          return NSOrderedDescending;
         return NSOrderedSame;
-    }];
+      }];
 
-    [attributedString beginEditing];
-  
-    for (NSArray *arr in sorted) {
-        NSNumber *styleType = arr[0];
-        StylePair *stylePair = arr[1];
-        id<BaseStyleProtocol> style = _input->stylesDict[styleType];
+  [attributedString beginEditing];
 
-        NSRange r = NSMakeRange(
-            offset + stylePair.rangeValue.rangeValue.location,
-            stylePair.rangeValue.rangeValue.length
-        );
-        if ([styleType isEqualToNumber:@([LinkStyle getStyleType])]) {
-            NSString *text = [attributedString.string substringWithRange:r];
-            NSString *url = stylePair.styleValue;
-            BOOL isManual = [text isEqualToString: url];
-            [(LinkStyle *)style addLinkInAttributedString:attributedString range:r text:text url:url manual:isManual];
+  for (NSArray *arr in sorted) {
+    NSNumber *styleType = arr[0];
+    StylePair *stylePair = arr[1];
+    id<BaseStyleProtocol> style = _input->stylesDict[styleType];
 
-        } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
-            [(MentionStyle *)style addMentionInAttributedString:attributedString
-                                                          range:r
-                                                         params:stylePair.styleValue];
-        } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
-            [(ImageStyle *)style addImageInAttributedString:attributedString
-                                                      range:r
-                                                  imageData:stylePair.styleValue];
-        } else {
-            [style addAttributesInAttributedString:attributedString range:r];
-        }
+    NSRange r = NSMakeRange(offset + stylePair.rangeValue.rangeValue.location,
+                            stylePair.rangeValue.rangeValue.length);
+    if ([styleType isEqualToNumber:@([LinkStyle getStyleType])]) {
+      NSString *text = [attributedString.string substringWithRange:r];
+      NSString *url = stylePair.styleValue;
+      BOOL isManual = [text isEqualToString:url];
+      [(LinkStyle *)style addLinkInAttributedString:attributedString
+                                              range:r
+                                               text:text
+                                                url:url
+                                             manual:isManual];
+
+    } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
+      [(MentionStyle *)style addMentionInAttributedString:attributedString
+                                                    range:r
+                                                   params:stylePair.styleValue];
+    } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
+      [(ImageStyle *)style addImageInAttributedString:attributedString
+                                                range:r
+                                            imageData:stylePair.styleValue];
+    } else {
+      [style addAttributesInAttributedString:attributedString range:r];
     }
+  }
 
-    [attributedString endEditing];
+  [attributedString endEditing];
 }
 
-- (void)replaceFromHtml:(NSString * _Nonnull)html range:(NSRange)range
-{
-    if (!html || range.length == 0) return;
-    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-    if (processingResult.count < 2) return;
+- (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range {
+  if (!html || range.length == 0)
+    return;
+  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+  if (processingResult.count < 2)
+    return;
 
-    NSString *plainText = processingResult[0];
-    NSArray  *stylesInfo = processingResult[1];
+  NSString *plainText = processingResult[0];
+  NSArray *stylesInfo = processingResult[1];
 
-    NSMutableAttributedString *inserted =
-        [[NSMutableAttributedString alloc] initWithString:plainText
-                                               attributes:_input->defaultTypingAttributes];
-    [self applyProcessedStyles:stylesInfo
-             toAttributedString:inserted
-            offsetFromBeginning:0];
- 
-    NSTextStorage *storage = _input->textView.textStorage;
+  NSMutableAttributedString *inserted = [[NSMutableAttributedString alloc]
+      initWithString:plainText
+          attributes:_input->defaultTypingAttributes];
+  [self applyProcessedStyles:stylesInfo
+          toAttributedString:inserted
+         offsetFromBeginning:0];
 
-    if (range.location > storage.length)
-        range.location = storage.length;
+  NSTextStorage *storage = _input->textView.textStorage;
 
-    if (NSMaxRange(range) > storage.length)
-        range.length = storage.length - range.location;
+  if (range.location > storage.length)
+    range.location = storage.length;
 
-    [storage beginEditing];
-    [storage replaceCharactersInRange:range withAttributedString:inserted];
-    [storage endEditing];
-    _input->textView.selectedRange = NSMakeRange(range.location + inserted.length, 0);
+  if (NSMaxRange(range) > storage.length)
+    range.length = storage.length - range.location;
 
-    _input->textView.typingAttributes = _input->defaultTypingAttributes;
+  [storage beginEditing];
+  [storage replaceCharactersInRange:range withAttributedString:inserted];
+  [storage endEditing];
+  _input->textView.selectedRange =
+      NSMakeRange(range.location + inserted.length, 0);
 
-    [_input anyTextMayHaveBeenModified];
+  _input->textView.typingAttributes = _input->defaultTypingAttributes;
+
+  [_input anyTextMayHaveBeenModified];
 }
 
+- (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location {
+  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+  NSString *plainText = processingResult[0];
+  NSArray *stylesInfo = processingResult[1];
 
-- (void)insertFromHtml:(NSString * _Nonnull)html location:(NSInteger)location {
-    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-    NSString *plainText = processingResult[0];
-    NSArray *stylesInfo = processingResult[1];
+  // Base attributed segment for inserted text
+  NSMutableAttributedString *inserted = [[NSMutableAttributedString alloc]
+      initWithString:plainText
+          attributes:_input->defaultTypingAttributes];
+  [self applyProcessedStyles:stylesInfo
+          toAttributedString:inserted
+         offsetFromBeginning:0];
 
-    // Base attributed segment for inserted text
-    NSMutableAttributedString *inserted =
-        [[NSMutableAttributedString alloc] initWithString:plainText
-                                               attributes:_input->defaultTypingAttributes];
-    [self applyProcessedStyles:stylesInfo
-             toAttributedString:inserted
-            offsetFromBeginning:0];
+  if (location > _input->textView.textStorage.length) {
+    location = _input->textView.textStorage.length;
+  }
 
-    if (location > _input->textView.textStorage.length) {
-        location = _input->textView.textStorage.length;
-    }
+  [_input->textView.textStorage beginEditing];
+  [_input->textView.textStorage insertAttributedString:inserted
+                                               atIndex:location];
+  [_input->textView.textStorage endEditing];
 
-    [_input->textView.textStorage beginEditing];
-    [_input->textView.textStorage insertAttributedString:inserted atIndex:location];
-    [_input->textView.textStorage endEditing];
-
-    _input->textView.selectedRange = NSMakeRange(location + inserted.length, 0);
+  _input->textView.selectedRange = NSMakeRange(location + inserted.length, 0);
 }
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
@@ -848,40 +853,38 @@
 }
 
 - (void)sanitizeStyles:(NSMutableArray *)styles {
-    NSMutableArray *toRemove = [NSMutableArray array];
-    for (NSArray *entry in [styles copy]) {
-        NSNumber *styleType = entry[0];
-        StylePair *pair = entry[1];
-        NSRange r = pair.rangeValue.rangeValue;
+  NSMutableArray *toRemove = [NSMutableArray array];
+  for (NSArray *entry in [styles copy]) {
+    NSNumber *styleType = entry[0];
+    StylePair *pair = entry[1];
+    NSRange r = pair.rangeValue.rangeValue;
 
-        BOOL shouldRemove = NO;
-        NSArray<NSNumber *> *blocking = _input.blockingStyles[styleType];
-        for (NSNumber *bType in blocking) {
-            if ([self styleType:bType existsInStyles:styles atRange:r]) {
-                shouldRemove = YES;
-                break;
-            }
-        }
-
-        if (shouldRemove) {
-            [toRemove addObject:entry];
-            continue;
-        }
-
-        NSArray<NSNumber *> *conflicting = _input.conflictingStyles[styleType];
-        for (NSNumber *cType in conflicting) {
-            [self removeStyleType:cType fromStyles:styles atRange:r];
-        }
-
-        if (shouldRemove) {
-            [toRemove addObject:entry];
-        }
+    BOOL shouldRemove = NO;
+    NSArray<NSNumber *> *blocking = _input.blockingStyles[styleType];
+    for (NSNumber *bType in blocking) {
+      if ([self styleType:bType existsInStyles:styles atRange:r]) {
+        shouldRemove = YES;
+        break;
+      }
     }
 
-    [styles removeObjectsInArray:toRemove];
+    if (shouldRemove) {
+      [toRemove addObject:entry];
+      continue;
+    }
+
+    NSArray<NSNumber *> *conflicting = _input.conflictingStyles[styleType];
+    for (NSNumber *cType in conflicting) {
+      [self removeStyleType:cType fromStyles:styles atRange:r];
+    }
+
+    if (shouldRemove) {
+      [toRemove addObject:entry];
+    }
+  }
+
+  [styles removeObjectsInArray:toRemove];
 }
-
-
 
 - (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
@@ -1182,7 +1185,7 @@
     [processedStyles addObject:styleArr];
   }
   [self sanitizeStyles:processedStyles];
-  return @[plainText, processedStyles];
+  return @[ plainText, processedStyles ];
 }
 
 @end

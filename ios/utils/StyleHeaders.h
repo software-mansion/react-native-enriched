@@ -30,12 +30,13 @@
 - (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
-- (BOOL)handleLeadingLinkReplacement:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)handleLeadingLinkReplacement:(NSRange)range
+                     replacementText:(NSString *)text;
 - (void)addLinkInAttributedString:(NSMutableAttributedString *)attr
                             range:(NSRange)range
                              text:(NSString *)text
                               url:(NSString *)url
-                           manual:(BOOL) manual;
+                           manual:(BOOL)manual;
 @end
 
 @interface MentionStyle : NSObject <BaseStyleProtocol>

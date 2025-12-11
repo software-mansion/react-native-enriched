@@ -1,8 +1,8 @@
 #import "EnrichedTextInputView.h"
+#import "ImageAttachment.h"
 #import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
-#import "ImageAttachment.h"
 
 // custom NSAttributedStringKey to differentiate the image
 static NSString *const ImageAttributeName = @"ImageAttributeName";
@@ -29,11 +29,13 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   // no-op for image
 }
 
-- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
+- (void)addAttributes:(NSRange)range {
   // no-op for image
 }
 
-- (void)addAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range {
   // no-op for image
 }
 
@@ -41,14 +43,17 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   // no-op for image
 }
 
-- (void)removeAttributesInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
   [attributedString removeAttribute:ImageAttributeName range:range];
   [attributedString removeAttribute:NSAttachmentAttributeName range:range];
 }
 
 - (void)removeAttributes:(NSRange)range {
   [_input->textView.textStorage beginEditing];
-  [self removeAttributesInAttributedString: _input->textView.textStorage range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
   [_input->textView.textStorage endEditing];
 }
 
@@ -73,17 +78,21 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                }];
 }
 
-- (BOOL)detectStyleInAttributedString:(NSMutableAttributedString *)attributedString range:(NSRange)range {
-  return [OccurenceUtils detect:ImageAttributeName inString:attributedString inRange:range
-      withCondition:^BOOL(id  _Nullable value, NSRange range) {
-          return [self styleCondition:value :range];
-      }
-  ];
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
+  return [OccurenceUtils detect:ImageAttributeName
+                       inString:attributedString
+                        inRange:range
+                  withCondition:^BOOL(id _Nullable value, NSRange range) {
+                    return [self styleCondition:value:range];
+                  }];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
   if (range.length >= 1) {
-    return [self detectStyleInAttributedString: _input->textView.textStorage range:range];
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:ImageAttributeName
                         withInput:_input
@@ -125,74 +134,67 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection
-{
-    if (!imageData) return;
+          withSelection:(BOOL)withSelection {
+  if (!imageData)
+    return;
 
-    ImageAttachment *attachment =
-        [[ImageAttachment alloc] initWithImageData:imageData];
-    attachment.delegate = _input;
+  ImageAttachment *attachment =
+      [[ImageAttachment alloc] initWithImageData:imageData];
+  attachment.delegate = _input;
 
-    NSDictionary *attrs = @{
-        NSAttachmentAttributeName : attachment,
-        ImageAttributeName : imageData
-    };
+  NSDictionary *attrs =
+      @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
 
-    NSString *placeholderChar = @"\uFFFC";
+  NSString *placeholderChar = @"\uFFFC";
 
-    if (range.length == 0) {
-        [TextInsertionUtils insertText:placeholderChar
-                                    at:range.location
-                   additionalAttributes:attrs
-                                  input:_input
-                          withSelection:withSelection];
-    } else {
-        [TextInsertionUtils replaceText:placeholderChar
-                                     at:range
-                   additionalAttributes:attrs
-                                  input:_input
-                          withSelection:withSelection];
-    }
+  if (range.length == 0) {
+    [TextInsertionUtils insertText:placeholderChar
+                                at:range.location
+              additionalAttributes:attrs
+                             input:_input
+                     withSelection:withSelection];
+  } else {
+    [TextInsertionUtils replaceText:placeholderChar
+                                 at:range
+               additionalAttributes:attrs
+                              input:_input
+                      withSelection:withSelection];
+  }
 }
 
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
-    ImageData *data = [[ImageData alloc] init];
-    data.uri = uri;
-    data.width = width;
-    data.height = height;
+  ImageData *data = [[ImageData alloc] init];
+  data.uri = uri;
+  data.width = width;
+  data.height = height;
 
-    [self addImageAtRange:_input->textView.selectedRange
-                imageData:data
-            withSelection:YES];
+  [self addImageAtRange:_input->textView.selectedRange
+              imageData:data
+          withSelection:YES];
 }
 
 - (void)addImageInAttributedString:(NSMutableAttributedString *)string
                              range:(NSRange)range
-                         imageData:(ImageData *)imageData
-{
-    if (!imageData) return;
+                         imageData:(ImageData *)imageData {
+  if (!imageData)
+    return;
 
-    ImageAttachment *attachment =
-        [[ImageAttachment alloc] initWithImageData:imageData];
-    attachment.delegate = _input;
+  ImageAttachment *attachment =
+      [[ImageAttachment alloc] initWithImageData:imageData];
+  attachment.delegate = _input;
 
-    NSMutableDictionary *attrs =
-        [_input->defaultTypingAttributes mutableCopy];
-    attrs[NSAttachmentAttributeName] = attachment;
-    attrs[ImageAttributeName] = imageData;
+  NSMutableDictionary *attrs = [_input->defaultTypingAttributes mutableCopy];
+  attrs[NSAttachmentAttributeName] = attachment;
+  attrs[ImageAttributeName] = imageData;
 
-    NSAttributedString *imgString =
-        [[NSAttributedString alloc] initWithString:@"\uFFFC"
-                                        attributes:attrs];
+  NSAttributedString *imgString =
+      [[NSAttributedString alloc] initWithString:@"\uFFFC" attributes:attrs];
 
-    if (range.length == 0) {
-        [string insertAttributedString:imgString
-                               atIndex:range.location];
-    } else {
-        [string replaceCharactersInRange:range
-                     withAttributedString:imgString];
-    }
+  if (range.length == 0) {
+    [string insertAttributedString:imgString atIndex:range.location];
+  } else {
+    [string replaceCharactersInRange:range withAttributedString:imgString];
+  }
 }
-
 
 @end

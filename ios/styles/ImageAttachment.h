@@ -1,5 +1,5 @@
-#import "MediaAttachment.h"
 #import "ImageData.h"
+#import "MediaAttachment.h"
 
 @interface ImageAttachment : MediaAttachment
 
