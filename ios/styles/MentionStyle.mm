@@ -224,6 +224,17 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                }];
 }
 
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:(NSAttributedString *)attributedString
+                                  range:(NSRange)range {
+  return [OccurenceUtils all:MentionAttributeName
+                    inString:attributedString
+                     inRange:range
+               withCondition:^BOOL(id _Nullable value, NSRange range) {
+                 return [self styleCondition:value:range];
+               }];
+}
+
 // MARK: - Public non-standard methods
 
 - (void)addMention:(NSString *)indicator

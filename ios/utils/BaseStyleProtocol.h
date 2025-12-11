@@ -23,4 +23,8 @@
 - (BOOL)detectStyle:(NSRange)range;
 - (BOOL)anyOccurence:(NSRange)range;
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range;
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:
+        (NSAttributedString *_Nonnull)attributedString
+                                  range:(NSRange)range;
 @end

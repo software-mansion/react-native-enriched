@@ -7,6 +7,8 @@
 
 - (void)apply:(NSArray *)processedStyles
      toAttributedString:(NSMutableAttributedString *)attributedString
-    offsetFromBeginning:(NSInteger)offset;
+    offsetFromBeginning:(NSInteger)offset
+      conflictingStyles:
+          (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictingStyles;
 
 @end

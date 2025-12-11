@@ -113,6 +113,17 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                }];
 }
 
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:(NSAttributedString *)attributedString
+                                  range:(NSRange)range {
+  return [OccurenceUtils all:ImageAttributeName
+                    inString:attributedString
+                     inRange:range
+               withCondition:^BOOL(id _Nullable value, NSRange range) {
+                 return [self styleCondition:value:range];
+               }];
+}
+
 - (ImageData *)getImageDataAt:(NSUInteger)location {
   NSRange imageRange = NSMakeRange(0, 0);
   NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);

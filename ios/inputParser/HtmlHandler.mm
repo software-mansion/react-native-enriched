@@ -1,13 +1,49 @@
-#import "HtmlTokenizer.h"
+#import "HtmlHandler.h"
+#import "ConvertHtmlToPlainTextAndStylesResult.h"
+#import "HtmlTokenizationResult.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
-
-@implementation HtmlTokenizationResult
-@end
-
-@implementation HtmlTokenizer
+#import "TagHandlersFactory.h"
 
 static const int MIN_HTML_SIZE = 13;
+
+@implementation HtmlHandler
+
+static NSDictionary<NSString *, TagHandler> *TagHandlers;
+
++ (void)initialize {
+  if (self != [HtmlHandler class])
+    return;
+  TagHandlers = MakeTagHandlers();
+}
+
+- (NSMutableArray *)convertTagsToStyles:(NSArray *)initiallyProcessedTags {
+  NSMutableArray *processedStyles = [NSMutableArray array];
+
+  for (NSArray *arr in initiallyProcessedTags) {
+    NSString *tagName = arr[0];
+    NSValue *tagRangeValue = arr[1];
+    NSString *params = arr.count > 2 ? arr[2] : @"";
+
+    TagHandler tagHandler = TagHandlers[tagName];
+    if (!tagHandler)
+      continue;
+
+    StylePair *pair = [StylePair new];
+    pair.rangeValue = tagRangeValue;
+
+    NSMutableArray *styleArr = [NSMutableArray array];
+    tagHandler(params, pair, styleArr);
+
+    if (styleArr.count == 0)
+      continue;
+
+    [styleArr addObject:pair];
+    [processedStyles addObject:styleArr];
+  }
+
+  return processedStyles;
+}
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
   NSString *fixedHtml = nullptr;
@@ -296,11 +332,8 @@ static const int MIN_HTML_SIZE = 13;
     }
   }
 
-  HtmlTokenizationResult *result = [[HtmlTokenizationResult alloc] init];
-  result.plainText = plainText;
-  result.initialTags = initiallyProcessedTags;
-
-  return result;
+  return [[HtmlTokenizationResult alloc] initWithData:plainText
+                                                 tags:initiallyProcessedTags];
 }
 
 - (void)finalizeTag:(NSMutableString *)tagName
@@ -321,6 +354,33 @@ static const int MIN_HTML_SIZE = 13;
 
   [processedTags addObject:tagEntry];
   [ongoingTags removeObjectForKey:tagName];
+}
+
+- (ConvertHtmlToPlainTextAndStylesResult *)getTextAndStylesFromHtml:
+    (NSString *)fixedHtml {
+  HtmlTokenizationResult *tagTokens = [self tokenize:fixedHtml];
+  NSMutableArray *processed = [self convertTagsToStyles:tagTokens.tags];
+
+  NSArray *sorted = [processed sortedArrayUsingComparator:^NSComparisonResult(
+                                   NSArray *firstArray, NSArray *secondArray) {
+    StylePair *firstStylePair = firstArray[1];
+    StylePair *secondStylePair = secondArray[1];
+
+    NSRange firstStyleRange = [firstStylePair.rangeValue rangeValue];
+    NSRange secondStyleRange = [secondStylePair.rangeValue rangeValue];
+    NSInteger firstStyleLocation = firstStyleRange.location;
+    NSInteger secondStyleLocation = secondStyleRange.location;
+
+    if (firstStyleLocation < secondStyleLocation)
+      return NSOrderedDescending;
+    if (firstStyleLocation > secondStyleLocation)
+      return NSOrderedAscending;
+    return NSOrderedSame;
+  }];
+
+  return
+      [[ConvertHtmlToPlainTextAndStylesResult alloc] initWithData:tagTokens.text
+                                                           styles:sorted];
 }
 
 @end

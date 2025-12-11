@@ -2,29 +2,22 @@
 #import "EnrichedTextInputView.h"
 
 #import "AttributedStringBuilder.h"
+#import "ConvertHtmlToPlainTextAndStylesResult.h"
 #import "HtmlBuilder.h"
-#import "HtmlTagInterpreter.h"
-#import "HtmlTokenizer.h"
-#import "StyleSanitizer.h"
+#import "HtmlHandler.h"
 
 #import "StyleHeaders.h"
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
-  HtmlTokenizer *_tokenizer;
-  HtmlTagInterpreter *_interpreter;
-  StyleSanitizer *_sanitizer;
   AttributedStringBuilder *_builder;
   HtmlBuilder *_htmlBuilder;
+  HtmlHandler *_htmlHandler;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
-
-  _tokenizer = [HtmlTokenizer new];
-  _interpreter = [HtmlTagInterpreter new];
-  _sanitizer = [StyleSanitizer new];
 
   _builder = [AttributedStringBuilder new];
   _builder.stylesDict = _input->stylesDict;
@@ -33,40 +26,25 @@
   _htmlBuilder.stylesDict = _input->stylesDict;
   _htmlBuilder.input = _input;
 
+  _htmlHandler = [HtmlHandler new];
+
   return self;
-}
-
-- (NSArray *)getTextAndStylesFromHtml:(NSString *)html {
-  if (!html)
-    return @[ @"", @[] ];
-  HtmlTokenizationResult *tokens = [_tokenizer tokenize:html];
-
-  NSMutableArray *processed = [_interpreter convertTags:tokens.initialTags
-                                              plainText:tokens.plainText];
-
-  [_sanitizer sanitizeStyles:processed
-                    blocking:_input.blockingStyles
-                 conflicting:_input.conflictingStyles];
-
-  return @[ tokens.plainText, processed ];
 }
 
 - (void)replaceWholeFromHtml:(NSString *)html
     notifyAnyTextMayHaveBeenModified:(BOOL)notifyAnyTextMayHaveBeenModified {
-  NSArray *parsed = [self getTextAndStylesFromHtml:html];
-  NSString *plain = parsed[0];
-  NSArray *styles = parsed[1];
-
-  NSLog(@"replace whole from html %@", html);
+  ConvertHtmlToPlainTextAndStylesResult *plainTextAndStyles =
+      [_htmlHandler getTextAndStylesFromHtml:html];
 
   NSMutableAttributedString *attributedString =
       [[NSMutableAttributedString alloc]
-          initWithString:plain
+          initWithString:plainTextAndStyles.text
               attributes:_input->defaultTypingAttributes];
 
-  [_builder apply:styles
+  [_builder apply:plainTextAndStyles.styles
        toAttributedString:attributedString
-      offsetFromBeginning:0];
+      offsetFromBeginning:0
+        conflictingStyles:_input->conflictingStyles];
 
   NSTextStorage *storage = _input->textView.textStorage;
   [storage setAttributedString:attributedString];
@@ -78,15 +56,17 @@
 }
 
 - (void)replaceFromHtml:(NSString *)html range:(NSRange)range {
-  NSArray *parsed = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = parsed[0];
-  NSArray *styles = parsed[1];
+  ConvertHtmlToPlainTextAndStylesResult *plainTextAndStyles =
+      [_htmlHandler getTextAndStylesFromHtml:html];
 
   NSMutableAttributedString *inserted = [[NSMutableAttributedString alloc]
-      initWithString:plainText
+      initWithString:plainTextAndStyles.text
           attributes:_input->defaultTypingAttributes];
 
-  [_builder apply:styles toAttributedString:inserted offsetFromBeginning:0];
+  [_builder apply:plainTextAndStyles.styles
+       toAttributedString:inserted
+      offsetFromBeginning:0
+        conflictingStyles:_input->conflictingStyles];
 
   NSTextStorage *storage = _input->textView.textStorage;
 
@@ -108,15 +88,17 @@
 
 - (void)insertFromHtml:(NSString *)html location:(NSInteger)location {
 
-  NSArray *parsed = [self getTextAndStylesFromHtml:html];
-  NSString *plain = parsed[0];
-  NSArray *styles = parsed[1];
+  ConvertHtmlToPlainTextAndStylesResult *plainTextAndStyles =
+      [_htmlHandler getTextAndStylesFromHtml:html];
 
   NSMutableAttributedString *inserted = [[NSMutableAttributedString alloc]
-      initWithString:plain
+      initWithString:plainTextAndStyles.text
           attributes:_input->defaultTypingAttributes];
 
-  [_builder apply:styles toAttributedString:inserted offsetFromBeginning:0];
+  [_builder apply:plainTextAndStyles.styles
+       toAttributedString:inserted
+      offsetFromBeginning:0
+        conflictingStyles:_input->conflictingStyles];
 
   [_input->textView.textStorage beginEditing];
   [_input->textView.textStorage insertAttributedString:inserted
@@ -127,7 +109,7 @@
 }
 
 - (NSString *)initiallyProcessHtml:(NSString *)html {
-  return [_tokenizer initiallyProcessHtml:html];
+  return [_htmlHandler initiallyProcessHtml:html];
 }
 
 #pragma mark - NSAttributedString → HTML

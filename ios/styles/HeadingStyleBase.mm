@@ -215,6 +215,17 @@
                }];
 }
 
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:(NSAttributedString *)attributedString
+                                  range:(NSRange)range {
+  return [OccurenceUtils all:NSFontAttributeName
+                    inString:attributedString
+                     inRange:range
+               withCondition:^BOOL(id _Nullable value, NSRange range) {
+                 return [self styleCondition:value:range];
+               }];
+}
+
 // used to make sure headings dont persist after a newline is placed
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {
   // in a heading and a new text ends with a newline

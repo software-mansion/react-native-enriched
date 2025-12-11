@@ -37,6 +37,7 @@ using namespace facebook::react;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
+  BOOL _didRunInitialMount;
 }
 
 // MARK: - Component utils
@@ -1456,8 +1457,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)didMoveToWindow {
   [super didMoveToWindow];
-  [self layoutIfNeeded];
-  [self anyTextMayHaveBeenModified];
+
+  if (self.window && !_didRunInitialMount) {
+    _didRunInitialMount = YES;
+
+    [self layoutIfNeeded];
+    [self anyTextMayHaveBeenModified];
+  }
 }
 
 // MARK: - UITextView delegate methods

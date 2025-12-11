@@ -291,6 +291,17 @@
                }];
 }
 
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:(NSAttributedString *)attributedString
+                                  range:(NSRange)range {
+  return [OccurenceUtils all:NSParagraphStyleAttributeName
+                    inString:attributedString
+                     inRange:range
+               withCondition:^BOOL(id _Nullable value, NSRange range) {
+                 return [self styleCondition:value:range];
+               }];
+}
+
 // general checkup correcting blockquote color
 // since links, mentions and inline code affects coloring, the checkup gets done
 // only outside of them

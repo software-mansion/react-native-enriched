@@ -1,6 +1,8 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
+@class ConvertHtmlToPlainTextAndStylesResult;
+
 @interface InputParser : NSObject
 - (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
 - (NSString *_Nonnull)parseToHtmlFromRange:(NSRange)range;
