@@ -8,6 +8,7 @@
     return nil;
 
   _imageData = data;
+  self.image = [UIImage new];
 
   [self loadAsync];
   return self;
