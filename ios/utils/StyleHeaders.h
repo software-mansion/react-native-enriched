@@ -1,8 +1,8 @@
 #pragma once
 #import "BaseStyleProtocol.h"
+#import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
-#import "ImageData.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>
 @end
@@ -21,29 +21,36 @@
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>
-- (void)addLink:(NSString*)text url:(NSString*)url range:(NSRange)range manual:(BOOL)manual;
+- (void)addLink:(NSString *)text
+            url:(NSString *)url
+          range:(NSRange)range
+         manual:(BOOL)manual;
 - (LinkData *)getLinkDataAt:(NSUInteger)location;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
-- (BOOL)handleLeadingLinkReplacement:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)handleLeadingLinkReplacement:(NSRange)range
+                     replacementText:(NSString *)text;
 @end
 
-@interface MentionStyle : NSObject<BaseStyleProtocol>
-- (void)addMention:(NSString *)indicator text:(NSString *)text attributes:(NSString *)attributes;
+@interface MentionStyle : NSObject <BaseStyleProtocol>
+- (void)addMention:(NSString *)indicator
+              text:(NSString *)text
+        attributes:(NSString *)attributes;
 - (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params;
 - (void)startMentionWithIndicator:(NSString *)indicator;
 - (void)handleExistingMentions;
 - (void)manageMentionEditing;
 - (void)manageMentionTypingAttributes;
-- (BOOL)handleLeadingMentionReplacement:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)handleLeadingMentionReplacement:(NSRange)range
+                        replacementText:(NSString *)text;
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location;
 - (NSValue *)getActiveMentionRange;
 @end
 
-@interface HeadingStyleBase : NSObject<BaseStyleProtocol> {
+@interface HeadingStyleBase : NSObject <BaseStyleProtocol> {
   id input;
 }
 - (CGFloat)getHeadingFontSize;
@@ -61,28 +68,32 @@
 @interface H3Style : HeadingStyleBase
 @end
 
-@interface UnorderedListStyle : NSObject<BaseStyleProtocol>
+@interface UnorderedListStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
+                      replacementText:(NSString *)text;
 @end
 
-@interface OrderedListStyle : NSObject<BaseStyleProtocol>
+@interface OrderedListStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
+                      replacementText:(NSString *)text;
 @end
 
-@interface BlockQuoteStyle : NSObject<BaseStyleProtocol>
+@interface BlockQuoteStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (void)manageBlockquoteColor;
 @end
 
-@interface CodeBlockStyle : NSObject<BaseStyleProtocol>
+@interface CodeBlockStyle : NSObject <BaseStyleProtocol>
 - (void)manageCodeBlockFontAndColor;
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end
 
-@interface ImageStyle : NSObject<BaseStyleProtocol>
+@interface ImageStyle : NSObject <BaseStyleProtocol>
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
-- (void)addImageAtRange:(NSRange)range imageData:(ImageData *)imageData withSelection:(BOOL)withSelection;
+- (void)addImageAtRange:(NSRange)range
+              imageData:(ImageData *)imageData
+          withSelection:(BOOL)withSelection;
 - (ImageData *)getImageDataAt:(NSUInteger)location;
 @end

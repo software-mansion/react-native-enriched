@@ -1,6 +1,6 @@
 #pragma once
-#import "StyleTypeEnum.h"
 #import "StylePair.h"
+#import "StyleTypeEnum.h"
 
 @protocol BaseStyleProtocol <NSObject>
 + (StyleType)getStyleType;
