@@ -62,6 +62,11 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
+enum HtmlStyleVariant {
+  Default,
+  Another,
+}
+
 const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
@@ -77,8 +82,8 @@ export default function App() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
-  const [currentHtmlStyle, setCurrentHtmlStyle] =
-    useState<HtmlStyle>(htmlStyle);
+  const [currentHtmlStyleType, setCurrentHtmlStyleType] =
+    useState<HtmlStyleVariant>(HtmlStyleVariant.Default);
 
   const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
@@ -267,8 +272,10 @@ export default function App() {
   };
 
   const handleChangeHtmlStyle = () => {
-    setCurrentHtmlStyle((style) =>
-      style === htmlStyle ? anotherHtmlStyle : htmlStyle
+    setCurrentHtmlStyleType((style) =>
+      style === HtmlStyleVariant.Default
+        ? HtmlStyleVariant.Another
+        : HtmlStyleVariant.Default
     );
   };
 
@@ -301,7 +308,11 @@ export default function App() {
             ref={ref}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
-            htmlStyle={currentHtmlStyle}
+            htmlStyle={
+              currentHtmlStyleType === HtmlStyleVariant.Default
+                ? htmlStyle
+                : anotherHtmlStyle
+            }
             placeholder="Type something here..."
             defaultValue="<html><h1>test</h1><ul><li>test <a href='test' /></li></ul></html>"
             placeholderTextColor="rgb(0, 26, 114)"
@@ -384,15 +395,15 @@ export default function App() {
 
 const anotherHtmlStyle: HtmlStyle = {
   h1: {
-    fontSize: 100,
+    fontSize: 44,
     bold: false,
   },
   h2: {
-    fontSize: 50,
+    fontSize: 36,
     bold: false,
   },
   h3: {
-    fontSize: 30,
+    fontSize: 32,
     bold: false,
   },
   blockquote: {
