@@ -63,4 +63,28 @@
   }
   typedInput->recentlyChangedRange = NSMakeRange(range.location, text.length);
 }
+
++ (void)insertTextInAttributedString:(NSString *)text
+                                  at:(NSInteger)index
+                additionalAttributes:
+                    (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
+                    attributedString:
+                        (NSMutableAttributedString *)attributedString {
+  NSDictionary *baseAttributes = @{};
+  if (attributedString.length > 0 && index < attributedString.length) {
+    baseAttributes = [attributedString attributesAtIndex:index
+                                          effectiveRange:nil];
+  }
+
+  NSMutableDictionary *attrs = [baseAttributes mutableCopy];
+  if (additionalAttrs) {
+    [attrs addEntriesFromDictionary:additionalAttrs];
+  }
+
+  NSAttributedString *newAttrString =
+      [[NSAttributedString alloc] initWithString:text attributes:attrs];
+
+  [attributedString insertAttributedString:newAttrString atIndex:index];
+}
+
 @end
