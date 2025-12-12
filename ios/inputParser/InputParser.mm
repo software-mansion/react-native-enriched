@@ -760,6 +760,16 @@
                                           leading:NO
                                          trailing:YES];
 
+    // this is more like a hack but for some reason the last <br> in
+    // <blockquote> and <codeblock> are not properly changed into zero width
+    // space so we do that manually here
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
+                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
+                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
     // handel last <br> in html
     if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
@@ -885,19 +895,21 @@
         // we finish closing tags - pack tag name, tag range and optionally tag
         // params into an entry that goes inside initiallyProcessedTags
 
-        [self finalizeTagEntry:currentTagName
-                       ongoingTags:ongoingTags
-            initiallyProcessedTags:initiallyProcessedTags
-                         plainText:plainText];
-
-        // skip one newline that was added after some closing tags that are in
+        // skip one newline that was added before some closing tags that are in
         // separate lines
         if ([currentTagName isEqualToString:@"ul"] ||
             [currentTagName isEqualToString:@"ol"] ||
             [currentTagName isEqualToString:@"blockquote"] ||
             [currentTagName isEqualToString:@"codeblock"]) {
-          i += 1;
+          plainText = [[plainText
+              substringWithRange:NSMakeRange(0, plainText.length - 1)]
+              mutableCopy];
         }
+
+        [self finalizeTagEntry:currentTagName
+                       ongoingTags:ongoingTags
+            initiallyProcessedTags:initiallyProcessedTags
+                         plainText:plainText];
       }
       // post-tag cleanup
       closingTag = NO;
