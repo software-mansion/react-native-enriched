@@ -11,6 +11,8 @@ import com.swmansion.enriched.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/QuoteSpan.java
 class EnrichedBlockQuoteSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedBlockSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateMeasureState(p0: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
@@ -34,5 +36,9 @@ class EnrichedBlockQuoteSpan(private val htmlStyle: HtmlStyle) : MetricAffecting
     if (color != null) {
       textPaint?.color = color
     }
+  }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedBlockQuoteSpan {
+    return EnrichedBlockQuoteSpan(htmlStyle)
   }
 }

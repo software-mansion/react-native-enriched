@@ -212,6 +212,86 @@ class HtmlStyle {
     return parseFontWeight(fontWeight)
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is HtmlStyle) return false
+
+    return h1FontSize == other.h1FontSize &&
+      h1Bold == other.h1Bold &&
+      h2FontSize == other.h2FontSize &&
+      h2Bold == other.h2Bold &&
+      h3FontSize == other.h3FontSize &&
+      h3Bold == other.h3Bold &&
+
+      blockquoteColor == other.blockquoteColor &&
+      blockquoteBorderColor == other.blockquoteBorderColor &&
+      blockquoteStripeWidth == other.blockquoteStripeWidth &&
+      blockquoteGapWidth == other.blockquoteGapWidth &&
+
+      olGapWidth == other.olGapWidth &&
+      olMarginLeft == other.olMarginLeft &&
+      olMarkerFontWeight == other.olMarkerFontWeight &&
+      olMarkerColor == other.olMarkerColor &&
+
+      ulGapWidth == other.ulGapWidth &&
+      ulMarginLeft == other.ulMarginLeft &&
+      ulBulletSize == other.ulBulletSize &&
+      ulBulletColor == other.ulBulletColor &&
+
+      aColor == other.aColor &&
+      aUnderline == other.aUnderline &&
+
+      codeBlockColor == other.codeBlockColor &&
+      codeBlockBackgroundColor == other.codeBlockBackgroundColor &&
+      codeBlockRadius == other.codeBlockRadius &&
+
+      inlineCodeColor == other.inlineCodeColor &&
+      inlineCodeBackgroundColor == other.inlineCodeBackgroundColor &&
+
+      mentionsStyle == other.mentionsStyle
+  }
+
+
+  override fun hashCode(): Int {
+    var result = h1FontSize
+    result = 31 * result + h1Bold.hashCode()
+    result = 31 * result + h2FontSize
+    result = 31 * result + h2Bold.hashCode()
+    result = 31 * result + h3FontSize
+    result = 31 * result + h3Bold.hashCode()
+
+    result = 31 * result + (blockquoteColor ?: 0)
+    result = 31 * result + blockquoteBorderColor
+    result = 31 * result + blockquoteStripeWidth
+    result = 31 * result + blockquoteGapWidth
+
+    result = 31 * result + olGapWidth
+    result = 31 * result + olMarginLeft
+    result = 31 * result + (olMarkerFontWeight ?: 0)
+    result = 31 * result + (olMarkerColor ?: 0)
+
+    result = 31 * result + ulGapWidth
+    result = 31 * result + ulMarginLeft
+    result = 31 * result + ulBulletSize
+    result = 31 * result + ulBulletColor
+
+    result = 31 * result + aColor
+    result = 31 * result + aUnderline.hashCode()
+
+    result = 31 * result + codeBlockColor
+    result = 31 * result + codeBlockBackgroundColor
+    result = 31 * result + codeBlockRadius.hashCode()
+
+    result = 31 * result + inlineCodeColor
+    result = 31 * result + inlineCodeBackgroundColor
+
+    result = 31 * result + mentionsStyle.hashCode()
+
+    result = 31 * result + (style?.hashCode() ?: 0)
+
+    return result
+  }
+
   companion object {
     data class MentionStyle(
       val color: Int,

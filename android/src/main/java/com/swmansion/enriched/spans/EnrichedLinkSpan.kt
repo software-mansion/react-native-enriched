@@ -7,6 +7,8 @@ import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedLinkSpan(private val url: String, private val htmlStyle: HtmlStyle) : ClickableSpan(), EnrichedInlineSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun onClick(view: View) {
     // Do nothing, links inside the input are not clickable.
     // We are using `ClickableSpan` to allow the text to be styled as a link.
@@ -20,5 +22,9 @@ class EnrichedLinkSpan(private val url: String, private val htmlStyle: HtmlStyle
 
   fun getUrl(): String {
     return url
+  }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedLinkSpan {
+    return EnrichedLinkSpan(url, htmlStyle)
   }
 }

@@ -12,6 +12,8 @@ import com.swmansion.enriched.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
 class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedParagraphSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateMeasureState(p0: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
@@ -55,5 +57,9 @@ class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffect
       paint.color = oldColor
       paint.style = style
     }
+  }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedUnorderedListSpan {
+    return EnrichedUnorderedListSpan(htmlStyle)
   }
 }

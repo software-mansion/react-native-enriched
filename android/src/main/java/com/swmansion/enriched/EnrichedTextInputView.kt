@@ -29,8 +29,13 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
+import com.swmansion.enriched.spans.EnrichedBoldSpan
+import com.swmansion.enriched.spans.EnrichedH1Span
+import com.swmansion.enriched.spans.EnrichedH2Span
+import com.swmansion.enriched.spans.EnrichedH3Span
 import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
@@ -39,6 +44,7 @@ import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
+import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.utils.mergeSpannables
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
@@ -59,6 +65,13 @@ class EnrichedTextInputView : AppCompatEditText {
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
+    set(value) {
+        if (field != value) {
+            val prev = field
+            field = value
+            reApplyHtmlStyleForSpans(prev, value)
+        }
+    }
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
@@ -576,6 +589,55 @@ class EnrichedTextInputView : AppCompatEditText {
     } finally {
       isDuringTransaction = false
     }
+  }
+
+  private fun forceScrollToSelection() {
+    val text = this.text
+    if (text.isNullOrEmpty()) return
+    val selStart = selectionStart
+    val selEnd = selectionEnd
+    if (selStart != -1 && selectionEnd <= text.length) {
+      setSelection(selStart, selEnd)
+    }
+  }
+
+  private fun reApplyHtmlStyleForSpans(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
+    val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
+    val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
+    val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
+    val spannable = text as? Spannable ?: return
+    if (spannable.isEmpty()) return
+    var shouldEmitStateChange = false
+    runAsATransaction {
+      val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
+      for (span in spans) {
+        if(!span.dependsOnHtmlStyle) {
+          continue
+        }
+
+        val start = spannable.getSpanStart(span)
+        val end = spannable.getSpanEnd(span)
+        val flags = spannable.getSpanFlags(span)
+
+        if (start == -1 || end == -1) continue
+
+        if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
+          val isRemoved = removeStyle(EnrichedSpans.BOLD, start, end)
+          if(isRemoved && !shouldEmitStateChange) {
+            shouldEmitStateChange = true
+          }
+        }
+
+        spannable.removeSpan(span)
+        val newSpan = span.rebuildWithStyle(htmlStyle)
+        spannable.setSpan(newSpan, start, end, flags)
+      }
+      if(shouldEmitStateChange) {
+        selection?.validateStyles()
+      }
+    }
+    forceScrollToSelection()
+    layoutManager.invalidateLayout()
   }
 
   override fun onAttachedToWindow() {

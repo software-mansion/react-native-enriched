@@ -18,9 +18,12 @@ import com.swmansion.enriched.utils.AsyncDrawable
 import androidx.core.graphics.drawable.toDrawable
 import com.swmansion.enriched.R
 import com.swmansion.enriched.spans.utils.ForceRedrawSpan
+import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.ResourceManager
 
 class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+  override val dependsOnHtmlStyle: Boolean = false
+
   private var width: Int = 0
   private var height: Int = 0
 
@@ -118,6 +121,8 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   fun getHeight(): Int {
     return height
   }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan = this
 
   companion object {
     fun createEnrichedImageSpan(src: String, width: Int, height: Int): EnrichedImageSpan {
