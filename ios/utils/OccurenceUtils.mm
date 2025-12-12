@@ -65,10 +65,6 @@
   return result;
 }
 
-#pragma mark - ============================================================
-#pragma mark Public API (Attributed String Versions)
-#pragma mark - ============================================================
-
 + (BOOL)detect:(NSAttributedStringKey)key
          inString:(NSAttributedString *)string
           inRange:(NSRange)range
@@ -170,11 +166,6 @@
                    withCondition:condition];
 }
 
-#pragma mark - ============================================================
-#pragma mark Public API (EnrichedTextInputView Versions)
-#pragma mark - ============================================================
-
-/// detects on a range using input->textView.textStorage
 + (BOOL)detect:(NSAttributedStringKey)key
         withInput:(EnrichedTextInputView *)input
           inRange:(NSRange)range
@@ -185,7 +176,6 @@
         withCondition:condition];
 }
 
-/// detects at index (typing attributes logic preserved)
 + (BOOL)detect:(NSAttributedStringKey)key
         withInput:(EnrichedTextInputView *)input
           atIndex:(NSUInteger)index

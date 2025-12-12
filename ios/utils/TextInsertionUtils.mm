@@ -84,7 +84,6 @@
   NSAttributedString *newAttrString =
       [[NSAttributedString alloc] initWithString:text attributes:attrs];
 
-  // 4. Insert into the parent attributed string
   [attributedString insertAttributedString:newAttrString atIndex:index];
 }
 
