@@ -203,6 +203,10 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
     view?.setValue(text)
   }
 
+  override fun setSelection(view: EnrichedTextInputView?, start: Int, end: Int) {
+    view?.setCustomSelection(start, end)
+  }
+
   override fun toggleBold(view: EnrichedTextInputView?) {
     view?.verifyAndToggleStyle(EnrichedSpans.BOLD)
   }

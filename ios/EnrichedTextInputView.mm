@@ -974,6 +974,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
 
     [self addImage:uri width:imgWidth height:imgHeight];
+  } else if ([commandName isEqualToString:@"setSelection"]) {
+    NSInteger start = [((NSNumber *)args[0]) integerValue];
+    NSInteger end = [((NSNumber *)args[1]) integerValue];
+    [self setCustomSelection:start end:end];
   }
 }
 
@@ -1008,6 +1012,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // set recentlyChangedRange and check for changes
   recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
   [self anyTextMayHaveBeenModified];
+}
+
+- (void)setCustomSelection:(NSInteger)start end:(NSInteger)end {
+  NSInteger numberOfZeroWidthSpaces = [ZeroWidthSpaceUtils
+      getNumberOfZeroWidthSpacesInRange:NSMakeRange(start, end - start)
+                                   text:textView.textStorage.string];
+
+  textView.selectedRange =
+      NSMakeRange(start, end + numberOfZeroWidthSpaces - start);
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text
