@@ -169,8 +169,8 @@ interface NativeCommands {
   setSelection: (
     viewRef: React.ElementRef<ComponentType>,
     start: Int32,
-    length: Int32
-  ) => string;
+    end: Int32
+  ) => void;
 
   // Text formatting commands
   toggleBold: (viewRef: React.ElementRef<ComponentType>) => void;
