@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
@@ -46,6 +45,7 @@ import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
+import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.utils.mergeSpannables
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
@@ -605,12 +605,23 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
+  private fun forceScrollToSelection() {
+    val text = this.text
+    if (text.isNullOrEmpty()) return
+    val selStart = selectionStart
+    val selEnd = selectionEnd
+    if (selStart != -1 && selectionEnd <= text.length) {
+      setSelection(selStart, selEnd)
+    }
+  }
+
   private fun reApplyHtmlStyleForSpans(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
     val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
     val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
     val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
     val spannable = text as? Spannable ?: return
     if (spannable.isEmpty()) return
+    var shouldEmitStateChange = false
     runAsATransaction {
       val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
       for (span in spans) {
@@ -618,21 +629,28 @@ class EnrichedTextInputView : AppCompatEditText {
           continue
         }
 
-        spannable.apply {
-          val start = getSpanStart(span)
-          val end = getSpanEnd(span)
-          val flags = getSpanFlags(span)
+        val start = spannable.getSpanStart(span)
+        val end = spannable.getSpanEnd(span)
+        val flags = spannable.getSpanFlags(span)
 
-          if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
-            removeStyle(EnrichedSpans.BOLD, start, end)
+        if (start == -1 || end == -1) continue
+
+        if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
+          val isRemoved = removeStyle(EnrichedSpans.BOLD, start, end)
+          if(isRemoved && !shouldEmitStateChange) {
+            shouldEmitStateChange = true
           }
-
-          removeSpan(span)
-          val newSpan = span.rebuildWithStyle(htmlStyle)
-          setSpan(newSpan, start, end, flags)
         }
+
+        spannable.removeSpan(span)
+        val newSpan = span.rebuildWithStyle(htmlStyle)
+        spannable.setSpan(newSpan, start, end, flags)
+      }
+      if(shouldEmitStateChange) {
+        selection?.validateStyles()
       }
     }
+    forceScrollToSelection()
     layoutManager.invalidateLayout()
   }
 
