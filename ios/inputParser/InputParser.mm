@@ -595,11 +595,11 @@
   NSString *htmlWithoutSpaces = [self removeWhiteSpacesFromHtml:html];
   NSString *fixedHtml = nullptr;
 
-
   if (htmlWithoutSpaces.length >= 13) {
-    NSString *firstSix = [htmlWithoutSpaces substringWithRange:NSMakeRange(0, 6)];
-    NSString *lastSeven =
-        [htmlWithoutSpaces substringWithRange:NSMakeRange(htmlWithoutSpaces.length - 7, 7)];
+    NSString *firstSix =
+        [htmlWithoutSpaces substringWithRange:NSMakeRange(0, 6)];
+    NSString *lastSeven = [htmlWithoutSpaces
+        substringWithRange:NSMakeRange(htmlWithoutSpaces.length - 7, 7)];
 
     if ([firstSix isEqualToString:@"<html>"] &&
         [lastSeven isEqualToString:@"</html>"]) {
@@ -728,22 +728,21 @@
   return fixedHtml;
 }
 
-- (NSString *)removeWhiteSpacesFromHtml:(NSString *)html
-{
-  NSSet *textTags = [NSSet setWithObjects:
-                     @"p", @"h1", @"h2", @"h3", @"h4", @"h5", @"h6",
-                     @"li", @"b", @"a", @"s", @"mention", @"code", @"u", @"i", nil];
+- (NSString *)removeWhiteSpacesFromHtml:(NSString *)html {
+  NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
+                                          @"h5", @"h6", @"li", @"b", @"a", @"s",
+                                          @"mention", @"code", @"u", @"i", nil];
 
   NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
   NSMutableString *currentTagBuffer = [NSMutableString string];
   NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
-  
+
   BOOL isReadingTag = NO;
   NSInteger textDepth = 0;
-  
+
   for (NSUInteger i = 0; i < html.length; i++) {
     unichar c = [html characterAtIndex:i];
-    
+
     if (c == '<') {
       isReadingTag = YES;
       [currentTagBuffer setString:@""];
@@ -751,25 +750,31 @@
     } else if (c == '>') {
       isReadingTag = NO;
       [output appendString:@">"];
-      
+
       NSString *fullTag = [currentTagBuffer lowercaseString];
-      
-      NSString *cleanName = [fullTag stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
-      NSArray *parts = [cleanName componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+      NSString *cleanName = [fullTag
+          stringByTrimmingCharactersInSet:
+              [NSCharacterSet characterSetWithCharactersInString:@"/"]];
+      NSArray *parts =
+          [cleanName componentsSeparatedByCharactersInSet:
+                         [NSCharacterSet whitespaceAndNewlineCharacterSet]];
       NSString *tagName = parts.firstObject;
-      
+
       if (![textTags containsObject:tagName]) {
         continue;
       }
-      
+
       if ([fullTag hasPrefix:@"/"]) {
         textDepth--;
-        if (textDepth < 0) textDepth = 0;
+        if (textDepth < 0)
+          textDepth = 0;
       } else {
         // Opening tag (e.g. <h1>) -> Enter Text Mode
-        // (Ignore self-closing tags like <img/> if they happen to be in the list)
+        // (Ignore self-closing tags like <img/> if they happen to be in the
+        // list)
         if (![fullTag hasSuffix:@"/"]) {
-            textDepth++;
+          textDepth++;
         }
       }
     } else {
@@ -778,7 +783,7 @@
         [output appendFormat:@"%C", c];
         continue;
       }
-      
+
       if (textDepth > 0) {
         [output appendFormat:@"%C", c];
       } else {
@@ -788,7 +793,7 @@
       }
     }
   }
-  
+
   return output;
 }
 
