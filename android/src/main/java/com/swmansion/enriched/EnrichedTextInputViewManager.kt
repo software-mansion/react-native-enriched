@@ -11,7 +11,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.ViewProps
-import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerInterface
@@ -25,8 +24,6 @@ import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
 import com.swmansion.enriched.events.OnMentionEvent
-import com.swmansion.enriched.events.OnRequestHtmlResultEvent
-import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.jsonStringToStringMap
@@ -273,19 +270,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   }
 
   override fun requestHTML(view: EnrichedTextInputView?, requestId: Int) {
-    if (view == null) return
-
-    val spannable = view.text as? android.text.Spannable
-    val html = if (spannable != null) {
-      EnrichedParser.toHtml(spannable)
-    } else {
-      "<html>\n<p></p>\n</html>"
-    }
-
-    val context = view.context as com.facebook.react.bridge.ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-    dispatcher?.dispatchEvent(OnRequestHtmlResultEvent(surfaceId, view.id, requestId, html))
+    view?.requestHTML(requestId)
   }
 
   override fun measure(

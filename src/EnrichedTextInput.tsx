@@ -1,6 +1,7 @@
 import {
   type Component,
   type RefObject,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -164,9 +165,6 @@ const warnAboutMissconfiguredMentions = (indicator: string) => {
   );
 };
 
-let nextHtmlRequestId = 1;
-const pendingHtmlRequests = new Map<number, (html: string) => void>();
-
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const EnrichedTextInput = ({
@@ -198,6 +196,23 @@ export const EnrichedTextInput = ({
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+  const nextRequestIdRef = useRef(1);
+  const pendingHtmlRequestsRef = useRef(
+    new Map<
+      number,
+      { resolve: (html: string) => void; reject: (error: Error) => void }
+    >()
+  );
+
+  useEffect(() => {
+    const pendingRequests = pendingHtmlRequestsRef.current;
+    return () => {
+      pendingRequests.forEach(({ reject }) => {
+        reject(new Error('Component unmounted'));
+      });
+      pendingRequests.clear();
+    };
+  }, []);
 
   const normalizedHtmlStyle = useMemo(
     () => normalizeHtmlStyle(htmlStyle, mentionIndicators),
@@ -235,9 +250,9 @@ export const EnrichedTextInput = ({
       Commands.setValue(nullthrows(nativeRef.current), value);
     },
     getHTML: () => {
-      return new Promise<string>((resolve) => {
-        const requestId = nextRequestId++;
-        pendingHtmlRequests.set(requestId, resolve);
+      return new Promise<string>((resolve, reject) => {
+        const requestId = nextRequestIdRef.current++;
+        pendingHtmlRequestsRef.current.set(requestId, { resolve, reject });
         Commands.requestHTML(nullthrows(nativeRef.current), requestId);
       });
     },
@@ -339,10 +354,14 @@ export const EnrichedTextInput = ({
     e: NativeSyntheticEvent<OnRequestHtmlResultEvent>
   ) => {
     const { requestId, html } = e.nativeEvent;
-    const resolve = pendingHtmlRequests.get(requestId);
-    if (resolve) {
-      pendingHtmlRequests.delete(requestId);
-      resolve(html);
+    const pending = pendingHtmlRequestsRef.current.get(requestId);
+    if (pending) {
+      pendingHtmlRequestsRef.current.delete(requestId);
+      if (html === null || typeof html !== 'string') {
+        pending.reject(new Error('Failed to parse HTML'));
+      } else {
+        pending.resolve(html);
+      }
     }
   };
 

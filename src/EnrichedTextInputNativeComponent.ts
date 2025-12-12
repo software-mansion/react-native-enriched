@@ -66,7 +66,7 @@ export interface OnChangeSelectionEvent {
 
 export interface OnRequestHtmlResultEvent {
   requestId: Int32;
-  html: string;
+  html: UnsafeMixed;
 }
 
 export interface MentionStyleProperties {
