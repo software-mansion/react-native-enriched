@@ -20,6 +20,34 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return NO;
 }
 
++ (NSAttributedStringKey)attributeKey {
+  return ImageAttributeName;
+}
+
++ (const char *)tagName {
+  return "img";
+}
+
++ (NSString *)subTagName {
+  return nil;
+}
+
++ (BOOL)isSelfClosing {
+  return YES;
+}
+
++ (NSDictionary *)getParametersFromValue:(id)value {
+  ImageData *img = (ImageData *)value;
+  if (!img)
+    return nil;
+
+  return @{
+    @"src" : img.uri ?: @"",
+    @"width" : [NSString stringWithFormat:@"%f", img.width],
+    @"height" : [NSString stringWithFormat:@"%f", img.height]
+  };
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -54,7 +82,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   _input->textView.typingAttributes = currentAttributes;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   return [value isKindOfClass:[ImageData class]];
 }
 
@@ -63,7 +91,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -73,7 +101,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:ImageAttributeName
@@ -81,7 +109,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -91,7 +119,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

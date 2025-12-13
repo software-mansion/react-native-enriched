@@ -24,6 +24,44 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return NO;
 }
 
++ (const char *)tagName {
+  return "mention";
+}
+
++ (const char *)subTagName {
+  return nil;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return MentionAttributeName;
+}
+
++ (NSDictionary *)getParametersFromValue:(id)value {
+  MentionParams *mp = value;
+  if (!mp)
+    return nil;
+
+  NSMutableDictionary *params =
+      [@{@"text" : mp.text ?: @"", @"indicator" : mp.indicator ?: @""}
+          mutableCopy];
+
+  if (mp.attributes) {
+    NSData *data = [mp.attributes dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *extraAttrs = [NSJSONSerialization JSONObjectWithData:data
+                                                               options:0
+                                                                 error:nil];
+    if ([extraAttrs isKindOfClass:[NSDictionary class]]) {
+      [params addEntriesFromDictionary:extraAttrs];
+    }
+  }
+
+  return params;
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -136,7 +174,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   MentionParams *params = (MentionParams *)value;
   return params != nullptr;
 }
@@ -147,7 +185,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [self getMentionParamsAt:range.location] != nullptr;
@@ -159,7 +197,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -168,7 +206,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
