@@ -9,8 +9,6 @@
   NSArray<NSNumber *> *_paragraphOrder;
 }
 
-#pragma mark - Init
-
 - (instancetype)initWithStyles:(NSDictionary<NSNumber *, id> *)stylesDict {
   self = [super init];
   if (!self)
@@ -42,8 +40,6 @@
 
   return self;
 }
-
-#pragma mark - Public API
 
 - (NSString *)buildHtmlFromAttributedString:(NSAttributedString *)text
                                     pretify:(BOOL)pretify {
@@ -132,8 +128,6 @@
   return root;
 }
 
-#pragma mark - Block container helpers
-
 - (HTMLElement *)containerForBlock:(NSNumber *)currentParagraphType
                        reuseLastOf:(NSNumber *)previousParagraphType
                       previousNode:(HTMLElement *)previousNode
@@ -181,9 +175,6 @@
 
   return container;
 }
-
-#pragma mark - Inline styling
-
 - (HTMLNode *)getInlineStyleNodes:(NSAttributedString *)text
                             range:(NSRange)range
                             attrs:(NSDictionary *)attrs
