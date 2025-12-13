@@ -93,8 +93,8 @@ static inline BOOL needsNewLineAfter(const char *t) {
           strcmp(t, "html") == 0);
 }
 
-static inline void appendOpenTagC(NSMutableData *buf, const char *t,
-                                  NSDictionary *attrs, BOOL block) {
+static inline void appendOpenTag(NSMutableData *buf, const char *t,
+                                 NSDictionary *attrs, BOOL block) {
   if (block)
     appendC(buf, "\n<");
   else
@@ -107,8 +107,8 @@ static inline void appendOpenTagC(NSMutableData *buf, const char *t,
   appendC(buf, ">");
 }
 
-static inline void appendSelfClosingTagC(NSMutableData *buf, const char *t,
-                                         NSDictionary *attrs, BOOL block) {
+static inline void appendSelfClosingTag(NSMutableData *buf, const char *t,
+                                        NSDictionary *attrs, BOOL block) {
   if (block)
     appendC(buf, "\n<");
   else
@@ -121,7 +121,7 @@ static inline void appendSelfClosingTagC(NSMutableData *buf, const char *t,
   appendC(buf, "/>");
 }
 
-static inline void appendCloseTagC(NSMutableData *buf, const char *t) {
+static inline void appendCloseTag(NSMutableData *buf, const char *t) {
   appendC(buf, "</");
   appendC(buf, t);
   appendC(buf, ">");
