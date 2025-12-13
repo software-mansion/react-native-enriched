@@ -1,4 +1,5 @@
 #import "InputParser.h"
+#import "EnrichedHTMLParser.h"
 #import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -8,19 +9,20 @@
 @implementation InputParser {
   EnrichedTextInputView *_input;
   NSInteger _precedingImageCount;
+  EnrichedHTMLParser *_htmlParser;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
   _precedingImageCount = 0;
+  _htmlParser = [[EnrichedHTMLParser alloc] initWithStyles:_input->stylesDict];
   return self;
 }
 
 - (NSString *)parseToHtmlFromRange:(NSRange)range {
-  NSInteger offset = range.location;
-  NSString *text =
-      [_input->textView.textStorage.string substringWithRange:range];
+  NSAttributedString *sub =
+      [_input->textView.textStorage attributedSubstringFromRange:range];
 
   if (text.length == 0) {
     return @"<html>\n<p></p>\n</html>";
@@ -542,6 +544,7 @@
     return @"p";
   }
   return @"";
+  return [_htmlParser buildHtmlFromAttributedString:sub pretify:YES];
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {

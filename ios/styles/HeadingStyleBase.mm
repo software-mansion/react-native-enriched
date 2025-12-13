@@ -17,6 +17,18 @@
   return false;
 }
 
++ (const char *)subTagName {
+  return nil;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return NSFontAttributeName;
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
+}
+
 - (EnrichedTextInputView *)typedInput {
   return (EnrichedTextInputView *)input;
 }
@@ -98,7 +110,7 @@
                  options:0
               usingBlock:^(id _Nullable value, NSRange range,
                            BOOL *_Nonnull stop) {
-                if ([self styleCondition:value:range]) {
+                if ([self styleCondition:value range:range]) {
                   UIFont *newFont = [(UIFont *)value
                       setSize:[[[self typedInput]->config primaryFontSize]
                                   floatValue]];
@@ -137,7 +149,7 @@
   [self removeAttributes:[self typedInput]->textView.selectedRange];
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   UIFont *font = (UIFont *)value;
   return font != nullptr && font.pointSize == [self getHeadingFontSize];
 }
@@ -148,7 +160,7 @@
                         withInput:[self typedInput]
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSFontAttributeName
@@ -156,7 +168,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -166,7 +178,7 @@
                    withInput:[self typedInput]
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -175,7 +187,7 @@
                    withInput:[self typedInput]
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
