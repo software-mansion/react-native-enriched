@@ -184,15 +184,15 @@
   textNode.range = range;
   HTMLNode *currentNode = textNode;
 
-  for (NSNumber *sty in _inlineOrder) {
+  for (NSNumber *inlineStyleType in _inlineOrder) {
 
-    id<BaseStyleProtocol> obj = _styles[sty];
-    Class styleClass = obj.class;
+    id<BaseStyleProtocol> styleObject = _styles[inlineStyleType];
+    Class styleClass = styleObject.class;
 
     NSString *key = [styleClass attributeKey];
-    id v = attrs[key];
+    id value = attrs[key];
 
-    if (!v || ![obj styleCondition:v range:range])
+    if (!value || ![styleObject styleCondition:value range:range])
       continue;
 
     HTMLElement *wrap = [HTMLElement new];
@@ -201,7 +201,7 @@
     wrap.tag = tag;
     wrap.attributes =
         [styleClass respondsToSelector:@selector(getParametersFromValue:)]
-            ? [styleClass getParametersFromValue:v]
+            ? [styleClass getParametersFromValue:value]
             : nullptr;
     wrap.selfClosing = [styleClass isSelfClosing];
     [wrap.children addObject:currentNode];
@@ -212,11 +212,11 @@
 }
 
 - (void)createHtmlFromNode:(HTMLNode *)node
-                      into:(NSMutableData *)buf
+                      into:(NSMutableData *)buffer
                    pretify:(BOOL)pretify {
   if ([node isKindOfClass:[HTMLTextNode class]]) {
     HTMLTextNode *t = (HTMLTextNode *)node;
-    appendEscapedRange(buf, t.source, t.range);
+    appendEscapedRange(buffer, t.source, t.range);
     return;
   }
 
@@ -229,21 +229,21 @@
   BOOL addNewLineAfter = pretify && needsNewLineAfter(element.tag);
 
   if (element.selfClosing) {
-    appendSelfClosingTag(buf, element.tag, element.attributes,
+    appendSelfClosingTag(buffer, element.tag, element.attributes,
                          addNewLineBefore);
     return;
   }
 
-  appendOpenTag(buf, element.tag, element.attributes ?: nullptr,
+  appendOpenTag(buffer, element.tag, element.attributes ?: nullptr,
                 addNewLineBefore);
 
   for (HTMLNode *child in element.children)
-    [self createHtmlFromNode:child into:buf pretify:pretify];
+    [self createHtmlFromNode:child into:buffer pretify:pretify];
 
   if (addNewLineAfter)
-    appendC(buf, "\n");
+    appendC(buffer, "\n");
 
-  appendCloseTag(buf, element.tag);
+  appendCloseTag(buffer, element.tag);
 }
 
 @end
