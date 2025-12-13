@@ -139,13 +139,13 @@
     return outer;
   }
 
-  BOOL isTheSameBlock = currentParagraphType == previousParagraphType;
+  BOOL isTheSameParagraph = currentParagraphType == previousParagraphType;
   id<BaseStyleProtocol> styleObject = _styles[currentParagraphType];
   Class styleClass = styleObject.class;
 
   BOOL hasSubTags = [styleClass subTagName] != NULL;
 
-  if (isTheSameBlock && hasSubTags)
+  if (isTheSameParagraph && hasSubTags)
     return previousNode;
 
   HTMLElement *outer = [HTMLElement new];
@@ -187,31 +187,29 @@
   for (NSNumber *sty in _inlineOrder) {
 
     id<BaseStyleProtocol> obj = _styles[sty];
-    Class cls = obj.class;
+    Class styleClass = obj.class;
 
-    NSString *key = [cls attributeKey];
+    NSString *key = [styleClass attributeKey];
     id v = attrs[key];
 
     if (!v || ![obj styleCondition:v range:range])
       continue;
 
     HTMLElement *wrap = [HTMLElement new];
-    const char *tag = [cls tagName];
+    const char *tag = [styleClass tagName];
 
     wrap.tag = tag;
     wrap.attributes =
-        [cls respondsToSelector:@selector(getParametersFromValue:)]
-            ? [cls getParametersFromValue:v]
+        [styleClass respondsToSelector:@selector(getParametersFromValue:)]
+            ? [styleClass getParametersFromValue:v]
             : nullptr;
-    wrap.selfClosing = [cls isSelfClosing];
+    wrap.selfClosing = [styleClass isSelfClosing];
     [wrap.children addObject:currentNode];
     currentNode = wrap;
   }
 
   return currentNode;
 }
-
-#pragma mark - Rendering
 
 - (void)createHtmlFromNode:(HTMLNode *)node
                       into:(NSMutableData *)buf
@@ -225,25 +223,27 @@
   if (![node isKindOfClass:[HTMLElement class]])
     return;
 
-  HTMLElement *el = (HTMLElement *)node;
+  HTMLElement *element = (HTMLElement *)node;
 
-  BOOL addNewLineBefore = pretify && isBlockTag(el.tag);
-  BOOL addNewLineAfter = pretify && needsNewLineAfter(el.tag);
+  BOOL addNewLineBefore = pretify && isBlockTag(element.tag);
+  BOOL addNewLineAfter = pretify && needsNewLineAfter(element.tag);
 
-  if (el.selfClosing) {
-    appendSelfClosingTagC(buf, el.tag, el.attributes, addNewLineBefore);
+  if (element.selfClosing) {
+    appendSelfClosingTag(buf, element.tag, element.attributes,
+                         addNewLineBefore);
     return;
   }
 
-  appendOpenTagC(buf, el.tag, el.attributes ?: nullptr, addNewLineBefore);
+  appendOpenTag(buf, element.tag, element.attributes ?: nullptr,
+                addNewLineBefore);
 
-  for (HTMLNode *child in el.children)
+  for (HTMLNode *child in element.children)
     [self createHtmlFromNode:child into:buf pretify:pretify];
 
   if (addNewLineAfter)
     appendC(buf, "\n");
 
-  appendCloseTagC(buf, el.tag);
+  appendCloseTag(buf, element.tag);
 }
 
 @end
