@@ -50,11 +50,12 @@ static void const *kInputKey = &kInputKey;
     return;
   }
 
-  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
+  NSRange visibleCharRange = [self characterRangeForGlyphRange:glyphRange
+                                              actualGlyphRange:NULL];
 
-  [self drawBlockQuotes:typedInput origin:origin inputRange:inputRange];
-  [self drawLists:typedInput origin:origin inputRange:inputRange];
-  [self drawCodeBlocks:typedInput origin:origin inputRange:inputRange];
+  [self drawBlockQuotes:typedInput origin:origin inputRange:visibleCharRange];
+  [self drawLists:typedInput origin:origin inputRange:visibleCharRange];
+  [self drawCodeBlocks:typedInput origin:origin inputRange:visibleCharRange];
 }
 
 - (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput
