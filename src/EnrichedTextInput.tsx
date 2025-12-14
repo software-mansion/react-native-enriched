@@ -164,7 +164,7 @@ const warnAboutMissconfiguredMentions = (indicator: string) => {
   );
 };
 
-let nextRequestId = 1;
+let nextHtmlRequestId = 1;
 const pendingHtmlRequests = new Map<number, (html: string) => void>();
 
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
