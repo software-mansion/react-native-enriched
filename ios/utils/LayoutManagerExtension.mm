@@ -53,14 +53,18 @@ static void const *kInputKey = &kInputKey;
   NSRange visibleCharRange = [self characterRangeForGlyphRange:glyphRange
                                               actualGlyphRange:NULL];
 
-  [self drawBlockQuotes:typedInput origin:origin inputRange:visibleCharRange];
-  [self drawLists:typedInput origin:origin inputRange:visibleCharRange];
-  [self drawCodeBlocks:typedInput origin:origin inputRange:visibleCharRange];
+  [self drawBlockQuotes:typedInput
+                 origin:origin
+       visibleCharRange:visibleCharRange];
+  [self drawLists:typedInput origin:origin visibleCharRange:visibleCharRange];
+  [self drawCodeBlocks:typedInput
+                origin:origin
+      visibleCharRange:visibleCharRange];
 }
 
 - (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput
                 origin:(CGPoint)origin
-            inputRange:(NSRange)inputRange {
+      visibleCharRange:(NSRange)inputRange {
   CodeBlockStyle *codeBlockStyle =
       typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
   if (codeBlockStyle == nullptr) {
@@ -199,7 +203,7 @@ static void const *kInputKey = &kInputKey;
 
 - (void)drawBlockQuotes:(EnrichedTextInputView *)typedInput
                  origin:(CGPoint)origin
-             inputRange:(NSRange)inputRange {
+       visibleCharRange:(NSRange)inputRange {
   BlockQuoteStyle *bqStyle =
       typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   if (bqStyle == nullptr) {
@@ -241,8 +245,8 @@ static void const *kInputKey = &kInputKey;
 }
 
 - (void)drawLists:(EnrichedTextInputView *)typedInput
-           origin:(CGPoint)origin
-       inputRange:(NSRange)inputRange {
+              origin:(CGPoint)origin
+    visibleCharRange:(NSRange)inputRange {
   UnorderedListStyle *ulStyle =
       typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle =
