@@ -1,9 +1,9 @@
-#import "EnrichedHtmlParser.h"
-#import "EnrichedHTMLTagUtils.h"
+#import "EnrichedAttributedStringHTMLSerializer.h"
+#import "EnrichedAttributedStringHTMLSerializerTagUtils.h"
 #import "HtmlNode.h"
 #import "StyleHeaders.h"
 
-@implementation EnrichedHTMLParser {
+@implementation EnrichedAttributedStringHTMLSerializer {
   NSDictionary<NSNumber *, id<BaseStyleProtocol>> *_styles;
   NSArray<id<BaseStyleProtocol>> *_inlineStyles;
   NSArray<id<BaseStyleProtocol>> *_paragraphStyles;

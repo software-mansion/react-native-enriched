@@ -3,7 +3,7 @@
 @class HTMLNode;
 @class HTMLTextNode;
 
-@interface EnrichedHTMLParser : NSObject
+@interface EnrichedAttributedStringHTMLSerializer : NSObject
 - (instancetype)initWithStyles:(NSDictionary<NSNumber *, id> *)stylesDict;
 - (NSString *)buildHtmlFromAttributedString:(NSAttributedString *)text
                                     pretify:(BOOL)pretify;
