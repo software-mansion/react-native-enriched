@@ -30,7 +30,6 @@ import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnRequestHtmlResultEvent
-import com.swmansion.enriched.spans.EnrichedBoldSpan
 import com.swmansion.enriched.spans.EnrichedH1Span
 import com.swmansion.enriched.spans.EnrichedH2Span
 import com.swmansion.enriched.spans.EnrichedH3Span
@@ -45,7 +44,6 @@ import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
-import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.utils.mergeSpannables
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
@@ -349,6 +347,7 @@ class EnrichedTextInputView : AppCompatEditText {
     // This ensured that newly created spans will take the new font size into account
     htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout()
+    forceScrollToSelection()
   }
 
   fun setFontFamily(family: String?) {
@@ -605,15 +604,33 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun forceScrollToSelection() {
-    val text = this.text
-    if (text.isNullOrEmpty()) return
-    val selStart = selectionStart
-    val selEnd = selectionEnd
-    if (selStart != -1 && selectionEnd <= text.length) {
-      setSelection(selStart, selEnd)
+    private fun forceScrollToSelection() {
+      val textLayout = layout ?: return
+      val cursorOffset = selectionStart
+      if (cursorOffset <= 0) {
+        return
+      }
+
+      val selectedLineIndex = textLayout.getLineForOffset(cursorOffset)
+      val selectedLineTop = textLayout.getLineTop(selectedLineIndex)
+      val selectedLineBottom = textLayout.getLineBottom(selectedLineIndex)
+      val visibleTextHeight = height - paddingTop - paddingBottom
+
+      if (visibleTextHeight <= 0) return
+
+      val visibleTop = scrollY
+      val visibleBottom = scrollY + visibleTextHeight
+      var targetScrollY = scrollY
+
+      if (selectedLineTop < visibleTop) {
+        targetScrollY = selectedLineTop
+      } else if (selectedLineBottom > visibleBottom) {
+        targetScrollY = selectedLineBottom - visibleTextHeight
+      }
+      val maxScrollY = (textLayout.height - visibleTextHeight).coerceAtLeast(0)
+      targetScrollY = targetScrollY.coerceIn(0, maxScrollY)
+      scrollTo(scrollX, targetScrollY)
     }
-  }
 
   private fun reApplyHtmlStyleForSpans(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
     val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
@@ -650,8 +667,8 @@ class EnrichedTextInputView : AppCompatEditText {
         selection?.validateStyles()
       }
     }
-    forceScrollToSelection()
     layoutManager.invalidateLayout()
+    forceScrollToSelection()
   }
 
   override fun onAttachedToWindow() {

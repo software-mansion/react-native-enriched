@@ -314,7 +314,6 @@ export default function App() {
                 : anotherHtmlStyle
             }
             placeholder="Type something here..."
-            defaultValue="<html><h1>test</h1><ul><li>test <a href='test' /></li></ul></html>"
             placeholderTextColor="rgb(0, 26, 114)"
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
