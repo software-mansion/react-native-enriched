@@ -1355,16 +1355,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       }
     }
 
-    // emit string without zero width spaces
-    NSString *stringToBeEmitted = [[textView.textStorage.string
-        stringByReplacingOccurrencesOfString:@"\u200B"
-                                  withString:@""] copy];
-
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
       // set the recently emitted string only if the emitter is defined
-      _recentlyEmittedString = stringToBeEmitted;
+      _recentlyEmittedString = [textView.textStorage.string copy];
+      
+      // emit string without zero width spaces
+      NSString *stringToBeEmitted = [[textView.textStorage.string
+          stringByReplacingOccurrencesOfString:@"\u200B"
+                                    withString:@""] copy];
 
       emitter->onChangeText({.value = [stringToBeEmitted toCppString]});
     }
