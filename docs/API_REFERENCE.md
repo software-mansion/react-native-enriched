@@ -47,6 +47,10 @@ If `false`, text is not editable.
 |--------|---------------|----------|
 | `bool` | `true`        | Both     |
 
+> [!NOTE]
+> Setting `editable` to `false` will disable all user interactions with the input.
+> However, some programmatic changes (like toggling styles or changing value imperatively) via ref methods will still work.
+
 ### `htmlStyle`
 
 A prop for customizing styles appearances.
