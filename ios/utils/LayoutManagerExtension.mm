@@ -64,7 +64,7 @@ static void const *kInputKey = &kInputKey;
 
 - (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput
                 origin:(CGPoint)origin
-      visibleCharRange:(NSRange)inputRange {
+      visibleCharRange:(NSRange)visibleCharRange {
   CodeBlockStyle *codeBlockStyle =
       typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
   if (codeBlockStyle == nullptr) {
@@ -72,7 +72,7 @@ static void const *kInputKey = &kInputKey;
   }
 
   NSArray<StylePair *> *allCodeBlocks =
-      [codeBlockStyle findAllOccurences:inputRange];
+      [codeBlockStyle findAllOccurences:visibleCharRange];
   NSArray<StylePair *> *mergedCodeBlocks =
       [self mergeContiguousStylePairs:allCodeBlocks];
   UIColor *bgColor = [[typedInput->config codeBlockBgColor]
@@ -203,7 +203,7 @@ static void const *kInputKey = &kInputKey;
 
 - (void)drawBlockQuotes:(EnrichedTextInputView *)typedInput
                  origin:(CGPoint)origin
-       visibleCharRange:(NSRange)inputRange {
+       visibleCharRange:(NSRange)visibleCharRange {
   BlockQuoteStyle *bqStyle =
       typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   if (bqStyle == nullptr) {
@@ -212,7 +212,7 @@ static void const *kInputKey = &kInputKey;
 
   // it isn't the most performant but we have to check for all the blockquotes
   // each time and redraw them
-  NSArray *allBlockquotes = [bqStyle findAllOccurences:inputRange];
+  NSArray *allBlockquotes = [bqStyle findAllOccurences:visibleCharRange];
 
   for (StylePair *pair in allBlockquotes) {
     NSRange paragraphRange = [typedInput->textView.textStorage.string
@@ -246,7 +246,7 @@ static void const *kInputKey = &kInputKey;
 
 - (void)drawLists:(EnrichedTextInputView *)typedInput
               origin:(CGPoint)origin
-    visibleCharRange:(NSRange)inputRange {
+    visibleCharRange:(NSRange)visibleCharRange {
   UnorderedListStyle *ulStyle =
       typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle =
@@ -257,8 +257,8 @@ static void const *kInputKey = &kInputKey;
 
   // also not the most performant but we redraw all the lists
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle findAllOccurences:inputRange]];
-  [allLists addObjectsFromArray:[olStyle findAllOccurences:inputRange]];
+  [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
+  [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
