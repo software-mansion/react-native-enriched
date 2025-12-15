@@ -5,8 +5,6 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.Log
 import com.swmansion.enriched.EnrichedTextInputView
-import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan
-import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.ParagraphSpanConfig
 import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
