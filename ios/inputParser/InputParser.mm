@@ -1,5 +1,5 @@
 #import "InputParser.h"
-#import "EnrichedHTMLParser.h"
+#import "EnrichedAttributedStringHTMLSerializer.h"
 #import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -8,13 +8,15 @@
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
-  EnrichedHTMLParser *_htmlParser;
+  EnrichedAttributedStringHTMLSerializer *_attributedStringHTMLSerializer;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
-  _htmlParser = [[EnrichedHTMLParser alloc] initWithStyles:_input->stylesDict];
+  _attributedStringHTMLSerializer =
+      [[EnrichedAttributedStringHTMLSerializer alloc]
+          initWithStyles:_input->stylesDict];
   return self;
 }
 
@@ -22,7 +24,8 @@
   NSAttributedString *sub =
       [_input->textView.textStorage attributedSubstringFromRange:range];
 
-  return [_htmlParser buildHtmlFromAttributedString:sub pretify:YES];
+  return [_attributedStringHTMLSerializer buildHtmlFromAttributedString:sub
+                                                                pretify:YES];
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
