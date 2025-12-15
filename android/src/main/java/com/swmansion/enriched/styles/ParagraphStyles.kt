@@ -199,8 +199,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
     var isConflicting = false
     val stylesToCheck = mergingConfig.blockingStyles + mergingConfig.conflictingStyles
 
-    for (conflictingStyle in stylesToCheck) {
-      val conflictingType = EnrichedSpans.allSpans[conflictingStyle]?.clazz ?: continue
+    for (styleToCheck in stylesToCheck) {
+      val conflictingType = EnrichedSpans.allSpans[styleToCheck]?.clazz ?: continue
 
       val spans = s.getSpans(paragraphStart, paragraphEnd, conflictingType)
       if (spans.isEmpty()) {
@@ -208,7 +208,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
       }
       isConflicting = true
 
-      val isParagraphStyle = EnrichedSpans.paragraphSpans[conflictingStyle] != null
+      val isParagraphStyle = EnrichedSpans.paragraphSpans[styleToCheck] != null
       if (!isParagraphStyle) {
         continue
       }
@@ -229,12 +229,12 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
   }
 
 
-  private fun deleteConflictingStylesFromParagraph(s: Editable, style: String, paragraphStart: Int, paragraphEnd: Int) {
+  private fun deleteConflictingAndBlockingStyles(s: Editable, style: String, paragraphStart: Int, paragraphEnd: Int) {
     val mergingConfig = EnrichedSpans.getMergingConfigForStyle(style, view.htmlStyle) ?: return
     val stylesToCheck = mergingConfig.blockingStyles + mergingConfig.conflictingStyles
 
-    for (conflictingStyle in stylesToCheck) {
-      val conflictingType = EnrichedSpans.allSpans[conflictingStyle]?.clazz ?: continue
+    for (styleToCheck in stylesToCheck) {
+      val conflictingType = EnrichedSpans.allSpans[styleToCheck]?.clazz ?: continue
 
       val spans = s.getSpans(paragraphStart, paragraphEnd, conflictingType)
       for (span in spans) {
@@ -246,7 +246,8 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
   private fun <T>extendStyleOnWholeParagraph(s: Editable, span: EnrichedSpan, type: Class<T>, paragraphEnd: Int) {
     val currStyleStart = s.getSpanStart(span)
     s.removeSpan(span)
-    setSpan(s, type, currStyleStart, paragraphEnd)
+    val (safeStart, safeEnd) = s.getSafeSpanBoundaries(currStyleStart, paragraphEnd)
+    setSpan(s, type, safeStart, safeEnd)
   }
 
   fun afterTextChanged(s: Editable, endPosition: Int, previousTextLength: Int) {
@@ -265,7 +266,7 @@ class ParagraphStyles(private val view: EnrichedTextInputView) {
 
           for (span in spans) {
             // handle conflicts when entering paragraph with some paragraph style applied
-            deleteConflictingStylesFromParagraph(s, style, start, end)
+            deleteConflictingAndBlockingStyles(s, style, start, end)
             extendStyleOnWholeParagraph(s, span as EnrichedSpan, config.clazz, end)
           }
         }
