@@ -238,14 +238,10 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Known limitations
 
 - Only one level of lists is supported. We currently do not support nested lists.
-- Inline images are supported only on Android.
-- Codeblocks are supported only on Android.
 - iOS headings can't have the same `fontSize` in their config as input's `fontSize`. Doing so results in incorrect headings behavior.
 
 ## Future Plans
 
-- Adding Codeblocks and Inline Images to iOS input.
-- Making some optimizations around `onChangeHtml` event, maybe some imperative API to get the HTML output.
 - Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
 - Adding API for custom link detection regex.
 - Web library implementation via `react-native-web`.
