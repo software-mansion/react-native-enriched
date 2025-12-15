@@ -1,11 +1,4 @@
-import {
-  View,
-  StyleSheet,
-  Text,
-  type NativeSyntheticEvent,
-  ScrollView,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Platform } from 'react-native';
 import {
   EnrichedTextInput,
   type OnChangeTextEvent,
@@ -103,17 +96,17 @@ export default function App() {
     selection.start >= currentLink.start &&
     selection.end <= currentLink.end;
 
-  const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
-    console.log('Text changed:', e?.nativeEvent.value);
+  const handleChangeText = (e: OnChangeTextEvent) => {
+    console.log('Text changed:', e.value);
   };
 
-  const handleChangeHtml = (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => {
-    console.log('HTML changed:', e?.nativeEvent.value);
-    setCurrentHtml(e?.nativeEvent.value);
+  const handleChangeHtml = (e: OnChangeHtmlEvent) => {
+    console.log('HTML changed:', e.value);
+    setCurrentHtml(e.value);
   };
 
-  const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
-    setStylesState(e.nativeEvent);
+  const handleChangeState = (state: OnChangeStateEvent) => {
+    setStylesState(state);
   };
 
   const handleFocus = () => {
@@ -262,7 +255,6 @@ export default function App() {
       id: item.id,
       type: 'user',
     });
-    closeUserMentionPopup();
   };
 
   const handleChannelMentionSelected = (item: MentionItem) => {
@@ -270,7 +262,6 @@ export default function App() {
       id: item.id,
       type: 'channel',
     });
-    closeChannelMentionPopup();
   };
 
   const handleFocusEvent = () => {
@@ -286,10 +277,8 @@ export default function App() {
     setCurrentLink(state);
   };
 
-  const handleSelectionChangeEvent = (
-    e: NativeSyntheticEvent<OnChangeSelectionEvent>
-  ) => {
-    setSelection(e.nativeEvent);
+  const handleSelectionChangeEvent = (sel: OnChangeSelectionEvent) => {
+    setSelection(sel);
   };
 
   return (
@@ -310,9 +299,9 @@ export default function App() {
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
             autoCapitalize="sentences"
-            onChangeText={handleChangeText}
-            onChangeHtml={handleChangeHtml}
-            onChangeState={handleChangeState}
+            onChangeText={(e) => handleChangeText(e.nativeEvent)}
+            onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
+            onChangeState={(e) => handleChangeState(e.nativeEvent)}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
@@ -320,7 +309,7 @@ export default function App() {
             onEndMention={handleEndMention}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
-            onChangeSelection={handleSelectionChangeEvent}
+            onChangeSelection={(e) => handleSelectionChangeEvent(e.nativeEvent)}
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }
