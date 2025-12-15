@@ -333,6 +333,14 @@ focus: () => void;
 
 Focuses the input.
 
+### `.getHTML()`
+
+```ts
+getHTML: () => Promise<string>;
+```
+
+Returns a Promise that resolves with the current HTML content of the input. This is useful when you need to get the HTML on-demand (e.g., when saving) without the performance overhead of continuous HTML parsing via `onChangeHtml`.
+
 ### `.setImage()`
 
 ```ts

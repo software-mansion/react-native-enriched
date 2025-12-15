@@ -974,6 +974,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
 
     [self addImage:uri width:imgWidth height:imgHeight];
+  } else if ([commandName isEqualToString:@"requestHTML"]) {
+    NSInteger requestId = [((NSNumber *)args[0]) integerValue];
+    [self requestHTML:requestId];
   }
 }
 
@@ -1068,6 +1071,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
       _recentlyEmittedHtml = htmlOutput;
       emitter->onChangeHtml({.value = [htmlOutput toCppString]});
+    }
+  }
+}
+
+- (void)requestHTML:(NSInteger)requestId {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    @try {
+      NSString *htmlOutput = [parser
+          parseToHtmlFromRange:NSMakeRange(0,
+                                           textView.textStorage.string.length)];
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = [htmlOutput toCppString]});
+    } @catch (NSException *exception) {
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = folly::dynamic(nullptr)});
     }
   }
 }
