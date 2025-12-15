@@ -1360,7 +1360,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (emitter != nullptr) {
       // set the recently emitted string only if the emitter is defined
       _recentlyEmittedString = [textView.textStorage.string copy];
-      
+
       // emit string without zero width spaces
       NSString *stringToBeEmitted = [[textView.textStorage.string
           stringByReplacingOccurrencesOfString:@"\u200B"
