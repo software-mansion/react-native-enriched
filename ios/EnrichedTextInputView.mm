@@ -1082,13 +1082,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       NSString *htmlOutput = [parser
           parseToHtmlFromRange:NSMakeRange(0,
                                            textView.textStorage.string.length)];
-      emitter->onRequestHtmlResult({
-          .requestId = static_cast<int>(requestId),
-          .html = [htmlOutput toCppString]});
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = [htmlOutput toCppString]});
     } @catch (NSException *exception) {
-      emitter->onRequestHtmlResult({
-          .requestId = static_cast<int>(requestId),
-          .html = folly::dynamic(nullptr)});
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = folly::dynamic(nullptr)});
     }
   }
 }
