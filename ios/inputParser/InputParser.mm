@@ -88,7 +88,7 @@
         } else if (inBlockQuote) {
           BlockQuoteStyle *bqStyle = _input->stylesDict[@(BlockQuote)];
           BOOL detected =
-              [bqStyle detectStyle:NSMakeRange(currentRange.location, 1)];
+              [bqStyle detectStyle:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -98,7 +98,7 @@
         } else if (inCodeBlock) {
           CodeBlockStyle *cbStyle = _input->stylesDict[@(CodeBlock)];
           BOOL detected =
-              [cbStyle detectStyle:NSMakeRange(currentRange.location, 1)];
+              [cbStyle detectStyle:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -406,18 +406,16 @@
   [result appendString:@"\n</html>"];
 
   // remove zero width spaces in the very end
-  NSRange resultRange = NSMakeRange(0, result.length);
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
                              options:0
-                               range:resultRange];
+                               range:NSMakeRange(0, result.length)];
 
   // replace empty <p></p> into <br> in the very end
-  NSRange resultRangeWithoutSpaces = NSMakeRange(0, result.length);
   [result replaceOccurrencesOfString:@"<p></p>"
                           withString:@"<br>"
                              options:0
-                               range:resultRangeWithoutSpaces];
+                               range:NSMakeRange(0, result.length)];
 
   return result;
 }
