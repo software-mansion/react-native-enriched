@@ -4,7 +4,6 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.Log
-import androidx.core.text.getSpans
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan
