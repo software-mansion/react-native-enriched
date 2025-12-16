@@ -1,6 +1,7 @@
 import {
   type Component,
   type RefObject,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -16,6 +17,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionEvent,
   type OnMentionDetected,
   type OnMentionDetectedInternal,
+  type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
 } from './EnrichedTextInputNativeComponent';
 import type {
@@ -38,6 +40,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   blur: () => void;
   setValue: (value: string) => void;
   setSelection: (start: number, end: number) => void;
+  getHTML: () => Promise<string>;
 
   // Text formatting commands
   toggleBold: () => void;
@@ -165,6 +168,11 @@ const warnAboutMissconfiguredMentions = (indicator: string) => {
 
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
+type HtmlRequest = {
+  resolve: (html: string) => void;
+  reject: (error: Error) => void;
+};
+
 export const EnrichedTextInput = ({
   ref,
   autoFocus,
@@ -194,6 +202,19 @@ export const EnrichedTextInput = ({
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
+
+  const nextHtmlRequestId = useRef(1);
+  const pendingHtmlRequests = useRef(new Map<number, HtmlRequest>());
+
+  useEffect(() => {
+    const pendingRequests = pendingHtmlRequests.current;
+    return () => {
+      pendingRequests.forEach(({ reject }) => {
+        reject(new Error('Component unmounted'));
+      });
+      pendingRequests.clear();
+    };
+  }, []);
 
   const normalizedHtmlStyle = useMemo(
     () => normalizeHtmlStyle(htmlStyle, mentionIndicators),
@@ -229,6 +250,13 @@ export const EnrichedTextInput = ({
     },
     setValue: (value: string) => {
       Commands.setValue(nullthrows(nativeRef.current), value);
+    },
+    getHTML: () => {
+      return new Promise<string>((resolve, reject) => {
+        const requestId = nextHtmlRequestId.current++;
+        pendingHtmlRequests.current.set(requestId, { resolve, reject });
+        Commands.requestHTML(nullthrows(nativeRef.current), requestId);
+      });
     },
     toggleBold: () => {
       Commands.toggleBold(nullthrows(nativeRef.current));
@@ -327,6 +355,22 @@ export const EnrichedTextInput = ({
     onMentionDetected?.({ text, indicator, attributes });
   };
 
+  const handleRequestHtmlResult = (
+    e: NativeSyntheticEvent<OnRequestHtmlResultEvent>
+  ) => {
+    const { requestId, html } = e.nativeEvent;
+    const pending = pendingHtmlRequests.current.get(requestId);
+    if (!pending) return;
+
+    if (html === null || typeof html !== 'string') {
+      pending.reject(new Error('Failed to parse HTML'));
+    } else {
+      pending.resolve(html);
+    }
+
+    pendingHtmlRequests.current.delete(requestId);
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -351,6 +395,7 @@ export const EnrichedTextInput = ({
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
+      onRequestHtmlResult={handleRequestHtmlResult}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }

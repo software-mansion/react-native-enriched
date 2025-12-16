@@ -29,6 +29,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
+import com.swmansion.enriched.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.InlineStyles
@@ -568,6 +569,19 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setMentionSpan(text, indicator, attributes)
+  }
+
+  fun requestHTML(requestId: Int) {
+    val html = try {
+      EnrichedParser.toHtmlWithDefault(text)
+    } catch (e: Exception) {
+      null
+    }
+
+    val reactContext = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+    dispatcher?.dispatchEvent(OnRequestHtmlResultEvent(surfaceId, id, requestId, html, experimentalSynchronousEvents))
   }
 
   // Sometimes setting up style triggers many changes in sequence
