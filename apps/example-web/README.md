@@ -18,7 +18,7 @@ Run the following command from the root of the monorepo or from the `apps/exampl
 
 ```sh
 # From root - using Turbo
-turbo run dev
+yarn example-web dev
 
 # OR directly in this workspace
 yarn dev
