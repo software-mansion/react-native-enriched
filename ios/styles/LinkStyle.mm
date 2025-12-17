@@ -164,9 +164,10 @@ static NSString *const AutomaticLinkAttributeName =
 // MARK: - Public non-standard methods
 
 - (void)addLink:(NSString *)text
-            url:(NSString *)url
-          range:(NSRange)range
-         manual:(BOOL)manual {
+              url:(NSString *)url
+            range:(NSRange)range
+           manual:(BOOL)manual
+    withSelection:(BOOL)withSelection {
   NSString *currentText =
       [_input->textView.textStorage.string substringWithRange:range];
 
@@ -190,14 +191,14 @@ static NSString *const AutomaticLinkAttributeName =
                                 at:range.location
               additionalAttributes:newAttrs
                              input:_input
-                     withSelection:YES];
+                     withSelection:withSelection];
   } else if ([currentText isEqualToString:text]) {
     // apply link attributes
     [_input->textView.textStorage addAttributes:newAttrs range:range];
     // TextInsertionUtils take care of the selection but here we have to
     // manually set it behind the link ONLY with manual links, automatic ones
     // don't need the selection fix
-    if (manual) {
+    if (manual && withSelection) {
       [_input->textView reactFocus];
       _input->textView.selectedRange =
           NSMakeRange(range.location + text.length, 0);
@@ -208,7 +209,7 @@ static NSString *const AutomaticLinkAttributeName =
                                  at:range
                additionalAttributes:newAttrs
                               input:_input
-                      withSelection:YES];
+                      withSelection:withSelection];
   }
 
   // mandatory connected links check
@@ -440,7 +441,11 @@ static NSString *const AutomaticLinkAttributeName =
       }
     }
     if (addStyle) {
-      [self addLink:word url:regexPassedUrl range:wordRange manual:NO];
+      [self addLink:word
+                    url:regexPassedUrl
+                  range:wordRange
+                 manual:NO
+          withSelection:NO];
       // emit onLinkDetected if style was added
       [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
     }
