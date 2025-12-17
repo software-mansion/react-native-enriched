@@ -85,6 +85,26 @@
             [result appendString:@"\n</ul>\n<br>"];
             inUnorderedList = NO;
           }
+        } else if (inBlockQuote) {
+          BlockQuoteStyle *bqStyle = _input->stylesDict[@(BlockQuote)];
+          BOOL detected =
+              [bqStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            [result appendString:@"\n<br>"];
+          } else {
+            [result appendString:@"\n</blockquote>\n<br>"];
+            inBlockQuote = NO;
+          }
+        } else if (inCodeBlock) {
+          CodeBlockStyle *cbStyle = _input->stylesDict[@(CodeBlock)];
+          BOOL detected =
+              [cbStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            [result appendString:@"\n<br>"];
+          } else {
+            [result appendString:@"\n</codeblock>\n<br>"];
+            inCodeBlock = NO;
+          }
         } else {
           [result appendString:@"\n<br>"];
         }
@@ -386,11 +406,17 @@
   [result appendString:@"\n</html>"];
 
   // remove zero width spaces in the very end
-  NSRange resultRange = NSMakeRange(0, result.length);
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
                              options:0
-                               range:resultRange];
+                               range:NSMakeRange(0, result.length)];
+
+  // replace empty <p></p> into <br> in the very end
+  [result replaceOccurrencesOfString:@"<p></p>"
+                          withString:@"<br>"
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   return result;
 }
 
@@ -640,6 +666,16 @@
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</p></li>"
                                                      withString:@"</li>"];
 
+    // change <br/> to <br>
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br/>"
+                                                     withString:@"<br>"];
+
+    // remove <p> tags around <br>
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p><br>"
+                                                     withString:@"<br>"];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
+                                                     withString:@"<br>"];
+
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"
                                          inString:fixedHtml
@@ -721,6 +757,22 @@
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
+
+    // this is more like a hack but for some reason the last <br> in
+    // <blockquote> and <codeblock> are not properly changed into zero width
+    // space so we do that manually here
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
+                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
+                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+
+    // replace "<br>" at the end with "<br>\n" if input is not empty to properly
+    // handle last <br> in html
+    if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
+      fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
+    }
   }
 
   return fixedHtml;
