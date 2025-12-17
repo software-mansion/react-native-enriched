@@ -210,8 +210,6 @@ static void const *kInputKey = &kInputKey;
     return;
   }
 
-  // it isn't the most performant but we have to check for all the blockquotes
-  // each time and redraw them
   NSArray *allBlockquotes = [bqStyle findAllOccurences:visibleCharRange];
 
   for (StylePair *pair in allBlockquotes) {
@@ -255,7 +253,6 @@ static void const *kInputKey = &kInputKey;
     return;
   }
 
-  // also not the most performant but we redraw all the lists
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
   [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
   [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
