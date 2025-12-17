@@ -734,7 +734,7 @@
  *
  * APPROACH:
  * This function treats the HTML as having two distinct states:
- * 1. Structure Mode (Depth == 0): We are inside container tags (like
+ * 1. Structure Mode (Depth == 0): We are inside or between container tags (like
  * <blockquote>, <ul>, <codeblock>). In this mode whitespace and newlines are
  * considered layout artifacts and are REMOVED to prevent the parser from
  * creating unwanted spaces.
