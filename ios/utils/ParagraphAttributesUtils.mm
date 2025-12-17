@@ -133,7 +133,7 @@
     }
 
     // index out of bounds
-    NSUInteger rightRangeStart = leftRange.location + leftRange.length;
+    NSUInteger rightRangeStart = range.location + range.length;
     if (rightRangeStart >= typedInput->textView.textStorage.string.length) {
       return NO;
     }
