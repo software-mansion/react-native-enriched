@@ -1515,9 +1515,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // This function is the "Generic Fallback": if no specific style claims
       // the backspace action to change its state, only then do we proceed to
       // physically delete the newline and merge paragraphs.
-      [ParagraphAttributesUtils handleNewlineBackspaceInRange:range
-                                              replacementText:text
-                                                        input:self]) {
+      [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
+                                                      replacementText:text
+                                                                input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }

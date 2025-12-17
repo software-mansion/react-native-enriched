@@ -108,20 +108,17 @@
  *
  * @return YES if the newline backspace was handled and sanitized; NO otherwise.
  */
-+ (BOOL)handleNewlineBackspaceInRange:(NSRange)range
-                      replacementText:(NSString *)text
-                                input:(id)input {
++ (BOOL)handleParagraphStylesMergeOnBackspace:(NSRange)range
+                              replacementText:(NSString *)text
+                                        input:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   if (typedInput == nullptr) {
     return NO;
   }
 
-  if (text.length == 0 && range.length == 1 &&
-      [[NSCharacterSet newlineCharacterSet]
-          characterIsMember:[typedInput->textView.textStorage.string
-                                characterAtIndex:range.location]]) {
-    NSRange leftRange =
-        [typedInput->textView.textStorage.string paragraphRangeForRange:range];
+  if (text.length == 0) {
+    NSRange leftRange = [typedInput->textView.textStorage.string
+        paragraphRangeForRange:NSMakeRange(range.location, 0)];
 
     id<BaseStyleProtocol> leftParagraphStyle = nullptr;
     for (NSNumber *key in typedInput->stylesDict) {
@@ -136,12 +133,13 @@
     }
 
     // index out of bounds
-    if (range.location + 1 >= typedInput->textView.textStorage.string.length) {
+    NSUInteger rightRangeStart = range.location + range.length;
+    if (rightRangeStart >= typedInput->textView.textStorage.string.length) {
       return NO;
     }
 
     NSRange rightRange = [typedInput->textView.textStorage.string
-        paragraphRangeForRange:NSMakeRange(range.location + 1, 1)];
+        paragraphRangeForRange:NSMakeRange(rightRangeStart, 1)];
 
     StyleType type = [[leftParagraphStyle class] getStyleType];
 
