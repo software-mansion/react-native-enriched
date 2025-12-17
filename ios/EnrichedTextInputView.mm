@@ -1558,4 +1558,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self anyTextMayHaveBeenModified];
 }
 
+// MARK: - Media attachments delegate
+
+- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
+  NSTextStorage *storage = textView.textStorage;
+  NSRange fullRange = NSMakeRange(0, storage.length);
+
+  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
+
+  [storage enumerateAttribute:NSAttachmentAttributeName
+                      inRange:fullRange
+                      options:0
+                   usingBlock:^(id value, NSRange range, BOOL *stop) {
+                     if (value == attachment) {
+                       foundRange = range;
+                       *stop = YES;
+                     }
+                   }];
+
+  if (foundRange.location == NSNotFound) {
+    return;
+  }
+
+  [storage edited:NSTextStorageEditedAttributes
+               range:foundRange
+      changeInLength:0];
+}
+
 @end
