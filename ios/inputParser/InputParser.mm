@@ -592,7 +592,7 @@
 }
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
-  NSString *htmlWithoutSpaces = [self removeWhiteSpacesFromHtml:html];
+  NSString *htmlWithoutSpaces = [self stripExtraWhiteSpacesAndNewlines:html];
   NSString *fixedHtml = nullptr;
 
   if (htmlWithoutSpaces.length >= 13) {
@@ -728,14 +728,34 @@
   return fixedHtml;
 }
 
-- (NSString *)removeWhiteSpacesFromHtml:(NSString *)html {
-  NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
-                                          @"h5", @"h6", @"li", @"b", @"a", @"s",
-                                          @"mention", @"code", @"u", @"i", nil];
+/**
+ * Prepares HTML for the parser by stripping extraneous whitespace and newlines
+ * from structural tags, while preserving them within text content.
+ *
+ * APPROACH:
+ * This function treats the HTML as having two distinct states:
+ * 1. Structure Mode (Depth == 0): We are inside container tags (like <blockquote>, <ul>, <codeblock>).
+ * In this mode whitespace and newlines are considered layout artifacts and are REMOVED
+ * to prevent the parser from creating unwanted spaces.
+ * 2. Content Mode (Depth > 0): We are inside a text-containing tag (like <p>, <b>, <li>).
+ * In this mode, all whitespace is PRESERVED exactly as is, ensuring that sentences
+ * and inline formatting remain readable.
+ *
+ * The function iterates character-by-character, using a depth counter to track nesting
+ * levels of the specific tags defined in `textTags`.
+ *
+ * IMPORTANT:
+ * The `textTags` set acts as a whitelist for "Content Mode". If you add support
+ * for a new HTML tag that contains visible text (e.g., <h4>, <h5>, <h6>),
+ * you MUST add it to the `textTags` set below.
+ */
+- (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
+  NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"li", @"b", @"a", @"s",
+                     @"mention", @"code", @"u", @"i", nil];
 
   NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
   NSMutableString *currentTagBuffer = [NSMutableString string];
-  NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+  NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
   BOOL isReadingTag = NO;
   NSInteger textDepth = 0;
@@ -787,7 +807,7 @@
       if (textDepth > 0) {
         [output appendFormat:@"%C", c];
       } else {
-        if (![whitespaceSet characterIsMember:c]) {
+        if (![whitespaceAndNewlineSet characterIsMember:c]) {
           [output appendFormat:@"%C", c];
         }
       }
