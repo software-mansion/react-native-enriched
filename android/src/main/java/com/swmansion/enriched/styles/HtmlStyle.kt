@@ -253,41 +253,39 @@ class HtmlStyle {
 
 
   override fun hashCode(): Int {
-    var result = h1FontSize
+    var result = h1FontSize.hashCode()
     result = 31 * result + h1Bold.hashCode()
-    result = 31 * result + h2FontSize
+    result = 31 * result + h2FontSize.hashCode()
     result = 31 * result + h2Bold.hashCode()
-    result = 31 * result + h3FontSize
+    result = 31 * result + h3FontSize.hashCode()
     result = 31 * result + h3Bold.hashCode()
 
     result = 31 * result + (blockquoteColor ?: 0)
-    result = 31 * result + blockquoteBorderColor
-    result = 31 * result + blockquoteStripeWidth
-    result = 31 * result + blockquoteGapWidth
+    result = 31 * result + blockquoteBorderColor.hashCode()
+    result = 31 * result + blockquoteStripeWidth.hashCode()
+    result = 31 * result + blockquoteGapWidth.hashCode()
 
-    result = 31 * result + olGapWidth
-    result = 31 * result + olMarginLeft
-    result = 31 * result + (olMarkerFontWeight ?: 0)
+    result = 31 * result + olGapWidth.hashCode()
+    result = 31 * result + olMarginLeft.hashCode()
+    result = 31 * result + (olMarkerFontWeight?.hashCode() ?: 0)
     result = 31 * result + (olMarkerColor ?: 0)
 
-    result = 31 * result + ulGapWidth
-    result = 31 * result + ulMarginLeft
-    result = 31 * result + ulBulletSize
-    result = 31 * result + ulBulletColor
+    result = 31 * result + ulGapWidth.hashCode()
+    result = 31 * result + ulMarginLeft.hashCode()
+    result = 31 * result + ulBulletSize.hashCode()
+    result = 31 * result + ulBulletColor.hashCode()
 
-    result = 31 * result + aColor
+    result = 31 * result + aColor.hashCode()
     result = 31 * result + aUnderline.hashCode()
 
-    result = 31 * result + codeBlockColor
-    result = 31 * result + codeBlockBackgroundColor
+    result = 31 * result + codeBlockColor.hashCode()
+    result = 31 * result + codeBlockBackgroundColor.hashCode()
     result = 31 * result + codeBlockRadius.hashCode()
 
-    result = 31 * result + inlineCodeColor
-    result = 31 * result + inlineCodeBackgroundColor
+    result = 31 * result + inlineCodeColor.hashCode()
+    result = 31 * result + inlineCodeBackgroundColor.hashCode()
 
     result = 31 * result + mentionsStyle.hashCode()
-
-    result = 31 * result + (style?.hashCode() ?: 0)
 
     return result
   }

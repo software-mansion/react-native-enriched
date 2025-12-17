@@ -607,9 +607,7 @@ class EnrichedTextInputView : AppCompatEditText {
     private fun forceScrollToSelection() {
       val textLayout = layout ?: return
       val cursorOffset = selectionStart
-      if (cursorOffset <= 0) {
-        return
-      }
+      if (cursorOffset <= 0) return
 
       val selectedLineIndex = textLayout.getLineForOffset(cursorOffset)
       val selectedLineTop = textLayout.getLineTop(selectedLineIndex)
@@ -627,6 +625,7 @@ class EnrichedTextInputView : AppCompatEditText {
       } else if (selectedLineBottom > visibleBottom) {
         targetScrollY = selectedLineBottom - visibleTextHeight
       }
+
       val maxScrollY = (textLayout.height - visibleTextHeight).coerceAtLeast(0)
       targetScrollY = targetScrollY.coerceIn(0, maxScrollY)
       scrollTo(scrollX, targetScrollY)
@@ -636,15 +635,16 @@ class EnrichedTextInputView : AppCompatEditText {
     val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
     val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
     val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
+
     val spannable = text as? Spannable ?: return
     if (spannable.isEmpty()) return
+
     var shouldEmitStateChange = false
+
     runAsATransaction {
       val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
       for (span in spans) {
-        if(!span.dependsOnHtmlStyle) {
-          continue
-        }
+        if (!span.dependsOnHtmlStyle) continue
 
         val start = spannable.getSpanStart(span)
         val end = spannable.getSpanEnd(span)
@@ -654,16 +654,15 @@ class EnrichedTextInputView : AppCompatEditText {
 
         if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
           val isRemoved = removeStyle(EnrichedSpans.BOLD, start, end)
-          if(isRemoved && !shouldEmitStateChange) {
-            shouldEmitStateChange = true
-          }
+          if (isRemoved) shouldEmitStateChange = true
         }
 
         spannable.removeSpan(span)
         val newSpan = span.rebuildWithStyle(htmlStyle)
         spannable.setSpan(newSpan, start, end, flags)
       }
-      if(shouldEmitStateChange) {
+
+      if (shouldEmitStateChange) {
         selection?.validateStyles()
       }
     }

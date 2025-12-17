@@ -62,11 +62,6 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
-enum HtmlStyleVariant {
-  Default,
-  Another,
-}
-
 const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
@@ -82,8 +77,6 @@ export default function App() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
-  const [currentHtmlStyleType, setCurrentHtmlStyleType] =
-    useState<HtmlStyleVariant>(HtmlStyleVariant.Default);
 
   const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
@@ -271,14 +264,6 @@ export default function App() {
     });
   };
 
-  const handleChangeHtmlStyle = () => {
-    setCurrentHtmlStyleType((style) =>
-      style === HtmlStyleVariant.Default
-        ? HtmlStyleVariant.Another
-        : HtmlStyleVariant.Default
-    );
-  };
-
   const handleFocusEvent = () => {
     console.log('Input focused');
   };
@@ -308,11 +293,7 @@ export default function App() {
             ref={ref}
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
-            htmlStyle={
-              currentHtmlStyleType === HtmlStyleVariant.Default
-                ? htmlStyle
-                : anotherHtmlStyle
-            }
+            htmlStyle={htmlStyle}
             placeholder="Type something here..."
             placeholderTextColor="rgb(0, 26, 114)"
             selectionColor="deepskyblue"
@@ -344,11 +325,6 @@ export default function App() {
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
         </View>
-        <Button
-          title="Change HTML Style"
-          onPress={handleChangeHtmlStyle}
-          style={styles.valueButton}
-        />
         <Button
           title="Set input's value"
           onPress={openValueModal}
@@ -391,64 +367,6 @@ export default function App() {
     </>
   );
 }
-
-const anotherHtmlStyle: HtmlStyle = {
-  h1: {
-    fontSize: 44,
-    bold: false,
-  },
-  h2: {
-    fontSize: 36,
-    bold: false,
-  },
-  h3: {
-    fontSize: 32,
-    bold: false,
-  },
-  blockquote: {
-    borderColor: 'orange',
-    borderWidth: 1,
-    gapWidth: 4,
-    color: 'orange',
-  },
-  codeblock: {
-    color: 'red',
-    borderRadius: 0,
-    backgroundColor: 'black',
-  },
-  code: {
-    color: 'yellow',
-    backgroundColor: 'purple',
-  },
-  a: {
-    color: 'red',
-    textDecorationLine: 'none',
-  },
-  mention: {
-    '#': {
-      color: 'darkred',
-      backgroundColor: 'lightcoral',
-      textDecorationLine: 'none',
-    },
-    '@': {
-      color: 'darkgreen',
-      backgroundColor: 'transparent',
-      textDecorationLine: 'underline',
-    },
-  },
-  ol: {
-    gapWidth: 16,
-    marginLeft: 24,
-    markerColor: 'navy',
-    markerFontWeight: 'bold',
-  },
-  ul: {
-    bulletColor: 'black',
-    bulletSize: 10,
-    marginLeft: 8,
-    gapWidth: 4,
-  },
-};
 
 const htmlStyle: HtmlStyle = {
   h1: {
