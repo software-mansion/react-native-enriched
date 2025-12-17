@@ -14,4 +14,10 @@
                    input:(id)input
            withSelection:(BOOL)withSelection;
 ;
++ (void)insertTextInAttributedString:(NSString *)text
+                                  at:(NSInteger)index
+                additionalAttributes:
+                    (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
+                    attributedString:
+                        (NSMutableAttributedString *)attributedString;
 @end

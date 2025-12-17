@@ -67,7 +67,7 @@
                           withSelection:YES];
         typedInput->textView.typingAttributes =
             typedInput->defaultTypingAttributes;
-        [style addAttributes:NSMakeRange(range.location, 0) withTypingAttr:YES];
+        [style addAttributes:NSMakeRange(range.location, 0)];
         return YES;
       }
     }

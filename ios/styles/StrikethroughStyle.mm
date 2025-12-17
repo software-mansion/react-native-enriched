@@ -23,17 +23,23 @@
 - (void)applyStyle:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
-    isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+    isStylePresent ? [self removeAttributes:range] : [self addAttributes:range];
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
 }
 
-- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
-  [_input->textView.textStorage addAttribute:NSStrikethroughStyleAttributeName
-                                       value:@(NSUnderlineStyleSingle)
-                                       range:range];
+- (void)addAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                  range:(NSRange)range {
+  [attributedString addAttribute:NSStrikethroughStyleAttributeName
+                           value:@(NSUnderlineStyleSingle)
+                           range:range];
+}
+
+- (void)addAttributes:(NSRange)range {
+  [self addAttributesInAttributedString:_input->textView.textStorage
+                                  range:range];
 }
 
 - (void)addTypingAttributes {
@@ -43,10 +49,16 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
+- (void)removeAttributesInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                     range:(NSRange)range {
+  [attributedString removeAttribute:NSStrikethroughStyleAttributeName
+                              range:range];
+}
+
 - (void)removeAttributes:(NSRange)range {
-  [_input->textView.textStorage
-      removeAttribute:NSStrikethroughStyleAttributeName
-                range:range];
+  [self removeAttributesInAttributedString:_input->textView.textStorage
+                                     range:range];
 }
 
 - (void)removeTypingAttributes {
@@ -62,14 +74,21 @@
          [strikethroughStyle intValue] != NSUnderlineStyleNone;
 }
 
+- (BOOL)detectStyleInAttributedString:
+            (NSMutableAttributedString *)attributedString
+                                range:(NSRange)range {
+  return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
+                       inString:attributedString
+                        inRange:range
+                  withCondition:^BOOL(id _Nullable value, NSRange range) {
+                    return [self styleCondition:value:range];
+                  }];
+}
+
 - (BOOL)detectStyle:(NSRange)range {
   if (range.length >= 1) {
-    return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
-                    }];
+    return [self detectStyleInAttributedString:_input->textView.textStorage
+                                         range:range];
   } else {
     return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
                         withInput:_input
@@ -93,6 +112,17 @@
 - (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
   return [OccurenceUtils all:NSStrikethroughStyleAttributeName
                    withInput:_input
+                     inRange:range
+               withCondition:^BOOL(id _Nullable value, NSRange range) {
+                 return [self styleCondition:value:range];
+               }];
+}
+
+- (NSArray<StylePair *> *_Nullable)
+    findAllOccurencesInAttributedString:(NSAttributedString *)attributedString
+                                  range:(NSRange)range {
+  return [OccurenceUtils all:NSStrikethroughStyleAttributeName
+                    inString:attributedString
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
                  return [self styleCondition:value:range];
