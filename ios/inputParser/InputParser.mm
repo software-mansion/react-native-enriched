@@ -769,7 +769,7 @@
                                   withString:@"<p>\u200B</p>\n</codeblock>"];
 
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
-    // handel last <br> in html
+    // handle last <br> in html
     if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
       fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
     }
