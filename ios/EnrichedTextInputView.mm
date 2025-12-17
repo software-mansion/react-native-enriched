@@ -1128,7 +1128,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if ([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType]
                                     range:linkRange]) {
-    [linkStyleClass addLink:text url:url range:linkRange manual:YES];
+    [linkStyleClass addLink:text
+                        url:url
+                      range:linkRange
+                     manual:YES
+              withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
 }

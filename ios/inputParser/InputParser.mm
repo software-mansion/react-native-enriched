@@ -597,7 +597,8 @@
         [((LinkStyle *)baseStyle) addLink:text
                                       url:url
                                     range:styleRange
-                                   manual:isManual];
+                                   manual:isManual
+                            withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange
