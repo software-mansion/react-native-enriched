@@ -30,8 +30,12 @@ import com.swmansion.enriched.events.MentionHandler
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.spans.EnrichedH1Span
+import com.swmansion.enriched.spans.EnrichedH2Span
+import com.swmansion.enriched.spans.EnrichedH3Span
 import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
@@ -60,6 +64,13 @@ class EnrichedTextInputView : AppCompatEditText {
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
+    set(value) {
+        if (field != value) {
+            val prev = field
+            field = value
+            reApplyHtmlStyleForSpans(prev, value)
+        }
+    }
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
@@ -340,6 +351,7 @@ class EnrichedTextInputView : AppCompatEditText {
     // This ensured that newly created spans will take the new font size into account
     htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout()
+    forceScrollToSelection()
   }
 
   fun setFontFamily(family: String?) {
@@ -594,6 +606,72 @@ class EnrichedTextInputView : AppCompatEditText {
     } finally {
       isDuringTransaction = false
     }
+  }
+
+    private fun forceScrollToSelection() {
+      val textLayout = layout ?: return
+      val cursorOffset = selectionStart
+      if (cursorOffset <= 0) return
+
+      val selectedLineIndex = textLayout.getLineForOffset(cursorOffset)
+      val selectedLineTop = textLayout.getLineTop(selectedLineIndex)
+      val selectedLineBottom = textLayout.getLineBottom(selectedLineIndex)
+      val visibleTextHeight = height - paddingTop - paddingBottom
+
+      if (visibleTextHeight <= 0) return
+
+      val visibleTop = scrollY
+      val visibleBottom = scrollY + visibleTextHeight
+      var targetScrollY = scrollY
+
+      if (selectedLineTop < visibleTop) {
+        targetScrollY = selectedLineTop
+      } else if (selectedLineBottom > visibleBottom) {
+        targetScrollY = selectedLineBottom - visibleTextHeight
+      }
+
+      val maxScrollY = (textLayout.height - visibleTextHeight).coerceAtLeast(0)
+      targetScrollY = targetScrollY.coerceIn(0, maxScrollY)
+      scrollTo(scrollX, targetScrollY)
+    }
+
+  private fun reApplyHtmlStyleForSpans(previousHtmlStyle: HtmlStyle, nextHtmlStyle: HtmlStyle) {
+    val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
+    val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
+    val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
+
+    val spannable = text as? Spannable ?: return
+    if (spannable.isEmpty()) return
+
+    var shouldEmitStateChange = false
+
+    runAsATransaction {
+      val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
+      for (span in spans) {
+        if (!span.dependsOnHtmlStyle) continue
+
+        val start = spannable.getSpanStart(span)
+        val end = spannable.getSpanEnd(span)
+        val flags = spannable.getSpanFlags(span)
+
+        if (start == -1 || end == -1) continue
+
+        if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) || (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)) {
+          val isRemoved = removeStyle(EnrichedSpans.BOLD, start, end)
+          if (isRemoved) shouldEmitStateChange = true
+        }
+
+        spannable.removeSpan(span)
+        val newSpan = span.rebuildWithStyle(htmlStyle)
+        spannable.setSpan(newSpan, start, end, flags)
+      }
+
+      if (shouldEmitStateChange) {
+        selection?.validateStyles()
+      }
+    }
+    layoutManager.invalidateLayout()
+    forceScrollToSelection()
   }
 
   override fun onAttachedToWindow() {
