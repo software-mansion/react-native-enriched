@@ -22,9 +22,10 @@
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>
 - (void)addLink:(NSString *)text
-            url:(NSString *)url
-          range:(NSRange)range
-         manual:(BOOL)manual;
+              url:(NSString *)url
+            range:(NSRange)range
+           manual:(BOOL)manual
+    withSelection:(BOOL)withSelection;
 - (LinkData *)getLinkDataAt:(NSUInteger)location;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)manageLinkTypingAttributes;
