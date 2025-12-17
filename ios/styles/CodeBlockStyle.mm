@@ -6,6 +6,8 @@
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
+static NSString *const CodeBlockMarker = @"codeblock";
+
 @implementation CodeBlockStyle {
   EnrichedTextInputView *_input;
   NSArray *_stylesToExclude;
@@ -17,6 +19,22 @@
 
 + (BOOL)isParagraphStyle {
   return YES;
+}
+
++ (const char *)tagName {
+  return "codeblock";
+}
+
++ (const char *)subTagName {
+  return "p";
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return NSParagraphStyleAttributeName;
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
 }
 
 - (instancetype)initWithInput:(id)input {
@@ -38,7 +56,7 @@
 
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   NSTextList *codeBlockList =
-      [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
+      [[NSTextList alloc] initWithMarkerFormat:CodeBlockMarker options:0];
   NSArray *paragraphs =
       [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
                                                range:range];
@@ -177,11 +195,10 @@
   return NO;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
   return paragraph != nullptr && paragraph.textLists.count == 1 &&
-         [paragraph.textLists.firstObject.markerFormat
-             isEqualToString:@"codeblock"];
+         paragraph.textLists.firstObject.markerFormat == CodeBlockMarker;
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -190,7 +207,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
@@ -198,7 +215,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -208,7 +225,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -217,7 +234,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

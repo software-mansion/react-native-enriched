@@ -14,6 +14,22 @@
   return NO;
 }
 
++ (const char *)tagName {
+  return "u";
+}
+
++ (const char *)subTagName {
+  return nil;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return NSUnderlineStyleAttributeName;
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -91,7 +107,7 @@
   return conflicted;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSNumber *underlineStyle = (NSNumber *)value;
   return underlineStyle != nullptr &&
          [underlineStyle intValue] != NSUnderlineStyleNone &&
@@ -105,7 +121,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSUnderlineStyleAttributeName
@@ -113,7 +129,7 @@
                           atIndex:range.location
                     checkPrevious:NO
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -123,7 +139,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -132,7 +148,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
