@@ -5,9 +5,9 @@
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
                          input:(id)input;
-+ (BOOL)handleNewlineBackspaceInRange:(NSRange)range
-                      replacementText:(NSString *)text
-                                input:(id)input;
++ (BOOL)handleParagraphStylesMergeOnBackspace:(NSRange)range
+                              replacementText:(NSString *)text
+                                        input:(id)input;
 + (BOOL)handleResetTypingAttributes:(NSRange)range
                     replacementText:(NSString *)text
                               input:(id)input;
