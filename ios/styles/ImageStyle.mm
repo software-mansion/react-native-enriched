@@ -1,5 +1,6 @@
 #import "EnrichedTextInputView.h"
 #import "ImageAttachment.h"
+#import "MediaAttachment.h"
 #import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
@@ -126,6 +127,8 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   NSDictionary *attributes =
       @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
 
+  // Use the Object Replacement Character for Image.
+  // This tells TextKit "something non-text goes here".
   NSString *placeholderChar = @"\uFFFC";
 
   if (range.length == 0) {

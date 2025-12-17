@@ -1554,7 +1554,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self anyTextMayHaveBeenModified];
 }
 
-#pragma Media attachments delegate
+// MARK: - Media attachments delegate
 
 - (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
   NSTextStorage *storage = textView.textStorage;
