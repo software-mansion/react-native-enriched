@@ -1,10 +1,11 @@
 import './App.css';
+import { EnrichedTextInput } from 'react-native-enriched';
 
 function App() {
   return (
     <div className="container">
       <div>Text input</div>
-      <input type="text" placeholder="Type something..." />
+      <EnrichedTextInput />
     </div>
   );
 }
