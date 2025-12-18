@@ -605,9 +605,11 @@
                                                 params:params];
       } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
         ImageData *imgData = (ImageData *)stylePair.styleValue;
+        BOOL isLastInText =
+            styleRange.location + styleRange.length == plainTextLength;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
-                                     withSelection:NO];
+                                     withSelection:isLastInText];
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
