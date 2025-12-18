@@ -175,9 +175,17 @@
   return NO;
 }
 
-+ (BOOL)handleResetTypingAttributes:(NSRange)range
-                    replacementText:(NSString *)text
-                              input:(id)input {
+/**
+ * Resets typing attributes to defaults when the cursor lands on an empty line
+ * after a deletion.
+ *
+ * This override is necessary because `UITextView` automatically inherits
+ * attributes from the preceding newline. This prevents scenarios where a
+ * restrictive style (like CodeBlock) "leaks" into the next empty paragraph.
+ */
++ (BOOL)handleResetTypingAttributesOnBackspace:(NSRange)range
+                               replacementText:(NSString *)text
+                                         input:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   if (typedInput == nullptr) {
     return NO;

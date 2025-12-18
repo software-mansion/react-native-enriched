@@ -1510,9 +1510,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [ParagraphAttributesUtils handleBackspaceInRange:range
                                        replacementText:text
                                                  input:self] ||
-      [ParagraphAttributesUtils handleResetTypingAttributes:range
-                                            replacementText:text
-                                                      input:self] ||
+      [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
+                                                       replacementText:text
+                                                                 input:self] ||
       // CRITICAL: This callback HAS TO be always evaluated last.
       //
       // This function is the "Generic Fallback": if no specific style claims
