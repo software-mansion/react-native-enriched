@@ -605,11 +605,9 @@
                                                 params:params];
       } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
         ImageData *imgData = (ImageData *)stylePair.styleValue;
-        BOOL isLastInText =
-            styleRange.location + styleRange.length == plainTextLength;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
-                                     withSelection:isLastInText];
+                                     withSelection:NO];
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
@@ -680,6 +678,10 @@
                                                      withString:@"<br>"];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
                                                      withString:@"<br>"];
+    
+    // remove Object Replacement Character as it has no meaning in HTML
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\uFFFC"
+                                                     withString:@""];
 
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"

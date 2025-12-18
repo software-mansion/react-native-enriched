@@ -528,6 +528,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     stylePropChanged = YES;
   }
+  
+  NSRange prevSelectedRange = textView.selectedRange;
 
   if (stylePropChanged) {
     // all the text needs to be rebuilt
@@ -676,6 +678,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
+  
+  textView.selectedRange = prevSelectedRange;
 }
 
 - (void)setPlaceholderLabelShown:(BOOL)shown {
@@ -1010,6 +1014,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // set recentlyChangedRange and check for changes
   recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
+  textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
 }
 
