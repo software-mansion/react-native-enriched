@@ -678,7 +678,7 @@
                                                      withString:@"<br>"];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
                                                      withString:@"<br>"];
-    
+
     // remove Object Replacement Character as it has no meaning in HTML
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\uFFFC"
                                                      withString:@""];

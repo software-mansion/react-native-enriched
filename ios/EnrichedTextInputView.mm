@@ -528,7 +528,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     stylePropChanged = YES;
   }
-  
+
   NSRange prevSelectedRange = textView.selectedRange;
 
   if (stylePropChanged) {
@@ -678,7 +678,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
-  
+
   textView.selectedRange = prevSelectedRange;
 }
 
