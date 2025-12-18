@@ -539,6 +539,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *currentHtml = [parser
         parseToHtmlFromRange:NSMakeRange(0,
                                          textView.textStorage.string.length)];
+    // we want to preserve the selection between props changes
     NSRange prevSelectedRange = textView.selectedRange;
 
     // now set the new config
