@@ -405,6 +405,12 @@
 
   [result appendString:@"\n</html>"];
 
+  // remove Object Replacement Characters in the very end
+  [result replaceOccurrencesOfString:@"\uFFFC"
+                          withString:@""
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   // remove zero width spaces in the very end
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
@@ -678,10 +684,6 @@
                                                      withString:@"<br>"];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
                                                      withString:@"<br>"];
-
-    // remove Object Replacement Character as it has no meaning in HTML
-    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\uFFFC"
-                                                     withString:@""];
 
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"

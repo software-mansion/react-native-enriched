@@ -529,8 +529,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
 
-  NSRange prevSelectedRange = textView.selectedRange;
-
   if (stylePropChanged) {
     // all the text needs to be rebuilt
     // we get the current html using old config, then switch to new config and
@@ -541,6 +539,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *currentHtml = [parser
         parseToHtmlFromRange:NSMakeRange(0,
                                          textView.textStorage.string.length)];
+    NSRange prevSelectedRange = textView.selectedRange;
 
     // now set the new config
     config = newConfig;
@@ -568,6 +567,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes[NSParagraphStyleAttributeName] =
         [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
+    textView.selectedRange = prevSelectedRange;
 
     // update the placeholder as well
     [self refreshPlaceholderLabelStyles];
@@ -593,6 +593,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // we've got some seemingly proper html
       [parser replaceWholeFromHtml:initiallyProcessedHtml];
     }
+    textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   }
 
   // placeholderTextColor
@@ -678,8 +679,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
-
-  textView.selectedRange = prevSelectedRange;
 }
 
 - (void)setPlaceholderLabelShown:(BOOL)shown {
