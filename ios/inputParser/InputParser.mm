@@ -85,6 +85,26 @@
             [result appendString:@"\n</ul>\n<br>"];
             inUnorderedList = NO;
           }
+        } else if (inBlockQuote) {
+          BlockQuoteStyle *bqStyle = _input->stylesDict[@(BlockQuote)];
+          BOOL detected =
+              [bqStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            [result appendString:@"\n<br>"];
+          } else {
+            [result appendString:@"\n</blockquote>\n<br>"];
+            inBlockQuote = NO;
+          }
+        } else if (inCodeBlock) {
+          CodeBlockStyle *cbStyle = _input->stylesDict[@(CodeBlock)];
+          BOOL detected =
+              [cbStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            [result appendString:@"\n<br>"];
+          } else {
+            [result appendString:@"\n</codeblock>\n<br>"];
+            inCodeBlock = NO;
+          }
         } else {
           [result appendString:@"\n<br>"];
         }
@@ -385,12 +405,24 @@
 
   [result appendString:@"\n</html>"];
 
+  // remove Object Replacement Characters in the very end
+  [result replaceOccurrencesOfString:@"\uFFFC"
+                          withString:@""
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   // remove zero width spaces in the very end
-  NSRange resultRange = NSMakeRange(0, result.length);
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
                              options:0
-                               range:resultRange];
+                               range:NSMakeRange(0, result.length)];
+
+  // replace empty <p></p> into <br> in the very end
+  [result replaceOccurrencesOfString:@"<p></p>"
+                          withString:@"<br>"
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   return result;
 }
 
@@ -571,7 +603,8 @@
         [((LinkStyle *)baseStyle) addLink:text
                                       url:url
                                     range:styleRange
-                                   manual:isManual];
+                                   manual:isManual
+                            withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange
@@ -592,17 +625,19 @@
 }
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
+  NSString *htmlWithoutSpaces = [self stripExtraWhiteSpacesAndNewlines:html];
   NSString *fixedHtml = nullptr;
 
-  if (html.length >= 13) {
-    NSString *firstSix = [html substringWithRange:NSMakeRange(0, 6)];
-    NSString *lastSeven =
-        [html substringWithRange:NSMakeRange(html.length - 7, 7)];
+  if (htmlWithoutSpaces.length >= 13) {
+    NSString *firstSix =
+        [htmlWithoutSpaces substringWithRange:NSMakeRange(0, 6)];
+    NSString *lastSeven = [htmlWithoutSpaces
+        substringWithRange:NSMakeRange(htmlWithoutSpaces.length - 7, 7)];
 
     if ([firstSix isEqualToString:@"<html>"] &&
         [lastSeven isEqualToString:@"</html>"]) {
       // remove html tags, might be with newlines or without them
-      fixedHtml = [html copy];
+      fixedHtml = [htmlWithoutSpaces copy];
       // firstly remove newlined html tags if any:
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<html>\n"
                                                        withString:@""];
@@ -616,13 +651,13 @@
     } else {
       // in other case we are most likely working with some external html - try
       // getting the styles from between body tags
-      NSRange openingBodyRange = [html rangeOfString:@"<body>"];
-      NSRange closingBodyRange = [html rangeOfString:@"</body>"];
+      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
+      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
 
       if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
         NSInteger newStart = openingBodyRange.location + 7;
         NSInteger newEnd = closingBodyRange.location - 1;
-        fixedHtml = [html
+        fixedHtml = [htmlWithoutSpaces
             substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
       }
     }
@@ -639,6 +674,16 @@
                                                      withString:@"<li>"];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</p></li>"
                                                      withString:@"</li>"];
+
+    // change <br/> to <br>
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br/>"
+                                                     withString:@"<br>"];
+
+    // remove <p> tags around <br>
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<p><br>"
+                                                     withString:@"<br>"];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
+                                                     withString:@"<br>"];
 
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"
@@ -721,9 +766,117 @@
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
+
+    // this is more like a hack but for some reason the last <br> in
+    // <blockquote> and <codeblock> are not properly changed into zero width
+    // space so we do that manually here
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
+                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
+                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+
+    // replace "<br>" at the end with "<br>\n" if input is not empty to properly
+    // handle last <br> in html
+    if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
+      fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
+    }
   }
 
   return fixedHtml;
+}
+
+/**
+ * Prepares HTML for the parser by stripping extraneous whitespace and newlines
+ * from structural tags, while preserving them within text content.
+ *
+ * APPROACH:
+ * This function treats the HTML as having two distinct states:
+ * 1. Structure Mode (Depth == 0): We are inside or between container tags (like
+ * <blockquote>, <ul>, <codeblock>). In this mode whitespace and newlines are
+ * considered layout artifacts and are REMOVED to prevent the parser from
+ * creating unwanted spaces.
+ * 2. Content Mode (Depth > 0): We are inside a text-containing tag (like <p>,
+ * <b>, <li>). In this mode, all whitespace is PRESERVED exactly as is, ensuring
+ * that sentences and inline formatting remain readable.
+ *
+ * The function iterates character-by-character, using a depth counter to track
+ * nesting levels of the specific tags defined in `textTags`.
+ *
+ * IMPORTANT:
+ * The `textTags` set acts as a whitelist for "Content Mode". If you add support
+ * for a new HTML tag that contains visible text (e.g., <h4>, <h5>, <h6>),
+ * you MUST add it to the `textTags` set below.
+ */
+- (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
+  NSSet *textTags =
+      [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"li", @"b", @"a", @"s",
+                            @"mention", @"code", @"u", @"i", nil];
+
+  NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
+  NSMutableString *currentTagBuffer = [NSMutableString string];
+  NSCharacterSet *whitespaceAndNewlineSet =
+      [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
+  BOOL isReadingTag = NO;
+  NSInteger textDepth = 0;
+
+  for (NSUInteger i = 0; i < html.length; i++) {
+    unichar c = [html characterAtIndex:i];
+
+    if (c == '<') {
+      isReadingTag = YES;
+      [currentTagBuffer setString:@""];
+      [output appendString:@"<"];
+    } else if (c == '>') {
+      isReadingTag = NO;
+      [output appendString:@">"];
+
+      NSString *fullTag = [currentTagBuffer lowercaseString];
+
+      NSString *cleanName = [fullTag
+          stringByTrimmingCharactersInSet:
+              [NSCharacterSet characterSetWithCharactersInString:@"/"]];
+      NSArray *parts =
+          [cleanName componentsSeparatedByCharactersInSet:
+                         [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+      NSString *tagName = parts.firstObject;
+
+      if (![textTags containsObject:tagName]) {
+        continue;
+      }
+
+      if ([fullTag hasPrefix:@"/"]) {
+        textDepth--;
+        if (textDepth < 0)
+          textDepth = 0;
+      } else {
+        // Opening tag (e.g. <h1>) -> Enter Text Mode
+        // (Ignore self-closing tags like <img/> if they happen to be in the
+        // list)
+        if (![fullTag hasSuffix:@"/"]) {
+          textDepth++;
+        }
+      }
+    } else {
+      if (isReadingTag) {
+        [currentTagBuffer appendFormat:@"%C", c];
+        [output appendFormat:@"%C", c];
+        continue;
+      }
+
+      if (textDepth > 0) {
+        [output appendFormat:@"%C", c];
+      } else {
+        if (![whitespaceAndNewlineSet characterIsMember:c]) {
+          [output appendFormat:@"%C", c];
+        }
+      }
+    }
+  }
+
+  return output;
 }
 
 - (NSString *)stringByAddingNewlinesToTag:(NSString *)tag

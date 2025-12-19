@@ -1,4 +1,6 @@
 #import "EnrichedTextInputView.h"
+#import "ImageAttachment.h"
+#import "MediaAttachment.h"
 #import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
@@ -115,27 +117,28 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
           withSelection:(BOOL)withSelection {
-  UIImage *img = [self prepareImageFromUri:imageData.uri];
+  if (!imageData)
+    return;
 
-  NSDictionary *attributes = [@{
-    NSAttachmentAttributeName : [self prepareImageAttachement:img
-                                                        width:imageData.width
-                                                       height:imageData.height],
-    ImageAttributeName : imageData,
-  } mutableCopy];
+  ImageAttachment *attachment =
+      [[ImageAttachment alloc] initWithImageData:imageData];
+  attachment.delegate = _input;
+
+  NSDictionary *attributes =
+      @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
 
   // Use the Object Replacement Character for Image.
   // This tells TextKit "something non-text goes here".
-  NSString *imagePlaceholder = @"\uFFFC";
+  NSString *placeholderChar = @"\uFFFC";
 
   if (range.length == 0) {
-    [TextInsertionUtils insertText:imagePlaceholder
+    [TextInsertionUtils insertText:placeholderChar
                                 at:range.location
               additionalAttributes:attributes
                              input:_input
                      withSelection:withSelection];
   } else {
-    [TextInsertionUtils replaceText:imagePlaceholder
+    [TextInsertionUtils replaceText:placeholderChar
                                  at:range
                additionalAttributes:attributes
                               input:_input
@@ -152,25 +155,6 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   [self addImageAtRange:_input->textView.selectedRange
               imageData:data
           withSelection:YES];
-}
-
-- (NSTextAttachment *)prepareImageAttachement:(UIImage *)image
-                                        width:(CGFloat)width
-                                       height:(CGFloat)height {
-
-  NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-  attachment.image = image;
-  attachment.bounds = CGRectMake(0, 0, width, height);
-
-  return attachment;
-}
-
-- (UIImage *)prepareImageFromUri:(NSString *)uri {
-  NSURL *url = [NSURL URLWithString:uri];
-  NSData *imgData = [NSData dataWithContentsOfURL:url];
-  UIImage *image = [UIImage imageWithData:imgData];
-
-  return image;
 }
 
 @end

@@ -29,7 +29,7 @@ using namespace facebook::react;
   NSMutableSet<NSNumber *> *_activeStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
-  NSString *_recentlyEmittedString;
+  NSString *_recentInputString;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
   NSString *_recentlyEmittedHtml;
@@ -75,7 +75,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   recentlyChangedRange = NSMakeRange(0, 0);
-  _recentlyEmittedString = @"";
+  _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
   blockEmitting = NO;
@@ -539,6 +539,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *currentHtml = [parser
         parseToHtmlFromRange:NSMakeRange(0,
                                          textView.textStorage.string.length)];
+    // we want to preserve the selection between props changes
+    NSRange prevSelectedRange = textView.selectedRange;
 
     // now set the new config
     config = newConfig;
@@ -566,6 +568,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes[NSParagraphStyleAttributeName] =
         [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
+    textView.selectedRange = prevSelectedRange;
 
     // update the placeholder as well
     [self refreshPlaceholderLabelStyles];
@@ -591,6 +594,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // we've got some seemingly proper html
       [parser replaceWholeFromHtml:initiallyProcessedHtml];
     }
+    textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   }
 
   // placeholderTextColor
@@ -1010,6 +1014,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // set recentlyChangedRange and check for changes
   recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
+  textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
 }
 
@@ -1128,7 +1133,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if ([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType]
                                     range:linkRange]) {
-    [linkStyleClass addLink:text url:url range:linkRange manual:YES];
+    [linkStyleClass addLink:text
+                        url:url
+                      range:linkRange
+                     manual:YES
+              withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
 }
@@ -1253,7 +1262,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // mention editing runs if only a selection was done (no text change)
     // otherwise we would double-emit with a second call in the
     // anyTextMayHaveBeenModified method
-    if ([_recentlyEmittedString
+    if ([_recentInputString
             isEqualToString:[textView.textStorage.string copy]]) {
       [mentionStyleClass manageMentionEditing];
     }
@@ -1262,7 +1271,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // typing attributes for empty lines selection reset
   NSString *currentString = [textView.textStorage.string copy];
   if (textView.selectedRange.length == 0 &&
-      [_recentlyEmittedString isEqualToString:currentString]) {
+      [_recentInputString isEqualToString:currentString]) {
     // no string change means only a selection changed with no character changes
     NSRange paragraphRange = [textView.textStorage.string
         paragraphRangeForRange:textView.selectedRange];
@@ -1306,7 +1315,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // emptying input typing attributes management
   if (textView.textStorage.string.length == 0 &&
-      _recentlyEmittedString.length > 0) {
+      _recentInputString.length > 0) {
     // reset typing attribtues
     textView.typingAttributes = defaultTypingAttributes;
   }
@@ -1355,7 +1364,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self setPlaceholderLabelShown:YES];
   }
 
-  if (![textView.textStorage.string isEqualToString:_recentlyEmittedString]) {
+  if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // modified words handling
     NSArray *modifiedWords =
         [WordsUtils getAffectedWordsFromText:textView.textStorage.string
@@ -1374,16 +1383,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       }
     }
 
-    // emit string without zero width spaces
-    NSString *stringToBeEmitted = [[textView.textStorage.string
-        stringByReplacingOccurrencesOfString:@"\u200B"
-                                  withString:@""] copy];
-
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
-      // set the recently emitted string only if the emitter is defined
-      _recentlyEmittedString = stringToBeEmitted;
+      // set the recent input string only if the emitter is defined
+      _recentInputString = [textView.textStorage.string copy];
+
+      // emit string without zero width spaces
+      NSString *stringToBeEmitted = [[textView.textStorage.string
+          stringByReplacingOccurrencesOfString:@"\u200B"
+                                    withString:@""] copy];
 
       emitter->onChangeText({.value = [stringToBeEmitted toCppString]});
     }
@@ -1515,9 +1524,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // This function is the "Generic Fallback": if no specific style claims
       // the backspace action to change its state, only then do we proceed to
       // physically delete the newline and merge paragraphs.
-      [ParagraphAttributesUtils handleNewlineBackspaceInRange:range
-                                              replacementText:text
-                                                        input:self]) {
+      [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
+                                                      replacementText:text
+                                                                input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }
@@ -1552,6 +1561,33 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // in anyTextMayHaveBeenModified
 - (void)textViewDidChange:(UITextView *)textView {
   [self anyTextMayHaveBeenModified];
+}
+
+// MARK: - Media attachments delegate
+
+- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
+  NSTextStorage *storage = textView.textStorage;
+  NSRange fullRange = NSMakeRange(0, storage.length);
+
+  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
+
+  [storage enumerateAttribute:NSAttachmentAttributeName
+                      inRange:fullRange
+                      options:0
+                   usingBlock:^(id value, NSRange range, BOOL *stop) {
+                     if (value == attachment) {
+                       foundRange = range;
+                       *stop = YES;
+                     }
+                   }];
+
+  if (foundRange.location == NSNotFound) {
+    return;
+  }
+
+  [storage edited:NSTextStorageEditedAttributes
+               range:foundRange
+      changeInLength:0];
 }
 
 @end
