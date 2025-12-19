@@ -16,8 +16,10 @@
 
 - (void)loadAsync {
   NSURL *url = [NSURL URLWithString:self.uri];
-  if (!url)
+  if (!url) {
+    self.image = [UIImage systemImageNamed:@"file"];
     return;
+  }
 
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
     NSData *bytes = [NSData dataWithContentsOfURL:url];

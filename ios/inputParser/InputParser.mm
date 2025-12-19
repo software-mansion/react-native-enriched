@@ -405,6 +405,12 @@
 
   [result appendString:@"\n</html>"];
 
+  // remove Object Replacement Characters in the very end
+  [result replaceOccurrencesOfString:@"\uFFFC"
+                          withString:@""
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   // remove zero width spaces in the very end
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
