@@ -1017,13 +1017,36 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self anyTextMayHaveBeenModified];
 }
 
-- (void)setCustomSelection:(NSInteger)start end:(NSInteger)end {
-  NSInteger numberOfZeroWidthSpaces = [ZeroWidthSpaceUtils
-      getNumberOfZeroWidthSpacesInRange:NSMakeRange(start, end - start)
-                                   text:textView.textStorage.string];
+- (void)setCustomSelection:(NSInteger)visibleStart end:(NSInteger)visibleEnd {
+  NSString *text = textView.textStorage.string;
 
-  textView.selectedRange =
-      NSMakeRange(start, end + numberOfZeroWidthSpaces - start);
+  NSUInteger actualStart = [self getActualIndex:visibleStart text:text];
+  NSUInteger actualEnd = [self getActualIndex:visibleEnd text:text];
+
+  textView.selectedRange = NSMakeRange(actualStart, actualEnd - actualStart);
+}
+
+// Helper: Walks through the string skipping ZWSPs to find the Nth visible
+// character
+- (NSUInteger)getActualIndex:(NSInteger)visibleIndex text:(NSString *)text {
+  NSUInteger currentVisibleCount = 0;
+  NSUInteger actualIndex = 0;
+
+  while (actualIndex < text.length) {
+    if (currentVisibleCount == visibleIndex) {
+      return actualIndex;
+    }
+
+    // If the current char is not a hidden space, it counts towards our visible
+    // index.
+    if ([text characterAtIndex:actualIndex] != 0x200B) {
+      currentVisibleCount++;
+    }
+
+    actualIndex++;
+  }
+
+  return actualIndex;
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text

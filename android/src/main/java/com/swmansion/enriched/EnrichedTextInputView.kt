@@ -277,8 +277,32 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  fun setCustomSelection(start: Int, end: Int) {
-    setSelection(start, end)
+  fun setCustomSelection(visibleStart: Int, visibleEnd: Int) {
+    val actualStart = getActualIndex(visibleStart)
+    val actualEnd = getActualIndex(visibleEnd)
+
+    setSelection(actualStart, actualEnd)
+  }
+
+  // Helper: Walks through the string skipping ZWSPs to find the Nth visible character
+  private fun getActualIndex(visibleIndex: Int): Int {
+    val currentText = text as Spannable
+    var currentVisibleCount = 0
+    var actualIndex = 0
+
+    while (actualIndex < currentText.length) {
+      if (currentVisibleCount == visibleIndex) {
+        return actualIndex
+      }
+
+      // If the current char is not a hidden space, it counts towards our visible index
+      if (currentText[actualIndex] != '\u200B') {
+        currentVisibleCount++
+      }
+      actualIndex++
+    }
+
+    return actualIndex
   }
 
   /**
