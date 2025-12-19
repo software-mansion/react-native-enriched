@@ -11,6 +11,8 @@ import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedParagraphSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateMeasureState(p0: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
@@ -77,5 +79,9 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
 
   fun setIndex(i: Int) {
     index = i
+  }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedOrderedListSpan {
+    return EnrichedOrderedListSpan(index, htmlStyle)
   }
 }
