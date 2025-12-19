@@ -1,6 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
+    "build:web": {
+      "outputs": ["dist/**"],
+      "inputs": [
+        "package.json",
+        "src/**",
+        "tsconfig.json",
+        "vite.config.ts",
+        "index.html"
+      ]
+    },
     "build:android": {
       "env": ["ORG_GRADLE_PROJECT_newArchEnabled"],
       "inputs": [

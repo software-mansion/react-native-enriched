@@ -1,6 +1,6 @@
 {
   "name": "react-native-enriched",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Rich Text Editor component for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
@@ -33,6 +33,7 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-enriched-example",
+    "example-web": "yarn workspace react-native-enriched-web-example",
     "test": "jest --passWithNoTests",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -97,7 +98,8 @@
     "react-native": "*"
   },
   "workspaces": [
-    "example"
+    "example",
+    "apps/example-web"
   ],
   "packageManager": "yarn@3.6.1",
   "jest": {
