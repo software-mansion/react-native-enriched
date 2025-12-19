@@ -50,16 +50,21 @@ static void const *kInputKey = &kInputKey;
     return;
   }
 
-  NSRange inputRange = NSMakeRange(0, typedInput->textView.textStorage.length);
+  NSRange visibleCharRange = [self characterRangeForGlyphRange:glyphRange
+                                              actualGlyphRange:NULL];
 
-  [self drawBlockQuotes:typedInput origin:origin inputRange:inputRange];
-  [self drawLists:typedInput origin:origin inputRange:inputRange];
-  [self drawCodeBlocks:typedInput origin:origin inputRange:inputRange];
+  [self drawBlockQuotes:typedInput
+                 origin:origin
+       visibleCharRange:visibleCharRange];
+  [self drawLists:typedInput origin:origin visibleCharRange:visibleCharRange];
+  [self drawCodeBlocks:typedInput
+                origin:origin
+      visibleCharRange:visibleCharRange];
 }
 
 - (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput
                 origin:(CGPoint)origin
-            inputRange:(NSRange)inputRange {
+      visibleCharRange:(NSRange)visibleCharRange {
   CodeBlockStyle *codeBlockStyle =
       typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
   if (codeBlockStyle == nullptr) {
@@ -67,7 +72,7 @@ static void const *kInputKey = &kInputKey;
   }
 
   NSArray<StylePair *> *allCodeBlocks =
-      [codeBlockStyle findAllOccurences:inputRange];
+      [codeBlockStyle findAllOccurences:visibleCharRange];
   NSArray<StylePair *> *mergedCodeBlocks =
       [self mergeContiguousStylePairs:allCodeBlocks];
   UIColor *bgColor = [[typedInput->config codeBlockBgColor]
@@ -198,16 +203,14 @@ static void const *kInputKey = &kInputKey;
 
 - (void)drawBlockQuotes:(EnrichedTextInputView *)typedInput
                  origin:(CGPoint)origin
-             inputRange:(NSRange)inputRange {
+       visibleCharRange:(NSRange)visibleCharRange {
   BlockQuoteStyle *bqStyle =
       typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   if (bqStyle == nullptr) {
     return;
   }
 
-  // it isn't the most performant but we have to check for all the blockquotes
-  // each time and redraw them
-  NSArray *allBlockquotes = [bqStyle findAllOccurences:inputRange];
+  NSArray *allBlockquotes = [bqStyle findAllOccurences:visibleCharRange];
 
   for (StylePair *pair in allBlockquotes) {
     NSRange paragraphRange = [typedInput->textView.textStorage.string
@@ -240,8 +243,8 @@ static void const *kInputKey = &kInputKey;
 }
 
 - (void)drawLists:(EnrichedTextInputView *)typedInput
-           origin:(CGPoint)origin
-       inputRange:(NSRange)inputRange {
+              origin:(CGPoint)origin
+    visibleCharRange:(NSRange)visibleCharRange {
   UnorderedListStyle *ulStyle =
       typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle =
@@ -250,10 +253,9 @@ static void const *kInputKey = &kInputKey;
     return;
   }
 
-  // also not the most performant but we redraw all the lists
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle findAllOccurences:inputRange]];
-  [allLists addObjectsFromArray:[olStyle findAllOccurences:inputRange]];
+  [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
+  [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;

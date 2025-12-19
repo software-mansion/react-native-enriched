@@ -53,6 +53,37 @@ jobs:
       - name: Build package
         run: yarn prepare
 
+  build-web:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_CACHE_DIR: .turbo/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Cache turborepo for Web
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TURBO_CACHE_DIR }}
+          key: ${{ runner.os }}-turborepo-web-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-turborepo-web-
+
+      - name: Check turborepo cache for Web
+        run: |
+          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:web --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:web').cache.status")
+
+          if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
+            echo "turbo_cache_hit=1" >> $GITHUB_ENV
+          fi
+
+      - name: Build example for Web
+        run: |
+          yarn turbo run build:web --cache-dir="${{ env.TURBO_CACHE_DIR }}"
+
   build-android:
     runs-on: ubuntu-latest
     env:
