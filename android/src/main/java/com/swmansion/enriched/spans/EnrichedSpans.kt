@@ -2,9 +2,13 @@ package com.swmansion.enriched.spans
 
 import com.swmansion.enriched.styles.HtmlStyle
 
-data class BaseSpanConfig(val clazz: Class<*>)
-data class ParagraphSpanConfig(val clazz: Class<*>, val isContinuous: Boolean)
-data class ListSpanConfig(val clazz: Class<*>, val shortcut: String)
+interface ISpanConfig {
+  val clazz: Class<*>
+}
+
+data class BaseSpanConfig(override  val clazz: Class<*>): ISpanConfig
+data class ParagraphSpanConfig(override  val clazz: Class<*>, val isContinuous: Boolean): ISpanConfig
+data class ListSpanConfig(override val clazz: Class<*>, val shortcut: String) : ISpanConfig
 
 data class StylesMergingConfig(
   // styles that should be removed when we apply specific style
@@ -63,6 +67,8 @@ object EnrichedSpans {
     IMAGE to BaseSpanConfig(EnrichedImageSpan::class.java),
     MENTION to BaseSpanConfig(EnrichedMentionSpan::class.java),
   )
+
+  val allSpans: Map<String, ISpanConfig> = inlineSpans + paragraphSpans + listSpans + parametrizedStyles
 
   fun getMergingConfigForStyle(style: String, htmlStyle: HtmlStyle): StylesMergingConfig? {
     return when (style) {

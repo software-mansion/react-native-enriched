@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/abc75d3b-495b-4a76-a72f-d87ce3ca1ff9" alt="react-native-enriched by Software Mansion" width="100%">
+<img src="https://github.com/user-attachments/assets/b010571e-e4a3-4d92-a409-4f9fe614025d" alt="react-native-enriched by Software Mansion" width="100%">
 
 # react-native-enriched
 
@@ -40,7 +40,7 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81` and `0.82`
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81`, `0.82` and `0.83`
 
 ## Installation
 
@@ -152,9 +152,6 @@ Supported styles:
 - ordered list
 - unordered list
 
-> [!NOTE]
-> The iOS doesn't support codeblocks just yet, but it's planned in the near future!
-
 Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 
 Each call toggles the style within the current text selection. We can still divide styles into two categories based on how they treat the selection:
@@ -212,9 +209,6 @@ You can insert an image into the input using [setImage](docs/API_REFERENCE.md#se
 
 The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
-> [!NOTE]
-> The iOS doesn't support inline images just yet, but it's planned in the near future!
-
 ## Style Detection
 
 All of the above styles can be detected with the use of [onChangeState](docs/API_REFERENCE.md#onchangestate) event payload.
@@ -244,14 +238,10 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Known limitations
 
 - Only one level of lists is supported. We currently do not support nested lists.
-- Inline images are supported only on Android.
-- Codeblocks are supported only on Android.
 - iOS headings can't have the same `fontSize` in their config as input's `fontSize`. Doing so results in incorrect headings behavior.
 
 ## Future Plans
 
-- Adding Codeblocks and Inline Images to iOS input.
-- Making some optimizations around `onChangeHtml` event, maybe some imperative API to get the HTML output.
 - Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
 - Adding API for custom link detection regex.
 - Web library implementation via `react-native-web`.

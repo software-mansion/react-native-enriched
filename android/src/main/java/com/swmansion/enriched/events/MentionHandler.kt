@@ -9,8 +9,8 @@ class MentionHandler(private val view: EnrichedTextInputView) {
   private var previousIndicator: String? = null
 
   fun reset() {
+    endMention()
     previousText = null
-    previousIndicator = null
   }
 
   fun endMention() {

@@ -10,7 +10,7 @@
   UIFont *_monospacedFont;
   BOOL _primaryFontNeedsRecreation;
   BOOL _monospacedFontNeedsRecreation;
-  NSSet<NSNumber*> *_mentionIndicators;
+  NSSet<NSNumber *> *_mentionIndicators;
   CGFloat _h1FontSize;
   BOOL _h1Bold;
   CGFloat _h2FontSize;
@@ -43,7 +43,7 @@
   CGFloat _imageHeight;
 }
 
-- (instancetype) init {
+- (instancetype)init {
   self = [super init];
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
@@ -110,7 +110,9 @@
 }
 
 - (NSString *)primaryFontWeight {
-  return _primaryFontWeight != nullptr ? _primaryFontWeight : [NSString stringWithFormat:@"%@", @(UIFontWeightRegular)];
+  return _primaryFontWeight != nullptr
+             ? _primaryFontWeight
+             : [NSString stringWithFormat:@"%@", @(UIFontWeightRegular)];
 }
 
 - (void)setPrimaryFontWeight:(NSString *)newValue {
@@ -130,41 +132,45 @@
 }
 
 - (UIFont *)primaryFont {
-  if(_primaryFontNeedsRecreation) {
+  if (_primaryFontNeedsRecreation) {
     _primaryFontNeedsRecreation = NO;
-    
+
     NSString *newFontWeight = [self primaryFontWeight];
     // fix RCTFontWeight conversion warnings:
     // sometimes changing font family comes with weight '0' if not specified
-    // RCTConvert doesn't recognize this value so we just nullify it and it gets a default value
-    if([newFontWeight isEqualToString:@"0"]) {
+    // RCTConvert doesn't recognize this value so we just nullify it and it gets
+    // a default value
+    if ([newFontWeight isEqualToString:@"0"]) {
       newFontWeight = nullptr;
     }
-    
+
     _primaryFont = [RCTFont updateFont:nullptr
-      withFamily:[self primaryFontFamily]
-      size:[self primaryFontSize]
-      weight:newFontWeight
-      style:nullptr
-      variant:nullptr
-      scaleMultiplier: 1];
+                            withFamily:[self primaryFontFamily]
+                                  size:[self primaryFontSize]
+                                weight:newFontWeight
+                                 style:nullptr
+                               variant:nullptr
+                       scaleMultiplier:1];
   }
   return _primaryFont;
 }
 
 - (UIFont *)monospacedFont {
-  if(_monospacedFontNeedsRecreation) {
+  if (_monospacedFontNeedsRecreation) {
     _monospacedFontNeedsRecreation = NO;
-    _monospacedFont = [UIFont monospacedSystemFontOfSize: [[self primaryFontSize] floatValue]  weight: [[self primaryFontWeight] floatValue]];
+    _monospacedFont = [UIFont
+        monospacedSystemFontOfSize:[[self primaryFontSize] floatValue]
+                            weight:[[self primaryFontWeight] floatValue]];
   }
   return _monospacedFont;
 }
 
-- (NSSet<NSNumber*>*)mentionIndicators {
-  return _mentionIndicators != nullptr ? _mentionIndicators : [[NSSet alloc] init];
+- (NSSet<NSNumber *> *)mentionIndicators {
+  return _mentionIndicators != nullptr ? _mentionIndicators
+                                       : [[NSSet alloc] init];
 }
 
-- (void)setMentionIndicators:(NSSet<NSNumber*>*)newValue {
+- (void)setMentionIndicators:(NSSet<NSNumber *> *)newValue {
   _mentionIndicators = newValue;
 }
 
@@ -232,7 +238,6 @@
   _blockquoteBorderWidth = newValue;
 }
 
-
 - (CGFloat)blockquoteGapWidth {
   return _blockquoteGapWidth;
 }
@@ -299,24 +304,25 @@
 }
 
 - (UIFont *)orderedListMarkerFont {
-  if(_olMarkerFontNeedsRecreation) {
+  if (_olMarkerFontNeedsRecreation) {
     _olMarkerFontNeedsRecreation = NO;
-    
+
     NSString *newFontWeight = [self orderedListMarkerFontWeight];
     // fix RCTFontWeight conversion warnings:
     // sometimes changing font family comes with weight '0' if not specified
-    // RCTConvert doesn't recognize this value so we just nullify it and it gets a default value
-    if([newFontWeight isEqualToString:@"0"]) {
+    // RCTConvert doesn't recognize this value so we just nullify it and it gets
+    // a default value
+    if ([newFontWeight isEqualToString:@"0"]) {
       newFontWeight = nullptr;
     }
-    
+
     _orderedListMarkerFont = [RCTFont updateFont:nullptr
-      withFamily:[self primaryFontFamily]
-      size:[self primaryFontSize]
-      weight:newFontWeight
-      style:nullptr
-      variant:nullptr
-      scaleMultiplier: 1];
+                                      withFamily:[self primaryFontFamily]
+                                            size:[self primaryFontSize]
+                                          weight:newFontWeight
+                                           style:nullptr
+                                         variant:nullptr
+                                 scaleMultiplier:1];
   }
   return _orderedListMarkerFont;
 }
@@ -374,10 +380,10 @@
 }
 
 - (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator {
-  if(_mentionProperties.count == 1 && _mentionProperties[@"all"] != nullptr) {
+  if (_mentionProperties.count == 1 && _mentionProperties[@"all"] != nullptr) {
     // single props for all the indicators
     return _mentionProperties[@"all"];
-  } else if(_mentionProperties[indicator] != nullptr) {
+  } else if (_mentionProperties[indicator] != nullptr) {
     return _mentionProperties[indicator];
   }
   MentionStyleProps *fallbackProps = [[MentionStyleProps alloc] init];

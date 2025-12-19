@@ -47,6 +47,10 @@ If `false`, text is not editable.
 |--------|---------------|----------|
 | `bool` | `true`        | Both     |
 
+> [!NOTE]
+> Setting `editable` to `false` will disable all user interactions with the input.
+> However, some programmatic changes (like toggling styles or changing value imperatively) via ref methods will still work.
+
 ### `htmlStyle`
 
 A prop for customizing styles appearances.
@@ -82,6 +86,11 @@ interface OnChangeHtmlEvent {
   value: string;
 }
 ```
+
+> [!TIP]
+> Specifying `onChangeHtml` may have performance implications, especially with large documents, as it requires continuous HTML parsing.
+> If you only need the HTML content at specific moments (e.g., when saving), consider using the [`getHTML`](#gethtml) ref method instead.
+> When `onChangeHtml` is not provided, the component optimizes performance by avoiding unnecessary HTML parsing.
 
 - `value` is the new HTML.
 
@@ -333,18 +342,30 @@ focus: () => void;
 
 Focuses the input.
 
-### `.setImage()`
-
-> [!NOTE]
-> This function is Android only as iOS doesn't support inline images just yet.
+### `.getHTML()`
 
 ```ts
-setImage: (src: string) => void;
+getHTML: () => Promise<string>;
 ```
 
-Sets the [inline image](#inline-images) at the current selection.
+Returns a Promise that resolves with the current HTML content of the input. This is useful when you need to get the HTML on-demand (e.g., when saving) without the performance overhead of continuous HTML parsing via `onChangeHtml`.
 
-- `src: string` - the absolute path to the image.
+### `.setImage()`
+
+```ts
+setImage: (src: string, width: number, height: number) => void;
+```
+
+Sets the [inline image](../README.md#inline-images) at the current selection.
+
+- `src: string` - absolute path to a file or remote image address.
+- `width: number` - width of the image.
+- `height: number` - height of the image.
+
+> [!NOTE]
+> It's developer responsibility to provide proper width and height, which may require calculating aspect ratio.
+> Also, keep in mind that in case of providing incorrect image source, static placeholder will be displayed.
+> We may consider adding automatic image size detection and improved error handling in future releases.
 
 ### `.setLink()`
 
@@ -417,9 +438,6 @@ toggleBold: () => void;
 Toggles bold formatting at the current selection.
 
 ### `.toggleCodeBlock()`
-
-> [!NOTE]
-> This function is Android only as iOS doesn't support codeblocks just yet.
 
 ```ts
 toggleCodeBlock: () => void;
@@ -537,10 +555,6 @@ interface HtmlStyle {
     textDecorationLine?: 'underline' | 'none';
   };
   mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  img?: {
-    width?: number;
-    height?: number;
-  };
   ol?: {
     gapWidth?: number;
     marginLeft?: number;
@@ -601,16 +615,11 @@ If only a single config is given, the style applies to all mention types. You ca
 - `backgroundColor` is the mention's background color, takes [color](https://reactnative.dev/docs/colors) value and defaults to `yellow`.
 - `textDecorationLine` decides if the mentions are underlined or not, takes either `underline` or `none` and defaults to `underline`.
 
-### img (inline image)
-
-- `width` is the width of the inline image, defaults to `80`.
-- `height` is the height of the inline image, defaults to `80`.
-
 ### ol (ordered list)
 
 By marker we mean the number that denotes next lines of the list.
 
-- `gapWidth` sets the gap between the marker and the list item's text, defaults to  `16`.
+- `gapWidth` sets the gap between the marker and the list item's text, defaults to `16`.
 - `marginLeft` sets the margin to the left of the marker (between the marker and input's left edge), defaults to `16`.
 - `markerFontWeight` defines the font weight of the marker, takes a [fontWeight](https://reactnative.dev/docs/text-style-props#fontweight) value and if not set, defaults to the same font weight as input's [fontWeight prop](#style).
 - `markerColor` sets the text color of the marker, takes [color](https://reactnative.dev/docs/colors) value and if not set, defaults to the same color as input's [color prop](#style).

@@ -24,6 +24,7 @@ import com.swmansion.enriched.events.OnInputFocusEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
 import com.swmansion.enriched.events.OnMentionEvent
+import com.swmansion.enriched.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.jsonStringToStringMap
@@ -71,6 +72,7 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
      map.put(OnMentionDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnMentionDetectedEvent.EVENT_NAME))
      map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
      map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
+     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
 
      return map
    }
@@ -266,6 +268,10 @@ class EnrichedTextInputViewManager : SimpleViewManager<EnrichedTextInputView>(),
   override fun addMention(view: EnrichedTextInputView?, indicator: String, text: String, payload: String) {
     val attributes = jsonStringToStringMap(payload)
     view?.addMention(text, indicator, attributes)
+  }
+
+  override fun requestHTML(view: EnrichedTextInputView?, requestId: Int) {
+    view?.requestHTML(requestId)
   }
 
   override fun measure(

@@ -3,5 +3,7 @@
 
 @interface ZeroWidthSpaceUtils : NSObject
 + (void)handleZeroWidthSpacesInInput:(id)input;
-+ (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text input:(id)input;
++ (BOOL)handleBackspaceInRange:(NSRange)range
+               replacementText:(NSString *)text
+                         input:(id)input;
 @end

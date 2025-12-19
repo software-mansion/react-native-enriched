@@ -105,6 +105,14 @@ public class EnrichedParser {
     String normalizedBlockQuote = normalizedCodeBlock.replaceAll("</blockquote>\\n<br>", "</blockquote>");
     return "<html>\n" + normalizedBlockQuote + "</html>";
   }
+
+  public static String toHtmlWithDefault(CharSequence text) {
+    if (text instanceof Spanned) {
+      return toHtml((Spanned) text);
+    }
+    return "<html>\n<p></p>\n</html>";
+  }
+
   /**
    * Returns an HTML escaped representation of the given plain text.
    */
