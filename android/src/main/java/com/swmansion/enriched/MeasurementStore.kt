@@ -13,6 +13,7 @@ import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.enriched.styles.HtmlStyle
 import com.swmansion.enriched.utils.EnrichedParser
@@ -134,7 +135,7 @@ object MeasurementStore {
     return size
   }
 
-  fun getMeasureById(context: Context, id: Int?, width: Float, props: ReadableMap?): Long {
+  private fun getMeasureById(context: Context, id: Int?, width: Float, props: ReadableMap?): Long {
     val id = id ?: return initialMeasure(context, id, width, props)
     val value = data[id] ?: return initialMeasure(context, id, width, props)
 
@@ -154,5 +155,17 @@ object MeasurementStore {
     val size = measure(width, value.spannable, paint)
     data[id] = MeasurementParams(true, width, size, value.spannable, value.paintParams)
     return size
+  }
+
+  fun getMeasureById(context: Context, id: Int?, width: Float, height: Float, heightMode: YogaMeasureMode?, props: ReadableMap?): Long {
+    val size = getMeasureById(context, id, width, props)
+    if (heightMode !== YogaMeasureMode.AT_MOST) {
+      return size
+    }
+
+    val calculatedHeight = YogaMeasureOutput.getHeight(size)
+    val atMostHeight = PixelUtil.toDIPFromPixel(height)
+    val finalHeight = calculatedHeight.coerceAtMost(atMostHeight)
+    return YogaMeasureOutput.make(YogaMeasureOutput.getWidth(size), finalHeight)
   }
 }
