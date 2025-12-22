@@ -178,7 +178,7 @@ class EnrichedTextInputView : AppCompatEditText {
     super.onFocusChanged(focused, direction, previouslyFocusedRect)
     val context = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+      val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
 
     if (focused) {
       dispatcher?.dispatchEvent(OnInputFocusEvent(surfaceId, id, experimentalSynchronousEvents))
