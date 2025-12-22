@@ -155,6 +155,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   override fun canScrollVertically(direction: Int): Boolean {
+
     return scrollEnabled
   }
 
