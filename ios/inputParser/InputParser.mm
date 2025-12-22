@@ -7,11 +7,13 @@
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
+  NSInteger _imagesInHtml;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _imagesInHtml = 0;
   return self;
 }
 
@@ -907,7 +909,19 @@
 
   NSArray *tagData = ongoingTags[tagName];
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
-  NSRange tagRange = NSMakeRange(tagLocation, plainText.length - tagLocation);
+
+  // 'tagLocation' is an index based on 'plainText' which currently only holds
+  // raw text.
+  //
+  // Since 'plainText' does not yet contain the special placeholders for images,
+  // the indices for any text following an image are lower than they will be
+  // in the final NSTextStorage.
+  //
+  // We add '_imagesInHtml' to shift the start index forward, aligning this
+  // style's range with the actual position in the final text (where each image
+  // adds 1 character).
+  NSRange tagRange =
+      NSMakeRange(tagLocation + _imagesInHtml, plainText.length - tagLocation);
 
   [tagEntry addObject:[tagName copy]];
   [tagEntry addObject:[NSValue valueWithRange:tagRange]];
@@ -917,12 +931,17 @@
 
   [processedTags addObject:tagEntry];
   [ongoingTags removeObjectForKey:tagName];
+
+  if ([tagName isEqualToString:@"img"]) {
+    _imagesInHtml++;
+  }
 }
 
 - (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
+  _imagesInHtml = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
   BOOL gettingTagParams = NO;
