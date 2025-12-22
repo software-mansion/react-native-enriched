@@ -9,7 +9,7 @@ pre-commit:
       run: npx tsc
     lint-android:
       root: "apps/example/android"
-      glob: "*.{kt,kts,java,gradle}"
+      glob: "**/*.{kt,kts,java,gradle}"
       run: ./gradlew lintVerify
     clang-format:
       glob: "*.{h,m,mm,cpp}"
