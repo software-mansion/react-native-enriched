@@ -978,6 +978,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
 
     [self addImage:uri width:imgWidth height:imgHeight];
+  } else if ([commandName isEqualToString:@"setSelection"]) {
+    NSInteger start = [((NSNumber *)args[0]) integerValue];
+    NSInteger end = [((NSNumber *)args[1]) integerValue];
+    [self setCustomSelection:start end:end];
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
@@ -1016,6 +1020,38 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
   textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
+}
+
+- (void)setCustomSelection:(NSInteger)visibleStart end:(NSInteger)visibleEnd {
+  NSString *text = textView.textStorage.string;
+
+  NSUInteger actualStart = [self getActualIndex:visibleStart text:text];
+  NSUInteger actualEnd = [self getActualIndex:visibleEnd text:text];
+
+  textView.selectedRange = NSMakeRange(actualStart, actualEnd - actualStart);
+}
+
+// Helper: Walks through the string skipping ZWSPs to find the Nth visible
+// character
+- (NSUInteger)getActualIndex:(NSInteger)visibleIndex text:(NSString *)text {
+  NSUInteger currentVisibleCount = 0;
+  NSUInteger actualIndex = 0;
+
+  while (actualIndex < text.length) {
+    if (currentVisibleCount == visibleIndex) {
+      return actualIndex;
+    }
+
+    // If the current char is not a hidden space, it counts towards our visible
+    // index.
+    if ([text characterAtIndex:actualIndex] != 0x200B) {
+      currentVisibleCount++;
+    }
+
+    actualIndex++;
+  }
+
+  return actualIndex;
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text
