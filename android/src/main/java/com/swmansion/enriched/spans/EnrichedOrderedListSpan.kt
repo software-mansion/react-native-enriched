@@ -10,7 +10,12 @@ import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedParagraphSpan {
+class EnrichedOrderedListSpan(
+  private var index: Int,
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  LeadingMarginSpan,
+  EnrichedParagraphSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
   override fun updateMeasureState(p0: TextPaint) {
@@ -21,9 +26,7 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun getLeadingMargin(first: Boolean): Int {
-    return htmlStyle.olMarginLeft + htmlStyle.olGapWidth
-  }
+  override fun getLeadingMargin(first: Boolean): Int = htmlStyle.olMarginLeft + htmlStyle.olGapWidth
 
   override fun drawLeadingMargin(
     canvas: Canvas,
@@ -37,7 +40,7 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
     start: Int,
     end: Int,
     first: Boolean,
-    layout: Layout?
+    layout: Layout?,
   ) {
     if (first) {
       val text = "$index."
@@ -58,8 +61,11 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
     }
   }
 
-  private fun getTypeface(fontWeight: Int?, originalTypeface: Typeface): Typeface {
-    return if (fontWeight == null) {
+  private fun getTypeface(
+    fontWeight: Int?,
+    originalTypeface: Typeface,
+  ): Typeface =
+    if (fontWeight == null) {
       originalTypeface
     } else if (android.os.Build.VERSION.SDK_INT >= 28) {
       Typeface.create(originalTypeface, fontWeight, false)
@@ -71,17 +77,12 @@ class EnrichedOrderedListSpan(private var index: Int, private val htmlStyle: Htm
         Typeface.create(originalTypeface, Typeface.NORMAL)
       }
     }
-  }
 
-  fun getIndex(): Int {
-    return index
-  }
+  fun getIndex(): Int = index
 
   fun setIndex(i: Int) {
     index = i
   }
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedOrderedListSpan {
-    return EnrichedOrderedListSpan(index, htmlStyle)
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedOrderedListSpan = EnrichedOrderedListSpan(index, htmlStyle)
 }

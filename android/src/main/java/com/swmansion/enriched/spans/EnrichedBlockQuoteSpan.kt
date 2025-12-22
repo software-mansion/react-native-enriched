@@ -10,18 +10,33 @@ import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/QuoteSpan.java
-class EnrichedBlockQuoteSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedBlockSpan {
+class EnrichedBlockQuoteSpan(
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  LeadingMarginSpan,
+  EnrichedBlockSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
   override fun updateMeasureState(p0: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun getLeadingMargin(p0: Boolean): Int {
-    return htmlStyle.blockquoteStripeWidth + htmlStyle.blockquoteGapWidth
-  }
+  override fun getLeadingMargin(p0: Boolean): Int = htmlStyle.blockquoteStripeWidth + htmlStyle.blockquoteGapWidth
 
-  override fun drawLeadingMargin(c: Canvas, p: Paint, x: Int, dir: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, first: Boolean, layout: Layout?) {
+  override fun drawLeadingMargin(
+    c: Canvas,
+    p: Paint,
+    x: Int,
+    dir: Int,
+    top: Int,
+    baseline: Int,
+    bottom: Int,
+    text: CharSequence?,
+    start: Int,
+    end: Int,
+    first: Boolean,
+    layout: Layout?,
+  ) {
     val style = p.style
     val color = p.color
     p.style = Paint.Style.FILL
@@ -38,7 +53,5 @@ class EnrichedBlockQuoteSpan(private val htmlStyle: HtmlStyle) : MetricAffecting
     }
   }
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedBlockQuoteSpan {
-    return EnrichedBlockQuoteSpan(htmlStyle)
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedBlockQuoteSpan = EnrichedBlockQuoteSpan(htmlStyle)
 }
