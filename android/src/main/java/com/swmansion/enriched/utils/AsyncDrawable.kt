@@ -13,12 +13,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import java.net.URL
-import java.util.concurrent.Executors
 import androidx.core.graphics.drawable.toDrawable
 import com.swmansion.enriched.R
+import java.net.URL
+import java.util.concurrent.Executors
 
-class AsyncDrawable (
+class AsyncDrawable(
   private val url: String,
 ) : Drawable() {
   private var internalDrawable: Drawable = Color.TRANSPARENT.toDrawable()
@@ -78,11 +78,14 @@ class AsyncDrawable (
   }
 
   @Deprecated("Deprecated in Java")
-  override fun getOpacity(): Int {
-    return PixelFormat.TRANSLUCENT
-  }
+  override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
-  override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
+  override fun setBounds(
+    left: Int,
+    top: Int,
+    right: Int,
+    bottom: Int,
+  ) {
     super.setBounds(left, top, right, bottom)
     internalDrawable.setBounds(left, top, right, bottom)
   }

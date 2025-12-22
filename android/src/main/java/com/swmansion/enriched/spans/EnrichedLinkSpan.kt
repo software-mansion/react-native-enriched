@@ -6,7 +6,11 @@ import android.view.View
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedLinkSpan(private val url: String, private val htmlStyle: HtmlStyle) : ClickableSpan(), EnrichedInlineSpan {
+class EnrichedLinkSpan(
+  private val url: String,
+  private val htmlStyle: HtmlStyle,
+) : ClickableSpan(),
+  EnrichedInlineSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
   override fun onClick(view: View) {
@@ -20,11 +24,7 @@ class EnrichedLinkSpan(private val url: String, private val htmlStyle: HtmlStyle
     textPaint.isUnderlineText = htmlStyle.aUnderline
   }
 
-  fun getUrl(): String {
-    return url
-  }
+  fun getUrl(): String = url
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedLinkSpan {
-    return EnrichedLinkSpan(url, htmlStyle)
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedLinkSpan = EnrichedLinkSpan(url, htmlStyle)
 }
