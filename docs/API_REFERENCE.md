@@ -87,16 +87,16 @@ interface OnChangeHtmlEvent {
 }
 ```
 
-> [!TIP]
-> Specifying `onChangeHtml` may have performance implications, especially with large documents, as it requires continuous HTML parsing.
-> If you only need the HTML content at specific moments (e.g., when saving), consider using the [`getHTML`](#gethtml) ref method instead.
-> When `onChangeHtml` is not provided, the component optimizes performance by avoiding unnecessary HTML parsing.
-
 - `value` is the new HTML.
 
 | Type                                                       | Default Value | Platform |
 |------------------------------------------------------------|---------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | -             | Both     |
+
+> [!TIP]
+> Specifying `onChangeHtml` may have performance implications, especially with large documents, as it requires continuous HTML parsing.
+> If you only need the HTML content at specific moments (e.g., when saving), consider using the [`getHTML`](#gethtml) ref method instead.
+> When `onChangeHtml` is not provided, the component optimizes performance by avoiding unnecessary HTML parsing.
 
 ### `onChangeMention`
 
@@ -410,6 +410,16 @@ setValue: (value: string) => void;
 Sets the input's value.
 
 - `value: string` - value to set, it can either be `react-native-enriched` supported HTML string or raw text.
+
+### `.setSelection()`
+
+```ts
+setSelection: (start: number, end: number) => void;
+```
+
+Sets the selection at the given indexes.
+- `start: number` - starting index of the selection.
+- `end: number` - first index after the selection's ending index. For just a cursor in place (no selection), `start` equals `end`.
 
 ### `.startMention()`
 
