@@ -43,11 +43,11 @@
     "lint-clang:android:fix": "find android/ \\( -iname \"*.h\" -o -iname \"*.cpp\" \\) | grep -v -e build | xargs npx clang-format -i",
     "lint-clang": "yarn lint-clang:ios && yarn lint-clang:android",
     "lint-clang:fix": "yarn lint-clang:ios:fix && yarn lint-clang:android:fix",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli android/build apps/example/android/build apps/example/android/app/build apps/example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it",
-    "android-studio": "open -a 'Android Studio' example/android",
-    "xcode": "open -a 'Xcode' example/ios/EnrichedTextInputExample.xcworkspace"
+    "android-studio": "open -a 'Android Studio' apps/example/android",
+    "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace"
   },
   "keywords": [
     "react-native",
@@ -98,14 +98,14 @@
     "react-native": "*"
   },
   "workspaces": [
-    "example",
+    "apps/example",
     "apps/example-web"
   ],
   "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
-      "<rootDir>/example/node_modules",
+      "<rootDir>/apps/example/node_modules",
       "<rootDir>/lib/"
     ]
   },
