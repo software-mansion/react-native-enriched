@@ -7,13 +7,13 @@
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
-  NSInteger _imagesInHtml;
+  NSInteger _precedingImageCount;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
-  _imagesInHtml = 0;
+  _precedingImageCount = 0;
   return self;
 }
 
@@ -920,8 +920,8 @@
   // We add '_imagesInHtml' to shift the start index forward, aligning this
   // style's range with the actual position in the final text (where each image
   // adds 1 character).
-  NSRange tagRange =
-      NSMakeRange(tagLocation + _imagesInHtml, plainText.length - tagLocation);
+  NSRange tagRange = NSMakeRange(tagLocation + _precedingImageCount,
+                                 plainText.length - tagLocation);
 
   [tagEntry addObject:[tagName copy]];
   [tagEntry addObject:[NSValue valueWithRange:tagRange]];
@@ -933,7 +933,7 @@
   [ongoingTags removeObjectForKey:tagName];
 
   if ([tagName isEqualToString:@"img"]) {
-    _imagesInHtml++;
+    _precedingImageCount++;
   }
 }
 
@@ -941,7 +941,7 @@
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
-  _imagesInHtml = 0;
+  _precedingImageCount = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
   BOOL gettingTagParams = NO;
