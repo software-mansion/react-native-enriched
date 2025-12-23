@@ -141,60 +141,35 @@ export const Toolbar: FC<ToolbarProps> = ({
   const isDisabled = (item: Item) => {
     switch (item.name) {
       case 'bold':
-        return stylesState.bold.isConflicting || stylesState.bold.isBlocking;
+        return stylesState.bold.isBlocking;
       case 'italic':
-        return (
-          stylesState.italic.isConflicting || stylesState.italic.isBlocking
-        );
+        return stylesState.italic.isBlocking;
       case 'underline':
-        return (
-          stylesState.underline.isConflicting ||
-          stylesState.underline.isBlocking
-        );
+        return stylesState.underline.isBlocking;
       case 'strikethrough':
-        return (
-          stylesState.strikeThrough.isConflicting ||
-          stylesState.strikeThrough.isBlocking
-        );
+        return stylesState.strikeThrough.isBlocking;
       case 'inline-code':
-        return (
-          stylesState.inlineCode.isConflicting ||
-          stylesState.inlineCode.isBlocking
-        );
+        return stylesState.inlineCode.isBlocking;
       case 'heading-1':
-        return stylesState.h1.isConflicting || stylesState.h1.isBlocking;
+        return stylesState.h1.isBlocking;
       case 'heading-2':
-        return stylesState.h2.isConflicting || stylesState.h2.isBlocking;
+        return stylesState.h2.isBlocking;
       case 'heading-3':
-        return stylesState.h3.isConflicting || stylesState.h3.isBlocking;
+        return stylesState.h3.isBlocking;
       case 'code-block':
-        return (
-          stylesState.codeBlock.isConflicting ||
-          stylesState.codeBlock.isBlocking
-        );
+        return stylesState.codeBlock.isBlocking;
       case 'quote':
-        return (
-          stylesState.blockQuote.isConflicting ||
-          stylesState.blockQuote.isBlocking
-        );
+        return stylesState.blockQuote.isBlocking;
       case 'unordered-list':
-        return (
-          stylesState.unorderedList.isConflicting ||
-          stylesState.unorderedList.isBlocking
-        );
+        return stylesState.unorderedList.isBlocking;
       case 'ordered-list':
-        return (
-          stylesState.orderedList.isConflicting ||
-          stylesState.orderedList.isBlocking
-        );
+        return stylesState.orderedList.isBlocking;
       case 'link':
-        return stylesState.link.isConflicting || stylesState.link.isBlocking;
+        return stylesState.link.isBlocking;
       case 'image':
-        return stylesState.image.isConflicting || stylesState.image.isBlocking;
+        return stylesState.image.isBlocking;
       case 'mention':
-        return (
-          stylesState.mention.isConflicting || stylesState.mention.isBlocking
-        );
+        return stylesState.mention.isBlocking;
       default:
         return false;
     }

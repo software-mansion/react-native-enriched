@@ -18,8 +18,8 @@
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
   {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
-   .isBlocking = [self isStyleBlocking:TYPE_ENUM],                             \
-   .isConflicting = [self isStyleConflicting:TYPE_ENUM]}
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -949,18 +949,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return [_activeStyles containsObject:@(type)];
 }
 
-- (bool)isStyleConflicting:(StyleType)type {
-  for (NSNumber *style in conflictingStyles[@(type)]) {
-    if ([_activeStyles containsObject:style]) {
-      return true;
-    }
+- (bool)isStyle:(StyleType)type activeInMap:(NSDictionary *)styleMap {
+  NSArray *relatedStyles = styleMap[@(type)];
+
+  if (!relatedStyles) {
+    return false;
   }
 
-  return false;
-}
-
-- (bool)isStyleBlocking:(StyleType)type {
-  for (NSNumber *style in blockingStyles[@(type)]) {
+  for (NSNumber *style in relatedStyles) {
     if ([_activeStyles containsObject:style]) {
       return true;
     }
