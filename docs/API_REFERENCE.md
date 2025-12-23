@@ -7,7 +7,7 @@
 If `true`, focuses the input.
 
 | Type   | Default Value | Platform |
-|--------|---------------|----------|
+| ------ | ------------- | -------- |
 | `bool` | `false`       | Both     |
 
 ### `autoCapitalize`
@@ -20,7 +20,7 @@ Tells input to automatically capitalize certain characters.
 - `none`: don't auto capitalize anything.
 
 | Type                                               | Default Value | Platform |
-|----------------------------------------------------|---------------|----------|
+| -------------------------------------------------- | ------------- | -------- |
 | `'none' \| 'sentences' \| 'words' \| 'characters'` | `'sentences'` | Both     |
 
 ### `cursorColor`
@@ -28,7 +28,7 @@ Tells input to automatically capitalize certain characters.
 When provided it will set the color of the cursor (or "caret") in the component.
 
 | Type                                           | Default Value  | Platform |
-|------------------------------------------------|----------------|----------|
+| ---------------------------------------------- | -------------- | -------- |
 | [`color`](https://reactnative.dev/docs/colors) | system default | Android  |
 
 ### `defaultValue`
@@ -36,7 +36,7 @@ When provided it will set the color of the cursor (or "caret") in the component.
 Provides an initial value for the input. If the string is a valid HTML output of the `EnrichedTextInput` component (or other HTML that the parser will accept), proper styles will be applied.
 
 | Type     | Default Value | Platform |
-|----------|---------------|----------|
+| -------- | ------------- | -------- |
 | `string` | -             | Both     |
 
 ### `editable`
@@ -44,7 +44,7 @@ Provides an initial value for the input. If the string is a valid HTML output of
 If `false`, text is not editable.
 
 | Type   | Default Value | Platform |
-|--------|---------------|----------|
+| ------ | ------------- | -------- |
 | `bool` | `true`        | Both     |
 
 > [!NOTE]
@@ -56,7 +56,7 @@ If `false`, text is not editable.
 A prop for customizing styles appearances.
 
 | Type                           | Default Value                                      | Platform |
-|--------------------------------|----------------------------------------------------|----------|
+| ------------------------------ | -------------------------------------------------- | -------- |
 | [`HtmlStyle`](#htmlstyle-type) | default values from [`HtmlStyle`](#htmlstyle-type) | Both     |
 
 ### `mentionIndicators`
@@ -64,7 +64,7 @@ A prop for customizing styles appearances.
 The recognized mention indicators. Each item needs to be a 1 character long string.
 
 | Type              | Default Value | Platform |
-|-------------------|---------------|----------|
+| ----------------- | ------------- | -------- |
 | array of `string` | `['@']`       | Both     |
 
 ### `onBlur`
@@ -72,7 +72,7 @@ The recognized mention indicators. Each item needs to be a 1 character long stri
 Callback that's called whenever the input loses focused (is blurred).
 
 | Type         | Default Value | Platform |
-|--------------|---------------|----------|
+| ------------ | ------------- | -------- |
 | `() => void` | -             | Both     |
 
 ### `onChangeHtml`
@@ -90,7 +90,7 @@ interface OnChangeHtmlEvent {
 - `value` is the new HTML.
 
 | Type                                                       | Default Value | Platform |
-|------------------------------------------------------------|---------------|----------|
+| ---------------------------------------------------------- | ------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | -             | Both     |
 
 > [!TIP]
@@ -115,7 +115,7 @@ interface OnChangeMentionEvent {
 - `text` contains whole text that has been typed after the indicator.
 
 | Type                                    | Default Value | Platform |
-|-----------------------------------------|---------------|----------|
+| --------------------------------------- | ------------- | -------- |
 | `(event: OnChangeMentionEvent) => void` | -             | Both     |
 
 ### `onChangeSelection`
@@ -137,17 +137,111 @@ interface OnChangeSelectionEvent {
 - `text` is the input's text in the current selection.
 
 | Type                                                            | Default Value | Platform |
-|-----------------------------------------------------------------|---------------|----------|
+| --------------------------------------------------------------- | ------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeSelectionEvent>) => void` | -             | Both     |
 
 ### `onChangeState`
 
 Callback that gets called when any of the styles within the selection changes.
 
-Payload has a bool flag for each style:
+Payload interface:
 
 ```ts
 interface OnChangeStateEvent {
+  bold: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  italic: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  underline: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  strikeThrough: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  inlineCode: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h1: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h2: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h3: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  codeBlock: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  blockQuote: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  orderedList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  unorderedList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  link: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  image: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  mention: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+}
+```
+
+- `isActive` is the style active within current selection.
+- `isBlocking` Indicates if the style is blocked by other currently active styles.
+- `isConflicting` Indicates if the style is in conflict with other currently active styles.
+
+| Type                                                        | Default Value | Platform |
+| ----------------------------------------------------------- | ------------- | -------- |
+| `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | -             | Both     |
+
+### `onChangeStateDeprecated`
+
+Callback that gets called when any of the styles within the selection changes.
+
+Payload has a bool flag for each style:
+
+```ts
+interface OnChangeStateDeprecatedEvent {
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;
@@ -166,9 +260,9 @@ interface OnChangeStateEvent {
 }
 ```
 
-| Type                                                        | Default Value | Platform |
-|-------------------------------------------------------------|---------------|----------|
-| `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | -             | Both     |
+| Type                                                                  | Default Value | Platform |
+| --------------------------------------------------------------------- | ------------- | -------- |
+| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | -             | Both     |
 
 ### `onChangeText`
 
@@ -185,7 +279,7 @@ interface OnChangeTextEvent {
 - `value` is the new text value of the input.
 
 | Type                                                       | Default Value | Platform |
-|------------------------------------------------------------|---------------|----------|
+| ---------------------------------------------------------- | ------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | -             | Both     |
 
 ### `onEndMention`
@@ -195,7 +289,7 @@ Callback that is called when the user no longer edits a mention actively - has m
 - `indicator` is the indicator of the mention that was being edited.
 
 | Type                          | Default Value | Platform |
-|-------------------------------|---------------|----------|
+| ----------------------------- | ------------- | -------- |
 | `(indicator: string) => void` | -             | Both     |
 
 ### `onFocus`
@@ -203,7 +297,7 @@ Callback that is called when the user no longer edits a mention actively - has m
 Callback that's called whenever the input is focused.
 
 | Type         | Default Value | Platform |
-|--------------|---------------|----------|
+| ------------ | ------------- | -------- |
 | `() => void` | -             | Both     |
 
 ### `onLinkDetected`
@@ -227,7 +321,7 @@ interface OnLinkDetected {
 - `end` is the first index after the ending index of the link.
 
 | Type                              | Default Value | Platform |
-|-----------------------------------|---------------|----------|
+| --------------------------------- | ------------- | -------- |
 | `(event: OnLinkDetected) => void` | -             | Both     |
 
 ### `onMentionDetected`
@@ -249,7 +343,7 @@ interface OnMentionDetected {
 - `attributes` are the additional user-defined attributes that are being stored with the mention.
 
 | Type                                 | Default Value | Platform |
-|--------------------------------------|---------------|----------|
+| ------------------------------------ | ------------- | -------- |
 | `(event: OnMentionDetected) => void` | -             | Both     |
 
 ### `onStartMention`
@@ -259,7 +353,7 @@ Callback that gets called whenever a mention editing starts (after placing the i
 - `indicator` is the indicator of the mention that begins editing.
 
 | Type                          | Default Value | Platform |
-|-------------------------------|---------------|----------|
+| ----------------------------- | ------------- | -------- |
 | `(indicator: string) => void` | -             | Both     |
 
 ### `placeholder`
@@ -267,7 +361,7 @@ Callback that gets called whenever a mention editing starts (after placing the i
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
 
 | Type     | Default Value | Platform |
-|----------|---------------|----------|
+| -------- | ------------- | -------- |
 | `string` | `''`          | Both     |
 
 ### `placeholderTextColor`
@@ -275,7 +369,7 @@ The placeholder text that is displayed in the input if nothing has been typed ye
 Input placeholder's text color.
 
 | Type                                           | Default Value           | Platform |
-|------------------------------------------------|-------------------------|----------|
+| ---------------------------------------------- | ----------------------- | -------- |
 | [`color`](https://reactnative.dev/docs/colors) | input's [color](#style) | Both     |
 
 ### `ref`
@@ -283,7 +377,7 @@ Input placeholder's text color.
 A React ref that lets you call any ref methods on the input.
 
 | Type                                           | Default Value | Platform |
-|------------------------------------------------|---------------|----------|
+| ---------------------------------------------- | ------------- | -------- |
 | `RefObject<EnrichedTextInputInstance \| null>` | -             | Both     |
 
 ### `selectionColor`
@@ -291,7 +385,7 @@ A React ref that lets you call any ref methods on the input.
 Color of the selection rectangle that gets drawn over the selected text. On iOS, the cursor (caret) also gets set to this color.
 
 | Type                                           | Default Value  | Platform |
-|------------------------------------------------|----------------|----------|
+| ---------------------------------------------- | -------------- | -------- |
 | [`color`](https://reactnative.dev/docs/colors) | system default | Both     |
 
 ### `style`
@@ -307,7 +401,7 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontStyle only on Android
 
 | Type                                                                                                               | Default Value | Platform |
-|--------------------------------------------------------------------------------------------------------------------|---------------|----------|
+| ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
 | [`View Style`](https://reactnative.dev/docs/view#style) \| [`Text Style`](https://reactnative.dev/docs/text#style) | -             | Both     |
 
 ### `ViewProps`
@@ -319,7 +413,7 @@ The input inherits [ViewProps](https://reactnative.dev/docs/view#props), but kee
 If true, Android will use experimental synchronous events. This will prevent from input flickering when updating component size. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
 
 | Type   | Default Value | Platform |
-|--------|---------------|----------|
+| ------ | ------------- | -------- |
 | `bool` | `false`       | Android  |
 
 ## Ref Methods
@@ -418,6 +512,7 @@ setSelection: (start: number, end: number) => void;
 ```
 
 Sets the selection at the given indexes.
+
 - `start: number` - starting index of the selection.
 - `end: number` - first index after the selection's ending index. For just a cursor in place (no selection), `start` equals `end`.
 
