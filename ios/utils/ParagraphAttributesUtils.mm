@@ -175,4 +175,71 @@
   return NO;
 }
 
+/**
+ * Resets typing attributes to defaults when the cursor lands on an empty line
+ * after a deletion.
+ *
+ * This override is necessary because `UITextView` automatically inherits
+ * attributes from the preceding newline. This prevents scenarios where a
+ * restrictive style (like CodeBlock) "leaks" into the next empty paragraph.
+ */
++ (BOOL)handleResetTypingAttributesOnBackspace:(NSRange)range
+                               replacementText:(NSString *)text
+                                         input:(id)input {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
+  if (typedInput == nullptr) {
+    return NO;
+  }
+
+  NSString *storageString = typedInput->textView.textStorage.string;
+
+  if (text.length > 0 || range.location >= storageString.length) {
+    return NO;
+  }
+
+  unichar firstCharToDelete = [storageString characterAtIndex:range.location];
+  if (![[NSCharacterSet newlineCharacterSet]
+          characterIsMember:firstCharToDelete]) {
+    return NO;
+  }
+
+  NSRange leftParagraphRange =
+      [storageString paragraphRangeForRange:NSMakeRange(range.location, 0)];
+  BOOL isLeftLineEmpty = [self isParagraphEmpty:leftParagraphRange
+                                       inString:storageString];
+
+  BOOL isRightLineEmpty = YES;
+  NSUInteger rightRangeStart = range.location + range.length;
+
+  if (rightRangeStart < storageString.length) {
+    NSRange rightParagraphRange =
+        [storageString paragraphRangeForRange:NSMakeRange(rightRangeStart, 0)];
+    isRightLineEmpty = [self isParagraphEmpty:rightParagraphRange
+                                     inString:storageString];
+  }
+
+  if (isLeftLineEmpty && isRightLineEmpty) {
+    [TextInsertionUtils replaceText:text
+                                 at:range
+               additionalAttributes:nullptr
+                              input:typedInput
+                      withSelection:YES];
+
+    typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
+    return YES;
+  }
+
+  return NO;
+}
+
++ (BOOL)isParagraphEmpty:(NSRange)range inString:(NSString *)string {
+  if (range.length == 0)
+    return YES;
+
+  NSString *paragraphText = [string substringWithRange:range];
+  NSString *trimmed = [paragraphText
+      stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+  return trimmed.length == 0;
+}
+
 @end
