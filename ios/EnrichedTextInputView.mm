@@ -16,6 +16,13 @@
 #import <folly/dynamic.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
+#define GET_STYLE_STATE(TYPE_ENUM)                                             \
+  {                                                                            \
+    .isActive = [self isStyleActive:TYPE_ENUM],                                \
+    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
+    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
+  }
+
 using namespace facebook::react;
 
 @interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol,
@@ -874,7 +881,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // update activeStyles only if emitter is available
       _activeStyles = newActiveStyles;
 
-      emitter->onChangeState({
+      emitter->onChangeStateDeprecated({
         .isBold = [_activeStyles containsObject:@([BoldStyle getStyleType])],
         .isItalic =
             [_activeStyles containsObject:@([ItalicStyle getStyleType])],
@@ -900,6 +907,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
             [_activeStyles containsObject:@([CodeBlockStyle getStyleType])],
         .isImage = [_activeStyles containsObject:@([ImageStyle getStyleType])],
       });
+      emitter->onChangeState(
+          {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+           .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
+           .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
+           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getStyleType]),
+           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
+           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+           .h1 = GET_STYLE_STATE([H1Style getStyleType]),
+           .h2 = GET_STYLE_STATE([H2Style getStyleType]),
+           .h3 = GET_STYLE_STATE([H3Style getStyleType]),
+           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getStyleType]),
+           .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
+           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
+           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
+           .image = GET_STYLE_STATE([ImageStyle getStyleType])});
     }
   }
 
@@ -922,6 +945,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
+}
+
+- (bool)isStyleActive:(StyleType)type {
+  return [_activeStyles containsObject:@(type)];
+}
+
+- (bool)isStyle:(StyleType)type activeInMap:(NSDictionary *)styleMap {
+  NSArray *relatedStyles = styleMap[@(type)];
+
+  if (!relatedStyles) {
+    return false;
+  }
+
+  for (NSNumber *style in relatedStyles) {
+    if ([_activeStyles containsObject:style]) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // MARK: - Native commands and events
