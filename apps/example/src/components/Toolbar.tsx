@@ -138,38 +138,100 @@ export const Toolbar: FC<ToolbarProps> = ({
     }
   };
 
+  const isDisabled = (item: Item) => {
+    switch (item.name) {
+      case 'bold':
+        return stylesState.bold.isConflicting || stylesState.bold.isBlocking;
+      case 'italic':
+        return (
+          stylesState.italic.isConflicting || stylesState.italic.isBlocking
+        );
+      case 'underline':
+        return (
+          stylesState.underline.isConflicting ||
+          stylesState.underline.isBlocking
+        );
+      case 'strikethrough':
+        return (
+          stylesState.strikeThrough.isConflicting ||
+          stylesState.strikeThrough.isBlocking
+        );
+      case 'inline-code':
+        return (
+          stylesState.inlineCode.isConflicting ||
+          stylesState.inlineCode.isBlocking
+        );
+      case 'heading-1':
+        return stylesState.h1.isConflicting || stylesState.h1.isBlocking;
+      case 'heading-2':
+        return stylesState.h2.isConflicting || stylesState.h2.isBlocking;
+      case 'heading-3':
+        return stylesState.h3.isConflicting || stylesState.h3.isBlocking;
+      case 'code-block':
+        return (
+          stylesState.codeBlock.isConflicting ||
+          stylesState.codeBlock.isBlocking
+        );
+      case 'quote':
+        return (
+          stylesState.blockQuote.isConflicting ||
+          stylesState.blockQuote.isBlocking
+        );
+      case 'unordered-list':
+        return (
+          stylesState.unorderedList.isConflicting ||
+          stylesState.unorderedList.isBlocking
+        );
+      case 'ordered-list':
+        return (
+          stylesState.orderedList.isConflicting ||
+          stylesState.orderedList.isBlocking
+        );
+      case 'link':
+        return stylesState.link.isConflicting || stylesState.link.isBlocking;
+      case 'image':
+        return stylesState.image.isConflicting || stylesState.image.isBlocking;
+      case 'mention':
+        return (
+          stylesState.mention.isConflicting || stylesState.mention.isBlocking
+        );
+      default:
+        return false;
+    }
+  };
+
   const isActive = (item: Item) => {
     switch (item.name) {
       case 'bold':
-        return stylesState.isBold;
+        return stylesState.bold.isActive;
       case 'italic':
-        return stylesState.isItalic;
+        return stylesState.italic.isActive;
       case 'underline':
-        return stylesState.isUnderline;
+        return stylesState.underline.isActive;
       case 'strikethrough':
-        return stylesState.isStrikeThrough;
+        return stylesState.strikeThrough.isActive;
       case 'inline-code':
-        return stylesState.isInlineCode;
+        return stylesState.inlineCode.isActive;
       case 'heading-1':
-        return stylesState.isH1;
+        return stylesState.h1.isActive;
       case 'heading-2':
-        return stylesState.isH2;
+        return stylesState.h2.isActive;
       case 'heading-3':
-        return stylesState.isH3;
+        return stylesState.h3.isActive;
       case 'code-block':
-        return stylesState.isCodeBlock;
+        return stylesState.codeBlock.isActive;
       case 'quote':
-        return stylesState.isBlockQuote;
+        return stylesState.blockQuote.isActive;
       case 'unordered-list':
-        return stylesState.isUnorderedList;
+        return stylesState.unorderedList.isActive;
       case 'ordered-list':
-        return stylesState.isOrderedList;
+        return stylesState.orderedList.isActive;
       case 'link':
-        return stylesState.isLink;
+        return stylesState.link.isActive;
       case 'image':
-        return stylesState.isImage;
+        return stylesState.image.isActive;
       case 'mention':
-        return stylesState.isMention;
+        return stylesState.mention.isActive;
       default:
         return false;
     }
@@ -180,6 +242,7 @@ export const Toolbar: FC<ToolbarProps> = ({
       <ToolbarButton
         {...item}
         isActive={isActive(item)}
+        isDisabled={isDisabled(item)}
         onPress={() => handlePress(item)}
       />
     );
