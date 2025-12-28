@@ -4,8 +4,19 @@
 #import "TextInsertionUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
+// for some reason UIKit may produce different size with the same text
+// the difference is always ~0.5
+static const CGFloat Epsilon = 0.5;
+
+static inline BOOL CGSizeAlmostEqual(CGSize firstSize, CGSize secondSize,
+                                     CGFloat epsilon) {
+  return fabs(firstSize.width - secondSize.width) < epsilon &&
+         fabs(firstSize.height - secondSize.height) < epsilon;
+}
+
 @implementation InputTextView {
   UILabel *placeholderView;
+  CGSize _lastCommittedSize;
 };
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -18,6 +29,7 @@
     self.textContainer.lineFragmentPadding = 0;
     self.scrollEnabled = YES;
     self.scrollsToTop = NO;
+    _lastCommittedSize = CGSizeZero;
   }
   return self;
 }
@@ -212,6 +224,15 @@
       [placeholderView sizeThatFits:textFrame.size].height;
   textFrame.size.height = MIN(placeholderHeight, textFrame.size.height);
   placeholderView.frame = textFrame;
+  CGSize newSize =
+      [self.layoutManager usedRectForTextContainer:self.textContainer].size;
+  if (CGSizeAlmostEqual(newSize, _lastCommittedSize, Epsilon)) {
+    return;
+  }
+
+  _lastCommittedSize = newSize;
+
+  [_input commitSize:newSize];
 }
 
 @end
