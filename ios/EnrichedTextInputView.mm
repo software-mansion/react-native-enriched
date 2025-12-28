@@ -801,16 +801,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // componentView) so we need to run a single height calculation for any
   // initial values
   if (oldState == nullptr) {
-    [self measureAndCommitSize];
+    [self commitSize:textView.textContainer.size];
   }
 }
 
-- (void)measureAndCommitSize {
+- (void)commitSize:(CGSize)size {
   if (_state == nullptr) {
     return;
   }
-  CGSize size =
-      [self measureInitialSizeWithMaxWidth:textView.bounds.size.width];
+
   auto selfRef = wrapManagedObjectWeakly(self);
   facebook::react::Size newSize{.width = size.width, .height = size.height};
   _state->updateState(
@@ -1583,8 +1582,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
-  // update height on each character change
-  [self measureAndCommitSize];
   // update active styles as well
   [self tryUpdatingActiveStyles];
 }

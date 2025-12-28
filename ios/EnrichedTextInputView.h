@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
                                             range:(NSRange)range;
 - (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth;
+- (void)commitSize:(CGSize)size;
 @end
 
 NS_ASSUME_NONNULL_END
