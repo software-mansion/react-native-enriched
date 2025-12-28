@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   BOOL blockEmitting;
 }
-- (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
                           range:(NSRange)range;

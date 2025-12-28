@@ -46,6 +46,7 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
+  BOOL _isMeasuringSize;
 }
 
 // MARK: - Component utils
@@ -72,8 +73,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
-    [self setupPlaceholderLabel];
-    self.contentView = textView;
+    [self addSubview:textView];
+    _isMeasuringSize = NO;
   }
   return self;
 }
@@ -249,26 +250,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
-  textView.adjustsFontForContentSizeCategory = YES;
-}
-
-- (void)setupPlaceholderLabel {
-  _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  _placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  [textView addSubview:_placeholderLabel];
-  [NSLayoutConstraint activateConstraints:@[
-    [_placeholderLabel.leadingAnchor
-        constraintEqualToAnchor:textView.leadingAnchor],
-    [_placeholderLabel.widthAnchor
-        constraintEqualToAnchor:textView.widthAnchor],
-    [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor],
-    [_placeholderLabel.bottomAnchor
-        constraintEqualToAnchor:textView.bottomAnchor]
-  ]];
-  _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-  _placeholderLabel.text = @"";
-  _placeholderLabel.hidden = YES;
-  _placeholderLabel.adjustsFontForContentSizeCategory = YES;
+  textView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  textView.adjustsFontForContentSizeCategory = YES;    
 }
 
 // MARK: - Props
@@ -685,9 +669,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
-
-    // update the placeholder as well
-    [self refreshPlaceholderLabelStyles];
   }
 
   // editable
@@ -715,24 +696,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // placeholderTextColor
   if (newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor) {
-    // some real color
-    if (isColorMeaningful(newViewProps.placeholderTextColor)) {
-      _placeholderColor =
-          RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
-    } else {
-      _placeholderColor = nullptr;
-    }
-    [self refreshPlaceholderLabelStyles];
+    textView.placeholderColor =
+        RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
   }
 
   // placeholder
   if (newViewProps.placeholder != oldViewProps.placeholder) {
-    _placeholderLabel.text = [NSString fromCppString:newViewProps.placeholder];
-    [self refreshPlaceholderLabelStyles];
-    // additionally show placeholder on first mount if it should be there
-    if (isFirstMount && textView.text.length == 0) {
-      [self setPlaceholderLabelShown:YES];
-    }
+    [textView
+        setPlaceholderText:[NSString fromCppString:newViewProps.placeholder]];
   }
 
   // mention indicators
@@ -808,75 +779,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
+  [textView updatePlaceholderVisibility];
 }
 
-- (void)setPlaceholderLabelShown:(BOOL)shown {
-  if (shown) {
-    [self refreshPlaceholderLabelStyles];
-    _placeholderLabel.hidden = NO;
-  } else {
-    _placeholderLabel.hidden = YES;
-  }
-}
+- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
+           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics {
+  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
-- (void)refreshPlaceholderLabelStyles {
-  NSMutableDictionary *newAttrs = [defaultTypingAttributes mutableCopy];
-  if (_placeholderColor != nullptr) {
-    newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
-  }
-  NSAttributedString *newAttrStr =
-      [[NSAttributedString alloc] initWithString:_placeholderLabel.text
-                                      attributes:newAttrs];
-  _placeholderLabel.attributedText = newAttrStr;
-}
-
-// MARK: - Measuring and states
-
-- (CGSize)measureSize:(CGFloat)maxWidth {
-  // copy the the whole attributed string
-  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc]
-      initWithAttributedString:textView.textStorage];
-
-  // edge case: empty input should still be of a height of a single line, so we
-  // add a mock "I" character
-  if ([currentStr length] == 0) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
-
-  // edge case: input with only a zero width space should still be of a height
-  // of a single line, so we add a mock "I" character
-  if ([currentStr length] == 1 &&
-      [[currentStr.string substringWithRange:NSMakeRange(0, 1)]
-          isEqualToString:@"\u200B"]) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
-
-  // edge case: trailing newlines aren't counted towards height calculations, so
-  // we add a mock "I" character
-  if (currentStr.length > 0) {
-    unichar lastChar =
-        [currentStr.string characterAtIndex:currentStr.length - 1];
-    if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
-      [currentStr
-          appendAttributedString:[[NSAttributedString alloc]
-                                     initWithString:@"I"
-                                         attributes:defaultTypingAttributes]];
-    }
-  }
-
-  CGRect boundingBox =
-      [currentStr boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                               options:NSStringDrawingUsesLineFragmentOrigin |
-                                       NSStringDrawingUsesFontLeading
-                               context:nullptr];
-
-  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
+  textView.frame = UIEdgeInsetsInsetRect(
+      self.bounds, RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.borderWidth));
+  textView.textContainerInset = RCTUIEdgeInsetsFromEdgeInsets(
+      layoutMetrics.contentInsets - layoutMetrics.borderWidth);
 }
 
 // make sure the newest state is kept in _state property
@@ -889,18 +802,32 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // componentView) so we need to run a single height calculation for any
   // initial values
   if (oldState == nullptr) {
-    [self tryUpdatingHeight];
+    [self measureSize];
   }
 }
 
-- (void)tryUpdatingHeight {
-  if (_state == nullptr) {
+- (void)measureSize {
+  if (_state == nullptr || _isMeasuringSize) {
     return;
   }
-  _componentViewHeightUpdateCounter++;
-  auto selfRef = wrapManagedObjectWeakly(self);
-  _state->updateState(
-      EnrichedTextInputViewState(_componentViewHeightUpdateCounter, selfRef));
+
+  [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
+
+  CGRect used =
+      [textView.layoutManager usedRectForTextContainer:textView.textContainer];
+  CGSize size = used.size;
+
+  // Empty text fallback
+  if (textView.textStorage.length == 0) {
+    UIFont *font =
+        textView.typingAttributes[NSFontAttributeName] ?: textView.font;
+    if (font) {
+      size.height = ceil(font.lineHeight);
+    }
+  }
+
+  facebook::react::Size newSize{.width = size.width, .height = size.height};
+  _state->updateState(facebook::react::EnrichedTextInputViewState(newSize));
 }
 
 // MARK: - Active styles
@@ -1610,12 +1537,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // placholder management
-  if (!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
-    [self setPlaceholderLabelShown:NO];
-  } else if (textView.textStorage.string.length == 0 &&
-             _placeholderLabel.hidden) {
-    [self setPlaceholderLabelShown:YES];
-  }
+  [textView updatePlaceholderVisibility];
 
   if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // modified words handling
@@ -1652,55 +1574,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // update height on each character change
-  [self tryUpdatingHeight];
+  [self measureSize];
   // update active styles as well
   [self tryUpdatingActiveStyles];
-  // update drawing - schedule debounced relayout
-  [self scheduleRelayoutIfNeeded];
-}
-
-// Debounced relayout helper - coalesces multiple requests into one per runloop
-// tick
-- (void)scheduleRelayoutIfNeeded {
-  // Cancel any previously scheduled invocation to debounce
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(_performRelayout)
-                                             object:nil];
-  // Schedule on next runloop cycle
-  [self performSelector:@selector(_performRelayout)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)_performRelayout {
-  if (!textView) {
-    return;
-  }
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSRange wholeRange =
-        NSMakeRange(0, self->textView.textStorage.string.length);
-    NSRange actualRange = NSMakeRange(0, 0);
-    [self->textView.layoutManager
-        invalidateLayoutForCharacterRange:wholeRange
-                     actualCharacterRange:&actualRange];
-    [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-    [self->textView.layoutManager
-        invalidateDisplayForCharacterRange:wholeRange];
-
-    // We have to explicitly set contentSize
-    // That way textView knows if content overflows and if should be scrollable
-    // We recall measureSize here because value returned from previous
-    // measureSize may not be up-to date at that point
-    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
-    self->textView.contentSize = measuredSize;
-  });
-}
-
-- (void)didMoveToWindow {
-  [super didMoveToWindow];
-  // used to run all lifecycle callbacks
-  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - UITextView delegate methods
