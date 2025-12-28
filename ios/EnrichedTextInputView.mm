@@ -806,24 +806,34 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)measureAndCommitSize {
-  if (_state == nullptr) {
-    return;
-  }
-  [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
+- (CGSize)_measureSizeWithMaxWidth:(CGFloat)maxWidth {
+  NSTextContainer *container = textView.textContainer;
+  NSLayoutManager *layoutManager = textView.layoutManager;
 
-  CGRect used =
-      [textView.layoutManager usedRectForTextContainer:textView.textContainer];
-  CGSize size = used.size;
+  container.size = CGSizeMake(maxWidth, CGFLOAT_MAX);
+
+  [layoutManager ensureLayoutForTextContainer:container];
+
+  CGRect used = [layoutManager usedRectForTextContainer:container];
+  CGFloat height = ceil(used.size.height);
 
   // Empty text fallback
   if (textView.textStorage.length == 0) {
     UIFont *font =
         textView.typingAttributes[NSFontAttributeName] ?: textView.font;
     if (font) {
-      size.height = ceil(font.lineHeight);
+      height = ceil(font.lineHeight);
     }
   }
+
+  return CGSizeMake(maxWidth, height);
+}
+
+- (void)measureAndCommitSize {
+  if (_state == nullptr) {
+    return;
+  }
+  CGSize size = [self _measureSizeWithMaxWidth:textView.bounds.size.width];
   auto selfRef = wrapManagedObjectWeakly(self);
   facebook::react::Size newSize{.width = size.width, .height = size.height};
   _state->updateState(
@@ -831,34 +841,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 - (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth {
-  [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
-  CGRect usedRect =
-      [textView.layoutManager usedRectForTextContainer:textView.textContainer];
-  CGSize size = usedRect.size;
-
-  // Empty text fallback
-  if (textView.textStorage.length == 0) {
-    UIFont *font =
-        textView.typingAttributes[NSFontAttributeName] ?: textView.font;
-
-    if (font) {
-      size.height = ceil(font.lineHeight);
-    }
-  }
-  NSString *currentStr = [[textView.textStorage string] copy];
-  // Bounding rect fallback / final height calculation
-  NSString *string = currentStr ?: @"";
-  CGRect boundingBox =
-      [string boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                           options:NSStringDrawingUsesLineFragmentOrigin |
-                                   NSStringDrawingUsesFontLeading
-                        attributes:@{
-                          NSFontAttributeName : textView.font
-                              ?: [UIFont systemFontOfSize:17]
-                        }
-                           context:nil];
-
-  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
+  return [self _measureSizeWithMaxWidth:maxWidth];
 }
 
 // MARK: - Active styles
