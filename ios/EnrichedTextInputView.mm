@@ -66,7 +66,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self setDefaults];
     [self setupTextView];
     [self addSubview:textView];
-    _isMeasuringSize = NO;
   }
   return self;
 }
@@ -757,7 +756,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (CGSize)_measureSizeWithMaxWidth:(CGFloat)maxWidth {
+- (void)measureAndCommitSize {
+  if (_state == nullptr) {
+    return;
+  }
+  CGSize size =
+      [self measureInitialSizeWithMaxWidth:textView.bounds.size.width];
+  auto selfRef = wrapManagedObjectWeakly(self);
+  facebook::react::Size newSize{.width = size.width, .height = size.height};
+  _state->updateState(
+      facebook::react::EnrichedTextInputViewState(newSize, selfRef));
+}
+
+- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth {
   NSTextContainer *container = textView.textContainer;
   NSLayoutManager *layoutManager = textView.layoutManager;
 
@@ -778,21 +789,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   return CGSizeMake(maxWidth, height);
-}
-
-- (void)measureAndCommitSize {
-  if (_state == nullptr) {
-    return;
-  }
-  CGSize size = [self _measureSizeWithMaxWidth:textView.bounds.size.width];
-  auto selfRef = wrapManagedObjectWeakly(self);
-  facebook::react::Size newSize{.width = size.width, .height = size.height};
-  _state->updateState(
-      facebook::react::EnrichedTextInputViewState(newSize, selfRef));
-}
-
-- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth {
-  return [self _measureSizeWithMaxWidth:maxWidth];
 }
 
 // MARK: - Active styles
