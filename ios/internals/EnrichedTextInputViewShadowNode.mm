@@ -15,10 +15,9 @@ void EnrichedTextInputViewShadowNode::dirtyLayoutIfNeeded() {
   const auto nextSize = state.getContentSize();
 
   if (_prevContentSize != nextSize) {
+    _prevContentSize = nextSize;
     YGNodeMarkDirty(&yogaNode_);
   }
-
-  _prevContentSize = nextSize;
 }
 
 id EnrichedTextInputViewShadowNode::setupMockTextInputView_() const {
@@ -74,26 +73,23 @@ Size EnrichedTextInputViewShadowNode::measureContent(
       _prevContentSize = size;
       return constraints.clamp(size);
     }
+  }
+  __block CGSize estimatedSize;
+  // synchronously dispatch to main thread if needed
+  if ([NSThread isMainThread]) {
+    EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
+    estimatedSize = [mockTextInputView
+        measureInitialSizeWithMaxWidth:constraints.maximumSize.width];
   } else {
-    __block CGSize estimatedSize;
-    // synchronously dispatch to main thread if needed
-    if ([NSThread isMainThread]) {
+    dispatch_sync(dispatch_get_main_queue(), ^{
       EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
       estimatedSize = [mockTextInputView
           measureInitialSizeWithMaxWidth:constraints.maximumSize.width];
-    } else {
-      dispatch_sync(dispatch_get_main_queue(), ^{
-        EnrichedTextInputView *mockTextInputView = setupMockTextInputView_();
-        estimatedSize = [mockTextInputView
-            measureInitialSizeWithMaxWidth:constraints.maximumSize.width];
-      });
-    }
-
-    return {estimatedSize.width,
-            MIN(estimatedSize.height, constraints.maximumSize.height)};
+    });
   }
 
-  return Size();
+  return {estimatedSize.width,
+          MIN(estimatedSize.height, constraints.maximumSize.height)};
 }
 
 } // namespace facebook::react
