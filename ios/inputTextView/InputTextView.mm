@@ -4,7 +4,35 @@
 #import "TextInsertionUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-@implementation InputTextView
+// for some reason UIKit may produce different size with the same text
+// the difference is always ~0.5
+static const CGFloat Epsilon = 0.5;
+
+static inline BOOL CGSizeAlmostEqual(CGSize firstSize, CGSize secondSize,
+                                     CGFloat epsilon) {
+  return fabs(firstSize.width - secondSize.width) < epsilon &&
+         fabs(firstSize.height - secondSize.height) < epsilon;
+}
+
+@implementation InputTextView {
+  UILabel *placeholderView;
+  CGSize _lastCommittedSize;
+};
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    placeholderView = [[UILabel alloc] initWithFrame:self.bounds];
+    placeholderView.isAccessibilityElement = NO;
+    placeholderView.numberOfLines = 0;
+    [self addSubview:placeholderView];
+
+    self.textContainer.lineFragmentPadding = 0;
+    self.scrollEnabled = YES;
+    self.scrollsToTop = NO;
+    _lastCommittedSize = CGSizeZero;
+  }
+  return self;
+}
 
 - (void)copy:(id)sender {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
@@ -151,6 +179,60 @@
                     withSelection:YES];
 
   [typedInput anyTextMayHaveBeenModified];
+}
+
+- (void)updatePlaceholderVisibility {
+  BOOL shouldShow =
+      self.placeholderText.length > 0 && self.textStorage.length == 0;
+
+  placeholderView.hidden = !shouldShow;
+}
+
+- (void)setText:(NSString *)text {
+  [super setText:text];
+  [self updatePlaceholderVisibility];
+}
+
+- (void)setAttributedText:(NSAttributedString *)attributedText {
+  [super setAttributedText:attributedText];
+  [self updatePlaceholderVisibility];
+}
+
+- (void)setPlaceholderText:(NSString *)newPlaceholderText {
+  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
+  if (typedInput == nullptr) {
+    return;
+  }
+  _placeholderText = newPlaceholderText;
+  BOOL hasPlaceholder = newPlaceholderText && newPlaceholderText.length > 0;
+  NSString *placeholderText = hasPlaceholder ? newPlaceholderText : @"";
+  NSMutableDictionary *attributes =
+      [typedInput->defaultTypingAttributes mutableCopy];
+  attributes[NSForegroundColorAttributeName] = _placeholderColor;
+  placeholderView.attributedText =
+      [[NSAttributedString alloc] initWithString:placeholderText
+                                      attributes:attributes];
+  [self setNeedsLayout];
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+  CGRect textFrame =
+      UIEdgeInsetsInsetRect(self.bounds, self.textContainerInset);
+  CGFloat placeholderHeight =
+      [placeholderView sizeThatFits:textFrame.size].height;
+  textFrame.size.height = MIN(placeholderHeight, textFrame.size.height);
+  placeholderView.frame = textFrame;
+  CGSize newSize =
+      [self.layoutManager usedRectForTextContainer:self.textContainer].size;
+  if (CGSizeAlmostEqual(newSize, _lastCommittedSize, Epsilon)) {
+    return;
+  }
+
+  _lastCommittedSize = newSize;
+
+  [_input commitSize:newSize];
 }
 
 @end
