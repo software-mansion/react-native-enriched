@@ -152,6 +152,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   androidExperimentalSynchronousEvents?: boolean;
+  // new implementation of html serializer for iOS which fixes some edge cases and
+  // improves performance. Still experimental because we don't want to enable it by default yet.
+  iOSExperimentalHTMLSerializer?: boolean;
 }
 
 const nullthrows = <T,>(value: T | null | undefined): T => {
@@ -201,6 +204,7 @@ export const EnrichedTextInput = ({
   onChangeSelection,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
+  iOSExperimentalHTMLSerializer = false,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -411,6 +415,7 @@ export const EnrichedTextInput = ({
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
+      iOSExperimentalHTMLSerializer={iOSExperimentalHTMLSerializer}
       scrollEnabled={scrollEnabled}
       {...rest}
     />

@@ -14,6 +14,7 @@ static const unichar HtmlLessThanChar = '<';
 static const unichar HtmlGreaterThanChar = '>';
 static const unichar HtmlAmpersandChar = '&';
 
+static const char *NewLine = "\n";
 static const char *NewlineOpenTag = "\n<";
 
 static const char *OpenTagStart = "<";
@@ -35,6 +36,12 @@ static const char *HtmlTagBR = "br";
 static const char *HtmlTagHTML = "html";
 static const char *HtmlTagBlockquote = "blockquote";
 static const char *HtmlTagCodeblock = "codeblock";
+static const char *HtmlHRTag = "hr";
+static const char *HtmlChecklistTag = "checklist";
+static const char *HtmlContentTag = "content";
+static const char *HtmlParagraphTag = "p";
+
+static NSString *const DefaultHtmlValue = @"<html>\n<p></p>\n</html>";
 
 static inline void appendC(NSMutableData *buf, const char *c) {
   if (!c)
@@ -109,7 +116,9 @@ static inline BOOL isBlockTag(const char *t) {
   case 'p':
     return t[1] == '\0';
   case 'h':
-    return t[2] == '\0' && (t[1] == '1' || t[1] == '2' || t[1] == '3');
+    return t[2] == '\0' &&
+           (t[1] == '1' || t[1] == '2' || t[1] == '3' || t[1] == '4' ||
+            t[1] == '5' || t[1] == '6' || t[1] == 'r');
   case 'u':
     return strcmp(t, HtmlTagUL) == 0;
   case 'o':
@@ -119,7 +128,8 @@ static inline BOOL isBlockTag(const char *t) {
   case 'b':
     return strcmp(t, HtmlTagBR) == 0 || strcmp(t, HtmlTagBlockquote) == 0;
   case 'c':
-    return strcmp(t, HtmlTagCodeblock) == 0;
+    return strcmp(t, HtmlTagCodeblock) == 0 || strcmp(t, HtmlContentTag) ||
+           strcmp(t, HtmlChecklistTag);
   default:
     return NO;
   }
