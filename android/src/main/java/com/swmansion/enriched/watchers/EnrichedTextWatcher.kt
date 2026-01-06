@@ -48,7 +48,10 @@ class EnrichedTextWatcher(
     view.parametrizedStyles?.afterTextChanged(s, endCursorPosition)
   }
 
-  private fun emitEvents(s: Editable) {
+  private fun emitChangeText(editable: Editable) {
+    if (!view.shouldEmitOnChangeText) {
+      return
+    }
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
@@ -56,10 +59,14 @@ class EnrichedTextWatcher(
       OnChangeTextEvent(
         surfaceId,
         view.id,
-        s,
+        editable,
         view.experimentalSynchronousEvents,
       ),
     )
+  }
+
+  private fun emitEvents(s: Editable) {
+    emitChangeText(s)
     view.spanWatcher?.emitEvent(s, null)
   }
 }
