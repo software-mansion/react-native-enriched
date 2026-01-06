@@ -151,20 +151,31 @@
 
 // making sure no newlines get inline code style, it looks bad
 - (void)handleNewlines {
-  for (int i = 0; i < _input->textView.textStorage.string.length; i++) {
-    if ([[NSCharacterSet newlineCharacterSet]
-            characterIsMember:[_input->textView.textStorage.string
-                                  characterAtIndex:i]]) {
-      NSRange mockRange = NSMakeRange(0, 0);
-      // can't use detect style because it intentionally doesn't take newlines
-      // into consideration
-      UIColor *bgColor =
-          [_input->textView.textStorage attribute:NSBackgroundColorAttributeName
-                                          atIndex:i
-                                   effectiveRange:&mockRange];
-      if ([self styleCondition:bgColor:NSMakeRange(i, 1)]) {
-        [self removeAttributes:NSMakeRange(i, 1)];
-      }
+  NSTextStorage *storage = _input->textView.textStorage;
+  NSString *string = storage.string;
+  NSUInteger length = string.length;
+
+  if (length == 0)
+    return;
+
+  CFStringInlineBuffer buffer;
+  CFStringInitInlineBuffer((CFStringRef)string, &buffer,
+                           CFRangeMake(0, length));
+
+  for (NSUInteger index = 0; index < length; index++) {
+    unichar ch = CFStringGetCharacterFromInlineBuffer(&buffer, index);
+    // check new lines only
+    if (ch != '\n' && ch != '\r')
+      continue;
+
+    NSRange newlineRange = NSMakeRange(index, 1);
+
+    UIColor *bgColor = [storage attribute:NSBackgroundColorAttributeName
+                                  atIndex:index
+                           effectiveRange:nil];
+
+    if (bgColor != nil && [self styleCondition:bgColor:newlineRange]) {
+      [self removeAttributes:newlineRange];
     }
   }
 }
