@@ -861,17 +861,13 @@ class HtmlToSpannedConverter implements ContentHandler {
 
   private static class H3 {}
 
-  private static class H4 {
-  }
+  private static class H4 {}
 
-  private static class H5 {
-  }
+  private static class H5 {}
 
-  private static class H6 {
-  }
+  private static class H6 {}
 
-  private static class Bold {
-  }
+  private static class Bold {}
 
   private static class Italic {}
 

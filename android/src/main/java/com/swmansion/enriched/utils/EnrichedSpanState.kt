@@ -141,27 +141,28 @@ class EnrichedSpanState(
   }
 
   fun getStart(name: String): Int? {
-    val start = when (name) {
-      EnrichedSpans.BOLD -> boldStart
-      EnrichedSpans.ITALIC -> italicStart
-      EnrichedSpans.UNDERLINE -> underlineStart
-      EnrichedSpans.STRIKETHROUGH -> strikethroughStart
-      EnrichedSpans.INLINE_CODE -> inlineCodeStart
-      EnrichedSpans.H1 -> h1Start
-      EnrichedSpans.H2 -> h2Start
-      EnrichedSpans.H3 -> h3Start
-      EnrichedSpans.H4 -> h4Start
-      EnrichedSpans.H5 -> h5Start
-      EnrichedSpans.H6 -> h6Start
-      EnrichedSpans.CODE_BLOCK -> codeBlockStart
-      EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
-      EnrichedSpans.ORDERED_LIST -> orderedListStart
-      EnrichedSpans.UNORDERED_LIST -> unorderedListStart
-      EnrichedSpans.LINK -> linkStart
-      EnrichedSpans.IMAGE -> imageStart
-      EnrichedSpans.MENTION -> mentionStart
-      else -> null
-    }
+    val start =
+      when (name) {
+        EnrichedSpans.BOLD -> boldStart
+        EnrichedSpans.ITALIC -> italicStart
+        EnrichedSpans.UNDERLINE -> underlineStart
+        EnrichedSpans.STRIKETHROUGH -> strikethroughStart
+        EnrichedSpans.INLINE_CODE -> inlineCodeStart
+        EnrichedSpans.H1 -> h1Start
+        EnrichedSpans.H2 -> h2Start
+        EnrichedSpans.H3 -> h3Start
+        EnrichedSpans.H4 -> h4Start
+        EnrichedSpans.H5 -> h5Start
+        EnrichedSpans.H6 -> h6Start
+        EnrichedSpans.CODE_BLOCK -> codeBlockStart
+        EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
+        EnrichedSpans.ORDERED_LIST -> orderedListStart
+        EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+        EnrichedSpans.LINK -> linkStart
+        EnrichedSpans.IMAGE -> imageStart
+        EnrichedSpans.MENTION -> mentionStart
+        else -> null
+      }
 
     return start
   }

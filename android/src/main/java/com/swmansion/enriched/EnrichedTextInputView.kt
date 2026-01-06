@@ -488,54 +488,60 @@ class EnrichedTextInputView : AppCompatEditText {
     layoutManager.invalidateLayout()
   }
 
-  private fun removeStyle(name: String, start: Int, end: Int): Boolean {
-    val removed = when (name) {
-      EnrichedSpans.BOLD -> inlineStyles?.removeStyle(EnrichedSpans.BOLD, start, end)
-      EnrichedSpans.ITALIC -> inlineStyles?.removeStyle(EnrichedSpans.ITALIC, start, end)
-      EnrichedSpans.UNDERLINE -> inlineStyles?.removeStyle(EnrichedSpans.UNDERLINE, start, end)
-      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EnrichedSpans.STRIKETHROUGH, start, end)
-      EnrichedSpans.INLINE_CODE -> inlineStyles?.removeStyle(EnrichedSpans.INLINE_CODE, start, end)
-      EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
-      EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
-      EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
-      EnrichedSpans.H4 -> paragraphStyles?.removeStyle(EnrichedSpans.H4, start, end)
-      EnrichedSpans.H5 -> paragraphStyles?.removeStyle(EnrichedSpans.H5, start, end)
-      EnrichedSpans.H6 -> paragraphStyles?.removeStyle(EnrichedSpans.H6, start, end)
-      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
-      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
-      EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
-      EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
-      EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
-      EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
-      EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
-      else -> false
-    }
+  private fun removeStyle(
+    name: String,
+    start: Int,
+    end: Int,
+  ): Boolean {
+    val removed =
+      when (name) {
+        EnrichedSpans.BOLD -> inlineStyles?.removeStyle(EnrichedSpans.BOLD, start, end)
+        EnrichedSpans.ITALIC -> inlineStyles?.removeStyle(EnrichedSpans.ITALIC, start, end)
+        EnrichedSpans.UNDERLINE -> inlineStyles?.removeStyle(EnrichedSpans.UNDERLINE, start, end)
+        EnrichedSpans.STRIKETHROUGH -> inlineStyles?.removeStyle(EnrichedSpans.STRIKETHROUGH, start, end)
+        EnrichedSpans.INLINE_CODE -> inlineStyles?.removeStyle(EnrichedSpans.INLINE_CODE, start, end)
+        EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
+        EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
+        EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
+        EnrichedSpans.H4 -> paragraphStyles?.removeStyle(EnrichedSpans.H4, start, end)
+        EnrichedSpans.H5 -> paragraphStyles?.removeStyle(EnrichedSpans.H5, start, end)
+        EnrichedSpans.H6 -> paragraphStyles?.removeStyle(EnrichedSpans.H6, start, end)
+        EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
+        EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
+        EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
+        EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
+        EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
+        EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
+        EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
+        else -> false
+      }
 
     return removed == true
   }
 
   private fun getTargetRange(name: String): Pair<Int, Int> {
-    val result = when (name) {
-      EnrichedSpans.BOLD -> inlineStyles?.getStyleRange()
-      EnrichedSpans.ITALIC -> inlineStyles?.getStyleRange()
-      EnrichedSpans.UNDERLINE -> inlineStyles?.getStyleRange()
-      EnrichedSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
-      EnrichedSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
-      EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H4 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H5 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.H6 -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
-      EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
-      EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
-      EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
-      EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
-      EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
-      else -> Pair(0, 0)
-    }
+    val result =
+      when (name) {
+        EnrichedSpans.BOLD -> inlineStyles?.getStyleRange()
+        EnrichedSpans.ITALIC -> inlineStyles?.getStyleRange()
+        EnrichedSpans.UNDERLINE -> inlineStyles?.getStyleRange()
+        EnrichedSpans.STRIKETHROUGH -> inlineStyles?.getStyleRange()
+        EnrichedSpans.INLINE_CODE -> inlineStyles?.getStyleRange()
+        EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H4 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H5 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H6 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
+        EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
+        EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
+        else -> Pair(0, 0)
+      }
 
     return result ?: Pair(0, 0)
   }
