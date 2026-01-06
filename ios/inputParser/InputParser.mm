@@ -23,8 +23,18 @@
 }
 
 - (NSString *)parseToHtmlFromRange:(NSRange)range {
-  NSAttributedString *sub =
-      [_input->textView.textStorage attributedSubstringFromRange:range];
+
+  if (_input->useExperimentalHTMLParser) {
+    NSAttributedString *attributedString =
+        [_input->textView.textStorage attributedSubstringFromRange:range];
+    return [_attributedStringHTMLSerializer
+        buildHtmlFromAttributedString:attributedString
+                              pretify:YES];
+  }
+
+  NSInteger offset = range.location;
+  NSString *text =
+      [_input->textView.textStorage.string substringWithRange:range];
 
   if (text.length == 0) {
     return @"<html>\n<p></p>\n</html>";
@@ -546,9 +556,6 @@
     return @"p";
   }
   return @"";
-  return [_htmlParser buildHtmlFromAttributedString:sub pretify:YES];
-  return [_attributedStringHTMLSerializer buildHtmlFromAttributedString:sub
-                                                                pretify:YES];
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {

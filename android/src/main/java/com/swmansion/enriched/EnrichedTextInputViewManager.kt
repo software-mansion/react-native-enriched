@@ -255,6 +255,13 @@ class EnrichedTextInputViewManager :
     view?.experimentalSynchronousEvents = value
   }
 
+  override fun setIOSExperimentalHTMLSerializer(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    // iOS only prop
+  }
+
   override fun focus(view: EnrichedTextInputView?) {
     view?.requestFocusProgrammatically()
   }

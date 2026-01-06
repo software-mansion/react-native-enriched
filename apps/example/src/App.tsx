@@ -315,6 +315,7 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            iOSExperimentalHTMLSerializer={true}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}

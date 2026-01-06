@@ -45,7 +45,7 @@
                                     pretify:(BOOL)pretify {
 
   if (text.length == 0)
-    return @"<html>\n<p></p>\n</html>";
+    return DefaultHtmlValue;
 
   HTMLElement *root = [self buildRootNodeFromAttributedString:text];
 
@@ -59,10 +59,10 @@
   NSString *plain = text.string;
 
   HTMLElement *root = [HTMLElement new];
-  root.tag = "html";
+  root.tag = HtmlTagHTML;
 
   HTMLElement *br = [HTMLElement new];
-  br.tag = "br";
+  br.tag = HtmlTagBR;
   br.selfClosing = YES;
 
   __block id<BaseStyleProtocol> previousParagraphStyle = nil;
@@ -161,7 +161,7 @@
                              rootNode:(HTMLElement *)rootNode {
   if (!currentParagraphType) {
     HTMLElement *outer = [HTMLElement new];
-    outer.tag = "p";
+    outer.tag = HtmlParagraphTag;
     [rootNode.children addObject:outer];
     return outer;
   }
@@ -190,7 +190,7 @@
                       rootNode:(HTMLElement *)rootNode {
   if (!currentStyle) {
     HTMLElement *outer = [HTMLElement new];
-    outer.tag = "p";
+    outer.tag = HtmlParagraphTag;
     [rootNode.children addObject:outer];
     return outer;
   }
@@ -273,7 +273,7 @@
     [self createHtmlFromNode:child into:buffer pretify:pretify];
 
   if (addNewLineAfter)
-    appendC(buffer, "\n");
+    appendC(buffer, NewLine);
 
   appendCloseTag(buffer, element.tag);
 }

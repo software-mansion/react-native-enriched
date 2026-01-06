@@ -91,6 +91,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   blockEmitting = NO;
   _emitFocusBlur = YES;
   _emitTextChange = NO;
+  useExperimentalHTMLParser = NO;
 
   defaultTypingAttributes =
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
@@ -281,6 +282,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       *std::static_pointer_cast<EnrichedTextInputViewProps const>(props);
   BOOL isFirstMount = NO;
   BOOL stylePropChanged = NO;
+
+  useExperimentalHTMLParser = newViewProps.iOSExperimentalHTMLSerializer;
 
   // initial config
   if (config == nullptr) {
