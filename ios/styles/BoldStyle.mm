@@ -92,18 +92,30 @@
 }
 
 - (BOOL)boldHeadingConflictsInRange:(NSRange)range type:(StyleType)type {
-  if(type == H1) {
-    if(![_input->config h1Bold]) { return NO; }
-  } else if(type == H2) {
-    if(![_input->config h2Bold]) { return NO; }
-  } else if(type == H3) {
-    if(![_input->config h3Bold]) { return NO; }
-  } else if(type == H4) {
-    if(![_input->config h4Bold]) { return NO; }
-  } else if(type == H5) {
-    if(![_input->config h5Bold]) { return NO; }
-  } else if(type == H6) {
-    if(![_input->config h6Bold]) { return NO; }
+  if (type == H1) {
+    if (![_input->config h1Bold]) {
+      return NO;
+    }
+  } else if (type == H2) {
+    if (![_input->config h2Bold]) {
+      return NO;
+    }
+  } else if (type == H3) {
+    if (![_input->config h3Bold]) {
+      return NO;
+    }
+  } else if (type == H4) {
+    if (![_input->config h4Bold]) {
+      return NO;
+    }
+  } else if (type == H5) {
+    if (![_input->config h5Bold]) {
+      return NO;
+    }
+  } else if (type == H6) {
+    if (![_input->config h6Bold]) {
+      return NO;
+    }
   }
 
   id<BaseStyleProtocol> headingStyle = _input->stylesDict[@(type)];
@@ -113,7 +125,13 @@
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
   UIFont *font = (UIFont *)value;
-  return font != nullptr && [font isBold] && ![self boldHeadingConflictsInRange:range type:H1] && ![self boldHeadingConflictsInRange:range type:H2] && ![self boldHeadingConflictsInRange:range type:H3] && ![self boldHeadingConflictsInRange:range type:H4] && ![self boldHeadingConflictsInRange:range type:H5] && ![self boldHeadingConflictsInRange:range type:H6];
+  return font != nullptr && [font isBold] &&
+         ![self boldHeadingConflictsInRange:range type:H1] &&
+         ![self boldHeadingConflictsInRange:range type:H2] &&
+         ![self boldHeadingConflictsInRange:range type:H3] &&
+         ![self boldHeadingConflictsInRange:range type:H4] &&
+         ![self boldHeadingConflictsInRange:range type:H5] &&
+         ![self boldHeadingConflictsInRange:range type:H6];
 }
 
 - (BOOL)detectStyle:(NSRange)range {

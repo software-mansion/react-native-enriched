@@ -7,6 +7,8 @@ import com.swmansion.enriched.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 class EnrichedH6Span(private val htmlStyle: HtmlStyle) : AbsoluteSizeSpan(htmlStyle.h6FontSize), EnrichedHeadingSpan {
+  override val dependsOnHtmlStyle: Boolean = true
+
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
     val bold = htmlStyle.h6Bold
@@ -14,4 +16,6 @@ class EnrichedH6Span(private val htmlStyle: HtmlStyle) : AbsoluteSizeSpan(htmlSt
       tp.typeface = Typeface.create(tp.typeface, Typeface.BOLD)
     }
   }
+
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedH6Span = EnrichedH6Span(htmlStyle)
 }

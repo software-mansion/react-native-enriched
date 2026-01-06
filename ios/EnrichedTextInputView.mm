@@ -86,23 +86,30 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   stylesDict = @{
     @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
-    @([ItalicStyle getStyleType]): [[ItalicStyle alloc] initWithInput:self],
-    @([UnderlineStyle getStyleType]): [[UnderlineStyle alloc] initWithInput:self],
-    @([StrikethroughStyle getStyleType]): [[StrikethroughStyle alloc] initWithInput:self],
-    @([InlineCodeStyle getStyleType]): [[InlineCodeStyle alloc] initWithInput:self],
-    @([LinkStyle getStyleType]): [[LinkStyle alloc] initWithInput:self],
-    @([MentionStyle getStyleType]): [[MentionStyle alloc] initWithInput:self],
-    @([H1Style getStyleType]): [[H1Style alloc] initWithInput:self],
-    @([H2Style getStyleType]): [[H2Style alloc] initWithInput:self],
-    @([H3Style getStyleType]): [[H3Style alloc] initWithInput:self],
-    @([H4Style getStyleType]): [[H4Style alloc] initWithInput:self],
-    @([H5Style getStyleType]): [[H5Style alloc] initWithInput:self],
-    @([H6Style getStyleType]): [[H6Style alloc] initWithInput:self],
-    @([UnorderedListStyle getStyleType]): [[UnorderedListStyle alloc] initWithInput:self],
-    @([OrderedListStyle getStyleType]): [[OrderedListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getStyleType]): [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getStyleType]): [[CodeBlockStyle alloc] initWithInput:self],
-    @([ImageStyle getStyleType]): [[ImageStyle alloc] initWithInput:self]
+    @([ItalicStyle getStyleType]) : [[ItalicStyle alloc] initWithInput:self],
+    @([UnderlineStyle getStyleType]) :
+        [[UnderlineStyle alloc] initWithInput:self],
+    @([StrikethroughStyle getStyleType]) :
+        [[StrikethroughStyle alloc] initWithInput:self],
+    @([InlineCodeStyle getStyleType]) :
+        [[InlineCodeStyle alloc] initWithInput:self],
+    @([LinkStyle getStyleType]) : [[LinkStyle alloc] initWithInput:self],
+    @([MentionStyle getStyleType]) : [[MentionStyle alloc] initWithInput:self],
+    @([H1Style getStyleType]) : [[H1Style alloc] initWithInput:self],
+    @([H2Style getStyleType]) : [[H2Style alloc] initWithInput:self],
+    @([H3Style getStyleType]) : [[H3Style alloc] initWithInput:self],
+    @([H4Style getStyleType]) : [[H4Style alloc] initWithInput:self],
+    @([H5Style getStyleType]) : [[H5Style alloc] initWithInput:self],
+    @([H6Style getStyleType]) : [[H6Style alloc] initWithInput:self],
+    @([UnorderedListStyle getStyleType]) :
+        [[UnorderedListStyle alloc] initWithInput:self],
+    @([OrderedListStyle getStyleType]) :
+        [[OrderedListStyle alloc] initWithInput:self],
+    @([BlockQuoteStyle getStyleType]) :
+        [[BlockQuoteStyle alloc] initWithInput:self],
+    @([CodeBlockStyle getStyleType]) :
+        [[CodeBlockStyle alloc] initWithInput:self],
+    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
   };
 
   conflictingStyles = @{
@@ -110,42 +117,105 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getStyleType]) : @[],
     @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]), @([MentionStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([H1Style getStyleType]): @[@([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H2Style getStyleType]): @[@([H1Style getStyleType]),  @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H3Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H4Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H5Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]),  @([H3Style getStyleType]), @([H4Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([H6Style getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([UnorderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([OrderedListStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])],
-    @([BlockQuoteStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])],
-    @([CodeBlockStyle getStyleType]): @[@([H1Style getStyleType]), @([H2Style getStyleType]), @([H3Style getStyleType]), @([H4Style getStyleType]), @([H5Style getStyleType]), @([H6Style getStyleType]),
-        @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]), @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]), @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]), @([MentionStyle getStyleType]), @([LinkStyle getStyleType])],
-    @([ImageStyle getStyleType]) : @[@([LinkStyle getStyleType]), @([MentionStyle getStyleType])]
+    @([InlineCodeStyle getStyleType]) :
+        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ],
+    @([LinkStyle getStyleType]) : @[
+      @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]),
+      @([MentionStyle getStyleType])
+    ],
+    @([MentionStyle getStyleType]) :
+        @[ @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]) ],
+    @([H1Style getStyleType]) : @[
+      @([H2Style getStyleType]), @([H3Style getStyleType]),
+      @([H4Style getStyleType]), @([H5Style getStyleType]),
+      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([H2Style getStyleType]) : @[
+      @([H1Style getStyleType]), @([H3Style getStyleType]),
+      @([H4Style getStyleType]), @([H5Style getStyleType]),
+      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([H3Style getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H4Style getStyleType]), @([H5Style getStyleType]),
+      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([H4Style getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H5Style getStyleType]),
+      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([H5Style getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([H6Style getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([UnorderedListStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([OrderedListStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+    ],
+    @([BlockQuoteStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])
+    ],
+    @([CodeBlockStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]),
+      @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]),
+      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
+      @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]),
+      @([MentionStyle getStyleType]), @([LinkStyle getStyleType])
+    ],
+    @([ImageStyle getStyleType]) :
+        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
   };
 
   blockingStyles = @{
-    @([BoldStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([ItalicStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([UnderlineStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([StrikethroughStyle getStyleType]) : @[@([CodeBlockStyle getStyleType])],
-    @([InlineCodeStyle getStyleType]) : @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([LinkStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([MentionStyle getStyleType]): @[@([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])],
-    @([H1Style getStyleType]): @[],
-    @([H2Style getStyleType]): @[],
-    @([H3Style getStyleType]): @[],
-    @([H4Style getStyleType]): @[],
-    @([H5Style getStyleType]): @[],
-    @([H6Style getStyleType]): @[],
-    @([UnorderedListStyle getStyleType]): @[],
-    @([OrderedListStyle getStyleType]): @[],
-    @([BlockQuoteStyle getStyleType]): @[],
-    @([CodeBlockStyle getStyleType]): @[],
-    @([ImageStyle getStyleType]) : @[@([InlineCodeStyle getStyleType])]
+    @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
+    @([ItalicStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
+    @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
+    @([StrikethroughStyle getStyleType]) :
+        @[ @([CodeBlockStyle getStyleType]) ],
+    @([InlineCodeStyle getStyleType]) :
+        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
+    @([LinkStyle getStyleType]) :
+        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
+    @([MentionStyle getStyleType]) :
+        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
+    @([H1Style getStyleType]) : @[],
+    @([H2Style getStyleType]) : @[],
+    @([H3Style getStyleType]) : @[],
+    @([H4Style getStyleType]) : @[],
+    @([H5Style getStyleType]) : @[],
+    @([H6Style getStyleType]) : @[],
+    @([UnorderedListStyle getStyleType]) : @[],
+    @([OrderedListStyle getStyleType]) : @[],
+    @([BlockQuoteStyle getStyleType]) : @[],
+    @([CodeBlockStyle getStyleType]) : @[],
+    @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
   };
 
   parser = [[InputParser alloc] initWithInput:self];
@@ -277,40 +347,46 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h4.fontSize != oldViewProps.htmlStyle.h4.fontSize) {
+
+  if (newViewProps.htmlStyle.h4.fontSize !=
+      oldViewProps.htmlStyle.h4.fontSize) {
     [newConfig setH4FontSize:newViewProps.htmlStyle.h4.fontSize];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h4.bold != oldViewProps.htmlStyle.h4.bold) {
+
+  if (newViewProps.htmlStyle.h4.bold != oldViewProps.htmlStyle.h4.bold) {
     [newConfig setH4Bold:newViewProps.htmlStyle.h4.bold];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h5.fontSize != oldViewProps.htmlStyle.h5.fontSize) {
+
+  if (newViewProps.htmlStyle.h5.fontSize !=
+      oldViewProps.htmlStyle.h5.fontSize) {
     [newConfig setH5FontSize:newViewProps.htmlStyle.h5.fontSize];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h5.bold != oldViewProps.htmlStyle.h5.bold) {
+
+  if (newViewProps.htmlStyle.h5.bold != oldViewProps.htmlStyle.h5.bold) {
     [newConfig setH5Bold:newViewProps.htmlStyle.h5.bold];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h6.fontSize != oldViewProps.htmlStyle.h6.fontSize) {
+
+  if (newViewProps.htmlStyle.h6.fontSize !=
+      oldViewProps.htmlStyle.h6.fontSize) {
     [newConfig setH6FontSize:newViewProps.htmlStyle.h6.fontSize];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.h6.bold != oldViewProps.htmlStyle.h6.bold) {
+
+  if (newViewProps.htmlStyle.h6.bold != oldViewProps.htmlStyle.h6.bold) {
     [newConfig setH6Bold:newViewProps.htmlStyle.h6.bold];
     stylePropChanged = YES;
   }
-  
-  if(newViewProps.htmlStyle.blockquote.borderColor != oldViewProps.htmlStyle.blockquote.borderColor) {
-    if(isColorMeaningful(newViewProps.htmlStyle.blockquote.borderColor)) {
-      [newConfig setBlockquoteBorderColor:RCTUIColorFromSharedColor(newViewProps.htmlStyle.blockquote.borderColor)];
+
+  if (newViewProps.htmlStyle.blockquote.borderColor !=
+      oldViewProps.htmlStyle.blockquote.borderColor) {
+    if (isColorMeaningful(newViewProps.htmlStyle.blockquote.borderColor)) {
+      [newConfig setBlockquoteBorderColor:RCTUIColorFromSharedColor(
+                                              newViewProps.htmlStyle.blockquote
+                                                  .borderColor)];
       stylePropChanged = YES;
     }
   }
@@ -863,24 +939,33 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
 
       emitter->onChangeState({
-        .isBold = [_activeStyles containsObject: @([BoldStyle getStyleType])],
-        .isItalic = [_activeStyles containsObject: @([ItalicStyle getStyleType])],
-        .isUnderline = [_activeStyles containsObject: @([UnderlineStyle getStyleType])],
-        .isStrikeThrough = [_activeStyles containsObject: @([StrikethroughStyle getStyleType])],
-        .isInlineCode = [_activeStyles containsObject: @([InlineCodeStyle getStyleType])],
-        .isLink = [_activeStyles containsObject: @([LinkStyle getStyleType])],
-        .isMention = [_activeStyles containsObject: @([MentionStyle getStyleType])],
-        .isH1 = [_activeStyles containsObject: @([H1Style getStyleType])],
-        .isH2 = [_activeStyles containsObject: @([H2Style getStyleType])],
-        .isH3 = [_activeStyles containsObject: @([H3Style getStyleType])],
-        .isH4 = [_activeStyles containsObject: @([H4Style getStyleType])],
-        .isH5 = [_activeStyles containsObject: @([H5Style getStyleType])],
-        .isH6 = [_activeStyles containsObject: @([H6Style getStyleType])],
-        .isUnorderedList = [_activeStyles containsObject: @([UnorderedListStyle getStyleType])],
-        .isOrderedList = [_activeStyles containsObject: @([OrderedListStyle getStyleType])],
-        .isBlockQuote = [_activeStyles containsObject: @([BlockQuoteStyle getStyleType])],
-        .isCodeBlock = [_activeStyles containsObject: @([CodeBlockStyle getStyleType])],
-        .isImage = [_activeStyles containsObject: @([ImageStyle getStyleType])],
+        .isBold = [_activeStyles containsObject:@([BoldStyle getStyleType])],
+        .isItalic =
+            [_activeStyles containsObject:@([ItalicStyle getStyleType])],
+        .isUnderline =
+            [_activeStyles containsObject:@([UnderlineStyle getStyleType])],
+        .isStrikeThrough =
+            [_activeStyles containsObject:@([StrikethroughStyle getStyleType])],
+        .isInlineCode =
+            [_activeStyles containsObject:@([InlineCodeStyle getStyleType])],
+        .isLink = [_activeStyles containsObject:@([LinkStyle getStyleType])],
+        .isMention =
+            [_activeStyles containsObject:@([MentionStyle getStyleType])],
+        .isH1 = [_activeStyles containsObject:@([H1Style getStyleType])],
+        .isH2 = [_activeStyles containsObject:@([H2Style getStyleType])],
+        .isH3 = [_activeStyles containsObject:@([H3Style getStyleType])],
+        .isH4 = [_activeStyles containsObject:@([H4Style getStyleType])],
+        .isH5 = [_activeStyles containsObject:@([H5Style getStyleType])],
+        .isH6 = [_activeStyles containsObject:@([H6Style getStyleType])],
+        .isUnorderedList =
+            [_activeStyles containsObject:@([UnorderedListStyle getStyleType])],
+        .isOrderedList =
+            [_activeStyles containsObject:@([OrderedListStyle getStyleType])],
+        .isBlockQuote =
+            [_activeStyles containsObject:@([BlockQuoteStyle getStyleType])],
+        .isCodeBlock =
+            [_activeStyles containsObject:@([CodeBlockStyle getStyleType])],
+        .isImage = [_activeStyles containsObject:@([ImageStyle getStyleType])],
       });
     }
   }
@@ -946,13 +1031,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[H2Style getStyleType]];
   } else if ([commandName isEqualToString:@"toggleH3"]) {
     [self toggleParagraphStyle:[H3Style getStyleType]];
-  } else if([commandName isEqualToString:@"toggleH4"]) {
+  } else if ([commandName isEqualToString:@"toggleH4"]) {
     [self toggleParagraphStyle:[H4Style getStyleType]];
-  } else if([commandName isEqualToString:@"toggleH5"]) {
+  } else if ([commandName isEqualToString:@"toggleH5"]) {
     [self toggleParagraphStyle:[H5Style getStyleType]];
-  } else if([commandName isEqualToString:@"toggleH6"]) {
+  } else if ([commandName isEqualToString:@"toggleH6"]) {
     [self toggleParagraphStyle:[H6Style getStyleType]];
-  } else if([commandName isEqualToString:@"toggleUnorderedList"]) {
+  } else if ([commandName isEqualToString:@"toggleUnorderedList"]) {
     [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
@@ -1369,12 +1454,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   H4Style *h4Style = stylesDict[@([H4Style getStyleType])];
   H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
   H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
-  
-  bool shouldHandleImproperHeadings =
-    h1Style != nullptr && h2Style != nullptr && h3Style != nullptr &&
-    h4Style != nullptr && h5Style != nullptr && h6Style != nullptr;
 
-  if(shouldHandleImproperHeadings) {
+  bool shouldHandleImproperHeadings =
+      h1Style != nullptr && h2Style != nullptr && h3Style != nullptr &&
+      h4Style != nullptr && h5Style != nullptr && h6Style != nullptr;
+
+  if (shouldHandleImproperHeadings) {
     [h1Style handleImproperHeadings];
     [h2Style handleImproperHeadings];
     [h3Style handleImproperHeadings];
@@ -1534,33 +1619,40 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   H4Style *h4Style = stylesDict[@([H4Style getStyleType])];
   H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
   H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
-  
-  // some of the changes these checks do could interfere with later checks and cause a crash
-  // so here I rely on short circuiting evaluation of the logical expression
-  // either way it's not possible to have two of them come off at the same time
-  if(
-    [uStyle handleBackspaceInRange:range replacementText:text] ||
-    [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
-    [oStyle handleBackspaceInRange:range replacementText:text] ||
-    [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
-    [bqStyle handleBackspaceInRange:range replacementText:text] ||
-    [cbStyle handleBackspaceInRange:range replacementText:text] ||
-    [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
-    [mentionStyle handleLeadingMentionReplacement:range replacementText:text] ||
-    [h1Style handleNewlinesInRange:range replacementText:text] ||
-    [h2Style handleNewlinesInRange:range replacementText:text] ||
-    [h3Style handleNewlinesInRange:range replacementText:text] ||
-    [h4Style handleNewlinesInRange:range replacementText:text] ||
-    [h5Style handleNewlinesInRange:range replacementText:text] ||
-    [h6Style handleNewlinesInRange:range replacementText:text] ||
-    [ZeroWidthSpaceUtils handleBackspaceInRange:range replacementText:text input:self] ||
-    [ParagraphAttributesUtils handleBackspaceInRange:range replacementText:text input:self] ||
-    // CRITICAL: This callback HAS TO be always evaluated last.
-    //
-    // This function is the "Generic Fallback": if no specific style claims the backspace action
-    // to change its state, only then do we proceed to physically delete the newline and merge paragraphs.
-    [ParagraphAttributesUtils handleNewlineBackspaceInRange:range replacementText:text input:self]
-  ) {
+
+  // some of the changes these checks do could interfere with later checks and
+  // cause a crash so here I rely on short circuiting evaluation of the logical
+  // expression either way it's not possible to have two of them come off at the
+  // same time
+  if ([uStyle handleBackspaceInRange:range replacementText:text] ||
+      [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [oStyle handleBackspaceInRange:range replacementText:text] ||
+      [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [bqStyle handleBackspaceInRange:range replacementText:text] ||
+      [cbStyle handleBackspaceInRange:range replacementText:text] ||
+      [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
+      [mentionStyle handleLeadingMentionReplacement:range
+                                    replacementText:text] ||
+      [h1Style handleNewlinesInRange:range replacementText:text] ||
+      [h2Style handleNewlinesInRange:range replacementText:text] ||
+      [h3Style handleNewlinesInRange:range replacementText:text] ||
+      [h4Style handleNewlinesInRange:range replacementText:text] ||
+      [h5Style handleNewlinesInRange:range replacementText:text] ||
+      [h6Style handleNewlinesInRange:range replacementText:text] ||
+      [ZeroWidthSpaceUtils handleBackspaceInRange:range
+                                  replacementText:text
+                                            input:self] ||
+      [ParagraphAttributesUtils handleBackspaceInRange:range
+                                       replacementText:text
+                                                 input:self] ||
+      // CRITICAL: This callback HAS TO be always evaluated last.
+      //
+      // This function is the "Generic Fallback": if no specific style claims
+      // the backspace action to change its state, only then do we proceed to
+      // physically delete the newline and merge paragraphs.
+      [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
+                                                      replacementText:text
+                                                                input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }
