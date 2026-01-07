@@ -24,6 +24,7 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   self->input = input;
+  _lastAppliedFontSize = 0.0;
   return self;
 }
 
@@ -37,6 +38,7 @@
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
+  _lastAppliedFontSize = [self getHeadingFontSize];
 }
 
 // the range will already be the proper full paragraph/s range
@@ -105,9 +107,11 @@
                   if ([self isHeadingBold]) {
                     newFont = [newFont removeBold];
                   }
+                  UIFont *scaledFont = [[UIFontMetrics defaultMetrics]
+                      scaledFontForFont:newFont];
                   [[self typedInput]->textView.textStorage
                       addAttribute:NSFontAttributeName
-                             value:newFont
+                             value:scaledFont
                              range:range];
                 }
               }];
@@ -125,7 +129,9 @@
     if ([self isHeadingBold]) {
       newFont = [newFont removeBold];
     }
-    newTypingAttrs[NSFontAttributeName] = newFont;
+    UIFont *scaledFont =
+        [[UIFontMetrics defaultMetrics] scaledFontForFont:newFont];
+    newTypingAttrs[NSFontAttributeName] = scaledFont;
     [self typedInput]->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -139,7 +145,12 @@
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
   UIFont *font = (UIFont *)value;
-  return font != nullptr && font.pointSize == [self getHeadingFontSize];
+  if (font == nullptr || self.lastAppliedFontSize == 0.0) {
+    return NO;
+  }
+
+  return font.pointSize == [self getHeadingFontSize] ||
+         font.pointSize == self.lastAppliedFontSize;
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -216,6 +227,7 @@
       [self addAttributes:paragraphRange withTypingAttr:NO];
     }
   }
+  _lastAppliedFontSize = [self getHeadingFontSize];
 }
 
 @end
