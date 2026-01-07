@@ -405,6 +405,12 @@
 
   [result appendString:@"\n</html>"];
 
+  // remove Object Replacement Characters in the very end
+  [result replaceOccurrencesOfString:@"\uFFFC"
+                          withString:@""
+                             options:0
+                               range:NSMakeRange(0, result.length)];
+
   // remove zero width spaces in the very end
   [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
@@ -597,7 +603,8 @@
         [((LinkStyle *)baseStyle) addLink:text
                                       url:url
                                     range:styleRange
-                                   manual:isManual];
+                                   manual:isManual
+                            withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange

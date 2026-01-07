@@ -12,7 +12,11 @@ import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
-class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LineBackgroundSpan, EnrichedBlockSpan {
+class EnrichedCodeBlockSpan(
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  LineBackgroundSpan,
+  EnrichedBlockSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
   override fun updateDrawState(paint: TextPaint) {
@@ -35,7 +39,7 @@ class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingS
     text: CharSequence,
     start: Int,
     end: Int,
-    lineNum: Int
+    lineNum: Int,
   ) {
     if (text !is Spanned) {
       return
@@ -77,7 +81,5 @@ class EnrichedCodeBlockSpan(private val htmlStyle: HtmlStyle) : MetricAffectingS
     p.color = previousColor
   }
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan {
-    return EnrichedCodeBlockSpan(htmlStyle)
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan = EnrichedCodeBlockSpan(htmlStyle)
 }

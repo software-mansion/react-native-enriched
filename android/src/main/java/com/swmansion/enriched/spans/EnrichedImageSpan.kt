@@ -12,16 +12,18 @@ import android.text.Spannable
 import android.text.style.ImageSpan
 import android.util.Log
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.withSave
-import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
-import com.swmansion.enriched.utils.AsyncDrawable
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.withSave
 import com.swmansion.enriched.R
+import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.spans.utils.ForceRedrawSpan
 import com.swmansion.enriched.styles.HtmlStyle
+import com.swmansion.enriched.utils.AsyncDrawable
 import com.swmansion.enriched.utils.ResourceManager
 
-class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
+class EnrichedImageSpan :
+  ImageSpan,
+  EnrichedInlineSpan {
   override val dependsOnHtmlStyle: Boolean = false
 
   private var width: Int = 0
@@ -33,11 +35,18 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
   }
 
   override fun draw(
-    canvas: Canvas, text: CharSequence?, start: Int, end: Int, x: Float,
-    top: Int, y: Int, bottom: Int, paint: Paint
+    canvas: Canvas,
+    text: CharSequence?,
+    start: Int,
+    end: Int,
+    x: Float,
+    top: Int,
+    y: Int,
+    bottom: Int,
+    paint: Paint,
   ) {
     val drawable = drawable
-    canvas.withSave() {
+    canvas.withSave {
       val transY = bottom - drawable.bounds.bottom - paint.fontMetricsInt.descent
       translate(x, transY.toFloat())
       drawable.draw(this)
@@ -48,7 +57,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     val drawable = super.getDrawable()
     val scale = Resources.getSystem().displayMetrics.density
 
-    drawable.setBounds(0, 0, (width * scale).toInt() , (height * scale).toInt())
+    drawable.setBounds(0, 0, (width * scale).toInt(), (height * scale).toInt())
     return drawable
   }
 
@@ -57,7 +66,7 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     text: CharSequence?,
     start: Int,
     end: Int,
-    fm: Paint.FontMetricsInt?
+    fm: Paint.FontMetricsInt?,
   ): Int {
     val d = drawable
     val rect = d.bounds
@@ -79,7 +88,10 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     return rect.right
   }
 
-  private fun registerDrawableLoadCallback (d: AsyncDrawable, text: Editable?) {
+  private fun registerDrawableLoadCallback(
+    d: AsyncDrawable,
+    text: Editable?,
+  ) {
     d.onLoaded = onLoaded@{
       val spannable = text as? Spannable
 
@@ -114,18 +126,18 @@ class EnrichedImageSpan : ImageSpan, EnrichedInlineSpan {
     }
   }
 
-  fun getWidth(): Int {
-    return width
-  }
+  fun getWidth(): Int = width
 
-  fun getHeight(): Int {
-    return height
-  }
+  fun getHeight(): Int = height
 
   override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan = this
 
   companion object {
-    fun createEnrichedImageSpan(src: String, width: Int, height: Int): EnrichedImageSpan {
+    fun createEnrichedImageSpan(
+      src: String,
+      width: Int,
+      height: Int,
+    ): EnrichedImageSpan {
       var imgDrawable = prepareDrawableForImage(src)
 
       if (imgDrawable == null) {
