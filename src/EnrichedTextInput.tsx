@@ -51,6 +51,9 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleH1: () => void;
   toggleH2: () => void;
   toggleH3: () => void;
+  toggleH4: () => void;
+  toggleH5: () => void;
+  toggleH6: () => void;
   toggleCodeBlock: () => void;
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;
@@ -70,19 +73,18 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
+type HeadingStyle = {
+  fontSize?: number;
+  bold?: boolean;
+};
+
 export interface HtmlStyle {
-  h1?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
-  h2?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
-  h3?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
+  h1?: HeadingStyle;
+  h2?: HeadingStyle;
+  h3?: HeadingStyle;
+  h4?: HeadingStyle;
+  h5?: HeadingStyle;
+  h6?: HeadingStyle;
   blockquote?: {
     borderColor?: ColorValue;
     borderWidth?: number;
@@ -281,6 +283,15 @@ export const EnrichedTextInput = ({
     },
     toggleH3: () => {
       Commands.toggleH3(nullthrows(nativeRef.current));
+    },
+    toggleH4: () => {
+      Commands.toggleH4(nullthrows(nativeRef.current));
+    },
+    toggleH5: () => {
+      Commands.toggleH5(nullthrows(nativeRef.current));
+    },
+    toggleH6: () => {
+      Commands.toggleH6(nullthrows(nativeRef.current));
     },
     toggleCodeBlock: () => {
       Commands.toggleCodeBlock(nullthrows(nativeRef.current));
