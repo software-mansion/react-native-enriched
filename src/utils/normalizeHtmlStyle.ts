@@ -18,6 +18,18 @@ const defaultStyle: Required<HtmlStyle> = {
     fontSize: 20,
     bold: false,
   },
+  h4: {
+    fontSize: 16,
+    bold: false,
+  },
+  h5: {
+    fontSize: 14,
+    bold: false,
+  },
+  h6: {
+    fontSize: 12,
+    bold: false,
+  },
   blockquote: {
     borderColor: 'darkgray',
     borderWidth: 4,

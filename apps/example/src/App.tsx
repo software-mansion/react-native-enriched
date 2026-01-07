@@ -46,6 +46,9 @@ const DEFAULT_STYLE: StylesState = {
   isH1: false,
   isH2: false,
   isH3: false,
+  isH4: false,
+  isH5: false,
+  isH6: false,
   isBlockQuote: false,
   isCodeBlock: false,
   isOrderedList: false,
@@ -374,14 +377,26 @@ export default function App() {
 
 const htmlStyle: HtmlStyle = {
   h1: {
-    fontSize: 40,
+    fontSize: 72,
     bold: true,
   },
   h2: {
-    fontSize: 32,
+    fontSize: 60,
     bold: true,
   },
   h3: {
+    fontSize: 50,
+    bold: true,
+  },
+  h4: {
+    fontSize: 40,
+    bold: true,
+  },
+  h5: {
+    fontSize: 30,
+    bold: true,
+  },
+  h6: {
     fontSize: 24,
     bold: true,
   },

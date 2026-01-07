@@ -301,6 +301,18 @@ class EnrichedTextInputViewManager :
     view?.verifyAndToggleStyle(EnrichedSpans.H3)
   }
 
+  override fun toggleH4(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H4)
+  }
+
+  override fun toggleH5(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H5)
+  }
+
+  override fun toggleH6(view: EnrichedTextInputView?) {
+    view?.verifyAndToggleStyle(EnrichedSpans.H6)
+  }
+
   override fun toggleCodeBlock(view: EnrichedTextInputView?) {
     view?.verifyAndToggleStyle(EnrichedSpans.CODE_BLOCK)
   }
@@ -372,7 +384,7 @@ class EnrichedTextInputViewManager :
     attachmentsPositions: FloatArray?,
   ): Long {
     val id = localData?.getInt("viewTag")
-    return MeasurementStore.getMeasureById(context, id, width, props)
+    return MeasurementStore.getMeasureById(context, id, width, height, heightMode, props)
   }
 
   companion object {

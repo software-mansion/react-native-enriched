@@ -513,6 +513,9 @@ class EnrichedTextInputView : AppCompatEditText {
       EnrichedSpans.H1 -> paragraphStyles?.toggleStyle(EnrichedSpans.H1)
       EnrichedSpans.H2 -> paragraphStyles?.toggleStyle(EnrichedSpans.H2)
       EnrichedSpans.H3 -> paragraphStyles?.toggleStyle(EnrichedSpans.H3)
+      EnrichedSpans.H4 -> paragraphStyles?.toggleStyle(EnrichedSpans.H4)
+      EnrichedSpans.H5 -> paragraphStyles?.toggleStyle(EnrichedSpans.H5)
+      EnrichedSpans.H6 -> paragraphStyles?.toggleStyle(EnrichedSpans.H6)
       EnrichedSpans.CODE_BLOCK -> paragraphStyles?.toggleStyle(EnrichedSpans.CODE_BLOCK)
       EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EnrichedSpans.BLOCK_QUOTE)
       EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
@@ -538,6 +541,9 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.H1 -> paragraphStyles?.removeStyle(EnrichedSpans.H1, start, end)
         EnrichedSpans.H2 -> paragraphStyles?.removeStyle(EnrichedSpans.H2, start, end)
         EnrichedSpans.H3 -> paragraphStyles?.removeStyle(EnrichedSpans.H3, start, end)
+        EnrichedSpans.H4 -> paragraphStyles?.removeStyle(EnrichedSpans.H4, start, end)
+        EnrichedSpans.H5 -> paragraphStyles?.removeStyle(EnrichedSpans.H5, start, end)
+        EnrichedSpans.H6 -> paragraphStyles?.removeStyle(EnrichedSpans.H6, start, end)
         EnrichedSpans.CODE_BLOCK -> paragraphStyles?.removeStyle(EnrichedSpans.CODE_BLOCK, start, end)
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
         EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
@@ -562,6 +568,9 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.H1 -> paragraphStyles?.getStyleRange()
         EnrichedSpans.H2 -> paragraphStyles?.getStyleRange()
         EnrichedSpans.H3 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H4 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H5 -> paragraphStyles?.getStyleRange()
+        EnrichedSpans.H6 -> paragraphStyles?.getStyleRange()
         EnrichedSpans.CODE_BLOCK -> paragraphStyles?.getStyleRange()
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
         EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
@@ -772,6 +781,9 @@ class EnrichedTextInputView : AppCompatEditText {
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
+
+    // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L946
+    super.setTextIsSelectable(true)
 
     if (autoFocus && !didAttachToWindow) {
       requestFocusProgrammatically()
