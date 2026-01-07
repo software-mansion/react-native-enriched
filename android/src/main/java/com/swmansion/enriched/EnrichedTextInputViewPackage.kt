@@ -15,7 +15,5 @@ class EnrichedTextInputViewPackage : ReactPackage {
     return viewManagers
   }
 
-  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return emptyList()
-  }
+  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> = emptyList()
 }

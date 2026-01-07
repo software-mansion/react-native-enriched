@@ -20,14 +20,17 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Run ESLint (JS/TS)
+      - name: Run ESLint (JS/TS check)
         run: yarn lint
-
-      - name: Run clang-format (C/C++ style check)
-        run: yarn lint-clang
 
       - name: Typecheck files
         run: yarn typecheck
+
+      - name: Run clang-format (C/C++ check)
+        run: yarn lint-clang
+
+      - name: Run android lint (Kotlin/Java/Groovy check)
+        run: yarn lint:android
 
   test:
     runs-on: ubuntu-latest
@@ -130,7 +133,7 @@ jobs:
           path: |
             ~/.gradle/wrapper
             ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('example/android/gradle/wrapper/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('apps/example/android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -157,7 +160,7 @@ jobs:
           xcode-version: '16.4'
 
       - name: Reset build folder and pods
-        run: rm -rf example/build example/ios/Pods example/ios/Podfile.lock
+        run: rm -rf apps/example/build apps/example/ios/Pods apps/example/ios/Podfile.lock
 
       - name: Cache turborepo for iOS
         uses: actions/cache@v4
@@ -182,14 +185,14 @@ jobs:
         with:
           path: |
             **/ios/Pods
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('example/ios/Podfile.lock') }}
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('apps/example/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
       - name: Install cocoapods
         if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
-          cd example/ios
+          cd apps/example/ios
           pod install
         env:
           NO_FLIPPER: 1

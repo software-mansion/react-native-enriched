@@ -6,8 +6,15 @@ import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
-class InlineStyles(private val view: EnrichedTextInputView) {
-  private fun <T>setSpan(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
+class InlineStyles(
+  private val view: EnrichedTextInputView,
+) {
+  private fun <T> setSpan(
+    spannable: Spannable,
+    type: Class<T>,
+    start: Int,
+    end: Int,
+  ) {
     val previousSpanStart = (start - 1).coerceAtLeast(0)
     val previousSpanEnd = previousSpanStart + 1
     val nextSpanStart = (end + 1).coerceAtMost(spannable.length)
@@ -37,7 +44,12 @@ class InlineStyles(private val view: EnrichedTextInputView) {
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
-  private fun <T>setAndMergeSpans(spannable: Spannable, type: Class<T>, start: Int, end: Int) {
+  private fun <T> setAndMergeSpans(
+    spannable: Spannable,
+    type: Class<T>,
+    start: Int,
+    end: Int,
+  ) {
     val spans = spannable.getSpans(start, end, type)
 
     // No spans setup for current selection, means we just need to assign new span
@@ -89,7 +101,10 @@ class InlineStyles(private val view: EnrichedTextInputView) {
     }
   }
 
-  fun afterTextChanged(s: Editable, endCursorPosition: Int) {
+  fun afterTextChanged(
+    s: Editable,
+    endCursorPosition: Int,
+  ) {
     for ((style, config) in EnrichedSpans.inlineSpans) {
       val start = view.spanState?.getStart(style) ?: continue
       var end = endCursorPosition
@@ -128,7 +143,11 @@ class InlineStyles(private val view: EnrichedTextInputView) {
     view.selection.validateStyles()
   }
 
-  fun removeStyle(name: String, start: Int, end: Int): Boolean {
+  fun removeStyle(
+    name: String,
+    start: Int,
+    end: Int,
+  ): Boolean {
     val config = EnrichedSpans.inlineSpans[name] ?: return false
     val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, config.clazz)
@@ -141,7 +160,5 @@ class InlineStyles(private val view: EnrichedTextInputView) {
     return true
   }
 
-  fun getStyleRange(): Pair<Int, Int> {
-    return view.selection?.getInlineSelection() ?: Pair(0, 0)
-  }
+  fun getStyleRange(): Pair<Int, Int> = view.selection?.getInlineSelection() ?: Pair(0, 0)
 }

@@ -2,7 +2,9 @@ package com.swmansion.enriched
 
 import com.facebook.react.bridge.Arguments
 
-class EnrichedTextInputViewLayoutManager(private val view: EnrichedTextInputView) {
+class EnrichedTextInputViewLayoutManager(
+  private val view: EnrichedTextInputView,
+) {
   private var forceHeightRecalculationCounter: Int = 0
 
   fun invalidateLayout() {

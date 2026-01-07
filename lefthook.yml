@@ -4,13 +4,20 @@ pre-commit:
     lint:
       glob: "*.{js,ts,jsx,tsx}"
       run: npx eslint {staged_files}
+
     types:
       glob: "*.{js,ts, jsx, tsx}"
       run: npx tsc
+
+    lint-android:
+      glob: "**/*.{kt,kts,java,gradle}"
+      run: cd apps/example/android && ./gradlew lintVerify
+
     clang-format:
       glob: "*.{h,m,mm,cpp}"
       exclude: "(Pods|build|node_modules)"
       run: npx clang-format -i {staged_files} && git add {staged_files}
+
 commit-msg:
   parallel: true
   commands:

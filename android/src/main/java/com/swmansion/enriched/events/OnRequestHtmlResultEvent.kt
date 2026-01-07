@@ -9,9 +9,8 @@ class OnRequestHtmlResultEvent(
   viewId: Int,
   private val requestId: Int,
   private val html: String?,
-  private val experimentalSynchronousEvents: Boolean
+  private val experimentalSynchronousEvents: Boolean,
 ) : Event<OnRequestHtmlResultEvent>(surfaceId, viewId) {
-
   override fun getEventName(): String = EVENT_NAME
 
   override fun getEventData(): WritableMap {

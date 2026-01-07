@@ -12063,9 +12063,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-enriched-example@workspace:example":
+"react-native-enriched-example@workspace:apps/example":
   version: 0.0.0-use.local
-  resolution: "react-native-enriched-example@workspace:example"
+  resolution: "react-native-enriched-example@workspace:apps/example"
   dependencies:
     "@babel/core": ^7.25.2
     "@babel/preset-env": ^7.25.3
