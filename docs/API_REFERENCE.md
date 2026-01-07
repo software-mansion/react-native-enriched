@@ -188,6 +188,21 @@ interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  h4: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h5: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h6: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
   codeBlock: {
     isActive: boolean;
     isConflicting: boolean;

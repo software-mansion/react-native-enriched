@@ -177,6 +177,12 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.h2.isBlocking;
       case 'heading-3':
         return stylesState.h3.isBlocking;
+      case 'heading-4':
+        return stylesState.h4.isBlocking;
+      case 'heading-5':
+        return stylesState.h5.isBlocking;
+      case 'heading-6':
+        return stylesState.h6.isBlocking;
       case 'code-block':
         return stylesState.codeBlock.isBlocking;
       case 'quote':
@@ -214,6 +220,12 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.h2.isActive;
       case 'heading-3':
         return stylesState.h3.isActive;
+      case 'heading-4':
+        return stylesState.h4.isActive;
+      case 'heading-5':
+        return stylesState.h5.isActive;
+      case 'heading-6':
+        return stylesState.h6.isActive;
       case 'code-block':
         return stylesState.codeBlock.isActive;
       case 'quote':
