@@ -145,12 +145,15 @@
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
   UIFont *font = (UIFont *)value;
-  if (font == nullptr || self.lastAppliedFontSize == 0.0) {
+  if (font == nullptr) {
     return NO;
   }
 
-  return font.pointSize == [self getHeadingFontSize] ||
-         font.pointSize == self.lastAppliedFontSize;
+  if (self.lastAppliedFontSize > 0.0) {
+    return font.pointSize == self.lastAppliedFontSize;
+  }
+
+  return font.pointSize == [self getHeadingFontSize];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
