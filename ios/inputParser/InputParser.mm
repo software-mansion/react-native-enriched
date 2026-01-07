@@ -917,7 +917,7 @@
   // the indices for any text following an image are lower than they will be
   // in the final NSTextStorage.
   //
-  // We add '_imagesInHtml' to shift the start index forward, aligning this
+  // We add '_precedingImageCount' to shift the start index forward, aligning this
   // style's range with the actual position in the final text (where each image
   // adds 1 character).
   NSRange tagRange = NSMakeRange(tagLocation + _precedingImageCount,
