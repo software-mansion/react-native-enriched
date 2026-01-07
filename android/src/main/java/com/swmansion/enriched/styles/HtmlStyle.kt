@@ -268,6 +268,12 @@ class HtmlStyle {
       h2Bold == other.h2Bold &&
       h3FontSize == other.h3FontSize &&
       h3Bold == other.h3Bold &&
+      h4FontSize == other.h4FontSize &&
+      h4Bold == other.h4Bold &&
+      h5FontSize == other.h5FontSize &&
+      h5Bold == other.h5Bold &&
+      h6FontSize == other.h6FontSize &&
+      h6Bold == other.h6Bold &&
 
       blockquoteColor == other.blockquoteColor &&
       blockquoteBorderColor == other.blockquoteBorderColor &&
@@ -304,6 +310,12 @@ class HtmlStyle {
     result = 31 * result + h2Bold.hashCode()
     result = 31 * result + h3FontSize.hashCode()
     result = 31 * result + h3Bold.hashCode()
+    result = 31 * result + h4FontSize.hashCode()
+    result = 31 * result + h4Bold.hashCode()
+    result = 31 * result + h5FontSize.hashCode()
+    result = 31 * result + h5Bold.hashCode()
+    result = 31 * result + h6FontSize.hashCode()
+    result = 31 * result + h6Bold.hashCode()
 
     result = 31 * result + (blockquoteColor ?: 0)
     result = 31 * result + blockquoteBorderColor.hashCode()
