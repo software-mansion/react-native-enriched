@@ -191,6 +191,9 @@ interface OnChangeTextEvent {
 |------------------------------------------------------------|---------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | -             | Both     |
 
+> [!TIP]
+> If you don't need the plain text value do not specify `onChangeText`, as it may have performance implications due to continuous text extraction.
+
 ### `onEndMention`
 
 Callback that is called when the user no longer edits a mention actively - has moved the cursor somewhere else or put a space and the cursor isn't within the edited mention.

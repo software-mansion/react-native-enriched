@@ -73,7 +73,8 @@ class EnrichedTextInputView : AppCompatEditText {
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
-  var shouldEmitHtml: Boolean = true
+  var shouldEmitHtml: Boolean = false
+  var shouldEmitOnChangeText: Boolean = false
   var experimentalSynchronousEvents: Boolean = false
 
   var fontSize: Float? = null

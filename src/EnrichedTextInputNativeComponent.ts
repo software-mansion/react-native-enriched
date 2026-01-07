@@ -162,6 +162,8 @@ export interface NativeProps extends ViewProps {
 
   // Used for onChangeHtml event performance optimization
   isOnChangeHtmlSet: boolean;
+  // Used for onChangeText event performance optimization
+  isOnChangeTextSet: boolean;
 
   // Experimental
   androidExperimentalSynchronousEvents: boolean;

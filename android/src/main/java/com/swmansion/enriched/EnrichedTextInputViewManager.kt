@@ -225,6 +225,13 @@ class EnrichedTextInputViewManager :
     view?.shouldEmitHtml = value
   }
 
+  override fun setIsOnChangeTextSet(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    view?.shouldEmitOnChangeText = value
+  }
+
   override fun setAutoCapitalize(
     view: EnrichedTextInputView?,
     flag: String?,
