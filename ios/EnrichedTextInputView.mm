@@ -129,55 +129,64 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([H2Style getStyleType]), @([H3Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([H2Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H3Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([H3Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([H4Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([H5Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([H6Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([UnorderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([OrderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType])
+      @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([BlockQuoteStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType])
+      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
+      @([CodeBlockStyle getStyleType])
     ],
     @([CodeBlockStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
@@ -1454,11 +1463,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
   H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
 
-  bool shouldHandleImproperHeadings =
-      h1Style != nullptr && h2Style != nullptr && h3Style != nullptr &&
-      h4Style != nullptr && h5Style != nullptr && h6Style != nullptr;
+  bool headingStylesDefined = h1Style != nullptr && h2Style != nullptr &&
+                              h3Style != nullptr && h4Style != nullptr &&
+                              h5Style != nullptr && h6Style != nullptr;
 
-  if (shouldHandleImproperHeadings) {
+  if (headingStylesDefined) {
     [h1Style handleImproperHeadings];
     [h2Style handleImproperHeadings];
     [h3Style handleImproperHeadings];

@@ -137,6 +137,9 @@
             [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H4Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H5Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [previousActiveStyles
@@ -805,6 +808,22 @@
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
+
+    // this is more like a hack but for some reason the last <br> in
+    // <blockquote> and <codeblock> are not properly changed into zero width
+    // space so we do that manually here
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
+                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
+                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+
+    // replace "<br>" at the end with "<br>\n" if input is not empty to properly
+    // handle last <br> in html
+    if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
+      fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
+    }
   }
 
   return fixedHtml;
@@ -833,9 +852,9 @@
  * you MUST add it to the `textTags` set below.
  */
 - (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
-  NSSet *textTags =
-      [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"li", @"b", @"a", @"s",
-                            @"mention", @"code", @"u", @"i", nil];
+  NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
+                                          @"h5", @"h6", @"li", @"b", @"a", @"s",
+                                          @"mention", @"code", @"u", @"i", nil];
 
   NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
   NSMutableString *currentTagBuffer = [NSMutableString string];

@@ -5,6 +5,9 @@
 + (StyleType)getStyleType {
   return H6;
 }
++ (BOOL)isParagraphStyle {
+  return YES;
+}
 - (CGFloat)getHeadingFontSize {
   return [((EnrichedTextInputView *)input)->config h6FontSize];
 }
