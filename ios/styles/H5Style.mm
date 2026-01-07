@@ -8,6 +8,9 @@
 + (BOOL)isParagraphStyle {
   return YES;
 }
++ (const char *)tagName {
+  return "h5";
+}
 - (CGFloat)getHeadingFontSize {
   return [((EnrichedTextInputView *)input)->config h5FontSize];
 }
