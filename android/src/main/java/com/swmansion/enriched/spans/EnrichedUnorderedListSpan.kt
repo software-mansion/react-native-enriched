@@ -11,7 +11,11 @@ import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffectingSpan(), LeadingMarginSpan, EnrichedParagraphSpan {
+class EnrichedUnorderedListSpan(
+  private val htmlStyle: HtmlStyle,
+) : MetricAffectingSpan(),
+  LeadingMarginSpan,
+  EnrichedParagraphSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
   override fun updateMeasureState(p0: TextPaint) {
@@ -22,9 +26,7 @@ class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffect
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun getLeadingMargin(p0: Boolean): Int {
-    return htmlStyle.ulBulletSize + htmlStyle.ulGapWidth + htmlStyle.ulMarginLeft
-  }
+  override fun getLeadingMargin(p0: Boolean): Int = htmlStyle.ulBulletSize + htmlStyle.ulGapWidth + htmlStyle.ulMarginLeft
 
   override fun drawLeadingMargin(
     canvas: Canvas,
@@ -38,7 +40,7 @@ class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffect
     start: Int,
     end: Int,
     first: Boolean,
-    layout: Layout?
+    layout: Layout?,
   ) {
     val spannedText = text as Spanned
 
@@ -59,7 +61,5 @@ class EnrichedUnorderedListSpan(private val htmlStyle: HtmlStyle) : MetricAffect
     }
   }
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedUnorderedListSpan {
-    return EnrichedUnorderedListSpan(htmlStyle)
-  }
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedUnorderedListSpan = EnrichedUnorderedListSpan(htmlStyle)
 }

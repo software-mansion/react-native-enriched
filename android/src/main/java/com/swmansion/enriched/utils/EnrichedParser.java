@@ -9,7 +9,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
-
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan;
@@ -26,11 +25,14 @@ import com.swmansion.enriched.spans.EnrichedStrikeThroughSpan;
 import com.swmansion.enriched.spans.EnrichedUnderlineSpan;
 import com.swmansion.enriched.spans.EnrichedUnorderedListSpan;
 import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan;
-import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan;
 import com.swmansion.enriched.spans.interfaces.EnrichedInlineSpan;
+import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan;
 import com.swmansion.enriched.spans.interfaces.EnrichedZeroWidthSpaceSpan;
 import com.swmansion.enriched.styles.HtmlStyle;
-
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 import org.ccil.cowan.tagsoup.HTMLSchema;
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
@@ -42,46 +44,38 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Most of the code in this file is copied from the Android source code and adjusted to our needs.
- * For the reference see <a href="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/text/Html.java">docs</a>
+ * For the reference see <a
+ * href="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/text/Html.java">docs</a>
  */
 public class EnrichedParser {
-  /**
-   * Retrieves images for HTML &lt;img&gt; tags.
-   */
+  /** Retrieves images for HTML &lt;img&gt; tags. */
   public interface ImageGetter {
     /**
-     * This method is called when the HTML parser encounters an
-     * &lt;img&gt; tag.  The <code>source</code> argument is the
-     * string from the "src" attribute; the return value should be
-     * a Drawable representation of the image or <code>null</code>
-     * for a generic replacement image.  Make sure you call
-     * setBounds() on your Drawable if it doesn't already have
-     * its bounds set.
+     * This method is called when the HTML parser encounters an &lt;img&gt; tag. The <code>source
+     * </code> argument is the string from the "src" attribute; the return value should be a
+     * Drawable representation of the image or <code>null</code> for a generic replacement image.
+     * Make sure you call setBounds() on your Drawable if it doesn't already have its bounds set.
      */
     Drawable getDrawable(String source);
   }
 
-  private EnrichedParser() { }
+  private EnrichedParser() {}
+
   /**
-   * Lazy initialization holder for HTML parser. This class will
-   * a) be preloaded by the zygote, or b) not loaded until absolutely
-   * necessary.
+   * Lazy initialization holder for HTML parser. This class will a) be preloaded by the zygote, or
+   * b) not loaded until absolutely necessary.
    */
   private static class HtmlParser {
     private static final HTMLSchema schema = new HTMLSchema();
   }
+
   /**
-   * Returns displayable styled text from the provided HTML string. Any &lt;img&gt; tags in the
-   * HTML will use the specified ImageGetter to request a representation of the image (use null
-   * if you don't want this) and the specified TagHandler to handle unknown tags (specify null if
-   * you don't want this).
+   * Returns displayable styled text from the provided HTML string. Any &lt;img&gt; tags in the HTML
+   * will use the specified ImageGetter to request a representation of the image (use null if you
+   * don't want this) and the specified TagHandler to handle unknown tags (specify null if you don't
+   * want this).
    *
    * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
    */
@@ -93,16 +87,19 @@ public class EnrichedParser {
       // Should not happen.
       throw new RuntimeException(e);
     }
-    HtmlToSpannedConverter converter = new HtmlToSpannedConverter(source, style, imageGetter, parser);
+    HtmlToSpannedConverter converter =
+        new HtmlToSpannedConverter(source, style, imageGetter, parser);
     return converter.convert();
   }
+
   public static String toHtml(Spanned text) {
     StringBuilder out = new StringBuilder();
     withinHtml(out, text);
     String outString = out.toString();
     // Codeblocks and blockquotes appends a newline character by default, so we have to remove it
     String normalizedCodeBlock = outString.replaceAll("</codeblock>\\n<br>", "</codeblock>");
-    String normalizedBlockQuote = normalizedCodeBlock.replaceAll("</blockquote>\\n<br>", "</blockquote>");
+    String normalizedBlockQuote =
+        normalizedCodeBlock.replaceAll("</blockquote>\\n<br>", "</blockquote>");
     return "<html>\n" + normalizedBlockQuote + "</html>";
   }
 
@@ -113,24 +110,24 @@ public class EnrichedParser {
     return "<html>\n<p></p>\n</html>";
   }
 
-  /**
-   * Returns an HTML escaped representation of the given plain text.
-   */
+  /** Returns an HTML escaped representation of the given plain text. */
   public static String escapeHtml(CharSequence text) {
     StringBuilder out = new StringBuilder();
     withinStyle(out, text, 0, text.length());
     return out.toString();
   }
+
   private static void withinHtml(StringBuilder out, Spanned text) {
     withinDiv(out, text, 0, text.length());
   }
+
   private static void withinDiv(StringBuilder out, Spanned text, int start, int end) {
     int next;
     for (int i = start; i < end; i = next) {
       next = text.nextSpanTransition(i, end, EnrichedBlockSpan.class);
       EnrichedBlockSpan[] blocks = text.getSpans(i, next, EnrichedBlockSpan.class);
       String tag = "unknown";
-      if (blocks.length > 0){
+      if (blocks.length > 0) {
         tag = blocks[0] instanceof EnrichedCodeBlockSpan ? "codeblock" : "blockquote";
       }
 
@@ -149,6 +146,7 @@ public class EnrichedParser {
       }
     }
   }
+
   private static String getBlockTag(EnrichedParagraphSpan[] spans) {
     for (EnrichedParagraphSpan span : spans) {
       if (span instanceof EnrichedUnorderedListSpan) {
@@ -166,6 +164,7 @@ public class EnrichedParser {
 
     return "p";
   }
+
   private static void withinBlock(StringBuilder out, Spanned text, int start, int end) {
     boolean isInUlList = false;
     boolean isInOlList = false;
@@ -187,7 +186,8 @@ public class EnrichedParser {
         }
         out.append("<br>\n");
       } else {
-        EnrichedParagraphSpan[] paragraphStyles = text.getSpans(i, next, EnrichedParagraphSpan.class);
+        EnrichedParagraphSpan[] paragraphStyles =
+            text.getSpans(i, next, EnrichedParagraphSpan.class);
         String tag = getBlockTag(paragraphStyles);
         boolean isUlListItem = tag.equals("ul");
         boolean isOlListItem = tag.equals("ol");
@@ -234,6 +234,7 @@ public class EnrichedParser {
       next++;
     }
   }
+
   private static void withinParagraph(StringBuilder out, Spanned text, int start, int end) {
     int next;
     for (int i = start; i < end; i = next) {
@@ -323,8 +324,8 @@ public class EnrichedParser {
       }
     }
   }
-  private static void withinStyle(StringBuilder out, CharSequence text,
-                                  int start, int end) {
+
+  private static void withinStyle(StringBuilder out, CharSequence text, int start, int end) {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
       if (c == '\u200B') {
@@ -359,6 +360,7 @@ public class EnrichedParser {
     }
   }
 }
+
 class HtmlToSpannedConverter implements ContentHandler {
   private final HtmlStyle mStyle;
   private final String mSource;
@@ -369,7 +371,8 @@ class HtmlToSpannedConverter implements ContentHandler {
   private static Boolean isInOrderedList = false;
   private static Boolean isEmptyTag = false;
 
-  public HtmlToSpannedConverter(String source, HtmlStyle style, EnrichedParser.ImageGetter imageGetter, Parser parser) {
+  public HtmlToSpannedConverter(
+      String source, HtmlStyle style, EnrichedParser.ImageGetter imageGetter, Parser parser) {
     mStyle = style;
     mSource = source;
     mSpannableStringBuilder = new SpannableStringBuilder();
@@ -389,14 +392,15 @@ class HtmlToSpannedConverter implements ContentHandler {
       throw new RuntimeException(e);
     }
     // Fix flags and range for paragraph-type markup.
-    Object[] obj = mSpannableStringBuilder.getSpans(0, mSpannableStringBuilder.length(), ParagraphStyle.class);
+    Object[] obj =
+        mSpannableStringBuilder.getSpans(0, mSpannableStringBuilder.length(), ParagraphStyle.class);
     for (int i = 0; i < obj.length; i++) {
       int start = mSpannableStringBuilder.getSpanStart(obj[i]);
       int end = mSpannableStringBuilder.getSpanEnd(obj[i]);
       // If the last line of the range is blank, back off by one.
       if (end - 2 >= 0) {
-        if (mSpannableStringBuilder.charAt(end - 1) == '\n' &&
-          mSpannableStringBuilder.charAt(end - 2) == '\n') {
+        if (mSpannableStringBuilder.charAt(end - 1) == '\n'
+            && mSpannableStringBuilder.charAt(end - 2) == '\n') {
           end--;
         }
       }
@@ -404,13 +408,16 @@ class HtmlToSpannedConverter implements ContentHandler {
         mSpannableStringBuilder.removeSpan(obj[i]);
       } else {
         // TODO: verify if Spannable.SPAN_EXCLUSIVE_EXCLUSIVE does not break anything.
-        // Previously it was SPAN_PARAGRAPH. I've changed that in order to fix ranges for list items.
+        // Previously it was SPAN_PARAGRAPH. I've changed that in order to fix ranges for list
+        // items.
         mSpannableStringBuilder.setSpan(obj[i], start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
       }
     }
 
     // Assign zero-width space character to the proper spans.
-    EnrichedZeroWidthSpaceSpan[] zeroWidthSpaceSpans = mSpannableStringBuilder.getSpans(0, mSpannableStringBuilder.length(), EnrichedZeroWidthSpaceSpan.class);
+    EnrichedZeroWidthSpaceSpan[] zeroWidthSpaceSpans =
+        mSpannableStringBuilder.getSpans(
+            0, mSpannableStringBuilder.length(), EnrichedZeroWidthSpaceSpan.class);
     for (EnrichedZeroWidthSpaceSpan zeroWidthSpaceSpan : zeroWidthSpaceSpans) {
       int start = mSpannableStringBuilder.getSpanStart(zeroWidthSpaceSpan);
       int end = mSpannableStringBuilder.getSpanEnd(zeroWidthSpaceSpan);
@@ -422,7 +429,8 @@ class HtmlToSpannedConverter implements ContentHandler {
       }
 
       mSpannableStringBuilder.removeSpan(zeroWidthSpaceSpan);
-      mSpannableStringBuilder.setSpan(zeroWidthSpaceSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      mSpannableStringBuilder.setSpan(
+          zeroWidthSpaceSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     return mSpannableStringBuilder;
@@ -529,8 +537,8 @@ class HtmlToSpannedConverter implements ContentHandler {
   }
 
   private static void startBlockElement(Editable text) {
-      appendNewlines(text, 1);
-      start(text, new Newline(1));
+    appendNewlines(text, 1);
+    start(text, new Newline(1));
   }
 
   private static void endBlockElement(Editable text) {
@@ -695,13 +703,16 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void startImg(Editable text, Attributes attributes, EnrichedParser.ImageGetter img) {
+  private static void startImg(
+      Editable text, Attributes attributes, EnrichedParser.ImageGetter img) {
     String src = attributes.getValue("", "src");
     String width = attributes.getValue("", "width");
     String height = attributes.getValue("", "height");
 
     int len = text.length();
-    EnrichedImageSpan span = EnrichedImageSpan.Companion.createEnrichedImageSpan(src, Integer.parseInt(width), Integer.parseInt(height));
+    EnrichedImageSpan span =
+        EnrichedImageSpan.Companion.createEnrichedImageSpan(
+            src, Integer.parseInt(width), Integer.parseInt(height));
     text.append("￼");
     text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
@@ -745,20 +756,15 @@ class HtmlToSpannedConverter implements ContentHandler {
     setSpanFromMark(text, m, new EnrichedMentionSpan(m.mText, m.mIndicator, m.mAttributes, style));
   }
 
-  public void setDocumentLocator(Locator locator) {
-  }
+  public void setDocumentLocator(Locator locator) {}
 
-  public void startDocument() {
-  }
+  public void startDocument() {}
 
-  public void endDocument() {
-  }
+  public void endDocument() {}
 
-  public void startPrefixMapping(String prefix, String uri) {
-  }
+  public void startPrefixMapping(String prefix, String uri) {}
 
-  public void endPrefixMapping(String prefix) {
-  }
+  public void endPrefixMapping(String prefix) {}
 
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
     handleStartTag(localName, attributes);
@@ -801,44 +807,31 @@ class HtmlToSpannedConverter implements ContentHandler {
     mSpannableStringBuilder.append(sb);
   }
 
-  public void ignorableWhitespace(char[] ch, int start, int length) {
-  }
+  public void ignorableWhitespace(char[] ch, int start, int length) {}
 
-  public void processingInstruction(String target, String data) {
-  }
+  public void processingInstruction(String target, String data) {}
 
-  public void skippedEntity(String name) {
-  }
+  public void skippedEntity(String name) {}
 
-  private static class H1 {
-  }
+  private static class H1 {}
 
-  private static class H2 {
-  }
+  private static class H2 {}
 
-  private static class H3 {
-  }
+  private static class H3 {}
 
-  private static class Bold {
-  }
+  private static class Bold {}
 
-  private static class Italic {
-  }
+  private static class Italic {}
 
-  private static class Underline {
-  }
+  private static class Underline {}
 
-  private static class Code {
-  }
+  private static class Code {}
 
-  private static class CodeBlock {
-  }
+  private static class CodeBlock {}
 
-  private static class Strikethrough {
-  }
+  private static class Strikethrough {}
 
-  private static class Blockquote {
-  }
+  private static class Blockquote {}
 
   private static class List {
     public int mIndex;

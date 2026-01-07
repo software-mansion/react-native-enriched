@@ -1288,6 +1288,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (linkStyleClass != nullptr) {
     [linkStyleClass manageLinkTypingAttributes];
   }
+  NSString *currentString = [textView.textStorage.string copy];
 
   // mention typing attribtues fix and active editing
   MentionStyle *mentionStyleClass =
@@ -1298,14 +1299,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // mention editing runs if only a selection was done (no text change)
     // otherwise we would double-emit with a second call in the
     // anyTextMayHaveBeenModified method
-    if ([_recentInputString
-            isEqualToString:[textView.textStorage.string copy]]) {
+    if ([_recentInputString isEqualToString:currentString]) {
       [mentionStyleClass manageMentionEditing];
     }
   }
 
   // typing attributes for empty lines selection reset
-  NSString *currentString = [textView.textStorage.string copy];
   if (textView.selectedRange.length == 0 &&
       [_recentInputString isEqualToString:currentString]) {
     // no string change means only a selection changed with no character changes

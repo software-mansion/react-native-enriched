@@ -1,0 +1,70 @@
+apply plugin: "org.jlleitschuh.gradle.ktlint"
+apply plugin: 'com.diffplug.spotless'
+
+ktlint {
+	version = "1.8.0"
+	verbose = true
+	outputToConsole = true
+	coloredOutput = true
+	android = true
+	enableExperimentalRules = true
+
+	reporters {
+		reporter "plain"
+		reporter "checkstyle"
+		reporter "html"
+	}
+
+	filter {
+		exclude("**/generated/**")
+		exclude("**/build/**")
+		exclude("**/node_modules/**")
+
+		include("src/**/*.kt")
+		include("src/**/*.kts")
+	}
+}
+
+spotless {
+	kotlin {
+		target 'src/**/*.kt', 'src/**/*.kts'
+		ktlint("1.8.0")
+		trimTrailingWhitespace()
+		endWithNewline()
+		lineEndings 'UNIX'
+		targetExclude '**/generated/**', '**/build/**', '**/node_modules/**'
+	}
+
+	java {
+		target 'src/**/*.java'
+		googleJavaFormat("1.23.0")
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+		leadingTabsToSpaces(2)
+		lineEndings 'UNIX'
+		targetExclude '**/generated/**', '**/build/**', '**/node_modules/**'
+	}
+
+	groovyGradle {
+		target '*.gradle', 'gradle/*.gradle'
+		greclipse()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}
+
+tasks.register('lintFormat') {
+	group = "formatting"
+	description = "Auto-fix all code formatting issues"
+	dependsOn 'ktlintFormat', 'spotlessApply'
+}
+
+tasks.register('lintVerify') {
+	group = "verification"
+	description = "Verify code is properly formatted"
+	dependsOn 'ktlintCheck', 'spotlessCheck'
+	doLast {
+		println "✓ All code formatting checks passed!"
+	}
+}
