@@ -31,6 +31,12 @@ class EnrichedSpanState(
     private set
   var h3Start: Int? = null
     private set
+  var h4Start: Int? = null
+    private set
+  var h5Start: Int? = null
+    private set
+  var h6Start: Int? = null
+    private set
   var codeBlockStart: Int? = null
     private set
   var blockQuoteStart: Int? = null
@@ -86,6 +92,21 @@ class EnrichedSpanState(
     emitStateChangeEvent()
   }
 
+  fun setH4Start(start: Int?) {
+    this.h4Start = start
+    emitStateChangeEvent()
+  }
+
+  fun setH5Start(start: Int?) {
+    this.h5Start = start
+    emitStateChangeEvent()
+  }
+
+  fun setH6Start(start: Int?) {
+    this.h6Start = start
+    emitStateChangeEvent()
+  }
+
   fun setCodeBlockStart(start: Int?) {
     this.codeBlockStart = start
     emitStateChangeEvent()
@@ -132,6 +153,9 @@ class EnrichedSpanState(
         EnrichedSpans.H1 -> h1Start
         EnrichedSpans.H2 -> h2Start
         EnrichedSpans.H3 -> h3Start
+        EnrichedSpans.H4 -> h4Start
+        EnrichedSpans.H5 -> h5Start
+        EnrichedSpans.H6 -> h6Start
         EnrichedSpans.CODE_BLOCK -> codeBlockStart
         EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
         EnrichedSpans.ORDERED_LIST -> orderedListStart
@@ -158,6 +182,9 @@ class EnrichedSpanState(
       EnrichedSpans.H1 -> setH1Start(start)
       EnrichedSpans.H2 -> setH2Start(start)
       EnrichedSpans.H3 -> setH3Start(start)
+      EnrichedSpans.H4 -> setH4Start(start)
+      EnrichedSpans.H5 -> setH5Start(start)
+      EnrichedSpans.H6 -> setH6Start(start)
       EnrichedSpans.CODE_BLOCK -> setCodeBlockStart(start)
       EnrichedSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
       EnrichedSpans.ORDERED_LIST -> setOrderedListStart(start)
@@ -197,6 +224,9 @@ class EnrichedSpanState(
     payload.putMap("h1", getStyleState(activeStyles, EnrichedSpans.H1))
     payload.putMap("h2", getStyleState(activeStyles, EnrichedSpans.H2))
     payload.putMap("h3", getStyleState(activeStyles, EnrichedSpans.H3))
+    payload.putMap("h4", getStyleState(activeStyles, EnrichedSpans.H4))
+    payload.putMap("h5", getStyleState(activeStyles, EnrichedSpans.H5))
+    payload.putMap("h6", getStyleState(activeStyles, EnrichedSpans.H6))
     payload.putMap("codeBlock", getStyleState(activeStyles, EnrichedSpans.CODE_BLOCK))
     payload.putMap("blockQuote", getStyleState(activeStyles, EnrichedSpans.BLOCK_QUOTE))
     payload.putMap("orderedList", getStyleState(activeStyles, EnrichedSpans.ORDERED_LIST))
@@ -214,6 +244,9 @@ class EnrichedSpanState(
     deprecatedPayload.putBoolean("isH1", h1Start != null)
     deprecatedPayload.putBoolean("isH2", h2Start != null)
     deprecatedPayload.putBoolean("isH3", h3Start != null)
+    deprecatedPayload.putBoolean("isH4", h4Start != null)
+    deprecatedPayload.putBoolean("isH5", h5Start != null)
+    deprecatedPayload.putBoolean("isH6", h6Start != null)
     deprecatedPayload.putBoolean("isCodeBlock", codeBlockStart != null)
     deprecatedPayload.putBoolean("isBlockQuote", blockQuoteStart != null)
     deprecatedPayload.putBoolean("isOrderedList", orderedListStart != null)

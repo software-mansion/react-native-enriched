@@ -17,6 +17,12 @@
   BOOL _h2Bold;
   CGFloat _h3FontSize;
   BOOL _h3Bold;
+  CGFloat _h4FontSize;
+  BOOL _h4Bold;
+  CGFloat _h5FontSize;
+  BOOL _h5Bold;
+  CGFloat _h6FontSize;
+  BOOL _h6Bold;
   UIColor *_blockquoteBorderColor;
   CGFloat _blockquoteBorderWidth;
   CGFloat _blockquoteGapWidth;
@@ -66,6 +72,12 @@
   copy->_h2Bold = _h2Bold;
   copy->_h3FontSize = _h3FontSize;
   copy->_h3Bold = _h3Bold;
+  copy->_h4FontSize = _h4FontSize;
+  copy->_h4Bold = _h4Bold;
+  copy->_h5FontSize = _h5FontSize;
+  copy->_h5Bold = _h5Bold;
+  copy->_h6FontSize = _h6FontSize;
+  copy->_h6Bold = _h6Bold;
   copy->_blockquoteBorderColor = [_blockquoteBorderColor copy];
   copy->_blockquoteBorderWidth = _blockquoteBorderWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
@@ -220,6 +232,54 @@
 
 - (void)setH3Bold:(BOOL)newValue {
   _h3Bold = newValue;
+}
+
+- (CGFloat)h4FontSize {
+  return _h4FontSize;
+}
+
+- (void)setH4FontSize:(CGFloat)newValue {
+  _h4FontSize = newValue;
+}
+
+- (BOOL)h4Bold {
+  return _h4Bold;
+}
+
+- (void)setH4Bold:(BOOL)newValue {
+  _h4Bold = newValue;
+}
+
+- (CGFloat)h5FontSize {
+  return _h5FontSize;
+}
+
+- (void)setH5FontSize:(CGFloat)newValue {
+  _h5FontSize = newValue;
+}
+
+- (BOOL)h5Bold {
+  return _h5Bold;
+}
+
+- (void)setH5Bold:(BOOL)newValue {
+  _h5Bold = newValue;
+}
+
+- (CGFloat)h6FontSize {
+  return _h6FontSize;
+}
+
+- (void)setH6FontSize:(CGFloat)newValue {
+  _h6FontSize = newValue;
+}
+
+- (BOOL)h6Bold {
+  return _h6Bold;
+}
+
+- (void)setH6Bold:(BOOL)newValue {
+  _h6Bold = newValue;
 }
 
 - (UIColor *)blockquoteBorderColor {

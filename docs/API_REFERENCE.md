@@ -253,6 +253,9 @@ interface OnChangeStateDeprecatedEvent {
   isH1: boolean;
   isH2: boolean;
   isH3: boolean;
+  isH4: boolean;
+  isH5: boolean;
+  isH6: boolean;
   isCodeBlock: boolean;
   isBlockQuote: boolean;
   isOrderedList: boolean;
@@ -559,7 +562,7 @@ Toggles codeblock formatting at the current selection.
 toggleH1: () => void;
 ```
 
-Toggles heading 1 (h1) style at the current selection.
+Toggles heading 1 (H1) style at the current selection.
 
 ### `.toggleH2()`
 
@@ -567,7 +570,7 @@ Toggles heading 1 (h1) style at the current selection.
 toggleH2: () => void;
 ```
 
-Toggles heading 2 (h2) style at the current selection.
+Toggles heading 2 (H2) style at the current selection.
 
 ### `.toggleH3()`
 
@@ -575,7 +578,31 @@ Toggles heading 2 (h2) style at the current selection.
 toggleH3: () => void;
 ```
 
-Toggles heading 3 (h3) style at the current selection.
+Toggles heading 3 (H3) style at the current selection.
+
+### `.toggleH4()`
+
+```ts
+toggleH4: () => void;
+```
+
+Toggles heading 4 (H4) style at the current selection.
+
+### `.toggleH5()`
+
+```ts
+toggleH5: () => void;
+```
+
+Toggles heading 5 (H5) style at the current selection.
+
+### `.toggleH6()`
+
+```ts
+toggleH6: () => void;
+```
+
+Toggles heading 6 (H6) style at the current selection.
 
 ### `.toggleInlineCode()`
 
@@ -643,6 +670,18 @@ interface HtmlStyle {
     fontSize?: number;
     bold?: boolean;
   };
+  h4?: {
+    fontSize?: number;
+    bold?: boolean;
+  };
+  h5?: {
+    fontSize?: number;
+    bold?: boolean;
+  };
+  h6?: {
+    fontSize?: number;
+    bold?: boolean;
+  };
   blockquote?: {
     borderColor?: ColorValue;
     borderWidth?: number;
@@ -684,9 +723,9 @@ interface MentionStyleProperties {
 }
 ```
 
-### h1/h2/h3 (headings)
+### h1/h2/h3/h4/h5/h6 (headings)
 
-- `fontSize` is the size of the heading's font, defaults to `32`/`24`/`20` for h1/h2/h3.
+- `fontSize` is the size of the heading's font. Defaults to `32` for `H1`, `24` for `H2`, `20` for `H3`, `16` for `H4`, `14` for `H5`, `12` for `H6`.
 - `bold` defines whether the heading should be bolded, defaults to `false`.
 
 > [!NOTE]

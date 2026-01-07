@@ -52,6 +52,9 @@ const DEFAULT_STYLES: StylesState = {
   h1: DEFAULT_STYLE_STATE,
   h2: DEFAULT_STYLE_STATE,
   h3: DEFAULT_STYLE_STATE,
+  h4: DEFAULT_STYLE_STATE,
+  h5: DEFAULT_STYLE_STATE,
+  h6: DEFAULT_STYLE_STATE,
   blockQuote: DEFAULT_STYLE_STATE,
   codeBlock: DEFAULT_STYLE_STATE,
   orderedList: DEFAULT_STYLE_STATE,
@@ -376,14 +379,26 @@ export default function App() {
 
 const htmlStyle: HtmlStyle = {
   h1: {
-    fontSize: 40,
+    fontSize: 72,
     bold: true,
   },
   h2: {
-    fontSize: 32,
+    fontSize: 60,
     bold: true,
   },
   h3: {
+    fontSize: 50,
+    bold: true,
+  },
+  h4: {
+    fontSize: 40,
+    bold: true,
+  },
+  h5: {
+    fontSize: 30,
+    bold: true,
+  },
+  h6: {
     fontSize: 24,
     bold: true,
   },

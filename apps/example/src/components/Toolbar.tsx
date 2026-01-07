@@ -40,6 +40,18 @@ const STYLE_ITEMS = [
     text: 'H3',
   },
   {
+    name: 'heading-4',
+    text: 'H4',
+  },
+  {
+    name: 'heading-5',
+    text: 'H5',
+  },
+  {
+    name: 'heading-6',
+    text: 'H6',
+  },
+  {
     name: 'quote',
     icon: 'quote-right',
   },
@@ -113,6 +125,15 @@ export const Toolbar: FC<ToolbarProps> = ({
         break;
       case 'heading-3':
         editorRef.current?.toggleH3();
+        break;
+      case 'heading-4':
+        editorRef.current?.toggleH4();
+        break;
+      case 'heading-5':
+        editorRef.current?.toggleH5();
+        break;
+      case 'heading-6':
+        editorRef.current?.toggleH6();
         break;
       case 'code-block':
         editorRef?.current?.toggleCodeBlock();
