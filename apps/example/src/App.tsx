@@ -62,6 +62,9 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
+const LINK_REGEX =
+  /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
+
 const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
@@ -299,6 +302,7 @@ export default function App() {
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
             autoCapitalize="sentences"
+            linkRegex={LINK_REGEX}
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
