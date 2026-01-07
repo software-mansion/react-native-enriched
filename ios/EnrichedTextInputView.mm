@@ -17,11 +17,9 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {                                                                            \
-    .isActive = [self isStyleActive:TYPE_ENUM],                                \
-    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
-    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
-  }
+  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -882,30 +880,23 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
 
       emitter->onChangeStateDeprecated({
-        .isBold = [_activeStyles containsObject:@([BoldStyle getStyleType])],
-        .isItalic =
-            [_activeStyles containsObject:@([ItalicStyle getStyleType])],
-        .isUnderline =
-            [_activeStyles containsObject:@([UnderlineStyle getStyleType])],
-        .isStrikeThrough =
-            [_activeStyles containsObject:@([StrikethroughStyle getStyleType])],
-        .isInlineCode =
-            [_activeStyles containsObject:@([InlineCodeStyle getStyleType])],
-        .isLink = [_activeStyles containsObject:@([LinkStyle getStyleType])],
-        .isMention =
-            [_activeStyles containsObject:@([MentionStyle getStyleType])],
-        .isH1 = [_activeStyles containsObject:@([H1Style getStyleType])],
-        .isH2 = [_activeStyles containsObject:@([H2Style getStyleType])],
-        .isH3 = [_activeStyles containsObject:@([H3Style getStyleType])],
-        .isUnorderedList =
-            [_activeStyles containsObject:@([UnorderedListStyle getStyleType])],
-        .isOrderedList =
-            [_activeStyles containsObject:@([OrderedListStyle getStyleType])],
-        .isBlockQuote =
-            [_activeStyles containsObject:@([BlockQuoteStyle getStyleType])],
-        .isCodeBlock =
-            [_activeStyles containsObject:@([CodeBlockStyle getStyleType])],
-        .isImage = [_activeStyles containsObject:@([ImageStyle getStyleType])],
+          .isBold = [self isStyleActive:[BoldStyle getStyleType]],
+          .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
+          .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
+          .isStrikeThrough =
+              [self isStyleActive:[StrikethroughStyle getStyleType]],
+          .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
+          .isLink = [self isStyleActive:[LinkStyle getStyleType]],
+          .isMention = [self isStyleActive:[MentionStyle getStyleType]],
+          .isH1 = [self isStyleActive:[H1Style getStyleType]],
+          .isH2 = [self isStyleActive:[H2Style getStyleType]],
+          .isH3 = [self isStyleActive:[H3Style getStyleType]],
+          .isUnorderedList =
+              [self isStyleActive:[UnorderedListStyle getStyleType]],
+          .isOrderedList = [self isStyleActive:[OrderedListStyle getStyleType]],
+          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
+          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
+          .isImage = [self isStyleActive:[ImageStyle getStyleType]],
       });
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),

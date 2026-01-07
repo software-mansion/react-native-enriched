@@ -226,15 +226,18 @@ interface OnChangeStateEvent {
 }
 ```
 
-- `isActive` is the style active within current selection.
-- `isBlocking` Indicates if the style is blocked by other currently active styles.
-- `isConflicting` Indicates if the style is in conflict with other currently active styles.
+- `isActive` indicates if the style is active within current selection.
+- `isBlocking` indicates if the style is blocked by other currently active, meaning it can't be toggled.
+- `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove some other styles.
 
 | Type                                                        | Default Value | Platform |
 | ----------------------------------------------------------- | ------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | -             | Both     |
 
 ### `onChangeStateDeprecated`
+
+> [!WARNING]  
+> Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
 
 Callback that gets called when any of the styles within the selection changes.
 
