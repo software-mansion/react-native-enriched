@@ -25,14 +25,20 @@ fun jsonStringToStringMap(json: String): Map<String, String> {
   return result
 }
 
-fun Spannable.getSafeSpanBoundaries(start: Int, end: Int): Pair<Int, Int> {
+fun Spannable.getSafeSpanBoundaries(
+  start: Int,
+  end: Int,
+): Pair<Int, Int> {
   val safeStart = start.coerceAtMost(end).coerceAtLeast(0)
   val safeEnd = end.coerceAtLeast(start).coerceAtMost(this.length)
 
   return Pair(safeStart, safeEnd)
 }
 
-fun Spannable.getParagraphBounds(start: Int, end: Int): Pair<Int, Int> {
+fun Spannable.getParagraphBounds(
+  start: Int,
+  end: Int,
+): Pair<Int, Int> {
   var startPosition = start.coerceAtLeast(0).coerceAtMost(this.length)
   var endPosition = end.coerceAtLeast(0).coerceAtMost(this.length)
 
@@ -54,15 +60,19 @@ fun Spannable.getParagraphBounds(start: Int, end: Int): Pair<Int, Int> {
   return Pair(startPosition, endPosition)
 }
 
-fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> {
-  return this.getParagraphBounds(index, index)
-}
+fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> = this.getParagraphBounds(index, index)
 
-fun Spannable.mergeSpannables(start: Int, end: Int, string: String): Spannable {
-  return this.mergeSpannables(start, end, SpannableString(string))
-}
+fun Spannable.mergeSpannables(
+  start: Int,
+  end: Int,
+  string: String,
+): Spannable = this.mergeSpannables(start, end, SpannableString(string))
 
-fun Spannable.mergeSpannables(start: Int, end: Int, spannable: Spannable): Spannable {
+fun Spannable.mergeSpannables(
+  start: Int,
+  end: Int,
+  spannable: Spannable,
+): Spannable {
   var finalStart = start
   var finalEnd = end
 

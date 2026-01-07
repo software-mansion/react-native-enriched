@@ -28,17 +28,19 @@ object MeasurementStore {
 
   data class MeasurementParams(
     val initialized: Boolean,
-
     val cachedWidth: Float,
     val cachedSize: Long,
-
     val spannable: CharSequence?,
     val paintParams: PaintParams,
   )
 
   private val data = ConcurrentHashMap<Int, MeasurementParams>()
 
-  fun store(id: Int, spannable: Spannable?, paint: TextPaint): Boolean {
+  fun store(
+    id: Int,
+    spannable: Spannable?,
+    paint: TextPaint,
+  ): Boolean {
     val cachedWidth = data[id]?.cachedWidth ?: 0f
     val cachedSize = data[id]?.cachedSize ?: 0L
     val initialized = data[id]?.initialized ?: true
@@ -54,22 +56,32 @@ object MeasurementStore {
     data.remove(id)
   }
 
-  private fun measure(maxWidth: Float, spannable: CharSequence?, paintParams: PaintParams): Long {
-    val paint = TextPaint().apply {
-      typeface = paintParams.typeface
-      textSize = paintParams.fontSize
-    }
+  private fun measure(
+    maxWidth: Float,
+    spannable: CharSequence?,
+    paintParams: PaintParams,
+  ): Long {
+    val paint =
+      TextPaint().apply {
+        typeface = paintParams.typeface
+        textSize = paintParams.fontSize
+      }
 
     return measure(maxWidth, spannable, paint)
   }
 
-  private fun measure(maxWidth: Float, spannable: CharSequence?, paint: TextPaint): Long {
+  private fun measure(
+    maxWidth: Float,
+    spannable: CharSequence?,
+    paint: TextPaint,
+  ): Long {
     val text = spannable ?: ""
     val textLength = text.length
-    val builder = StaticLayout.Builder
-      .obtain(text, 0, textLength, paint, maxWidth.toInt())
-      .setIncludePad(true)
-      .setLineSpacing(0f, 1f)
+    val builder =
+      StaticLayout.Builder
+        .obtain(text, 0, textLength, paint, maxWidth.toInt())
+        .setIncludePad(true)
+        .setLineSpacing(0f, 1f)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       builder.setBreakStrategy(LineBreaker.BREAK_STRATEGY_HIGH_QUALITY)
@@ -86,7 +98,10 @@ object MeasurementStore {
   }
 
   // Returns either: Spannable parsed from HTML defaultValue, or plain text defaultValue, or "I" if no defaultValue
-  private fun getInitialText(defaultView: EnrichedTextInputView, props: ReadableMap?): CharSequence {
+  private fun getInitialText(
+    defaultView: EnrichedTextInputView,
+    props: ReadableMap?,
+  ): CharSequence {
     val defaultValue = props?.getString("defaultValue")
 
     // If there is no default value, assume text is one line, "I" is a good approximation of height
@@ -105,7 +120,10 @@ object MeasurementStore {
     }
   }
 
-  private fun getInitialFontSize(defaultView: EnrichedTextInputView, props: ReadableMap?): Float {
+  private fun getInitialFontSize(
+    defaultView: EnrichedTextInputView,
+    props: ReadableMap?,
+  ): Float {
     val propsFontSize = props?.getDouble("fontSize")?.toFloat()
     if (propsFontSize == null) return defaultView.textSize
 
@@ -114,7 +132,12 @@ object MeasurementStore {
 
   // Called when view measurements are not available in the store
   // Most likely first measurement, we can use defaultValue, as no native state is set yet
-  private fun initialMeasure(context: Context, id: Int?, width: Float, props: ReadableMap?): Long {
+  private fun initialMeasure(
+    context: Context,
+    id: Int?,
+    width: Float,
+    props: ReadableMap?,
+  ): Long {
     val defaultView = EnrichedTextInputView(context)
 
     val text = getInitialText(defaultView, props)
@@ -135,7 +158,12 @@ object MeasurementStore {
     return size
   }
 
-  private fun getMeasureById(context: Context, id: Int?, width: Float, props: ReadableMap?): Long {
+  private fun getMeasureById(
+    context: Context,
+    id: Int?,
+    width: Float,
+    props: ReadableMap?,
+  ): Long {
     val id = id ?: return initialMeasure(context, id, width, props)
     val value = data[id] ?: return initialMeasure(context, id, width, props)
 
@@ -147,17 +175,25 @@ object MeasurementStore {
       return value.cachedSize
     }
 
-    val paint = TextPaint().apply {
-      typeface = value.paintParams.typeface
-      textSize = value.paintParams.fontSize
-    }
+    val paint =
+      TextPaint().apply {
+        typeface = value.paintParams.typeface
+        textSize = value.paintParams.fontSize
+      }
 
     val size = measure(width, value.spannable, paint)
     data[id] = MeasurementParams(true, width, size, value.spannable, value.paintParams)
     return size
   }
 
-  fun getMeasureById(context: Context, id: Int?, width: Float, height: Float, heightMode: YogaMeasureMode?, props: ReadableMap?): Long {
+  fun getMeasureById(
+    context: Context,
+    id: Int?,
+    width: Float,
+    height: Float,
+    heightMode: YogaMeasureMode?,
+    props: ReadableMap?,
+  ): Long {
     val size = getMeasureById(context, id, width, props)
     if (heightMode !== YogaMeasureMode.AT_MOST) {
       return size
