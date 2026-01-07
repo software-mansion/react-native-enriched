@@ -17,9 +17,11 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
-   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
-   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
+  {                                                                            \
+    .isActive = [self isStyleActive:TYPE_ENUM],                                \
+    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
+    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
+  }
 
 using namespace facebook::react;
 
