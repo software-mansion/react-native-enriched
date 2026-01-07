@@ -67,6 +67,19 @@ The recognized mention indicators. Each item needs to be a 1 character long stri
 |-------------------|---------------|----------|
 | array of `string` | `['@']`       | Both     |
 
+### `linkRegex`
+
+A custom regex pattern for detecting links in the input. If not provided, a default regex will be used.
+With this approach you can customize what patterns should be recognized as links, for example you can make it so that only links starting with `https://` are detected or you can support custom schemes.
+Keep in mind that not all JS regex features are supported, for example variable-width lookbehinds won't work.
+
+| Type     | Default Value                 | Platform |
+|----------|-------------------------------|----------|
+| `RegExp` | default native platform regex | Both     |
+
+> [!TIP]
+> With this approach you can also disable link detection completely by providing a `null` value as the prop.
+
 ### `onBlur`
 
 Callback that's called whenever the input loses focused (is blurred).
