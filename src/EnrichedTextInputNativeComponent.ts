@@ -10,11 +10,8 @@ import React from 'react';
 
 export interface LinkNativeRegex {
   pattern: string;
-  isGlobal: boolean;
   caseInsensitive: boolean;
-  multiline: boolean;
   dotAll: boolean;
-  unicode: boolean;
   // Link detection will be disabled
   isDisabled: boolean;
   // Use default native link regex

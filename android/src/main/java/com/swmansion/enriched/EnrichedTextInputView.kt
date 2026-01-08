@@ -49,7 +49,6 @@ import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.mergeSpannables
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 import kotlin.math.ceil
@@ -455,14 +454,12 @@ class EnrichedTextInputView : AppCompatEditText {
 
     var flags = 0
     if (config.getBoolean("caseInsensitive")) flags = flags or Pattern.CASE_INSENSITIVE
-    if (config.getBoolean("multiline")) flags = flags or Pattern.MULTILINE
     if (config.getBoolean("dotAll")) flags = flags or Pattern.DOTALL
-    if (config.getBoolean("unicode")) flags = flags or Pattern.UNICODE_CASE
 
     try {
-      val wrappedPatternStr = "(?s).*?($patternStr).*"
-      linkRegex = Pattern.compile(wrappedPatternStr, flags)
+      linkRegex = Pattern.compile("(?s).*?($patternStr).*", flags)
     } catch (e: PatternSyntaxException) {
+      Log.w("EnrichedTextInputView", "Invalid link regex pattern: $patternStr")
       linkRegex = Patterns.WEB_URL
     }
   }

@@ -2,22 +2,16 @@ import type { LinkNativeRegex } from '../EnrichedTextInputNativeComponent';
 
 const DISABLED_REGEX: LinkNativeRegex = {
   pattern: '',
-  isGlobal: false,
   caseInsensitive: false,
-  multiline: false,
   dotAll: false,
-  unicode: false,
   isDisabled: true,
   isDefault: false,
 };
 
 const DEFAULT_REGEX: LinkNativeRegex = {
   pattern: '',
-  isGlobal: false,
   caseInsensitive: false,
-  multiline: false,
   dotAll: false,
-  unicode: false,
   isDisabled: false,
   isDefault: true,
 };
@@ -54,11 +48,8 @@ export const toNativeRegexConfig = (
 
   return {
     pattern: source,
-    isGlobal: regex.global,
     caseInsensitive: regex.ignoreCase,
-    multiline: regex.multiline,
     dotAll: regex.dotAll,
-    unicode: regex.unicode,
     isDisabled: false,
     isDefault: false,
   };
