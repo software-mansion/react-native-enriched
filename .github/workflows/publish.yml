@@ -7,6 +7,10 @@ on:
         required: false
         default: 'true'
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   verify-and-publish:
     runs-on: ubuntu-latest
