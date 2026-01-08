@@ -37,16 +37,21 @@ jobs:
         run: yarn test --maxWorkers=2 --coverage
 
       - name: Build package
+        run: npm pack
+
+      - name: Get metadata
         run: |
-          PACK_NAME=$(npm pack --json | jq -r '.[0].filename')
-          echo "PACKAGE_PATH=$PACK_NAME" >> $GITHUB_ENV
-          echo "Generated package: $PACK_NAME"
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          FILENAME="${NAME}-${VERSION}.tgz"
+          echo "PACKAGE_NAME=$FILENAME" >> $GITHUB_OUTPUT
+          echo "Artifact filename: $FILENAME"
 
       - name: Upload NPM tarball as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE_PATH }}
-          path: ${{ env.PACKAGE_PATH }}
+          name: ${{ steps.meta.outputs.PACKAGE_NAME }}
+          path: ${{ steps.meta.outputs.PACKAGE_NAME }}
           overwrite: true
           if-no-files-found: error
 
