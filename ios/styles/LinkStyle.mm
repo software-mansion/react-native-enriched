@@ -13,6 +13,9 @@ static NSString *const AutomaticLinkAttributeName =
 
 @implementation LinkStyle {
   EnrichedTextInputView *_input;
+  NSRegularExpression *_fullRegex;
+  NSRegularExpression *_wwwRegex;
+  NSRegularExpression *_bareRegex;
 }
 
 + (StyleType)getStyleType {
@@ -26,6 +29,25 @@ static NSString *const AutomaticLinkAttributeName =
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+
+  // init default regexes
+  _fullRegex = [NSRegularExpression
+      regularExpressionWithPattern:@"http(s)?:\\/\\/"
+                                   @"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
+                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                           options:0
+                             error:nullptr];
+  _wwwRegex = [NSRegularExpression
+      regularExpressionWithPattern:@"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
+                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                           options:0
+                             error:nullptr];
+  _bareRegex = [NSRegularExpression
+      regularExpressionWithPattern:@"[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,"
+                                   @"6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                           options:0
+                             error:nullptr];
+
   return self;
 }
 
@@ -346,6 +368,13 @@ static NSString *const AutomaticLinkAttributeName =
 
 // handles detecting and removing automatic links
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
+  LinkRegexConfig *linkRegexConfig = [_input->config linkRegexConfig];
+
+  // no automatic links with isDisabled
+  if (linkRegexConfig.isDisabled) {
+    return;
+  }
+
   InlineCodeStyle *inlineCodeStyle =
       [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
   MentionStyle *mentionStyle =
@@ -392,42 +421,28 @@ static NSString *const AutomaticLinkAttributeName =
     return;
   }
 
-  NSRegularExpression *fullRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"http(s)?:\\/\\/"
-                                   @"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
-                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
-  NSRegularExpression *wwwRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
-                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
-  NSRegularExpression *bareRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,"
-                                   @"6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
+  // all conditions are met; try matching the word to a proper regex
 
   NSString *regexPassedUrl = nullptr;
+  NSRange matchingRange = NSMakeRange(0, word.length);
 
-  if ([fullRegex numberOfMatchesInString:word
-                                 options:0
-                                   range:NSMakeRange(0, word.length)]) {
-    regexPassedUrl = word;
-  } else if ([wwwRegex numberOfMatchesInString:word
-                                       options:0
-                                         range:NSMakeRange(0, word.length)]) {
-    regexPassedUrl = word;
-  } else if ([bareRegex numberOfMatchesInString:word
-                                        options:0
-                                          range:NSMakeRange(0, word.length)]) {
-    regexPassedUrl = word;
-  } else if ([self anyOccurence:wordRange]) {
-    // there was some automatic link (because anyOccurence is true and we are
-    // sure there are no manual links) still, it didn't pass any regex - needs
-    // to be removed
-    [self removeAttributes:wordRange];
+  if (linkRegexConfig.isDefault) {
+    // use default regex
+    regexPassedUrl = [self tryMatchingDefaultLinkRegex:word
+                                            matchRange:matchingRange];
+  } else {
+    // use user defined regex if it exists
+    NSRegularExpression *userRegex = [_input->config parsedLinkRegex];
+
+    if (userRegex == nullptr) {
+      // fallback to default regex
+      regexPassedUrl = [self tryMatchingDefaultLinkRegex:word
+                                              matchRange:matchingRange];
+    } else if ([userRegex numberOfMatchesInString:word
+                                          options:0
+                                            range:matchingRange]) {
+      regexPassedUrl = word;
+    }
   }
 
   if (regexPassedUrl != nullptr) {
@@ -449,7 +464,23 @@ static NSString *const AutomaticLinkAttributeName =
       // emit onLinkDetected if style was added
       [_input emitOnLinkDetectedEvent:word url:regexPassedUrl range:wordRange];
     }
+  } else if ([self anyOccurence:wordRange]) {
+    // there was some automatic link (because anyOccurence is true and we are
+    // sure there are no manual links) still, it didn't pass any regex - needs
+    // to be removed
+    [self removeAttributes:wordRange];
   }
+}
+
+- (NSString *)tryMatchingDefaultLinkRegex:(NSString *)word
+                               matchRange:(NSRange)range {
+  if ([_fullRegex numberOfMatchesInString:word options:0 range:range] ||
+      [_wwwRegex numberOfMatchesInString:word options:0 range:range] ||
+      [_bareRegex numberOfMatchesInString:word options:0 range:range]) {
+    return word;
+  }
+
+  return nullptr;
 }
 
 // handles refreshing manual links

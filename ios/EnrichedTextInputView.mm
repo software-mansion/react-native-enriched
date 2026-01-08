@@ -708,6 +708,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
 
+  // linkRegex
+  LinkRegexConfig *oldRegexConfig =
+      [[LinkRegexConfig alloc] initWithLinkRegexProp:oldViewProps.linkRegex];
+  LinkRegexConfig *newRegexConfig =
+      [[LinkRegexConfig alloc] initWithLinkRegexProp:newViewProps.linkRegex];
+  if (![newRegexConfig isEqualToConfig:oldRegexConfig]) {
+    [config setLinkRegexConfig:newRegexConfig];
+  }
+
   // selection color sets both selection and cursor on iOS (just as in RN)
   if (newViewProps.selectionColor != oldViewProps.selectionColor) {
     if (isColorMeaningful(newViewProps.selectionColor)) {
