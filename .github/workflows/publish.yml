@@ -38,7 +38,6 @@ jobs:
 
       - name: Build package
         run: |
-          # npm pack outputs the filename of the created tarball to stdout
           PACK_NAME=$(npm pack)
           echo "PACKAGE_PATH=$PACK_NAME" >> $GITHUB_ENV
           echo "Generated package: $PACK_NAME"
