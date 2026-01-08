@@ -48,6 +48,7 @@ jobs:
         with:
           name: ${{ env.PACKAGE_PATH }}
           path: ${{ env.PACKAGE_PATH }}
+          overwrite: true
           if-no-files-found: error
 
       - name: Publish package (dry-run)
