@@ -144,9 +144,7 @@ Supported styles:
 - underline
 - strikethrough
 - inline code
-- H1 heading
-- H2 heading
-- H3 heading
+- H1, H2, H3, H4, H5 and H6 headings
 - codeblock
 - blockquote
 - ordered list

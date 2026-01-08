@@ -7,11 +7,13 @@
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
+  NSInteger _precedingImageCount;
 }
 
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _precedingImageCount = 0;
   return self;
 }
 
@@ -137,6 +139,9 @@
             [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H4Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H5Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [previousActiveStyles
@@ -224,6 +229,9 @@
             [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
+            [currentActiveStyles containsObject:@([H4Style getStyleType])] ||
+            [currentActiveStyles containsObject:@([H5Style getStyleType])] ||
+            [currentActiveStyles containsObject:@([H6Style getStyleType])] ||
             [currentActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [currentActiveStyles
@@ -378,8 +386,14 @@
                [previousActiveStyles
                    containsObject:@([H2Style getStyleType])] ||
                [previousActiveStyles
-                   containsObject:@([H3Style getStyleType])]) {
-      // do nothing, heading closing tag has already ben appended
+                   containsObject:@([H3Style getStyleType])] ||
+               [previousActiveStyles
+                   containsObject:@([H4Style getStyleType])] ||
+               [previousActiveStyles
+                   containsObject:@([H5Style getStyleType])] ||
+               [previousActiveStyles
+                   containsObject:@([H6Style getStyleType])]) {
+      // do nothing, heading closing tag has already been appended
     } else {
       [result appendString:@"</p>"];
     }
@@ -513,6 +527,12 @@
     return @"h2";
   } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
     return @"h3";
+  } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
+    return @"h4";
+  } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
+    return @"h5";
+  } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
+    return @"h6";
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
@@ -744,6 +764,18 @@
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h4>"
+                                         inString:fixedHtml
+                                          leading:YES
+                                         trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h5>"
+                                         inString:fixedHtml
+                                          leading:YES
+                                         trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<h6>"
+                                         inString:fixedHtml
+                                          leading:YES
+                                         trailing:NO];
 
     // line closing tags
     fixedHtml = [self stringByAddingNewlinesToTag:@"</p>"
@@ -763,6 +795,18 @@
                                           leading:NO
                                          trailing:YES];
     fixedHtml = [self stringByAddingNewlinesToTag:@"</h3>"
+                                         inString:fixedHtml
+                                          leading:NO
+                                         trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h4>"
+                                         inString:fixedHtml
+                                          leading:NO
+                                         trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h5>"
+                                         inString:fixedHtml
+                                          leading:NO
+                                         trailing:YES];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"</h6>"
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
@@ -810,9 +854,9 @@
  * you MUST add it to the `textTags` set below.
  */
 - (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
-  NSSet *textTags =
-      [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"li", @"b", @"a", @"s",
-                            @"mention", @"code", @"u", @"i", nil];
+  NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
+                                          @"h5", @"h6", @"li", @"b", @"a", @"s",
+                                          @"mention", @"code", @"u", @"i", nil];
 
   NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
   NSMutableString *currentTagBuffer = [NSMutableString string];
@@ -907,7 +951,19 @@
 
   NSArray *tagData = ongoingTags[tagName];
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
-  NSRange tagRange = NSMakeRange(tagLocation, plainText.length - tagLocation);
+
+  // 'tagLocation' is an index based on 'plainText' which currently only holds
+  // raw text.
+  //
+  // Since 'plainText' does not yet contain the special placeholders for images,
+  // the indices for any text following an image are lower than they will be
+  // in the final NSTextStorage.
+  //
+  // We add '_precedingImageCount' to shift the start index forward, aligning
+  // this style's range with the actual position in the final text (where each
+  // image adds 1 character).
+  NSRange tagRange = NSMakeRange(tagLocation + _precedingImageCount,
+                                 plainText.length - tagLocation);
 
   [tagEntry addObject:[tagName copy]];
   [tagEntry addObject:[NSValue valueWithRange:tagRange]];
@@ -917,12 +973,17 @@
 
   [processedTags addObject:tagEntry];
   [ongoingTags removeObjectForKey:tagName];
+
+  if ([tagName isEqualToString:@"img"]) {
+    _precedingImageCount++;
+  }
 }
 
 - (NSArray *)getTextAndStylesFromHtml:(NSString *)fixedHtml {
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
+  _precedingImageCount = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
   BOOL gettingTagParams = NO;
@@ -1198,6 +1259,12 @@
         [styleArr addObject:@([H2Style getStyleType])];
       } else if ([tagName isEqualToString:@"h3"]) {
         [styleArr addObject:@([H3Style getStyleType])];
+      } else if ([tagName isEqualToString:@"h4"]) {
+        [styleArr addObject:@([H4Style getStyleType])];
+      } else if ([tagName isEqualToString:@"h5"]) {
+        [styleArr addObject:@([H5Style getStyleType])];
+      } else if ([tagName isEqualToString:@"h6"]) {
+        [styleArr addObject:@([H6Style getStyleType])];
       }
     } else if ([tagName isEqualToString:@"ul"]) {
       [styleArr addObject:@([UnorderedListStyle getStyleType])];
