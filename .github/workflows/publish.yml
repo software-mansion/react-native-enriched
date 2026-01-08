@@ -38,7 +38,7 @@ jobs:
 
       - name: Build package
         run: |
-          PACK_NAME=$(npm pack)
+          PACK_NAME=$(npm pack --json | jq -r '.[0].filename')
           echo "PACKAGE_PATH=$PACK_NAME" >> $GITHUB_ENV
           echo "Generated package: $PACK_NAME"
 
