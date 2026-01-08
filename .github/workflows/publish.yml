@@ -1,4 +1,4 @@
-name: publish.yml
+name: Publish
 on:
   workflow_dispatch:
     inputs:
@@ -14,6 +14,7 @@ permissions:
 jobs:
   verify-and-publish:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,17 +38,22 @@ jobs:
         run: yarn test --maxWorkers=2 --coverage
 
       - name: Build package
+        run: npm pack
+
+      - name: Get metadata
+        id: meta
         run: |
-          # npm pack outputs the filename of the created tarball to stdout
-          PACK_NAME=$(npm pack)
-          echo "PACKAGE_PATH=$PACK_NAME" >> $GITHUB_ENV
-          echo "Generated package: $PACK_NAME"
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          FILENAME="${NAME}-${VERSION}.tgz"
+          echo "PACKAGE_NAME=$FILENAME" >> $GITHUB_OUTPUT
+          echo "Artifact filename: $FILENAME"
 
       - name: Upload NPM tarball as artifact
-        uses: actions/actions-upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE_PATH }}
-          path: ${{ env.PACKAGE_PATH }}
+          name: ${{ steps.meta.outputs.PACKAGE_NAME }}
+          path: ${{ steps.meta.outputs.PACKAGE_NAME }}
           overwrite: true
           if-no-files-found: error
 
@@ -55,9 +61,10 @@ jobs:
         if: ${{ github.event.inputs.dryRun == 'true' }}
         run: |
           echo "Dry run enabled — skipping actual publish"
-#          npm publish --dry-run
+          npm publish --dry-run
 
       - name: Publish package
         if: ${{ github.event.inputs.dryRun != 'true' }}
-#        run: npm publish
-        run: echo "Publishing package..."
+        run: |
+          echo "Publishing package..."
+          npm publish
