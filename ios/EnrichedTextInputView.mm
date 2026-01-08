@@ -44,6 +44,7 @@ using namespace facebook::react;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
+  BOOL _emitTextChange;
 }
 
 // MARK: - Component utils
@@ -87,6 +88,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
+  _emitTextChange = NO;
 
   defaultTypingAttributes =
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
@@ -751,6 +753,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // isOnChangeHtmlSet
   _emitHtml = newViewProps.isOnChangeHtmlSet;
+
+  // isOnChangeTextSet
+  _emitTextChange = newViewProps.isOnChangeTextSet;
 
   [super updateProps:props oldProps:oldProps];
   // run the changes callback
@@ -1552,7 +1557,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
-    if (emitter != nullptr) {
+    if (emitter != nullptr && _emitTextChange) {
       // set the recent input string only if the emitter is defined
       _recentInputString = [textView.textStorage.string copy];
 

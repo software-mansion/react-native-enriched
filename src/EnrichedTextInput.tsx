@@ -409,6 +409,7 @@ export const EnrichedTextInput = ({
       onChangeText={onChangeText}
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
+      isOnChangeTextSet={onChangeText !== undefined}
       onChangeState={onChangeState}
       onChangeStateDeprecated={onChangeStateDeprecated}
       onLinkDetected={handleLinkDetected}
