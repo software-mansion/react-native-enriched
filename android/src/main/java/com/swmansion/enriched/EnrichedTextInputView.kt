@@ -41,6 +41,7 @@ import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
 import com.swmansion.enriched.styles.ParametrizedStyles
+import com.swmansion.enriched.utils.EnrichedEditableFactory
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
@@ -124,7 +125,11 @@ class EnrichedTextInputView : AppCompatEditText {
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
 
-    addSpanWatcher(EnrichedSpanWatcher(this))
+    // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
+    val spanWatcher = EnrichedSpanWatcher(this)
+    this.spanWatcher = spanWatcher
+    setEditableFactory(EnrichedEditableFactory(spanWatcher))
+
     addTextChangedListener(EnrichedTextWatcher(this))
   }
 
@@ -275,8 +280,6 @@ class EnrichedTextInputView : AppCompatEditText {
       setText(newText)
 
       observeAsyncImages()
-      // Assign SpanWatcher one more time as our previous spannable has been replaced
-      addSpanWatcher(EnrichedSpanWatcher(this))
 
       // Scroll to the last line of text
       setSelection(text?.length ?: 0)
@@ -588,12 +591,6 @@ class EnrichedTextInputView : AppCompatEditText {
     }
 
     return true
-  }
-
-  private fun addSpanWatcher(watcher: EnrichedSpanWatcher) {
-    val spannable = text as Spannable
-    spannable.setSpan(watcher, 0, spannable.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-    spanWatcher = watcher
   }
 
   fun verifyAndToggleStyle(name: String) {
