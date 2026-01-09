@@ -1,0 +1,70 @@
+name: Publish
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Set to true to perform a dry run'
+        required: false
+        default: 'true'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run ESLint (JS/TS check)
+        run: yarn lint
+
+      - name: Typecheck files
+        run: yarn typecheck
+
+      - name: Run clang-format (C/C++ check)
+        run: yarn lint-clang
+
+      - name: Run android lint (Kotlin/Java/Groovy check)
+        run: yarn lint:android
+
+      - name: Run unit tests
+        run: yarn test --maxWorkers=2 --coverage
+
+      - name: Build package
+        run: npm pack
+
+      - name: Get metadata
+        id: meta
+        run: |
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          FILENAME="${NAME}-${VERSION}.tgz"
+          echo "PACKAGE_NAME=$FILENAME" >> $GITHUB_OUTPUT
+          echo "Artifact filename: $FILENAME"
+
+      - name: Upload NPM tarball as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.PACKAGE_NAME }}
+          path: ${{ steps.meta.outputs.PACKAGE_NAME }}
+          overwrite: true
+          if-no-files-found: error
+
+      - name: Publish package (dry-run)
+        if: ${{ github.event.inputs.dryRun == 'true' }}
+        run: |
+          echo "Dry run enabled — skipping actual publish"
+          npm publish --dry-run
+
+      - name: Publish package
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: |
+          echo "Publishing package..."
+          npm publish

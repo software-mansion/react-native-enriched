@@ -25,6 +25,9 @@ export interface OnChangeStateEvent {
   isH1: boolean;
   isH2: boolean;
   isH3: boolean;
+  isH4: boolean;
+  isH5: boolean;
+  isH6: boolean;
   isCodeBlock: boolean;
   isBlockQuote: boolean;
   isOrderedList: boolean;
@@ -75,19 +78,18 @@ export interface MentionStyleProperties {
   textDecorationLine?: 'underline' | 'none';
 }
 
+type Heading = {
+  fontSize?: Float;
+  bold?: boolean;
+};
+
 export interface HtmlStyleInternal {
-  h1?: {
-    fontSize?: Float;
-    bold?: boolean;
-  };
-  h2?: {
-    fontSize?: Float;
-    bold?: boolean;
-  };
-  h3?: {
-    fontSize?: Float;
-    bold?: boolean;
-  };
+  h1?: Heading;
+  h2?: Heading;
+  h3?: Heading;
+  h4?: Heading;
+  h5?: Heading;
+  h6?: Heading;
   blockquote?: {
     borderColor?: ColorValue;
     borderWidth?: Float;
@@ -160,6 +162,8 @@ export interface NativeProps extends ViewProps {
 
   // Used for onChangeHtml event performance optimization
   isOnChangeHtmlSet: boolean;
+  // Used for onChangeText event performance optimization
+  isOnChangeTextSet: boolean;
 
   // Experimental
   androidExperimentalSynchronousEvents: boolean;
@@ -187,6 +191,9 @@ interface NativeCommands {
   toggleH1: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleH2: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleH3: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH4: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH5: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleH6: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleCodeBlock: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
@@ -237,6 +244,9 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleH1',
     'toggleH2',
     'toggleH3',
+    'toggleH4',
+    'toggleH5',
+    'toggleH6',
     'toggleCodeBlock',
     'toggleBlockQuote',
     'toggleOrderedList',
