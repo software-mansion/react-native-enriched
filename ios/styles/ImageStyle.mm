@@ -28,7 +28,7 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return "img";
 }
 
-+ (NSString *)subTagName {
++ (const char *)subTagName {
   return nil;
 }
 
