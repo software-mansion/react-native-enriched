@@ -34,6 +34,7 @@ using namespace facebook::react;
   EnrichedTextInputViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
+  NSMutableSet<NSNumber *> *_blockedStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSString *_recentInputString;
@@ -80,6 +81,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)setDefaults {
   _componentViewHeightUpdateCounter = 0;
   _activeStyles = [[NSMutableSet alloc] init];
+  _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   recentlyChangedRange = NSMakeRange(0, 0);
@@ -211,7 +213,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
   };
 
-  blockingStyles = @{
+  blockingStyles = [@{
     @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([ItalicStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
@@ -234,7 +236,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([BlockQuoteStyle getStyleType]) : @[],
     @([CodeBlockStyle getStyleType]) : @[],
     @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
-  };
+  } mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
 }
@@ -341,6 +343,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h1.bold != oldViewProps.htmlStyle.h1.bold) {
     [newConfig setH1Bold:newViewProps.htmlStyle.h1.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h1.bold ? [self addStyleBlock:H1 to:Bold]
+                                   : [self removeStyleBlock:H1 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -352,6 +359,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h2.bold != oldViewProps.htmlStyle.h2.bold) {
     [newConfig setH2Bold:newViewProps.htmlStyle.h2.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h2.bold ? [self addStyleBlock:H2 to:Bold]
+                                   : [self removeStyleBlock:H2 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -363,6 +375,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h3.bold != oldViewProps.htmlStyle.h3.bold) {
     [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h3.bold ? [self addStyleBlock:H3 to:Bold]
+                                   : [self removeStyleBlock:H3 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -374,6 +391,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h4.bold != oldViewProps.htmlStyle.h4.bold) {
     [newConfig setH4Bold:newViewProps.htmlStyle.h4.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h4.bold ? [self addStyleBlock:H4 to:Bold]
+                                   : [self removeStyleBlock:H4 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -385,6 +407,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h5.bold != oldViewProps.htmlStyle.h5.bold) {
     [newConfig setH5Bold:newViewProps.htmlStyle.h5.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h5.bold ? [self addStyleBlock:H5 to:Bold]
+                                   : [self removeStyleBlock:H5 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -396,6 +423,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h6.bold != oldViewProps.htmlStyle.h6.bold) {
     [newConfig setH6Bold:newViewProps.htmlStyle.h6.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h6.bold ? [self addStyleBlock:H6 to:Bold]
+                                   : [self removeStyleBlock:H6 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -871,6 +903,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // emitted
   NSMutableSet *newActiveStyles = [_activeStyles mutableCopy];
 
+  // currently blocked styles are subject to change (e.g. bold being blocked by
+  // headings might change in reaction to prop change) so they also are kept
+  // separately
+  NSMutableSet *newBlockedStyles = [_blockedStyles mutableCopy];
+
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
@@ -881,14 +918,30 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   for (NSNumber *type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
+
     BOOL wasActive = [newActiveStyles containsObject:type];
     BOOL isActive = [style detectStyle:textView.selectedRange];
+
+    BOOL wasBlocked = [newBlockedStyles containsObject:type];
+    BOOL isBlocked = [self isStyle:(StyleType)[type integerValue]
+                       activeInMap:blockingStyles];
+
     if (wasActive != isActive) {
       updateNeeded = YES;
       if (isActive) {
         [newActiveStyles addObject:type];
       } else {
         [newActiveStyles removeObject:type];
+      }
+    }
+
+    // blocked state change for a style also needs an update
+    if (wasBlocked != isBlocked) {
+      updateNeeded = YES;
+      if (isBlocked) {
+        [newBlockedStyles addObject:type];
+      } else {
+        [newBlockedStyles removeObject:type];
       }
     }
 
@@ -956,8 +1009,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
-      // update activeStyles only if emitter is available
+      // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
+      _blockedStyles = newBlockedStyles;
 
       emitter->onChangeStateDeprecated({
           .isBold = [self isStyleActive:[BoldStyle getStyleType]],
@@ -1042,6 +1096,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   return false;
+}
+
+- (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
+  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
+  if (![blocksArr containsObject:@(blocking)]) {
+    [blocksArr addObject:@(blocking)];
+    blockingStyles[@(blocked)] = blocksArr;
+  }
+}
+
+- (void)removeStyleBlock:(StyleType)blocking from:(StyleType)blocked {
+  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
+  if ([blocksArr containsObject:@(blocking)]) {
+    [blocksArr removeObject:@(blocking)];
+    blockingStyles[@(blocked)] = blocksArr;
+  }
 }
 
 // MARK: - Native commands and events

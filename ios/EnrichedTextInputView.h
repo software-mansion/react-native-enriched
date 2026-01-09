@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
 }
