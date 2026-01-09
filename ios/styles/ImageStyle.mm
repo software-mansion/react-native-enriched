@@ -36,7 +36,8 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   return YES;
 }
 
-+ (NSDictionary *)getParametersFromValue:(id)value {
++ (NSDictionary<NSString *, NSString *> *_Nullable)getParametersFromValue:
+    (id)value {
   ImageData *img = (ImageData *)value;
   if (!img)
     return nil;

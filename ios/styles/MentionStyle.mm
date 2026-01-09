@@ -36,7 +36,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return MentionAttributeName;
 }
 
-+ (NSDictionary *)getParametersFromValue:(id)value {
++ (NSDictionary<NSString *, NSString *> *_Nullable)getParametersFromValue:
+    (id)value {
   MentionParams *mp = value;
   if (!mp)
     return nil;

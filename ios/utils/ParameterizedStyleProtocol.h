@@ -1,5 +1,6 @@
 @protocol ParameterizedStyleProtocol <NSObject>
 
-+ (NSDictionary *_Nullable)getParametersFromValue:(id)value;
++ (NSDictionary<NSString *, NSString *> *_Nullable)getParametersFromValue:
+    (id _Nullable)value;
 
 @end
