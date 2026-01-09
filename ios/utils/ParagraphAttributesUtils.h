@@ -8,4 +8,8 @@
 + (BOOL)handleParagraphStylesMergeOnBackspace:(NSRange)range
                               replacementText:(NSString *)text
                                         input:(id)input;
++ (BOOL)handleResetTypingAttributesOnBackspace:(NSRange)range
+                               replacementText:(NSString *)text
+                                         input:(id)input;
++ (BOOL)isParagraphEmpty:(NSRange)range inString:(NSString *)string;
 @end
