@@ -38,6 +38,9 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
+  NSLayoutConstraint *_placeholderTopConstraint;
+  NSLayoutConstraint *_placeholderLeadingConstraint;
+  NSLayoutConstraint *_placeholderWidthConstraint;
 }
 
 // MARK: - Component utils
@@ -246,14 +249,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   _placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [textView addSubview:_placeholderLabel];
+  _placeholderLeadingConstraint = [_placeholderLabel.leadingAnchor
+      constraintEqualToAnchor:textView.leadingAnchor];
+  _placeholderWidthConstraint = [_placeholderLabel.widthAnchor
+      constraintEqualToAnchor:textView.widthAnchor];
+  _placeholderTopConstraint =
+      [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor];
   [NSLayoutConstraint activateConstraints:@[
-    [_placeholderLabel.leadingAnchor
-        constraintEqualToAnchor:textView.leadingAnchor],
-    [_placeholderLabel.widthAnchor
-        constraintEqualToAnchor:textView.widthAnchor],
-    [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor],
-    [_placeholderLabel.bottomAnchor
-        constraintEqualToAnchor:textView.bottomAnchor]
+    _placeholderLeadingConstraint,
+    _placeholderWidthConstraint,
+    _placeholderTopConstraint,
   ]];
   _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   _placeholderLabel.text = @"";
@@ -760,6 +765,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
+           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics {
+  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
+
+  UIEdgeInsets insets = RCTUIEdgeInsetsFromEdgeInsets(
+      layoutMetrics.contentInsets - layoutMetrics.borderWidth);
+
+  textView.frame = UIEdgeInsetsInsetRect(
+      self.bounds, RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.borderWidth));
+  textView.textContainerInset = insets;
+
+  _placeholderTopConstraint.constant = insets.top;
+  _placeholderLeadingConstraint.constant = insets.left;
+  // We subtract (left + right) from the width so the text doesn't flow off the
+  // screen
+  _placeholderWidthConstraint.constant = -(insets.left + insets.right);
+
+  [_placeholderLabel layoutIfNeeded];
+}
+
 - (void)setPlaceholderLabelShown:(BOOL)shown {
   if (shown) {
     [self refreshPlaceholderLabelStyles];
@@ -783,50 +808,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // MARK: - Measuring and states
 
 - (CGSize)measureSize:(CGFloat)maxWidth {
-  // copy the the whole attributed string
-  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc]
-      initWithAttributedString:textView.textStorage];
+  UIEdgeInsets savedInset = textView.textContainerInset;
+  CGFloat savedLinePadding = textView.textContainer.lineFragmentPadding;
 
-  // edge case: empty input should still be of a height of a single line, so we
-  // add a mock "I" character
-  if ([currentStr length] == 0) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
+  textView.textContainerInset = UIEdgeInsetsZero;
+  textView.textContainer.lineFragmentPadding = 0;
 
-  // edge case: input with only a zero width space should still be of a height
-  // of a single line, so we add a mock "I" character
-  if ([currentStr length] == 1 &&
-      [[currentStr.string substringWithRange:NSMakeRange(0, 1)]
-          isEqualToString:@"\u200B"]) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
+  CGSize fitSize = [textView sizeThatFits:CGSizeMake(maxWidth, CGFLOAT_MAX)];
 
-  // edge case: trailing newlines aren't counted towards height calculations, so
-  // we add a mock "I" character
-  if (currentStr.length > 0) {
-    unichar lastChar =
-        [currentStr.string characterAtIndex:currentStr.length - 1];
-    if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
-      [currentStr
-          appendAttributedString:[[NSAttributedString alloc]
-                                     initWithString:@"I"
-                                         attributes:defaultTypingAttributes]];
-    }
-  }
+  textView.textContainerInset = savedInset;
+  textView.textContainer.lineFragmentPadding = savedLinePadding;
 
-  CGRect boundingBox =
-      [currentStr boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                               options:NSStringDrawingUsesLineFragmentOrigin |
-                                       NSStringDrawingUsesFontLeading
-                               context:nullptr];
-
-  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
+  return CGSizeMake(maxWidth, ceil(fitSize.height));
 }
 
 // make sure the newest state is kept in _state property
@@ -1411,6 +1404,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  [self ensureCursorIsVisible];
 }
 
 - (void)handleWordModificationBasedChanges:(NSString *)word
@@ -1535,46 +1529,45 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
-  // update drawing - schedule debounced relayout
-  [self scheduleRelayoutIfNeeded];
+  [self ensureCursorIsVisible];
 }
 
-// Debounced relayout helper - coalesces multiple requests into one per runloop
+// Debounced scroll to cursor - coalesces multiple requests into one per runloop
 // tick
-- (void)scheduleRelayoutIfNeeded {
-  // Cancel any previously scheduled invocation to debounce
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(_performRelayout)
-                                             object:nil];
-  // Schedule on next runloop cycle
-  [self performSelector:@selector(_performRelayout)
+- (void)ensureCursorIsVisible {
+  [NSObject
+      cancelPreviousPerformRequestsWithTarget:self
+                                     selector:@selector(_performScrollToCursor)
+                                       object:nil];
+
+  [self performSelector:@selector(_performScrollToCursor)
              withObject:nil
              afterDelay:0];
 }
 
-- (void)_performRelayout {
-  if (!textView) {
+- (void)_performScrollToCursor {
+  if (!textView)
     return;
-  }
 
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSRange wholeRange =
-        NSMakeRange(0, self->textView.textStorage.string.length);
-    NSRange actualRange = NSMakeRange(0, 0);
-    [self->textView.layoutManager
-        invalidateLayoutForCharacterRange:wholeRange
-                     actualCharacterRange:&actualRange];
-    [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-    [self->textView.layoutManager
-        invalidateDisplayForCharacterRange:wholeRange];
+  if (self->textView.selectedRange.location == NSNotFound)
+    return;
 
-    // We have to explicitly set contentSize
-    // That way textView knows if content overflows and if should be scrollable
-    // We recall measureSize here because value returned from previous
-    // measureSize may not be up-to date at that point
-    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
-    self->textView.contentSize = measuredSize;
-  });
+  UITextPosition *cursorPos = [self->textView
+      positionFromPosition:self->textView.beginningOfDocument
+                    offset:self->textView.selectedRange.location];
+  if (!cursorPos)
+    return;
+
+  CGRect caretRect = [self->textView caretRectForPosition:cursorPos];
+
+  // We don't just want to see the cursor, we want to see the cursor plus the
+  // padding.
+  UIEdgeInsets insets = self->textView.textContainerInset;
+
+  caretRect.origin.y -= insets.top;
+  caretRect.size.height += (insets.top + insets.bottom);
+
+  [self->textView scrollRectToVisible:caretRect animated:NO];
 }
 
 - (void)didMoveToWindow {
