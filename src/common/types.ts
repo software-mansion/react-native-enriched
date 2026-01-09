@@ -15,6 +15,9 @@ export interface OnChangeStateEvent {
   isH1: boolean;
   isH2: boolean;
   isH3: boolean;
+  isH4: boolean;
+  isH5: boolean;
+  isH6: boolean;
   isCodeBlock: boolean;
   isBlockQuote: boolean;
   isOrderedList: boolean;
@@ -52,6 +55,9 @@ export interface EnrichedTextInputInstanceBase {
   toggleH1: () => void;
   toggleH2: () => void;
   toggleH3: () => void;
+  toggleH4: () => void;
+  toggleH5: () => void;
+  toggleH6: () => void;
   toggleCodeBlock: () => void;
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;

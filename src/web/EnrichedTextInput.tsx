@@ -38,19 +38,18 @@ export interface MentionStyleProperties {
   textDecorationLine?: 'underline' | 'none';
 }
 
+type HeadingStyle = {
+  fontSize?: number;
+  bold?: boolean;
+};
+
 export interface HtmlStyle {
-  h1?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
-  h2?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
-  h3?: {
-    fontSize?: number;
-    bold?: boolean;
-  };
+  h1?: HeadingStyle;
+  h2?: HeadingStyle;
+  h3?: HeadingStyle;
+  h4?: HeadingStyle;
+  h5?: HeadingStyle;
+  h6?: HeadingStyle;
   blockquote?: {
     borderColor?: string;
     borderWidth?: number;
@@ -162,6 +161,9 @@ export const EnrichedTextInput = forwardRef(
       toggleH1: () => {},
       toggleH2: () => {},
       toggleH3: () => {},
+      toggleH4: () => {},
+      toggleH5: () => {},
+      toggleH6: () => {},
       toggleCodeBlock: () => {},
       toggleBlockQuote: () => {},
       toggleOrderedList: () => {},
