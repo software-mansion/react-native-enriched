@@ -1,4 +1,5 @@
 #pragma once
+#import "LinkRegexConfig.h"
 #import "MentionStyleProps.h"
 #import "TextDecorationLineEnum.h"
 #import <UIKit/UIKit.h>
@@ -82,4 +83,7 @@
 - (void)setCodeBlockBgColor:(UIColor *)newValue;
 - (CGFloat)codeBlockBorderRadius;
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue;
+- (LinkRegexConfig *)linkRegexConfig;
+- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
+- (NSRegularExpression *)parsedLinkRegex;
 @end

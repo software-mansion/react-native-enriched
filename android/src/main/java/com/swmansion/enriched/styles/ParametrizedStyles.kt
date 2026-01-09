@@ -79,11 +79,8 @@ class ParametrizedStyles(
 
   fun detectAllLinks() {
     val spannable = view.text as Spannable
-
-    // TODO: Consider using more reliable regex, this one matches almost anything
-    val urlPattern =
-      android.util.Patterns.WEB_URL
-        .matcher(spannable)
+    val regex = view.linkRegex ?: return
+    val urlPattern = regex.matcher(spannable)
 
     val spans = spannable.getSpans(0, spannable.length, EnrichedLinkSpan::class.java)
     for (span in spans) {
@@ -145,10 +142,9 @@ class ParametrizedStyles(
     val spannable = view.text as Spannable
     val (word, start, end) = result
 
-    // TODO: Consider using more reliable regex, this one matches almost anything
-    val urlPattern =
-      android.util.Patterns.WEB_URL
-        .matcher(word)
+    val regex = view.linkRegex ?: return
+    val urlPattern = regex.matcher(word)
+
     val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)

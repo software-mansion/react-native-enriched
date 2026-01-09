@@ -8,6 +8,16 @@ import type {
 import type { ColorValue, HostComponent, ViewProps } from 'react-native';
 import React from 'react';
 
+export interface LinkNativeRegex {
+  pattern: string;
+  caseInsensitive: boolean;
+  dotAll: boolean;
+  // Link detection will be disabled
+  isDisabled: boolean;
+  // Use default native link regex
+  isDefault: boolean;
+}
+
 export interface OnChangeTextEvent {
   value: string;
 }
@@ -139,6 +149,7 @@ export interface NativeProps extends ViewProps {
   autoCapitalize?: string;
   htmlStyle?: HtmlStyleInternal;
   scrollEnabled?: boolean;
+  linkRegex?: LinkNativeRegex;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<null>;

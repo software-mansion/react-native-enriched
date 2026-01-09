@@ -165,7 +165,8 @@ The links are here, just like in any other editor, a piece of text with a URL at
 
 ### Automatic links detection
 
-`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. Currently, we are using pretty naive approach to detect whether text can be treated as a link or not. On iOS it's a pretty simple regex, on Android we are using URL regex provided by the system.
+`react-native-enriched` automatically detects words that appear to be some URLs and makes them links.
+You can customize this behavior by providing your own regular expression via [linkRegex](docs/API_REFERENCE.md#linkregex) prop.
 
 ### Applying links manually
 
@@ -241,7 +242,6 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Future Plans
 
 - Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
-- Adding API for custom link detection regex.
 - Web library implementation via `react-native-web`.
 
 ## Contributing
