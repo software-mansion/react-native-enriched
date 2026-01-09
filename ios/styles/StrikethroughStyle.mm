@@ -14,6 +14,22 @@
   return NO;
 }
 
++ (const char *)tagName {
+  return "s";
+}
+
++ (const char *)subTagName {
+  return nil;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return NSStrikethroughStyleAttributeName;
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -56,10 +72,11 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
+  if (!value)
+    return NO;
   NSNumber *strikethroughStyle = (NSNumber *)value;
-  return strikethroughStyle != nullptr &&
-         [strikethroughStyle intValue] != NSUnderlineStyleNone;
+  return [strikethroughStyle intValue] != NSUnderlineStyleNone;
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -68,7 +85,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
@@ -76,7 +93,7 @@
                           atIndex:range.location
                     checkPrevious:NO
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -86,7 +103,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -95,7 +112,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

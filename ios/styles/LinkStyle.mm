@@ -10,6 +10,8 @@
 static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
 static NSString *const AutomaticLinkAttributeName =
     @"AutomaticLinkAttributeName";
+// custom NSAttributedStringKey to differentiate the link during html creation
+static NSString *const LinkAttributeName = @"LinkAttributeName";
 
 @implementation LinkStyle {
   EnrichedTextInputView *_input;
@@ -20,6 +22,30 @@ static NSString *const AutomaticLinkAttributeName =
 }
 
 + (BOOL)isParagraphStyle {
+  return NO;
+}
+
++ (const char *)tagName {
+  return "a";
+}
+
++ (const char *)subTagName {
+  return nil;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return LinkAttributeName;
+}
+
++ (NSDictionary<NSString *, NSString *> *_Nullable)getParametersFromValue:
+    (id)value {
+  NSString *url = value;
+  if (!url)
+    return nil;
+  return @{@"href" : url};
+}
+
++ (BOOL)isSelfClosing {
   return NO;
 }
 
@@ -51,6 +77,8 @@ static NSString *const AutomaticLinkAttributeName =
     [_input->textView.textStorage removeAttribute:ManualLinkAttributeName
                                             range:linkRange];
     [_input->textView.textStorage removeAttribute:AutomaticLinkAttributeName
+                                            range:linkRange];
+    [_input->textView.textStorage removeAttribute:LinkAttributeName
                                             range:linkRange];
     [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName
                                          value:[_input->config primaryColor]
@@ -92,6 +120,8 @@ static NSString *const AutomaticLinkAttributeName =
                                           range:linkRange];
   [_input->textView.textStorage removeAttribute:AutomaticLinkAttributeName
                                           range:linkRange];
+  [_input->textView.textStorage removeAttribute:LinkAttributeName
+                                          range:linkRange];
   [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName
                                        value:[_input->config primaryColor]
                                        range:linkRange];
@@ -121,7 +151,7 @@ static NSString *const AutomaticLinkAttributeName =
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSString *linkValue = (NSString *)value;
   return linkValue != nullptr;
 }
@@ -133,7 +163,7 @@ static NSString *const AutomaticLinkAttributeName =
              withInput:_input
                inRange:range
          withCondition:^BOOL(id _Nullable value, NSRange range) {
-           return [self styleCondition:value:range];
+           return [self styleCondition:value range:range];
          }];
     return onlyLinks ? [self isSingleLinkIn:range] : NO;
   } else {
@@ -147,7 +177,7 @@ static NSString *const AutomaticLinkAttributeName =
           withInput:_input
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange range) {
-        return [self styleCondition:value:range];
+        return [self styleCondition:value range:range];
       }];
 }
 
@@ -157,7 +187,7 @@ static NSString *const AutomaticLinkAttributeName =
           withInput:_input
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange range) {
-        return [self styleCondition:value:range];
+        return [self styleCondition:value range:range];
       }];
 }
 
@@ -176,6 +206,7 @@ static NSString *const AutomaticLinkAttributeName =
   newAttrs[NSForegroundColorAttributeName] = [_input->config linkColor];
   newAttrs[NSUnderlineColorAttributeName] = [_input->config linkColor];
   newAttrs[NSStrikethroughColorAttributeName] = [_input->config linkColor];
+  newAttrs[LinkAttributeName] = [url copy];
   if ([_input->config linkDecorationLine] == DecorationUnderline) {
     newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
   }
@@ -510,6 +541,9 @@ static NSString *const AutomaticLinkAttributeName =
     [_input->textView.textStorage addAttribute:ManualLinkAttributeName
                                          value:manualLinkMinValue
                                          range:newRange];
+    [_input->textView.textStorage addAttribute:LinkAttributeName
+                                         value:manualLinkMinValue
+                                         range:newRange];
   }
 
   // link typing attributes need to be fixed after these changes
@@ -556,14 +590,14 @@ static NSString *const AutomaticLinkAttributeName =
                 withInput:_input
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange range) {
-              return [self styleCondition:value:range];
+              return [self styleCondition:value range:range];
             }];
   BOOL anyManual =
       [OccurenceUtils any:ManualLinkAttributeName
                 withInput:_input
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange range) {
-              return [self styleCondition:value:range];
+              return [self styleCondition:value range:range];
             }];
 
   // both manual and automatic links are somewhere - delete!
@@ -579,7 +613,7 @@ static NSString *const AutomaticLinkAttributeName =
            withInput:_input
              inRange:wordRange
        withCondition:^BOOL(id _Nullable value, NSRange range) {
-         return [self styleCondition:value:range];
+         return [self styleCondition:value range:range];
        }];
 
   // only one link might be present!
