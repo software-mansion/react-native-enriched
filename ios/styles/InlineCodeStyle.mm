@@ -165,7 +165,7 @@
   for (NSUInteger index = 0; index < length; index++) {
     unichar ch = CFStringGetCharacterFromInlineBuffer(&buffer, index);
     // check new lines only
-    if (ch != '\n' && ch != '\r')
+    if (![[NSCharacterSet newlineCharacterSet] characterIsMember:ch])
       continue;
 
     NSRange newlineRange = NSMakeRange(index, 1);
