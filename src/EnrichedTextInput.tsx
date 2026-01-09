@@ -19,6 +19,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
+  type OnChangeStateDeprecatedEvent,
 } from './EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -138,6 +139,12 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
+  /**
+   * @deprecated Use onChangeState prop instead.
+   */
+  onChangeStateDeprecated?: (
+    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
+  ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
@@ -193,6 +200,7 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
+  onChangeStateDeprecated,
   onLinkDetected,
   onMentionDetected,
   onStartMention,
@@ -403,6 +411,7 @@ export const EnrichedTextInput = ({
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
       onChangeState={onChangeState}
+      onChangeStateDeprecated={onChangeStateDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
