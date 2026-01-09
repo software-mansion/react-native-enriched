@@ -4,16 +4,6 @@
 #import "TextInsertionUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-// for some reason UIKit may produce different size with the same text
-// the difference is always ~0.5
-static const CGFloat Epsilon = 0.5;
-
-static inline BOOL CGSizeAlmostEqual(CGSize firstSize, CGSize secondSize,
-                                     CGFloat epsilon) {
-  return fabs(firstSize.width - secondSize.width) < epsilon &&
-         fabs(firstSize.height - secondSize.height) < epsilon;
-}
-
 @implementation InputTextView {
   UILabel *_placeholderView;
   CGSize _lastCommittedSize;
@@ -233,7 +223,7 @@ static inline BOOL CGSizeAlmostEqual(CGSize firstSize, CGSize secondSize,
 
   CGSize newSize = usedRect.size;
 
-  if (CGSizeAlmostEqual(newSize, _lastCommittedSize, 0.5)) {
+  if (CGSizeEqualToSize(newSize, _lastCommittedSize)) {
     return;
   }
 
