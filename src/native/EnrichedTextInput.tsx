@@ -9,13 +9,9 @@ import {
 import EnrichedTextInputNativeComponent, {
   Commands,
   type NativeProps,
-  type OnChangeHtmlEvent,
   type OnChangeSelectionEvent,
-  type OnChangeStateEvent,
-  type OnChangeTextEvent,
   type OnLinkDetected,
   type OnMentionEvent,
-  type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
@@ -33,45 +29,18 @@ import type {
   ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from './normalizeHtmlStyle';
+import type {
+  OnChangeTextEvent,
+  OnChangeHtmlEvent,
+  OnChangeStateEvent,
+  OnMentionDetected,
+  OnChangeMentionEvent,
+  EnrichedTextInputInstanceBase,
+} from '../common/types';
 
-export interface EnrichedTextInputInstance extends NativeMethods {
-  // General commands
-  focus: () => void;
-  blur: () => void;
-  setValue: (value: string) => void;
-  setSelection: (start: number, end: number) => void;
-  getHTML: () => Promise<string>;
-
-  // Text formatting commands
-  toggleBold: () => void;
-  toggleItalic: () => void;
-  toggleUnderline: () => void;
-  toggleStrikeThrough: () => void;
-  toggleInlineCode: () => void;
-  toggleH1: () => void;
-  toggleH2: () => void;
-  toggleH3: () => void;
-  toggleH4: () => void;
-  toggleH5: () => void;
-  toggleH6: () => void;
-  toggleCodeBlock: () => void;
-  toggleBlockQuote: () => void;
-  toggleOrderedList: () => void;
-  toggleUnorderedList: () => void;
-  setLink: (start: number, end: number, text: string, url: string) => void;
-  setImage: (src: string, width: number, height: number) => void;
-  startMention: (indicator: string) => void;
-  setMention: (
-    indicator: string,
-    text: string,
-    attributes?: Record<string, string>
-  ) => void;
-}
-
-export interface OnChangeMentionEvent {
-  indicator: string;
-  text: string;
-}
+export interface EnrichedTextInputInstance
+  extends EnrichedTextInputInstanceBase,
+    NativeMethods {}
 
 type HeadingStyle = {
   fontSize?: number;
@@ -162,7 +131,7 @@ const nullthrows = <T,>(value: T | null | undefined): T => {
   return value;
 };
 
-const warnAboutMissconfiguredMentions = (indicator: string) => {
+const warnAboutMisconfiguredMentions = (indicator: string) => {
   console.warn(
     `Looks like you are trying to set a "${indicator}" but it's not in the mentionIndicators prop`
   );
@@ -328,7 +297,7 @@ export const EnrichedTextInput = ({
     },
     startMention: (indicator: string) => {
       if (!mentionIndicators?.includes(indicator)) {
-        warnAboutMissconfiguredMentions(indicator);
+        warnAboutMisconfiguredMentions(indicator);
       }
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
