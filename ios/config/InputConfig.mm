@@ -487,7 +487,6 @@
   _linkRegexConfig = newValue;
 
   // try initializing the native regular expression if it applies
-
   if (_linkRegexConfig.isDefault || _linkRegexConfig.isDisabled) {
     return;
   }
