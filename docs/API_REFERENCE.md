@@ -243,7 +243,7 @@ interface OnChangeStateEvent {
 
 - `isActive` indicates if the style is active within current selection.
 - `isBlocking` indicates if the style is blocked by other currently active, meaning it can't be toggled.
-- `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove some other styles.
+- `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove conflicting style.
 
 | Type                                                        | Default Value | Platform |
 | ----------------------------------------------------------- | ------------- | -------- |
