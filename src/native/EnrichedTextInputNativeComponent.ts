@@ -8,31 +8,11 @@ import type {
 import type { ColorValue, HostComponent, ViewProps } from 'react-native';
 import React from 'react';
 
-export interface OnChangeTextEvent {
-  value: string;
-}
-
-export interface OnChangeHtmlEvent {
-  value: string;
-}
-
-export interface OnChangeStateEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
+import type {
+  OnChangeTextEvent,
+  OnChangeHtmlEvent,
+  OnChangeStateEvent,
+} from '../common/types';
 
 export interface OnLinkDetected {
   text: string;
@@ -46,13 +26,6 @@ export interface OnMentionDetectedInternal {
   indicator: string;
   payload: string;
 }
-
-export interface OnMentionDetected {
-  text: string;
-  indicator: string;
-  attributes: Record<string, string>;
-}
-
 export interface OnMentionEvent {
   indicator: string;
   text: UnsafeMixed;
