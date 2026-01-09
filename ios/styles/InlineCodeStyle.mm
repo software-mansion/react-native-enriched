@@ -21,7 +21,7 @@
   return "code";
 }
 
-+ (NSString *)subTagName {
++ (const char *)subTagName {
   return nil;
 }
 
