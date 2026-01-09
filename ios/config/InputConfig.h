@@ -1,5 +1,5 @@
 #pragma once
-#import "LinkRegex.h"
+#import "LinkRegexConfig.h"
 #import "MentionStyleProps.h"
 #import "TextDecorationLineEnum.h"
 #import <UIKit/UIKit.h>
