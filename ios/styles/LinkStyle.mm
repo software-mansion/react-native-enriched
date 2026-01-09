@@ -80,7 +80,8 @@ static NSString *const LinkAttributeName = @"LinkAttributeName";
   return LinkAttributeName;
 }
 
-+ (NSDictionary *)getParametersFromValue:(id)value {
++ (NSDictionary<NSString *, NSString *> *_Nullable)getParametersFromValue:
+    (id)value {
   NSString *url = value;
   if (!url)
     return nil;
