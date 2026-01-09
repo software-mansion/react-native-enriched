@@ -14,6 +14,6 @@ using namespace facebook::react;
 
 - (instancetype)initWithLinkRegexProp:
     (EnrichedTextInputViewLinkRegexStruct)prop;
-- (BOOL)isEqualToLinkRegex:(LinkRegexConfig *)otherObj;
+- (BOOL)isEqualToConfig:(LinkRegexConfig *)otherObj;
 
 @end
