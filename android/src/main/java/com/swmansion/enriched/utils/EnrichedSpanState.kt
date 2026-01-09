@@ -4,6 +4,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.events.EventDispatcher
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeStateDeprecatedEvent
 import com.swmansion.enriched.events.OnChangeStateEvent
@@ -196,6 +197,61 @@ class EnrichedSpanState(
   }
 
   private fun emitStateChangeEvent() {
+    val context = view.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+
+    dispatchDeprecatedPayload(dispatcher, surfaceId)
+    dispatchPayload(dispatcher, surfaceId)
+  }
+
+  private fun dispatchDeprecatedPayload(
+    dispatcher: EventDispatcher?,
+    surfaceId: Int,
+  ) {
+    val deprecatedPayload = Arguments.createMap()
+    deprecatedPayload.putBoolean("isBold", boldStart != null)
+    deprecatedPayload.putBoolean("isItalic", italicStart != null)
+    deprecatedPayload.putBoolean("isUnderline", underlineStart != null)
+    deprecatedPayload.putBoolean("isStrikeThrough", strikethroughStart != null)
+    deprecatedPayload.putBoolean("isInlineCode", inlineCodeStart != null)
+    deprecatedPayload.putBoolean("isH1", h1Start != null)
+    deprecatedPayload.putBoolean("isH2", h2Start != null)
+    deprecatedPayload.putBoolean("isH3", h3Start != null)
+    deprecatedPayload.putBoolean("isH4", h4Start != null)
+    deprecatedPayload.putBoolean("isH5", h5Start != null)
+    deprecatedPayload.putBoolean("isH6", h6Start != null)
+    deprecatedPayload.putBoolean("isCodeBlock", codeBlockStart != null)
+    deprecatedPayload.putBoolean("isBlockQuote", blockQuoteStart != null)
+    deprecatedPayload.putBoolean("isOrderedList", orderedListStart != null)
+    deprecatedPayload.putBoolean("isUnorderedList", unorderedListStart != null)
+    deprecatedPayload.putBoolean("isLink", linkStart != null)
+    deprecatedPayload.putBoolean("isImage", imageStart != null)
+    deprecatedPayload.putBoolean("isMention", mentionStart != null)
+
+    if (previousDeprecatedPayload == deprecatedPayload) {
+      return
+    }
+
+    previousDeprecatedPayload =
+      Arguments.createMap().apply {
+        merge(deprecatedPayload)
+      }
+
+    dispatcher?.dispatchEvent(
+      OnChangeStateDeprecatedEvent(
+        surfaceId,
+        view.id,
+        deprecatedPayload,
+        view.experimentalSynchronousEvents,
+      ),
+    )
+  }
+
+  private fun dispatchPayload(
+    dispatcher: EventDispatcher?,
+    surfaceId: Int,
+  ) {
     val activeStyles =
       listOfNotNull(
         if (boldStart != null) EnrichedSpans.BOLD else null,
@@ -217,7 +273,6 @@ class EnrichedSpanState(
         if (imageStart != null) EnrichedSpans.IMAGE else null,
         if (mentionStart != null) EnrichedSpans.MENTION else null,
       )
-
     val payload = Arguments.createMap()
     payload.putMap("bold", getStyleState(activeStyles, EnrichedSpans.BOLD))
     payload.putMap("italic", getStyleState(activeStyles, EnrichedSpans.ITALIC))
@@ -238,31 +293,8 @@ class EnrichedSpanState(
     payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
     payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
 
-    val deprecatedPayload = Arguments.createMap()
-    deprecatedPayload.putBoolean("isBold", boldStart != null)
-    deprecatedPayload.putBoolean("isItalic", italicStart != null)
-    deprecatedPayload.putBoolean("isUnderline", underlineStart != null)
-    deprecatedPayload.putBoolean("isStrikeThrough", strikethroughStart != null)
-    deprecatedPayload.putBoolean("isInlineCode", inlineCodeStart != null)
-    deprecatedPayload.putBoolean("isH1", h1Start != null)
-    deprecatedPayload.putBoolean("isH2", h2Start != null)
-    deprecatedPayload.putBoolean("isH3", h3Start != null)
-    deprecatedPayload.putBoolean("isH4", h4Start != null)
-    deprecatedPayload.putBoolean("isH5", h5Start != null)
-    deprecatedPayload.putBoolean("isH6", h6Start != null)
-    deprecatedPayload.putBoolean("isCodeBlock", codeBlockStart != null)
-    deprecatedPayload.putBoolean("isBlockQuote", blockQuoteStart != null)
-    deprecatedPayload.putBoolean("isOrderedList", orderedListStart != null)
-    deprecatedPayload.putBoolean("isUnorderedList", unorderedListStart != null)
-    deprecatedPayload.putBoolean("isLink", linkStart != null)
-    deprecatedPayload.putBoolean("isImage", imageStart != null)
-    deprecatedPayload.putBoolean("isMention", mentionStart != null)
-
     // Do not emit event if payload is the same
     if (previousPayload == payload) {
-      return
-    }
-    if (previousDeprecatedPayload == deprecatedPayload) {
       return
     }
 
@@ -270,27 +302,11 @@ class EnrichedSpanState(
       Arguments.createMap().apply {
         merge(payload)
       }
-    previousDeprecatedPayload =
-      Arguments.createMap().apply {
-        merge(deprecatedPayload)
-      }
-
-    val context = view.context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
     dispatcher?.dispatchEvent(
       OnChangeStateEvent(
         surfaceId,
         view.id,
         payload,
-        view.experimentalSynchronousEvents,
-      ),
-    )
-    dispatcher?.dispatchEvent(
-      OnChangeStateDeprecatedEvent(
-        surfaceId,
-        view.id,
-        deprecatedPayload,
         view.experimentalSynchronousEvents,
       ),
     )
