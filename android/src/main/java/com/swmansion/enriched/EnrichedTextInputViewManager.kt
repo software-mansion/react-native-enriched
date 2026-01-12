@@ -239,6 +239,13 @@ class EnrichedTextInputViewManager :
     view?.setAutoCapitalize(flag)
   }
 
+  override fun setLinkRegex(
+    view: EnrichedTextInputView?,
+    config: ReadableMap?,
+  ) {
+    view?.setLinkRegex(config)
+  }
+
   override fun setAndroidExperimentalSynchronousEvents(
     view: EnrichedTextInputView?,
     value: Boolean,
