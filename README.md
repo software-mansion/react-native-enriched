@@ -101,7 +101,7 @@ export default function App() {
     <View style={styles.container}>
       <EnrichedTextInput
         ref={ref}
-        onChangeState={e => setStylesState(e.nativeEvent)}
+        onChangeState={(e) => setStylesState(e.nativeEvent)}
         style={styles.input}
       />
       <Button
@@ -127,13 +127,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightgray',
   },
 });
-
 ```
 
 Summary of what happens here:
 
 1. Any methods imperatively called on the input to e.g. toggle some style must be used through a `ref` of `EnrichedTextInputInstance` type. Here, `toggleBold` method that is called on the button press calls `ref.current?.toggleBold()`, which toggles the bold styling within the current selection.
-2. All the active styles info is emitted by `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument, and you can access an object with boolean properties indicating which styles are active, such as `isBold` in the example. Here, this info is stored in a React state and used to change colors on the button.
+2. All style state information is emitted by the `onChangeState` event. Set up a proper callback that accepts a `NativeSyntheticEvent<OnChangeStateEvent>` argument. The event payload provides a nested object for each style (e.g., `bold`, `italic`), containing three properties to guide your UI logic:
+
+- `isActive`: Indicates if the style is currently applied (highlight the button).
+- `isBlocking`: Indicates if the style is blocked by another active style (disable the button).
+- `isConflicting`: Indicates if the style is in conflict with another active style.
 
 ## Non Parametrized Styles
 
@@ -157,7 +160,7 @@ Each call toggles the style within the current text selection. We can still divi
 - Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
 
 - Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph we mean a part of the text between two newlines (enters) or the text's beginning/ending.
-If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
+  If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
 
 ## Links
 
@@ -165,7 +168,8 @@ The links are here, just like in any other editor, a piece of text with a URL at
 
 ### Automatic links detection
 
-`react-native-enriched` automatically detects words that appear to be some URLs and makes them links. Currently, we are using pretty naive approach to detect whether text can be treated as a link or not. On iOS it's a pretty simple regex, on Android we are using URL regex provided by the system.
+`react-native-enriched` automatically detects words that appear to be some URLs and makes them links.
+You can customize this behavior by providing your own regular expression via [linkRegex](docs/API_REFERENCE.md#linkregex) prop.
 
 ### Applying links manually
 
@@ -227,7 +231,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 ## Customizing \<EnrichedTextInput /> styles
 
-`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component.  See [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop.
+`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component. See [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop.
 
 ## API Reference
 
@@ -241,7 +245,6 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Future Plans
 
 - Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
-- Adding API for custom link detection regex.
 - Web library implementation via `react-native-web`.
 
 ## Contributing
@@ -253,6 +256,7 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 `react-native-enriched` library is licensed under [The MIT License](./LICENSE).
 
 ---
+
 Built by [Software Mansion](https://swmansion.com/) and sponsored by [Filament](https://filament.dm/).
 
 [<img width="128" height="69" alt="Software Mansion Logo" src="https://github.com/user-attachments/assets/f0e18471-a7aa-4e80-86ac-87686a86fe56" />](https://swmansion.com/)
