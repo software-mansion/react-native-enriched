@@ -1404,7 +1404,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // update active styles as well
   [self tryUpdatingActiveStyles];
-  [self ensureCursorIsVisible];
 }
 
 - (void)handleWordModificationBasedChanges:(NSString *)word
@@ -1529,45 +1528,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
-  [self ensureCursorIsVisible];
-}
-
-// Debounced scroll to cursor - coalesces multiple requests into one per runloop
-// tick
-- (void)ensureCursorIsVisible {
-  [NSObject
-      cancelPreviousPerformRequestsWithTarget:self
-                                     selector:@selector(_performScrollToCursor)
-                                       object:nil];
-
-  [self performSelector:@selector(_performScrollToCursor)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)_performScrollToCursor {
-  if (!textView)
-    return;
-
-  if (self->textView.selectedRange.location == NSNotFound)
-    return;
-
-  UITextPosition *cursorPos = [self->textView
-      positionFromPosition:self->textView.beginningOfDocument
-                    offset:self->textView.selectedRange.location];
-  if (!cursorPos)
-    return;
-
-  CGRect caretRect = [self->textView caretRectForPosition:cursorPos];
-
-  // We don't just want to see the cursor, we want to see the cursor plus the
-  // padding.
-  UIEdgeInsets insets = self->textView.textContainerInset;
-
-  caretRect.origin.y -= insets.top;
-  caretRect.size.height += (insets.top + insets.bottom);
-
-  [self->textView scrollRectToVisible:caretRect animated:NO];
 }
 
 - (void)didMoveToWindow {
