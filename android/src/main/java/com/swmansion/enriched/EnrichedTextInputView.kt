@@ -48,6 +48,7 @@ import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.mergeSpannables
+import com.swmansion.enriched.utils.setCheckboxClickListener
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
 import java.util.regex.Pattern
@@ -134,9 +135,12 @@ class EnrichedTextInputView : AppCompatEditText {
     // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
     val spanWatcher = EnrichedSpanWatcher(this)
     this.spanWatcher = spanWatcher
-    setEditableFactory(EnrichedEditableFactory(spanWatcher))
 
+    setEditableFactory(EnrichedEditableFactory(spanWatcher))
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    // Handle checkbox list item clicks
+    this.setCheckboxClickListener()
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1

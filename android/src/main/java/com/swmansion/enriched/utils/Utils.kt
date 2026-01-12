@@ -109,7 +109,7 @@ fun Spannable.mergeSpannables(
 // We don't use ClickableSpan because it works fine only when LinkMovementMethod is set on TextView
 // Which breaks text selection and other features
 @SuppressLint("ClickableViewAccessibility")
-fun TextView.setLeadingMarginCheckboxClickListener() {
+fun TextView.setCheckboxClickListener() {
   var isDownOnCheckbox = false
 
   setOnTouchListener { v, event ->
