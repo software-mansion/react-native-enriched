@@ -6,6 +6,7 @@ import android.text.Layout
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.LeadingMarginSpan
+import android.text.style.LineHeightSpan
 import android.text.style.MetricAffectingSpan
 import androidx.core.graphics.withTranslation
 import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
@@ -16,6 +17,7 @@ class EnrichedCheckboxListSpan(
   var isChecked: Boolean,
   private val htmlStyle: HtmlStyle,
 ) : MetricAffectingSpan(),
+  LineHeightSpan,
   LeadingMarginSpan,
   EnrichedParagraphSpan {
   override val dependsOnHtmlStyle: Boolean = true
@@ -33,8 +35,32 @@ class EnrichedCheckboxListSpan(
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun updateDrawState(tp: TextPaint?) {
+  override fun updateDrawState(tp: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
+  }
+
+  // Include checkbox size in text measurements to avoid clipping
+  override fun chooseHeight(
+    text: CharSequence,
+    start: Int,
+    end: Int,
+    spanstartv: Int,
+    v: Int,
+    fm: Paint.FontMetricsInt,
+  ) {
+    val checkboxSize = htmlStyle.ulCheckboxBoxSize
+    val currentLineHeight = fm.descent - fm.ascent
+
+    if (checkboxSize > currentLineHeight) {
+      val extraSpace = checkboxSize - currentLineHeight
+      val halfExtra = extraSpace / 2
+
+      fm.ascent -= halfExtra
+      fm.descent += (extraSpace - halfExtra)
+
+      fm.top -= halfExtra
+      fm.bottom += (extraSpace - halfExtra)
+    }
   }
 
   override fun getLeadingMargin(first: Boolean): Int =

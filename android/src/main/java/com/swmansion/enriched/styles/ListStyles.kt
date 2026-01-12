@@ -77,7 +77,11 @@ class ListStyles(
     if (name == EnrichedSpans.CHECKBOX_LIST) {
       val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+      // Set click listener to handle checkbox toggling
       view.setLeadingMarginCheckboxClickListener()
+      // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
+      view.layoutManager.invalidateLayout()
       return
     }
   }
