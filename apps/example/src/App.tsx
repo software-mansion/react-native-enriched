@@ -53,6 +53,7 @@ const DEFAULT_STYLE: StylesState = {
   isCodeBlock: false,
   isOrderedList: false,
   isUnorderedList: false,
+  isCheckboxList: false,
   isLink: false,
   isImage: false,
   isMention: false,
@@ -438,6 +439,11 @@ const htmlStyle: HtmlStyle = {
     bulletSize: 8,
     marginLeft: 24,
     gapWidth: 16,
+  },
+  ulCheckbox: {
+    boxSize: 24,
+    gapWidth: 16,
+    marginLeft: 24,
   },
 };
 

@@ -5,11 +5,13 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.spans.EnrichedCheckboxListSpan
 import com.swmansion.enriched.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
+import com.swmansion.enriched.utils.setLeadingMarginCheckboxClickListener
 
 class ListStyles(
   private val view: EnrichedTextInputView,
@@ -55,6 +57,7 @@ class ListStyles(
     name: String,
     start: Int,
     end: Int,
+    isChecked: Boolean?,
   ) {
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
 
@@ -68,7 +71,24 @@ class ListStyles(
       val index = getOrderedListIndex(spannable, safeStart)
       val span = EnrichedOrderedListSpan(index, view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      return
     }
+
+    if (name == EnrichedSpans.CHECKBOX_LIST) {
+      val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
+      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      view.setLeadingMarginCheckboxClickListener()
+      return
+    }
+  }
+
+  private fun setSpan(
+    spannable: Spannable,
+    name: String,
+    start: Int,
+    end: Int,
+  ) {
+    setSpan(spannable, name, start, end, null)
   }
 
   private fun <T> removeSpansForRange(
@@ -101,7 +121,10 @@ class ListStyles(
     }
   }
 
-  fun toggleStyle(name: String) {
+  private fun toggleStyle(
+    name: String,
+    checkboxState: Boolean?,
+  ) {
     if (view.selection == null) return
     val config = EnrichedSpans.listSpans[name] ?: return
     val spannable = view.text as SpannableStringBuilder
@@ -120,7 +143,7 @@ class ListStyles(
       spannable.insert(start, "\u200B")
       view.spanState?.setStart(name, start + 1)
       removeSpansForRange(spannable, start, end, config.clazz)
-      setSpan(spannable, name, start, end + 1)
+      setSpan(spannable, name, start, end + 1, checkboxState)
 
       return
     }
@@ -132,12 +155,20 @@ class ListStyles(
     for (paragraph in paragraphs) {
       spannable.insert(currentStart, "\u200B")
       val currentEnd = currentStart + paragraph.length + 1
-      setSpan(spannable, name, currentStart, currentEnd)
+      setSpan(spannable, name, currentStart, currentEnd, checkboxState)
 
       currentStart = currentEnd + 1
     }
 
     view.spanState?.setStart(name, currentStart)
+  }
+
+  fun toggleStyle(name: String) {
+    toggleStyle(name, false)
+  }
+
+  fun toggleCheckboxListStyle(checked: Boolean) {
+    toggleStyle(EnrichedSpans.CHECKBOX_LIST, checked)
   }
 
   private fun handleAfterTextChanged(
@@ -152,7 +183,7 @@ class ListStyles(
 
     val isBackspace = previousTextLength > s.length
     val isNewLine = cursorPosition > 0 && s[cursorPosition - 1] == '\n'
-    val isShortcut = s.substring(start, end).startsWith(config.shortcut)
+    val isShortcut = config.shortcut?.let { s.substring(start, end).startsWith(it) } ?: false
     val spans = s.getSpans(start, end, config.clazz)
 
     // Remove spans if cursor is at the start of the paragraph and spans exist
@@ -177,6 +208,21 @@ class ListStyles(
       return
     }
 
+    if (name === EnrichedSpans.CHECKBOX_LIST) {
+      if (spans.isNotEmpty()) {
+        val previousSpan = spans[0] as EnrichedCheckboxListSpan
+        val isChecked = previousSpan.isChecked
+
+        for (span in spans) {
+          s.removeSpan(span)
+        }
+
+        setSpan(s, EnrichedSpans.CHECKBOX_LIST, start, end, isChecked)
+      }
+
+      return
+    }
+
     if (spans.isNotEmpty()) {
       for (span in spans) {
         s.removeSpan(span)
@@ -193,6 +239,7 @@ class ListStyles(
   ) {
     handleAfterTextChanged(s, EnrichedSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EnrichedSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
+    handleAfterTextChanged(s, EnrichedSpans.CHECKBOX_LIST, endCursorPosition, previousTextLength)
   }
 
   fun getStyleRange(): Pair<Int, Int> = view.selection?.getParagraphSelection() ?: Pair(0, 0)

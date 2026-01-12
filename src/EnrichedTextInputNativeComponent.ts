@@ -32,6 +32,7 @@ export interface OnChangeStateEvent {
   isBlockQuote: boolean;
   isOrderedList: boolean;
   isUnorderedList: boolean;
+  isCheckboxList: boolean;
   isLink: boolean;
   isImage: boolean;
   isMention: boolean;
@@ -124,6 +125,11 @@ export interface HtmlStyleInternal {
     marginLeft?: Float;
     gapWidth?: Float;
   };
+  ulCheckbox?: {
+    gapWidth?: Float;
+    boxSize?: Float;
+    marginLeft?: Float;
+  };
 }
 
 export interface NativeProps extends ViewProps {
@@ -198,6 +204,10 @@ interface NativeCommands {
   toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleCheckboxList: (
+    viewRef: React.ElementRef<ComponentType>,
+    checked: boolean
+  ) => void;
   addLink: (
     viewRef: React.ElementRef<ComponentType>,
     start: Int32,
@@ -251,6 +261,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleBlockQuote',
     'toggleOrderedList',
     'toggleUnorderedList',
+    'toggleCheckboxList',
     'addLink',
     'addImage',
     'startMention',

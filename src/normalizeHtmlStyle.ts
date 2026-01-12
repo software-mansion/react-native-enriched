@@ -66,6 +66,11 @@ const defaultStyle: Required<HtmlStyle> = {
     marginLeft: 16,
     gapWidth: 16,
   },
+  ulCheckbox: {
+    boxSize: 24,
+    gapWidth: 16,
+    marginLeft: 16,
+  },
 };
 
 const isMentionStyleRecord = (

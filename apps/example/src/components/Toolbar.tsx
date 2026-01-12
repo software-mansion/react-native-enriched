@@ -79,6 +79,10 @@ const STYLE_ITEMS = [
     name: 'ordered-list',
     icon: 'list-ol',
   },
+  {
+    name: 'checkbox-list',
+    icon: 'check-square-o',
+  },
 ] as const;
 
 type Item = (typeof STYLE_ITEMS)[number];
@@ -147,6 +151,10 @@ export const Toolbar: FC<ToolbarProps> = ({
       case 'ordered-list':
         editorRef.current?.toggleOrderedList();
         break;
+      case 'checkbox-list':
+        // Make checkbox checked by default
+        editorRef.current?.toggleCheckboxList(true);
+        break;
       case 'link':
         onOpenLinkModal();
         break;
@@ -191,6 +199,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.isUnorderedList;
       case 'ordered-list':
         return stylesState.isOrderedList;
+      case 'checkbox-list':
+        return stylesState.isCheckboxList;
       case 'link':
         return stylesState.isLink;
       case 'image':

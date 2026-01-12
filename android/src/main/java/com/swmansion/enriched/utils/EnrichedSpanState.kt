@@ -43,6 +43,8 @@ class EnrichedSpanState(
     private set
   var unorderedListStart: Int? = null
     private set
+  var checkboxListStart: Int? = null
+    private set
   var linkStart: Int? = null
     private set
   var imageStart: Int? = null
@@ -125,6 +127,11 @@ class EnrichedSpanState(
     emitStateChangeEvent()
   }
 
+  fun setCheckboxListStart(start: Int?) {
+    this.checkboxListStart = start
+    emitStateChangeEvent()
+  }
+
   fun setLinkStart(start: Int?) {
     this.linkStart = start
     emitStateChangeEvent()
@@ -158,6 +165,7 @@ class EnrichedSpanState(
         EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
         EnrichedSpans.ORDERED_LIST -> orderedListStart
         EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+        EnrichedSpans.CHECKBOX_LIST -> checkboxListStart
         EnrichedSpans.LINK -> linkStart
         EnrichedSpans.IMAGE -> imageStart
         EnrichedSpans.MENTION -> mentionStart
@@ -187,6 +195,7 @@ class EnrichedSpanState(
       EnrichedSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
       EnrichedSpans.ORDERED_LIST -> setOrderedListStart(start)
       EnrichedSpans.UNORDERED_LIST -> setUnorderedListStart(start)
+      EnrichedSpans.CHECKBOX_LIST -> setCheckboxListStart(start)
       EnrichedSpans.LINK -> setLinkStart(start)
       EnrichedSpans.IMAGE -> setImageStart(start)
       EnrichedSpans.MENTION -> setMentionStart(start)
@@ -210,6 +219,7 @@ class EnrichedSpanState(
     payload.putBoolean("isBlockQuote", blockQuoteStart != null)
     payload.putBoolean("isOrderedList", orderedListStart != null)
     payload.putBoolean("isUnorderedList", unorderedListStart != null)
+    payload.putBoolean("isCheckboxList", checkboxListStart != null)
     payload.putBoolean("isLink", linkStart != null)
     payload.putBoolean("isImage", imageStart != null)
     payload.putBoolean("isMention", mentionStart != null)
