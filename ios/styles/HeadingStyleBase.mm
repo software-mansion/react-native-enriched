@@ -102,8 +102,8 @@
                            BOOL *_Nonnull stop) {
                 if ([self styleCondition:value:range]) {
                   UIFont *newFont = [(UIFont *)value
-                      setSize:[[[self typedInput]->config
-                                scaledPrimaryFontSize] floatValue]];
+                      setSize:[[[self typedInput]->config scaledPrimaryFontSize]
+                                  floatValue]];
                   if ([self isHeadingBold]) {
                     newFont = [newFont removeBold];
                   }
@@ -123,8 +123,7 @@
     NSMutableDictionary *newTypingAttrs =
         [[self typedInput]->textView.typingAttributes mutableCopy];
     UIFont *newFont = [currentFontAttr
-        setSize:[[[self typedInput]->config scaledPrimaryFontSize]
-                    floatValue]];
+        setSize:[[[self typedInput]->config scaledPrimaryFontSize] floatValue]];
     if ([self isHeadingBold]) {
       newFont = [newFont removeBold];
     }
