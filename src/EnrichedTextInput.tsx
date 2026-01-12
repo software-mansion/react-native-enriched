@@ -19,6 +19,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
+  type OnChangeStateDeprecatedEvent,
 } from './EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -32,7 +33,8 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
-import { normalizeHtmlStyle } from './normalizeHtmlStyle';
+import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
+import { toNativeRegexConfig } from './utils/regexParser';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -140,11 +142,18 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   htmlStyle?: HtmlStyle;
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
+  linkRegex?: RegExp | null;
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
+  /**
+   * @deprecated Use onChangeState prop instead.
+   */
+  onChangeStateDeprecated?: (
+    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
+  ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
@@ -195,11 +204,13 @@ export const EnrichedTextInput = ({
   style,
   autoCapitalize = 'sentences',
   htmlStyle = {},
+  linkRegex: _linkRegex,
   onFocus,
   onBlur,
   onChangeText,
   onChangeHtml,
   onChangeState,
+  onChangeStateDeprecated,
   onLinkDetected,
   onMentionDetected,
   onStartMention,
@@ -228,6 +239,11 @@ export const EnrichedTextInput = ({
   const normalizedHtmlStyle = useMemo(
     () => normalizeHtmlStyle(htmlStyle, mentionIndicators),
     [htmlStyle, mentionIndicators]
+  );
+
+  const linkRegex = useMemo(
+    () => toNativeRegexConfig(_linkRegex),
+    [_linkRegex]
   );
 
   useImperativeHandle(ref, () => ({
@@ -406,6 +422,7 @@ export const EnrichedTextInput = ({
       style={style}
       autoCapitalize={autoCapitalize}
       htmlStyle={normalizedHtmlStyle}
+      linkRegex={linkRegex}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
       onChangeText={onChangeText}
@@ -413,6 +430,7 @@ export const EnrichedTextInput = ({
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
       onChangeState={onChangeState}
+      onChangeStateDeprecated={onChangeStateDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}

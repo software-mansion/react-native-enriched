@@ -118,7 +118,8 @@ class ListStyles(
     position: Int,
   ) {
     val spans = text.getSpans(position + 1, text.length, EnrichedOrderedListSpan::class.java)
-    for (span in spans) {
+    val sortedSpans = spans.sortedBy { text.getSpanStart(it) }
+    for (span in sortedSpans) {
       val spanStart = text.getSpanStart(span)
       val index = getOrderedListIndex(text, spanStart)
       span.setIndex(index)

@@ -167,46 +167,87 @@ export const Toolbar: FC<ToolbarProps> = ({
     }
   };
 
+  const isDisabled = (item: Item) => {
+    switch (item.name) {
+      case 'bold':
+        return stylesState.bold.isBlocking;
+      case 'italic':
+        return stylesState.italic.isBlocking;
+      case 'underline':
+        return stylesState.underline.isBlocking;
+      case 'strikethrough':
+        return stylesState.strikeThrough.isBlocking;
+      case 'inline-code':
+        return stylesState.inlineCode.isBlocking;
+      case 'heading-1':
+        return stylesState.h1.isBlocking;
+      case 'heading-2':
+        return stylesState.h2.isBlocking;
+      case 'heading-3':
+        return stylesState.h3.isBlocking;
+      case 'heading-4':
+        return stylesState.h4.isBlocking;
+      case 'heading-5':
+        return stylesState.h5.isBlocking;
+      case 'heading-6':
+        return stylesState.h6.isBlocking;
+      case 'code-block':
+        return stylesState.codeBlock.isBlocking;
+      case 'quote':
+        return stylesState.blockQuote.isBlocking;
+      case 'unordered-list':
+        return stylesState.unorderedList.isBlocking;
+      case 'ordered-list':
+        return stylesState.orderedList.isBlocking;
+      case 'link':
+        return stylesState.link.isBlocking;
+      case 'image':
+        return stylesState.image.isBlocking;
+      case 'mention':
+        return stylesState.mention.isBlocking;
+      default:
+        return false;
+    }
+  };
+
   const isActive = (item: Item) => {
     switch (item.name) {
       case 'bold':
-        return stylesState.isBold;
+        return stylesState.bold.isActive;
       case 'italic':
-        return stylesState.isItalic;
+        return stylesState.italic.isActive;
       case 'underline':
-        return stylesState.isUnderline;
+        return stylesState.underline.isActive;
       case 'strikethrough':
-        return stylesState.isStrikeThrough;
+        return stylesState.strikeThrough.isActive;
       case 'inline-code':
-        return stylesState.isInlineCode;
+        return stylesState.inlineCode.isActive;
       case 'heading-1':
-        return stylesState.isH1;
+        return stylesState.h1.isActive;
       case 'heading-2':
-        return stylesState.isH2;
+        return stylesState.h2.isActive;
       case 'heading-3':
-        return stylesState.isH3;
+        return stylesState.h3.isActive;
       case 'heading-4':
-        return stylesState.isH4;
+        return stylesState.h4.isActive;
       case 'heading-5':
-        return stylesState.isH5;
+        return stylesState.h5.isActive;
       case 'heading-6':
-        return stylesState.isH6;
+        return stylesState.h6.isActive;
       case 'code-block':
-        return stylesState.isCodeBlock;
+        return stylesState.codeBlock.isActive;
       case 'quote':
-        return stylesState.isBlockQuote;
+        return stylesState.blockQuote.isActive;
       case 'unordered-list':
-        return stylesState.isUnorderedList;
+        return stylesState.unorderedList.isActive;
       case 'ordered-list':
-        return stylesState.isOrderedList;
-      case 'checkbox-list':
-        return stylesState.isCheckboxList;
+        return stylesState.orderedList.isActive;
       case 'link':
-        return stylesState.isLink;
+        return stylesState.link.isActive;
       case 'image':
-        return stylesState.isImage;
+        return stylesState.image.isActive;
       case 'mention':
-        return stylesState.isMention;
+        return stylesState.mention.isActive;
       default:
         return false;
     }
@@ -217,6 +258,7 @@ export const Toolbar: FC<ToolbarProps> = ({
       <ToolbarButton
         {...item}
         isActive={isActive(item)}
+        isDisabled={isDisabled(item)}
         onPress={() => handlePress(item)}
       />
     );
