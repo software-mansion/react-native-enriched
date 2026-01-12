@@ -78,8 +78,8 @@ class ParametrizedStyles(
   }
 
   fun detectAllLinks() {
-    val spannable = view.text as Spannable
     val regex = view.linkRegex ?: return
+    val spannable = view.text as Spannable
     val urlPattern = regex.matcher(spannable)
 
     val spans = spannable.getSpans(0, spannable.length, EnrichedLinkSpan::class.java)
@@ -136,13 +136,14 @@ class ParametrizedStyles(
   }
 
   private fun afterTextChangedLinks(result: TextRange) {
+    val regex = view.linkRegex ?: return
+
     // Do not detect link if it's applied manually
     if (isSettingLinkSpan || !canLinkBeApplied()) return
 
     val spannable = view.text as Spannable
     val (word, start, end) = result
 
-    val regex = view.linkRegex ?: return
     val urlPattern = regex.matcher(word)
 
     val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
