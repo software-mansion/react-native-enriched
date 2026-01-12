@@ -13,9 +13,6 @@ static NSString *const AutomaticLinkAttributeName =
 
 @implementation LinkStyle {
   EnrichedTextInputView *_input;
-  NSRegularExpression *_fullRegex;
-  NSRegularExpression *_wwwRegex;
-  NSRegularExpression *_bareRegex;
 }
 
 + (StyleType)getStyleType {
@@ -26,28 +23,52 @@ static NSString *const AutomaticLinkAttributeName =
   return NO;
 }
 
++ (NSRegularExpression *)fullRegex {
+  static NSRegularExpression *regex;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    regex =
+        [NSRegularExpression regularExpressionWithPattern:
+                                 @"http(s)?:\\/\\/"
+                                 @"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
+                                 @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                                                  options:0
+                                                    error:nullptr];
+  });
+  return regex;
+}
+
++ (NSRegularExpression *)wwwRegex {
+  static NSRegularExpression *regex;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    regex =
+        [NSRegularExpression regularExpressionWithPattern:
+                                 @"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
+                                 @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                                                  options:0
+                                                    error:nullptr];
+  });
+  return regex;
+}
+
++ (NSRegularExpression *)bareRegex {
+  static NSRegularExpression *regex;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    regex =
+        [NSRegularExpression regularExpressionWithPattern:
+                                 @"[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,"
+                                 @"6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+                                                  options:0
+                                                    error:nullptr];
+  });
+  return regex;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
-
-  // init default regexes
-  _fullRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"http(s)?:\\/\\/"
-                                   @"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
-                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
-  _wwwRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"www\\.[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-"
-                                   @"z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
-  _bareRegex = [NSRegularExpression
-      regularExpressionWithPattern:@"[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-z]{2,"
-                                   @"6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
-                           options:0
-                             error:nullptr];
-
   return self;
 }
 
@@ -474,9 +495,15 @@ static NSString *const AutomaticLinkAttributeName =
 
 - (NSString *)tryMatchingDefaultLinkRegex:(NSString *)word
                                matchRange:(NSRange)range {
-  if ([_fullRegex numberOfMatchesInString:word options:0 range:range] ||
-      [_wwwRegex numberOfMatchesInString:word options:0 range:range] ||
-      [_bareRegex numberOfMatchesInString:word options:0 range:range]) {
+  if ([[LinkStyle fullRegex] numberOfMatchesInString:word
+                                             options:0
+                                               range:range] ||
+      [[LinkStyle wwwRegex] numberOfMatchesInString:word
+                                            options:0
+                                              range:range] ||
+      [[LinkStyle bareRegex] numberOfMatchesInString:word
+                                             options:0
+                                               range:range]) {
     return word;
   }
 
