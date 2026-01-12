@@ -251,6 +251,11 @@ interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  checkboxList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
 }
 ```
 
@@ -264,7 +269,7 @@ interface OnChangeStateEvent {
 
 ### `onChangeStateDeprecated`
 
-> [!WARNING]  
+> [!WARNING]
 > Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
 
 Callback that gets called when any of the styles within the selection changes.
@@ -288,6 +293,7 @@ interface OnChangeStateDeprecatedEvent {
   isBlockQuote: boolean;
   isOrderedList: boolean;
   isUnorderedList: boolean;
+  isCheckboxList: boolean;
   isLink: boolean;
   isImage: boolean;
   isMention: boolean;
@@ -683,6 +689,17 @@ toggleUnorderedList: () => void;
 
 Converts current selection into an unordered list.
 
+### `.toggleCheckboxList()`
+
+```ts
+toggleCheckboxList: (checked: boolean) => void;
+```
+
+Converts current selection into an unordered list with checkboxes as items. Each checkbox can be either checked or unchecked.
+User can later toggle each checkbox individually by tapping on it.
+
+- `checked: boolean` - defines whether the checkboxes should be checked or unchecked by default.
+
 ## HtmlStyle type
 
 Allows customizing HTML styles.
@@ -742,6 +759,12 @@ interface HtmlStyle {
   ul?: {
     bulletColor?: ColorValue;
     bulletSize?: number;
+    marginLeft?: number;
+    gapWidth?: number;
+  };
+  ulCheckbox?: {
+    boxColor?: ColorValue;
+    boxSize?: number;
     marginLeft?: number;
     gapWidth?: number;
   };
@@ -810,3 +833,12 @@ By bullet we mean the dot that begins each line of the list.
 - `bulletSize` sets both the height and the width of the bullet, defaults to `8`.
 - `marginLeft` is the margin to the left of the bullet (between the bullet and input's left edge), defaults to `16`.
 - `gapWidth` sets the gap between the bullet and the list item's text, defaults to `16`.
+
+### ulCheckbox (checkbox list)
+
+Allows using unordered list with checkboxes instead of bullets.
+
+- `boxColor` defines the color of the checkbox, takes [color](https://reactnative.dev/docs/colors) value and defaults to `blue`.
+- `boxSize` sets both the height and the width of the checkbox, defaults to `24`.
+- `marginLeft` is the margin to the left of the checkbox (between the checkbox and input's left edge), defaults to `16`.
+- `gapWidth` sets the gap between the checkbox and the list item's text, defaults to `16`.
