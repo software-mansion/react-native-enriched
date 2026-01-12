@@ -82,4 +82,6 @@
 - (void)setCodeBlockBgColor:(UIColor *)newValue;
 - (CGFloat)codeBlockBorderRadius;
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue;
+- (void)invalidateFonts;
+- (NSNumber *)getScaledPrimaryFontSize;
 @end

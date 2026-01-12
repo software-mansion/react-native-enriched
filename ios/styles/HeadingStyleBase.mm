@@ -102,16 +102,14 @@
                            BOOL *_Nonnull stop) {
                 if ([self styleCondition:value:range]) {
                   UIFont *newFont = [(UIFont *)value
-                      setSize:[[[self typedInput]->config primaryFontSize]
-                                  floatValue]];
+                      setSize:[[[self typedInput]->config
+                                      getScaledPrimaryFontSize] floatValue]];
                   if ([self isHeadingBold]) {
                     newFont = [newFont removeBold];
                   }
-                  UIFont *scaledFont = [[UIFontMetrics defaultMetrics]
-                      scaledFontForFont:newFont];
                   [[self typedInput]->textView.textStorage
                       addAttribute:NSFontAttributeName
-                             value:scaledFont
+                             value:newFont
                              range:range];
                 }
               }];
@@ -125,13 +123,12 @@
     NSMutableDictionary *newTypingAttrs =
         [[self typedInput]->textView.typingAttributes mutableCopy];
     UIFont *newFont = [currentFontAttr
-        setSize:[[[self typedInput]->config primaryFontSize] floatValue]];
+        setSize:[[[self typedInput]->config getScaledPrimaryFontSize]
+                    floatValue]];
     if ([self isHeadingBold]) {
       newFont = [newFont removeBold];
     }
-    UIFont *scaledFont =
-        [[UIFontMetrics defaultMetrics] scaledFontForFont:newFont];
-    newTypingAttrs[NSFontAttributeName] = scaledFont;
+    newTypingAttrs[NSFontAttributeName] = newFont;
     [self typedInput]->textView.typingAttributes = newTypingAttrs;
   }
 }
@@ -143,6 +140,9 @@
   [self removeAttributes:[self typedInput]->textView.selectedRange];
 }
 
+// when the traits already change, the getHeadginFontSize will return the new
+// font size and no headings would be properly detected, so that's why we have
+// to use the latest applied font size rather than that value.
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
   UIFont *font = (UIFont *)value;
   if (font == nullptr) {

@@ -158,7 +158,7 @@
 
     _primaryFont = [RCTFont updateFont:nullptr
                             withFamily:[self primaryFontFamily]
-                                  size:[self primaryFontSize]
+                                  size:[self getScaledPrimaryFontSize]
                                 weight:newFontWeight
                                  style:nullptr
                                variant:nullptr
@@ -171,7 +171,7 @@
   if (_monospacedFontNeedsRecreation) {
     _monospacedFontNeedsRecreation = NO;
     _monospacedFont = [UIFont
-        monospacedSystemFontOfSize:[[self primaryFontSize] floatValue]
+        monospacedSystemFontOfSize:[[self getScaledPrimaryFontSize] floatValue]
                             weight:[[self primaryFontWeight] floatValue]];
   }
   return _monospacedFont;
@@ -187,7 +187,7 @@
 }
 
 - (CGFloat)h1FontSize {
-  return _h1FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h1FontSize];
 }
 
 - (void)setH1FontSize:(CGFloat)newValue {
@@ -203,7 +203,7 @@
 }
 
 - (CGFloat)h2FontSize {
-  return _h2FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h2FontSize];
 }
 
 - (void)setH2FontSize:(CGFloat)newValue {
@@ -219,7 +219,7 @@
 }
 
 - (CGFloat)h3FontSize {
-  return _h3FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h3FontSize];
 }
 
 - (void)setH3FontSize:(CGFloat)newValue {
@@ -235,7 +235,7 @@
 }
 
 - (CGFloat)h4FontSize {
-  return _h4FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h4FontSize];
 }
 
 - (void)setH4FontSize:(CGFloat)newValue {
@@ -251,7 +251,7 @@
 }
 
 - (CGFloat)h5FontSize {
-  return _h5FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h5FontSize];
 }
 
 - (void)setH5FontSize:(CGFloat)newValue {
@@ -267,7 +267,7 @@
 }
 
 - (CGFloat)h6FontSize {
-  return _h6FontSize;
+  return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h6FontSize];
 }
 
 - (void)setH6FontSize:(CGFloat)newValue {
@@ -378,7 +378,7 @@
 
     _orderedListMarkerFont = [RCTFont updateFont:nullptr
                                       withFamily:[self primaryFontFamily]
-                                            size:[self primaryFontSize]
+                                            size:[self getScaledPrimaryFontSize]
                                           weight:newFontWeight
                                            style:nullptr
                                          variant:nullptr
@@ -475,6 +475,18 @@
 
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue {
   _codeBlockBorderRadius = newValue;
+}
+
+- (void)invalidateFonts {
+  _primaryFontNeedsRecreation = YES;
+  _monospacedFontNeedsRecreation = YES;
+  _olMarkerFontNeedsRecreation = YES;
+}
+
+- (NSNumber *)getScaledPrimaryFontSize {
+  CGFloat scaledSize = [[UIFontMetrics defaultMetrics]
+      scaledValueForValue:[[self primaryFontSize] floatValue]];
+  return @(scaledSize);
 }
 
 @end

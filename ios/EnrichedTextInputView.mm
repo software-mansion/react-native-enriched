@@ -637,8 +637,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // fill the typing attributes with style props
     defaultTypingAttributes[NSForegroundColorAttributeName] =
         [config primaryColor];
-    defaultTypingAttributes[NSFontAttributeName] =
-        [[UIFontMetrics defaultMetrics] scaledFontForFont:[config primaryFont]];
+    defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
     defaultTypingAttributes[NSUnderlineColorAttributeName] =
         [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] =
@@ -1720,12 +1719,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
-    UIFont *baseFont = [config primaryFont];
-    UIFont *scaledFont =
-        [[UIFontMetrics defaultMetrics] scaledFontForFont:baseFont];
+    [config invalidateFonts];
 
     NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = scaledFont;
+    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
 
     defaultTypingAttributes = newTypingAttrs;
     textView.typingAttributes = defaultTypingAttributes;
@@ -1742,7 +1739,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
 
     textView.selectedRange = prevSelectedRange;
-    recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
     [self anyTextMayHaveBeenModified];
   }
 }

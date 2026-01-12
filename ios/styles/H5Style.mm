@@ -9,8 +9,7 @@
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  CGFloat rawSize = [((EnrichedTextInputView *)input)->config h5FontSize];
-  return [[UIFontMetrics defaultMetrics] scaledValueForValue:rawSize];
+  return [((EnrichedTextInputView *)input)->config h5FontSize];
 }
 - (BOOL)isHeadingBold {
   return [((EnrichedTextInputView *)input)->config h5Bold];

@@ -9,8 +9,7 @@
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  CGFloat rawSize = [((EnrichedTextInputView *)input)->config h3FontSize];
-  return [[UIFontMetrics defaultMetrics] scaledValueForValue:rawSize];
+  return [((EnrichedTextInputView *)input)->config h3FontSize];
 }
 - (BOOL)isHeadingBold {
   return [((EnrichedTextInputView *)input)->config h3Bold];
