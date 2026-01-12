@@ -117,6 +117,11 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  checkboxList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
 }
 
 export interface OnChangeStateDeprecatedEvent {

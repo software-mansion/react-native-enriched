@@ -62,6 +62,7 @@ const DEFAULT_STYLES: StylesState = {
   link: DEFAULT_STYLE_STATE,
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,
+  checkboxList: DEFAULT_STYLE_STATE,
 };
 
 const DEFAULT_LINK_STATE = {

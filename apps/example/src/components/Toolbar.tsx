@@ -205,6 +205,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.image.isBlocking;
       case 'mention':
         return stylesState.mention.isBlocking;
+      case 'checkbox-list':
+        return stylesState.checkboxList.isBlocking;
       default:
         return false;
     }
@@ -248,6 +250,8 @@ export const Toolbar: FC<ToolbarProps> = ({
         return stylesState.image.isActive;
       case 'mention':
         return stylesState.mention.isActive;
+      case 'checkbox-list':
+        return stylesState.checkboxList.isActive;
       default:
         return false;
     }
