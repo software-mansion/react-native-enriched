@@ -300,9 +300,9 @@ static void const *kInputKey = &kInputKey;
                                            [marker sizeWithAttributes:
                                                        markerAttributes]
                                                .width;
-                                       CGFloat markerX = usedRect.origin.x -
-                                                         gapWidth -
-                                                         markerWidth / 2;
+                                       CGFloat markerX =
+                                           origin.x + usedRect.origin.x -
+                                           gapWidth - markerWidth / 2;
 
                                        [marker drawAtPoint:CGPointMake(
                                                                markerX,
@@ -317,11 +317,11 @@ static void const *kInputKey = &kInputKey;
                                        CGFloat bulletSize =
                                            [typedInput->config
                                                    unorderedListBulletSize];
-                                       CGFloat bulletX = usedRect.origin.x -
-                                                         gapWidth -
-                                                         bulletSize / 2;
+                                       CGFloat bulletX =
+                                           origin.x + usedRect.origin.x -
+                                           gapWidth - bulletSize / 2;
                                        CGFloat centerY =
-                                           CGRectGetMidY(usedRect);
+                                           CGRectGetMidY(usedRect) + origin.y;
 
                                        CGContextRef context =
                                            UIGraphicsGetCurrentContext();
