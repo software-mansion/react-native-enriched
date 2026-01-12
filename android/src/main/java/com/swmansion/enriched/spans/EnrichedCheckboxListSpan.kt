@@ -11,7 +11,7 @@ import android.text.style.MetricAffectingSpan
 import androidx.core.graphics.withTranslation
 import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.styles.HtmlStyle
-import com.swmansion.enriched.utils.ResourceManager
+import com.swmansion.enriched.utils.CheckboxDrawable
 
 class EnrichedCheckboxListSpan(
   var isChecked: Boolean,
@@ -22,14 +22,10 @@ class EnrichedCheckboxListSpan(
   EnrichedParagraphSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
-  // TODO: use custom drawables. Consider customizing color of them
-  private val checkedDrawable = ResourceManager.getDrawableResource(android.R.drawable.checkbox_on_background)
-  private val uncheckedDrawable = ResourceManager.getDrawableResource(android.R.drawable.checkbox_off_background)
-
-  init {
-    checkedDrawable.setBounds(0, 0, htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxSize)
-    uncheckedDrawable.setBounds(0, 0, htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxSize)
-  }
+  private val checkboxDrawable =
+    CheckboxDrawable(htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxColor, isChecked).apply {
+      setBounds(0, 0, htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxSize)
+    }
 
   override fun updateMeasureState(tp: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
@@ -83,13 +79,13 @@ class EnrichedCheckboxListSpan(
     val spannedText = text as Spanned
 
     if (spannedText.getSpanStart(this) == start) {
-      val drawable = if (isChecked) checkedDrawable else uncheckedDrawable
+      checkboxDrawable.update(isChecked)
 
       val lineCenter = (top + bottom) / 2f
       val drawableTop = lineCenter - (htmlStyle.ulCheckboxBoxSize / 2f)
 
       canvas.withTranslation(x.toFloat() + htmlStyle.ulCheckboxMarginLeft, drawableTop) {
-        drawable.draw(this)
+        checkboxDrawable.draw(this)
       }
     }
   }

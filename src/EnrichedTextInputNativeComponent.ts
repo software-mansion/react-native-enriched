@@ -129,6 +129,7 @@ export interface HtmlStyleInternal {
     gapWidth?: Float;
     boxSize?: Float;
     marginLeft?: Float;
+    boxColor?: ColorValue;
   };
 }
 

@@ -55,6 +55,7 @@ class HtmlStyle {
   var ulCheckboxBoxSize: Int = 50
   var ulCheckboxGapWidth: Int = 16
   var ulCheckboxMarginLeft: Int = 24
+  var ulCheckboxBoxColor: Int = Color.BLACK
 
   var aColor: Int = Color.BLACK
   var aUnderline: Boolean = true
@@ -126,6 +127,7 @@ class HtmlStyle {
     ulCheckboxBoxSize = parseFloat(ulCheckboxStyle, "boxSize").toInt()
     ulCheckboxGapWidth = parseFloat(ulCheckboxStyle, "gapWidth").toInt()
     ulCheckboxMarginLeft = parseFloat(ulCheckboxStyle, "marginLeft").toInt()
+    ulCheckboxBoxColor = parseColor(ulCheckboxStyle, "boxColor")
 
     val aStyle = style.getMap("a")
     aColor = parseColor(aStyle, "color")
@@ -302,6 +304,7 @@ class HtmlStyle {
       ulCheckboxBoxSize == other.ulCheckboxBoxSize &&
       ulCheckboxGapWidth == other.ulCheckboxGapWidth &&
       ulCheckboxMarginLeft == other.ulCheckboxMarginLeft &&
+      ulCheckboxBoxColor == other.ulCheckboxBoxColor &&
 
       aColor == other.aColor &&
       aUnderline == other.aUnderline &&
@@ -348,6 +351,7 @@ class HtmlStyle {
     result = 31 * result + ulCheckboxBoxSize.hashCode()
     result = 31 * result + ulCheckboxGapWidth.hashCode()
     result = 31 * result + ulCheckboxMarginLeft.hashCode()
+    result = 31 * result + ulCheckboxBoxColor.hashCode()
 
     result = 31 * result + aColor.hashCode()
     result = 31 * result + aUnderline.hashCode()

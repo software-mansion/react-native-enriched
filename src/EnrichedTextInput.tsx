@@ -122,6 +122,7 @@ export interface HtmlStyle {
     boxSize?: number;
     gapWidth?: number;
     marginLeft?: number;
+    boxColor?: ColorValue;
   };
 }
 

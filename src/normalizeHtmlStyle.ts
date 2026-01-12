@@ -70,6 +70,7 @@ const defaultStyle: Required<HtmlStyle> = {
     boxSize: 24,
     gapWidth: 16,
     marginLeft: 16,
+    boxColor: 'blue',
   },
 };
 
