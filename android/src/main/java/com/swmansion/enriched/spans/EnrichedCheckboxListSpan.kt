@@ -29,11 +29,11 @@ class EnrichedCheckboxListSpan(
     uncheckedDrawable.setBounds(0, 0, htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxSize)
   }
 
-  override fun updateMeasureState(p0: TextPaint) {
+  override fun updateMeasureState(tp: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun updateDrawState(p0: TextPaint?) {
+  override fun updateDrawState(tp: TextPaint?) {
     // Do nothing, but inform layout that this span affects text metrics
   }
 
@@ -59,8 +59,7 @@ class EnrichedCheckboxListSpan(
     if (spannedText.getSpanStart(this) == start) {
       val drawable = if (isChecked) checkedDrawable else uncheckedDrawable
 
-      val fontMetrics = paint.fontMetrics
-      val lineCenter = baseline + (fontMetrics.ascent + fontMetrics.descent) / 2f
+      val lineCenter = (top + bottom) / 2f
       val drawableTop = lineCenter - (htmlStyle.ulCheckboxBoxSize / 2f)
 
       canvas.withTranslation(x.toFloat() + htmlStyle.ulCheckboxMarginLeft, drawableTop) {
