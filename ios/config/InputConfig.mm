@@ -160,7 +160,7 @@
 
     _primaryFont = [RCTFont updateFont:nullptr
                             withFamily:[self primaryFontFamily]
-                                  size:[self getScaledPrimaryFontSize]
+                                  size:[self scaledPrimaryFontSize]
                                 weight:newFontWeight
                                  style:nullptr
                                variant:nullptr
@@ -173,7 +173,7 @@
   if (_monospacedFontNeedsRecreation) {
     _monospacedFontNeedsRecreation = NO;
     _monospacedFont = [UIFont
-        monospacedSystemFontOfSize:[[self getScaledPrimaryFontSize] floatValue]
+        monospacedSystemFontOfSize:[[self scaledPrimaryFontSize] floatValue]
                             weight:[[self primaryFontWeight] floatValue]];
   }
   return _monospacedFont;
@@ -380,7 +380,7 @@
 
     _orderedListMarkerFont = [RCTFont updateFont:nullptr
                                       withFamily:[self primaryFontFamily]
-                                            size:[self getScaledPrimaryFontSize]
+                                            size:[self scaledPrimaryFontSize]
                                           weight:newFontWeight
                                            style:nullptr
                                          variant:nullptr
@@ -521,7 +521,7 @@
   _olMarkerFontNeedsRecreation = YES;
 }
 
-- (NSNumber *)getScaledPrimaryFontSize {
+- (NSNumber *)scaledPrimaryFontSize {
   CGFloat scaledSize = [[UIFontMetrics defaultMetrics]
       scaledValueForValue:[[self primaryFontSize] floatValue]];
   return @(scaledSize);

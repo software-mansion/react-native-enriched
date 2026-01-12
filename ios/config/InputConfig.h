@@ -87,5 +87,5 @@
 - (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
 - (NSRegularExpression *)parsedLinkRegex;
 - (void)invalidateFonts;
-- (NSNumber *)getScaledPrimaryFontSize;
+- (NSNumber *)scaledPrimaryFontSize;
 @end
