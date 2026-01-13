@@ -20,6 +20,7 @@
     self.textContainer.lineFragmentPadding = 0;
     self.scrollEnabled = YES;
     self.scrollsToTop = NO;
+    self.alwaysBounceVertical = YES;
     _lastCommittedSize = CGSizeZero;
   }
   return self;
