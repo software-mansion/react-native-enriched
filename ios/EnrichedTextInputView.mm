@@ -46,7 +46,6 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
-  BOOL _isMeasuringSize;
 }
 
 // MARK: - Component utils
