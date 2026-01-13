@@ -691,6 +691,15 @@ class EnrichedTextInputView : AppCompatEditText {
     dispatcher?.dispatchEvent(OnRequestHtmlResultEvent(surfaceId, id, requestId, html, experimentalSynchronousEvents))
   }
 
+  fun setColor(color: Int) {
+    val isValid = verifyStyle(EnrichedSpans.COLOR)
+    if (!isValid) return
+
+    inlineStyles?.setColorStyle(color)
+  }
+
+  fun removeColor() = inlineStyles?.removeColorSpan()
+
   // Sometimes setting up style triggers many changes in sequence
   // Eg. removing conflicting styles -> changing text -> applying spans
   // In such scenario we want to prevent from handling side effects (eg. onTextChanged)

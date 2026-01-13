@@ -8,6 +8,7 @@ import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.events.OnChangeSelectionEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
+import com.swmansion.enriched.spans.EnrichedColoredSpan
 import com.swmansion.enriched.spans.EnrichedLinkSpan
 import com.swmansion.enriched.spans.EnrichedMentionSpan
 import com.swmansion.enriched.spans.EnrichedSpans
@@ -125,6 +126,9 @@ class EnrichedSelection(
       if (start == end && start == spanStart) {
         styleStart = null
       } else if (start >= spanStart && end <= spanEnd) {
+        if (span is EnrichedColoredSpan) {
+          view.spanState?.setTypingColor(span.color)
+        }
         styleStart = spanStart
       }
     }

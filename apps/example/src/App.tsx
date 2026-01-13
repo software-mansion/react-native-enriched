@@ -9,6 +9,7 @@ import {
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
   type HtmlStyle,
+  type OnChangeColorEvent,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -26,6 +27,7 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
+import { ColorPreview } from './components/ColorPreview';
 
 type StylesState = OnChangeStateEvent;
 
@@ -45,6 +47,7 @@ const DEFAULT_STYLE_STATE = {
 
 const DEFAULT_STYLES: StylesState = {
   bold: DEFAULT_STYLE_STATE,
+  colored: DEFAULT_STYLE_STATE,
   italic: DEFAULT_STYLE_STATE,
   underline: DEFAULT_STYLE_STATE,
   strikeThrough: DEFAULT_STYLE_STATE,
@@ -63,6 +66,8 @@ const DEFAULT_STYLES: StylesState = {
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,
 };
+
+const PRIMARY_COLOR = '#000000';
 
 const DEFAULT_LINK_STATE = {
   text: '',
@@ -94,6 +99,7 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
+  const [selectionColor, setSelectionColor] = useState<string>(PRIMARY_COLOR);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -293,6 +299,14 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handleSelectionColorChange = (e: OnChangeColorEvent) => {
+    setSelectionColor(e.color);
+  };
+
+  const handleRemoveColor = () => {
+    ref.current?.removeColor();
+  };
+
   return (
     <>
       <ScrollView
@@ -315,6 +329,9 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            onColorChangeInSelection={(e) =>
+              handleSelectionColorChange(e.nativeEvent)
+            }
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
@@ -330,6 +347,7 @@ export default function App() {
           <Toolbar
             stylesState={stylesState}
             editorRef={ref}
+            selectionColor={selectionColor}
             onOpenLinkModal={openLinkModal}
             onSelectImage={openImageModal}
           />
@@ -343,8 +361,14 @@ export default function App() {
           onPress={openValueModal}
           style={styles.valueButton}
         />
+        <Button
+          title="Remove color"
+          onPress={handleRemoveColor}
+          style={styles.valueButton}
+        />
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+        <ColorPreview color={selectionColor} />
       </ScrollView>
       <LinkModal
         isOpen={isLinkModalOpen}
@@ -422,7 +446,7 @@ const htmlStyle: HtmlStyle = {
     backgroundColor: 'yellow',
   },
   a: {
-    color: 'green',
+    color: 'blue',
     textDecorationLine: 'underline',
   },
   mention: {
@@ -492,6 +516,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+    color: PRIMARY_COLOR,
   },
   scrollPlaceholder: {
     marginTop: 24,

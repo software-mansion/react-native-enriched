@@ -32,6 +32,11 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  colored: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
   italic: {
     isActive: boolean;
     isConflicting: boolean;
@@ -138,6 +143,7 @@ export interface OnChangeStateDeprecatedEvent {
   isLink: boolean;
   isImage: boolean;
   isMention: boolean;
+  isColored: boolean;
 }
 
 export interface OnLinkDetected {
@@ -185,6 +191,10 @@ type Heading = {
   fontSize?: Float;
   bold?: boolean;
 };
+
+export interface OnChangeColorEvent {
+  color: string;
+}
 
 export interface HtmlStyleInternal {
   h1?: Heading;
@@ -256,6 +266,7 @@ export interface NativeProps extends ViewProps {
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
+  onColorChangeInSelection?: DirectEventHandler<OnChangeColorEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
@@ -330,6 +341,8 @@ interface NativeCommands {
     viewRef: React.ElementRef<ComponentType>,
     requestId: Int32
   ) => void;
+  setColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
+  removeColor: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -361,6 +374,8 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'startMention',
     'addMention',
     'requestHTML',
+    'setColor',
+    'removeColor',
   ],
 });
 

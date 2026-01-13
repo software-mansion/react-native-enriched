@@ -34,6 +34,7 @@ object EnrichedSpans {
   const val UNDERLINE = "underline"
   const val STRIKETHROUGH = "strikethrough"
   const val INLINE_CODE = "inline_code"
+  const val COLOR = "color"
 
   // paragraph styles
   const val H1 = "h1"
@@ -61,6 +62,7 @@ object EnrichedSpans {
       UNDERLINE to BaseSpanConfig(EnrichedUnderlineSpan::class.java),
       STRIKETHROUGH to BaseSpanConfig(EnrichedStrikeThroughSpan::class.java),
       INLINE_CODE to BaseSpanConfig(EnrichedInlineCodeSpan::class.java),
+      COLOR to BaseSpanConfig(EnrichedColoredSpan::class.java),
     )
 
   val paragraphSpans: Map<String, ParagraphSpanConfig> =
@@ -104,6 +106,13 @@ object EnrichedSpans {
         if (htmlStyle.h5Bold) blockingStyles.add(H5)
         if (htmlStyle.h6Bold) blockingStyles.add(H6)
         StylesMergingConfig(blockingStyles = blockingStyles.toTypedArray())
+      }
+
+      COLOR -> {
+        StylesMergingConfig(
+          conflictingStyles = arrayOf(INLINE_CODE),
+          blockingStyles = arrayOf(CODE_BLOCK, MENTION),
+        )
       }
 
       ITALIC -> {

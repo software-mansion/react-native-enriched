@@ -17,6 +17,10 @@
   return YES;
 }
 
++ (NSAttributedStringKey)attributeKey {
+  return NSParagraphStyleAttributeName;
+}
+
 - (CGFloat)getHeadIndent {
   // lists are drawn manually
   // margin before marker + gap between marker and paragraph
@@ -235,7 +239,7 @@
   return NO;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
   return paragraph != nullptr && paragraph.textLists.count == 1 &&
          paragraph.textLists.firstObject.markerFormat ==
@@ -248,7 +252,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
@@ -256,7 +260,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -266,7 +270,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -275,7 +279,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

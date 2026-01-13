@@ -20,6 +20,7 @@ import EnrichedTextInputNativeComponent, {
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
+  type OnChangeColorEvent,
 } from './EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -68,6 +69,8 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  setColor: (color: string) => void;
+  removeColor: () => void;
 }
 
 export interface OnChangeMentionEvent {
@@ -153,6 +156,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
+  onColorChangeInSelection?: (
+    color: NativeSyntheticEvent<OnChangeColorEvent>
+  ) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -210,6 +216,7 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
+  onColorChangeInSelection,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
   ...rest
@@ -352,6 +359,12 @@ export const EnrichedTextInput = ({
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
     },
+    setColor: (color: string) => {
+      Commands.setColor(nullthrows(nativeRef.current), color);
+    },
+    removeColor: () => {
+      Commands.removeColor(nullthrows(nativeRef.current));
+    },
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
@@ -426,6 +439,7 @@ export const EnrichedTextInput = ({
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
+      onColorChangeInSelection={onColorChangeInSelection}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
