@@ -17,11 +17,9 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {                                                                            \
-    .isActive = [self isStyleActive:TYPE_ENUM],                                \
-    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
-    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
-  }
+  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -1063,28 +1061,30 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeStateDeprecated({
-          .isBold = [self isStyleActive:[BoldStyle getStyleType]],
-          .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
-          .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
-          .isStrikeThrough =
-              [self isStyleActive:[StrikethroughStyle getStyleType]],
-          .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
-          .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-          .isMention = [self isStyleActive:[MentionStyle getStyleType]],
-          .isH1 = [self isStyleActive:[H1Style getStyleType]],
-          .isH2 = [self isStyleActive:[H2Style getStyleType]],
-          .isH3 = [self isStyleActive:[H3Style getStyleType]],
-          .isH4 = [self isStyleActive:[H4Style getStyleType]],
-          .isH5 = [self isStyleActive:[H5Style getStyleType]],
-          .isH6 = [self isStyleActive:[H6Style getStyleType]],
-          .isUnorderedList =
-              [self isStyleActive:[UnorderedListStyle getStyleType]],
-          .isOrderedList = [self isStyleActive:[OrderedListStyle getStyleType]],
-          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
-          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
-          .isImage = [self isStyleActive:[ImageStyle getStyleType]],
-      });
+      emitter->onChangeStateDeprecated(
+          {.isBold = [self isStyleActive:[BoldStyle getStyleType]],
+           .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
+           .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
+           .isStrikeThrough =
+               [self isStyleActive:[StrikethroughStyle getStyleType]],
+           .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
+           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
+           .isMention = [self isStyleActive:[MentionStyle getStyleType]],
+           .isH1 = [self isStyleActive:[H1Style getStyleType]],
+           .isH2 = [self isStyleActive:[H2Style getStyleType]],
+           .isH3 = [self isStyleActive:[H3Style getStyleType]],
+           .isH4 = [self isStyleActive:[H4Style getStyleType]],
+           .isH5 = [self isStyleActive:[H5Style getStyleType]],
+           .isH6 = [self isStyleActive:[H6Style getStyleType]],
+           .isUnorderedList =
+               [self isStyleActive:[UnorderedListStyle getStyleType]],
+           .isOrderedList =
+               [self isStyleActive:[OrderedListStyle getStyleType]],
+           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
+           .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
+           .isImage = [self isStyleActive:[ImageStyle getStyleType]],
+           .isCheckboxList =
+               [self isStyleActive:[CheckboxListStyle getStyleType]]});
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
            .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
@@ -1103,7 +1103,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
-           .image = GET_STYLE_STATE([ImageStyle getStyleType])});
+           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType])});
     }
   }
 
@@ -1215,6 +1216,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
+    BOOL checked = args[0];
     [self toggleParagraphStyle:[CheckboxListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];

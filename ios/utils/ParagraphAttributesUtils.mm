@@ -22,6 +22,8 @@
       typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   CodeBlockStyle *cbStyle =
       typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+  CheckboxListStyle *cbLStyle =
+      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
 
   if (typedInput == nullptr) {
     return NO;
@@ -57,7 +59,7 @@
     // applied
     // - reapply the paragraph style that was present so that a zero width space
     // appears here
-    NSArray *handledStyles = @[ ulStyle, olStyle, bqStyle, cbStyle ];
+    NSArray *handledStyles = @[ ulStyle, olStyle, bqStyle, cbStyle, cbLStyle ];
     for (id<BaseStyleProtocol> style in handledStyles) {
       if ([style detectStyle:nonNewlineRange]) {
         [TextInsertionUtils replaceText:text

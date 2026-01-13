@@ -249,13 +249,16 @@ static void const *kInputKey = &kInputKey;
       typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *olStyle =
       typedInput->stylesDict[@([OrderedListStyle getStyleType])];
-  if (ulStyle == nullptr || olStyle == nullptr) {
+  CheckboxListStyle *cbStyle =
+      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
+  if (ulStyle == nullptr || olStyle == nullptr || cbStyle == nullptr) {
     return;
   }
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
   [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
   [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
+  [allLists addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
@@ -310,7 +313,9 @@ static void const *kInputKey = &kInputKey;
                                                                        .y +
                                                                    origin.y)
                                             withAttributes:markerAttributes];
-                                     } else {
+                                     } else if (pStyle.textLists.firstObject
+                                                    .markerFormat ==
+                                                NSTextListMarkerDisc) {
                                        CGFloat gapWidth =
                                            [typedInput->config
                                                    unorderedListGapWidth];
@@ -334,6 +339,121 @@ static void const *kInputKey = &kInputKey;
                                              context, bulletX, centerY,
                                              bulletSize / 2, 0, 2 * M_PI, YES);
                                          CGContextFillPath(context);
+                                       }
+                                       CGContextRestoreGState(context);
+                                     } else {
+                                       BOOL isChecked =
+                                           [pStyle.textLists.firstObject
+                                                   .markerFormat
+                                               isEqualToString:@"{checkbox:1}"];
+                                       CGFloat gapWidth =
+                                           [typedInput->config
+                                                   checkboxListGapWidth];
+                                       CGFloat boxSize =
+                                           [typedInput->config
+                                                   checkboxListBoxSize];
+                                       UIColor *boxColor =
+                                           [typedInput->config
+                                                   checkboxListBoxColor];
+
+                                       // Calculate checkbox position
+                                       CGFloat centerY =
+                                           CGRectGetMidY(usedRect) + origin.y;
+                                       CGFloat boxX = origin.x +
+                                                      usedRect.origin.x -
+                                                      gapWidth - boxSize / 2.0;
+                                       CGFloat boxY = centerY - boxSize / 2.0;
+
+                                       CGRect checkboxRect = CGRectMake(
+                                           boxX, boxY, boxSize, boxSize);
+
+                                       CGContextRef context =
+                                           UIGraphicsGetCurrentContext();
+                                       CGContextSaveGState(context);
+                                       CGFloat cornerRadius = boxSize * 0.15f;
+                                       CGFloat strokeWidth = boxSize * 0.1f;
+
+                                       if (isChecked) {
+                                         // Draw filled checkbox
+                                         CGRect insetRect = CGRectInset(
+                                             checkboxRect, strokeWidth / 2.0,
+                                             strokeWidth / 2.0);
+                                         UIBezierPath *boxPath = [UIBezierPath
+                                             bezierPathWithRoundedRect:insetRect
+                                                          cornerRadius:
+                                                              cornerRadius];
+                                         [[boxColor colorWithAlphaComponent:1.0]
+                                             setFill];
+                                         [boxPath fill];
+                                         [boxPath setLineWidth:strokeWidth];
+                                         [[boxColor colorWithAlphaComponent:1.0]
+                                             setStroke];
+                                         [boxPath stroke];
+
+                                         // Draw checkmark
+                                         UIBezierPath *checkmarkPath =
+                                             [UIBezierPath bezierPath];
+                                         CGFloat checkStartX =
+                                             insetRect.origin.x +
+                                             insetRect.size.width * 0.25;
+                                         CGFloat checkStartY =
+                                             insetRect.origin.y +
+                                             insetRect.size.height * 0.5;
+                                         CGFloat checkMidX =
+                                             insetRect.origin.x +
+                                             insetRect.size.width * 0.45;
+                                         CGFloat checkMidY =
+                                             insetRect.origin.y +
+                                             insetRect.size.height * 0.65;
+                                         CGFloat checkEndX =
+                                             insetRect.origin.x +
+                                             insetRect.size.width * 0.75;
+                                         CGFloat checkEndY =
+                                             insetRect.origin.y +
+                                             insetRect.size.height * 0.35;
+
+                                         [checkmarkPath
+                                             moveToPoint:CGPointMake(
+                                                             checkStartX,
+                                                             checkStartY)];
+                                         [checkmarkPath
+                                             addLineToPoint:CGPointMake(
+                                                                checkMidX,
+                                                                checkMidY)];
+                                         [checkmarkPath
+                                             addLineToPoint:CGPointMake(
+                                                                checkEndX,
+                                                                checkEndY)];
+                                         [checkmarkPath
+                                             setLineWidth:strokeWidth * 1.5];
+                                         [[UIColor whiteColor] setStroke];
+                                         [checkmarkPath
+                                             setLineCapStyle:kCGLineCapRound];
+                                         [checkmarkPath
+                                             setLineJoinStyle:kCGLineJoinRound];
+                                         [checkmarkPath stroke];
+                                       } else {
+                                         // Draw border-only square for
+                                         // unchecked state
+                                         [boxColor setStroke];
+                                         CGContextSetLineWidth(context,
+                                                               strokeWidth);
+
+                                         // Inset by half the stroke width to
+                                         // draw the border properly
+                                         CGRect insetRect = CGRectInset(
+                                             checkboxRect, strokeWidth / 2.0,
+                                             strokeWidth / 2.0);
+
+                                         // Draw rounded rectangle path
+                                         UIBezierPath *boxPath = [UIBezierPath
+                                             bezierPathWithRoundedRect:insetRect
+                                                          cornerRadius:
+                                                              cornerRadius];
+                                         [boxPath setLineWidth:strokeWidth];
+                                         [[boxColor colorWithAlphaComponent:1.0]
+                                             setStroke];
+                                         [boxPath stroke];
                                        }
                                        CGContextRestoreGState(context);
                                      }
@@ -388,8 +508,10 @@ static void const *kInputKey = &kInputKey;
     }
 
     return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
-  } else {
+  } else if (list.markerFormat == NSTextListMarkerDisc) {
     return @"•";
+  } else {
+    return @"";
   }
 }
 

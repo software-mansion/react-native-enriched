@@ -33,6 +33,7 @@
   BOOL inOrderedList = NO;
   BOOL inBlockQuote = NO;
   BOOL inCodeBlock = NO;
+  BOOL inCheckboxList = NO;
   unichar lastCharacter = 0;
 
   for (int i = 0; i < text.length; i++) {
@@ -107,6 +108,16 @@
             [result appendString:@"\n</codeblock>\n<br>"];
             inCodeBlock = NO;
           }
+        } else if (inCheckboxList) {
+          CheckboxListStyle *cbLStyle = _input->stylesDict[@(CheckboxList)];
+          BOOL detected =
+              [cbLStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            [result appendString:@"\n<li></li>"];
+          } else {
+            [result appendString:@"\n</ul>\n<br>"];
+            inCheckboxList = NO;
+          }
         } else {
           [result appendString:@"\n<br>"];
         }
@@ -145,7 +156,9 @@
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [previousActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [previousActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
           // do nothing, proper closing paragraph tags have been already
           // appended
         } else {
@@ -191,6 +204,13 @@
           inCodeBlock = NO;
           [result appendString:@"\n</codeblock>"];
         }
+        // handle ending checkbox list
+        if (inCheckboxList &&
+            ![currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
+          inCheckboxList = NO;
+          [result appendString:@"\n</ul>"];
+        }
 
         // handle starting unordered list
         if (!inUnorderedList &&
@@ -220,6 +240,13 @@
           inCodeBlock = YES;
           [result appendString:@"\n<codeblock>"];
         }
+        // handle starting checkbox list
+        if (!inCheckboxList &&
+            [currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
+          inCheckboxList = YES;
+          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+        }
 
         // don't add the <p> tag if some paragraph styles are present
         if ([currentActiveStyles
@@ -235,7 +262,9 @@
             [currentActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
           [result appendString:@"\n<p>"];
@@ -382,6 +411,9 @@
                    containsObject:@([CodeBlockStyle getStyleType])]) {
       [result appendString:@"\n</codeblock>"];
     } else if ([previousActiveStyles
+                   containsObject:@([CheckboxListStyle getStyleType])]) {
+      [result appendString:@"\n</ul>"];
+    } else if ([previousActiveStyles
                    containsObject:@([H1Style getStyleType])] ||
                [previousActiveStyles
                    containsObject:@([H2Style getStyleType])] ||
@@ -414,6 +446,10 @@
     if (inCodeBlock) {
       inCodeBlock = NO;
       [result appendString:@"\n</codeblock>"];
+    }
+    if (inCheckboxList) {
+      inCheckboxList = NO;
+      [result appendString:@"\n</ul>"];
     }
   }
 
@@ -534,7 +570,8 @@
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
     return @"h6";
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
-             [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
+             [style isEqualToNumber:@([OrderedListStyle getStyleType])] ||
+             [style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
     return @"li";
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {

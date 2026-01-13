@@ -51,13 +51,16 @@
           input->stylesDict[@([BlockQuoteStyle getStyleType])];
       CodeBlockStyle *cbStyle =
           input->stylesDict[@([CodeBlockStyle getStyleType])];
+      CheckboxListStyle *cbLStyle =
+          input->stylesDict[@([CheckboxListStyle getStyleType])];
 
       // zero width spaces with no lists/blockquotes/codeblocks on them get
       // removed
       if (![ulStyle detectStyle:characterRange] &&
           ![olStyle detectStyle:characterRange] &&
           ![bqStyle detectStyle:characterRange] &&
-          ![cbStyle detectStyle:characterRange]) {
+          ![cbStyle detectStyle:characterRange] &&
+          ![cbLStyle detectStyle:characterRange]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -100,6 +103,8 @@
   BlockQuoteStyle *bqStyle =
       input->stylesDict[@([BlockQuoteStyle getStyleType])];
   CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
+  CheckboxListStyle *cbLStyle =
+      input->stylesDict[@([CheckboxListStyle getStyleType])];
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = input->textView.selectedRange;
 
@@ -115,7 +120,8 @@
         if ([ulStyle detectStyle:characterRange] ||
             [olStyle detectStyle:characterRange] ||
             [bqStyle detectStyle:characterRange] ||
-            [cbStyle detectStyle:characterRange]) {
+            [cbStyle detectStyle:characterRange] ||
+            [cbLStyle detectStyle:characterRange]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -150,7 +156,8 @@
       [input->textView.textStorage.string paragraphRangeForRange:lastRange];
   if (lastParagraphRange.length == 0 &&
       ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] ||
-       [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange])) {
+       [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange] ||
+       [cbLStyle detectStyle:lastRange])) {
     [TextInsertionUtils insertText:@"\u200B"
                                 at:lastRange.location
               additionalAttributes:nullptr
@@ -210,6 +217,8 @@
         typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
     CodeBlockStyle *cbStyle =
         typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+    CheckboxListStyle *cbLStyle =
+        typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
 
     if ([cbStyle detectStyle:removalRange]) {
       // code blocks are being handled differently; we want to remove previous
@@ -238,6 +247,8 @@
       [olStyle removeAttributes:styleRemovalRange];
     } else if ([bqStyle detectStyle:styleRemovalRange]) {
       [bqStyle removeAttributes:styleRemovalRange];
+    } else if ([cbLStyle detectStyle:styleRemovalRange]) {
+      [cbLStyle removeAttributes:styleRemovalRange];
     }
 
     return YES;
