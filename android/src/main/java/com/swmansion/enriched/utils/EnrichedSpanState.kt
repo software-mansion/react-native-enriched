@@ -311,6 +311,7 @@ class EnrichedSpanState(
     val activeStyles =
       listOfNotNull(
         if (boldStart != null) EnrichedSpans.BOLD else null,
+        if (colorStart != null) EnrichedSpans.COLOR else null,
         if (italicStart != null) EnrichedSpans.ITALIC else null,
         if (underlineStart != null) EnrichedSpans.UNDERLINE else null,
         if (strikethroughStart != null) EnrichedSpans.STRIKETHROUGH else null,

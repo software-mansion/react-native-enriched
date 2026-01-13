@@ -67,6 +67,8 @@ const DEFAULT_STYLES: StylesState = {
   mention: DEFAULT_STYLE_STATE,
 };
 
+const PRIMARY_COLOR = '#000000';
+
 const DEFAULT_LINK_STATE = {
   text: '',
   url: '',
@@ -514,6 +516,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+    color: PRIMARY_COLOR,
   },
   scrollPlaceholder: {
     marginTop: 24,
