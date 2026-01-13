@@ -264,7 +264,7 @@ interface OnChangeStateEvent {
 
 ### `onChangeStateDeprecated`
 
-> [!WARNING]  
+> [!WARNING]
 > Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
 
 Callback that gets called when any of the styles within the selection changes.
@@ -392,6 +392,20 @@ Callback that gets called whenever a mention editing starts (after placing the i
 | Type                          | Default Value | Platform |
 | ----------------------------- | ------------- | -------- |
 | `(indicator: string) => void` | -             | Both     |
+
+### `onKeyPress`
+
+Callback that is called when a key is pressed. See [TextInput onKeyPress](https://reactnative.dev/docs/textinput#onkeypress) for more details.
+
+```ts
+export interface OnKeyPressEvent {
+  key: string;
+}
+```
+
+| Type                                                     | Default Value | Platform |
+|----------------------------------------------------------|---------------|----------|
+| `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | -             | Both     |
 
 ### `placeholder`
 
