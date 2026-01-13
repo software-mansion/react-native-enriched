@@ -11,7 +11,6 @@ import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
-import com.swmansion.enriched.utils.setLeadingMarginCheckboxClickListener
 
 class ListStyles(
   private val view: EnrichedTextInputView,
@@ -78,8 +77,6 @@ class ListStyles(
       val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-      // Set click listener to handle checkbox toggling
-      view.setLeadingMarginCheckboxClickListener()
       // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
       view.layoutManager.invalidateLayout()
       return
@@ -118,7 +115,8 @@ class ListStyles(
     position: Int,
   ) {
     val spans = text.getSpans(position + 1, text.length, EnrichedOrderedListSpan::class.java)
-    for (span in spans) {
+    val sortedSpans = spans.sortedBy { text.getSpanStart(it) }
+    for (span in sortedSpans) {
       val spanStart = text.getSpanStart(span)
       val index = getOrderedListIndex(text, spanStart)
       span.setIndex(index)

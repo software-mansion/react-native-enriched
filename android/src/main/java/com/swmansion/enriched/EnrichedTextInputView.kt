@@ -13,12 +13,14 @@ import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.Patterns
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
@@ -46,8 +48,11 @@ import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
 import com.swmansion.enriched.utils.EnrichedSpanState
 import com.swmansion.enriched.utils.mergeSpannables
+import com.swmansion.enriched.utils.setCheckboxClickListener
 import com.swmansion.enriched.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.watchers.EnrichedTextWatcher
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 import kotlin.math.ceil
 
 class EnrichedTextInputView : AppCompatEditText {
@@ -71,6 +76,8 @@ class EnrichedTextInputView : AppCompatEditText {
         reApplyHtmlStyleForSpans(prev, value)
       }
     }
+
+  var linkRegex: Pattern? = Patterns.WEB_URL
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
 
@@ -128,9 +135,12 @@ class EnrichedTextInputView : AppCompatEditText {
     // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
     val spanWatcher = EnrichedSpanWatcher(this)
     this.spanWatcher = spanWatcher
-    setEditableFactory(EnrichedEditableFactory(spanWatcher))
 
+    setEditableFactory(EnrichedEditableFactory(spanWatcher))
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    // Handle checkbox list item clicks
+    this.setCheckboxClickListener()
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -431,6 +441,35 @@ class EnrichedTextInputView : AppCompatEditText {
         InputType.TYPE_TEXT_FLAG_CAP_WORDS.inv() and
         InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
     ) or if (flag == InputType.TYPE_NULL) 0 else flag
+  }
+
+  fun setLinkRegex(config: ReadableMap?) {
+    val patternStr = config?.getString("pattern")
+    if (patternStr == null) {
+      linkRegex = Patterns.WEB_URL
+      return
+    }
+
+    if (config.getBoolean("isDefault")) {
+      linkRegex = Patterns.WEB_URL
+      return
+    }
+
+    if (config.getBoolean("isDisabled")) {
+      linkRegex = null
+      return
+    }
+
+    var flags = 0
+    if (config.getBoolean("caseInsensitive")) flags = flags or Pattern.CASE_INSENSITIVE
+    if (config.getBoolean("dotAll")) flags = flags or Pattern.DOTALL
+
+    try {
+      linkRegex = Pattern.compile("(?s).*?($patternStr).*", flags)
+    } catch (e: PatternSyntaxException) {
+      Log.w("EnrichedTextInputView", "Invalid link regex pattern: $patternStr")
+      linkRegex = Patterns.WEB_URL
+    }
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1

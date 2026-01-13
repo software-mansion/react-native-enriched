@@ -45,8 +45,8 @@
   UIColor *_codeBlockFgColor;
   CGFloat _codeBlockBorderRadius;
   UIColor *_codeBlockBgColor;
-  CGFloat _imageWidth;
-  CGFloat _imageHeight;
+  LinkRegexConfig *_linkRegexConfig;
+  NSRegularExpression *_parsedLinkRegex;
   CGFloat _checkboxListBoxSize;
   CGFloat _checkboxListGapWidth;
   CGFloat _checkboxListMarginLeft;
@@ -103,6 +103,8 @@
   copy->_codeBlockFgColor = [_codeBlockFgColor copy];
   copy->_codeBlockBgColor = [_codeBlockBgColor copy];
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
+  copy->_linkRegexConfig = [_linkRegexConfig copy];
+  copy->_parsedLinkRegex = [_parsedLinkRegex copy];
   copy->_checkboxListBoxSize = _checkboxListBoxSize;
   copy->_checkboxListGapWidth = _checkboxListGapWidth;
   copy->_checkboxListMarginLeft = _checkboxListMarginLeft;
@@ -483,6 +485,42 @@
 
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue {
   _codeBlockBorderRadius = newValue;
+}
+
+- (LinkRegexConfig *)linkRegexConfig {
+  return _linkRegexConfig;
+}
+
+- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue {
+  _linkRegexConfig = newValue;
+
+  // try initializing the native regular expression if it applies
+  if (_linkRegexConfig.isDefault || _linkRegexConfig.isDisabled) {
+    return;
+  }
+
+  NSError *regexInitError;
+  NSRegularExpressionOptions options =
+      (_linkRegexConfig.caseInsensitive ? NSRegularExpressionCaseInsensitive
+                                        : 0) |
+      (_linkRegexConfig.dotAll ? NSRegularExpressionDotMatchesLineSeparators
+                               : 0);
+  NSRegularExpression *userRegex =
+      [NSRegularExpression regularExpressionWithPattern:_linkRegexConfig.pattern
+                                                options:options
+                                                  error:&regexInitError];
+
+  if (regexInitError) {
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't parse the user-defined link "
+               @"regex, falling back to a default regex.");
+    _parsedLinkRegex = nullptr;
+  } else {
+    _parsedLinkRegex = userRegex;
+  }
+}
+
+- (NSRegularExpression *)parsedLinkRegex {
+  return _parsedLinkRegex;
 }
 
 - (CGFloat)checkboxListBoxSize {
