@@ -9,6 +9,7 @@ import {
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
   type HtmlStyle,
+  type OnChangeColorEvent,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -26,7 +27,6 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
-import type { OnChangeColorEvent } from '../../src/EnrichedTextInputNativeComponent';
 import { ColorPreview } from './components/ColorPreview';
 
 type StylesState = OnChangeStateEvent;
@@ -297,12 +297,8 @@ export default function App() {
     setSelection(sel);
   };
 
-  const handleSelectionColorChange = (
-    e: NativeSyntheticEvent<OnChangeColorEvent>
-  ) => {
-    if (e.nativeEvent.color) {
-      setSelectionColor(e.nativeEvent.color);
-    }
+  const handleSelectionColorChange = (e: OnChangeColorEvent) => {
+    setSelectionColor(e.color);
   };
 
   const handleRemoveColor = () => {
@@ -331,7 +327,9 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
-            onColorChangeInSelection={handleSelectionColorChange}
+            onColorChangeInSelection={(e) =>
+              handleSelectionColorChange(e.nativeEvent)
+            }
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}

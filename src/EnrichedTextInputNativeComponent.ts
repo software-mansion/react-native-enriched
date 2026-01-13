@@ -193,7 +193,7 @@ type Heading = {
 };
 
 export interface OnChangeColorEvent {
-  color: string | null;
+  color: string;
 }
 
 export interface HtmlStyleInternal {

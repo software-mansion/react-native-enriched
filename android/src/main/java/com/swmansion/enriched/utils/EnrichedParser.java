@@ -1,5 +1,6 @@
 package com.swmansion.enriched.utils;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
@@ -9,9 +10,11 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
+import androidx.annotation.Nullable;
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan;
+import com.swmansion.enriched.spans.EnrichedColoredSpan;
 import com.swmansion.enriched.spans.EnrichedH1Span;
 import com.swmansion.enriched.spans.EnrichedH2Span;
 import com.swmansion.enriched.spans.EnrichedH3Span;
@@ -306,6 +309,10 @@ public class EnrichedParser {
           // Don't output the placeholder character underlying the image.
           i = next;
         }
+        if (style[j] instanceof EnrichedColoredSpan) {
+          String color = ((EnrichedColoredSpan) style[j]).getHexColor();
+          out.append("<font color=\"").append(color).append("\">");
+        }
       }
       withinStyle(out, text, i, next);
       for (int j = style.length - 1; j >= 0; j--) {
@@ -329,6 +336,9 @@ public class EnrichedParser {
         }
         if (style[j] instanceof EnrichedItalicSpan) {
           out.append("</i>");
+        }
+        if (style[j] instanceof EnrichedColoredSpan) {
+          out.append("</font>");
         }
       }
     }
@@ -498,6 +508,8 @@ class HtmlToSpannedConverter implements ContentHandler {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
       startMention(mSpannableStringBuilder, attributes);
+    } else if (tag.equalsIgnoreCase("font")) {
+      startFont(mSpannableStringBuilder, attributes);
     }
   }
 
@@ -540,6 +552,8 @@ class HtmlToSpannedConverter implements ContentHandler {
       end(mSpannableStringBuilder, Code.class, new EnrichedInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
       endMention(mSpannableStringBuilder, mStyle);
+    } else if (tag.equalsIgnoreCase("font")) {
+      endFont(mSpannableStringBuilder, mStyle);
     }
   }
 
@@ -925,5 +939,63 @@ class HtmlToSpannedConverter implements ContentHandler {
     public Alignment(Layout.Alignment alignment) {
       mAlignment = alignment;
     }
+  }
+
+  private static class Font {
+    public int color;
+
+    public Font(int color) {
+      this.color = color;
+    }
+  }
+
+  private static void startFont(Editable text, @Nullable Attributes attributes) {
+    if (attributes == null) {
+      return;
+    }
+
+    int color = parseCssColor(attributes.getValue("", "color"));
+
+    start(text, new Font(color));
+  }
+
+  private static void endFont(Editable text, HtmlStyle style) {
+    Font font = getLast(text, Font.class);
+
+    if (font == null) {
+      return;
+    }
+
+    setSpanFromMark(text, font, new EnrichedColoredSpan(style, font.color));
+  }
+
+  private static int parseCssColor(String css) {
+    if (css == null) return Color.BLACK;
+
+    css = css.trim();
+
+    try {
+      return Color.parseColor(css);
+    } catch (Exception ignore) {
+    }
+
+    if (css.startsWith("rgb(")) {
+      String[] parts = css.substring(4, css.length() - 1).split(",");
+      int r = Integer.parseInt(parts[0].trim());
+      int g = Integer.parseInt(parts[1].trim());
+      int b = Integer.parseInt(parts[2].trim());
+      return Color.rgb(r, g, b);
+    }
+
+    if (css.startsWith("rgba(")) {
+      String[] parts = css.substring(5, css.length() - 1).split(",");
+      int r = Integer.parseInt(parts[0].trim());
+      int g = Integer.parseInt(parts[1].trim());
+      int b = Integer.parseInt(parts[2].trim());
+      float a = Float.parseFloat(parts[3].trim());
+      return Color.argb((int) (a * 255), r, g, b);
+    }
+
+    return Color.BLACK;
   }
 }

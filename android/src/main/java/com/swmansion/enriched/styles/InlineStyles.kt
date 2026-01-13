@@ -3,6 +3,7 @@ package com.swmansion.enriched.styles
 import android.text.Editable
 import android.text.Spannable
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.spans.EnrichedColoredSpan
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
@@ -101,21 +102,203 @@ class InlineStyles(
     }
   }
 
+  private fun applyColorSpan(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    color: Int,
+  ) {
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(
+      EnrichedColoredSpan(view.htmlStyle, color),
+      safeStart,
+      safeEnd,
+      Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+  }
+
+  private fun splitExistingColorSpans(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    onRemain: (s: Int, e: Int, color: Int) -> Unit,
+  ) {
+    val spans = spannable.getSpans(start, end, EnrichedColoredSpan::class.java)
+    for (span in spans) {
+      val spanStart = spannable.getSpanStart(span)
+      val spanEnd = spannable.getSpanEnd(span)
+      val color = span.color
+
+      spannable.removeSpan(span)
+
+      if (spanStart < start) {
+        onRemain(spanStart, start, color)
+      }
+
+      if (spanEnd > end) {
+        onRemain(end, spanEnd, color)
+      }
+    }
+  }
+
+  private fun mergeAdjacentColors(spannable: Spannable) {
+    val colorSpans =
+      spannable
+        .getSpans(0, spannable.length, EnrichedColoredSpan::class.java)
+        .sortedBy { spannable.getSpanStart(it) }
+
+    var index = 0
+    while (index < colorSpans.size - 1) {
+      val currentSpan = colorSpans[index]
+      val nextSpan = colorSpans[index + 1]
+
+      val currentStart = spannable.getSpanStart(currentSpan)
+      val currentEnd = spannable.getSpanEnd(currentSpan)
+      val nextStart = spannable.getSpanStart(nextSpan)
+      val nextEnd = spannable.getSpanEnd(nextSpan)
+
+      if (currentEnd == nextStart && currentSpan.color == nextSpan.color) {
+        spannable.removeSpan(currentSpan)
+        spannable.removeSpan(nextSpan)
+
+        applyColorSpan(spannable, currentStart, nextEnd, currentSpan.color)
+
+        return mergeAdjacentColors(spannable)
+      }
+
+      index++
+    }
+  }
+
+  private fun isFullyColoredWith(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    color: Int,
+  ): Boolean {
+    val spans = spannable.getSpans(start, end, EnrichedColoredSpan::class.java)
+    if (spans.isEmpty()) return false
+
+    val allSame = spans.all { it.color == color }
+
+    if (!allSame) {
+      return false
+    }
+
+    val minStart = spans.minOf { spannable.getSpanStart(it) }
+    val maxEnd = spans.maxOf { spannable.getSpanEnd(it) }
+
+    return minStart <= start && maxEnd >= end
+  }
+
+  fun setColorStyle(color: Int) {
+    val (start, end) = view.selection?.getInlineSelection() ?: return
+    val spannable = view.text as Spannable
+
+    if (start == end) {
+      val spanState = view.spanState
+      if (spanState?.colorStart != null && spanState.typingColor == color) {
+        view.spanState.setColorStart(null, null)
+      } else {
+        view.spanState?.setColorStart(start, color)
+      }
+      return
+    }
+
+    if (isFullyColoredWith(spannable, start, end, color)) {
+      removeColorRange(start, end)
+      view.spanState?.setColorStart(null, null)
+      view.selection.validateStyles()
+      return
+    }
+
+    splitExistingColorSpans(spannable, start, end) { spanStart, spanEnd, existingColor ->
+      applyColorSpan(spannable, spanStart, spanEnd, existingColor)
+    }
+
+    applyColorSpan(spannable, start, end, color)
+
+    mergeAdjacentColors(spannable)
+
+    view.spanState?.setColorStart(null, null)
+    view.selection.validateStyles()
+  }
+
+  private fun removeColorRange(
+    start: Int,
+    end: Int,
+  ) {
+    val spannable = view.text as Spannable
+
+    splitExistingColorSpans(spannable, start, end) { spanStart, spanEnd, color ->
+      if (spanStart < start) applyColorSpan(spannable, spanStart, start, color)
+      if (spanEnd > end) applyColorSpan(spannable, end, spanEnd, color)
+    }
+  }
+
+  fun removeColorSpan() {
+    val (start, end) = view.selection?.getInlineSelection() ?: return
+
+    if (start == end) {
+      view.spanState?.setColorStart(null, null)
+      return
+    }
+
+    removeColorRange(start, end)
+
+    view.spanState?.setColorStart(null, null)
+    view.selection.validateStyles()
+  }
+
+  private fun applyTypingColorIfActive(
+    spannable: Spannable,
+    cursor: Int,
+  ) {
+    val state = view.spanState ?: return
+    val colorStart = state.colorStart ?: return
+    val color = state.typingColor ?: return
+
+    val existing =
+      spannable
+        .getSpans(colorStart, colorStart, EnrichedColoredSpan::class.java)
+        .firstOrNull { it.color == color }
+
+    if (existing != null) {
+      val spanStart = spannable.getSpanStart(existing)
+      val spanEnd = spannable.getSpanEnd(existing)
+
+      if (cursor > spanEnd) {
+        spannable.removeSpan(existing)
+        applyColorSpan(spannable, spanStart, cursor, color)
+      }
+
+      view.spanState.setColorStart(cursor, color)
+      return
+    }
+
+    applyColorSpan(spannable, colorStart, cursor, color)
+    view.spanState.setColorStart(cursor, color)
+  }
+
   fun afterTextChanged(
-    s: Editable,
+    editable: Editable,
     endCursorPosition: Int,
   ) {
     for ((style, config) in EnrichedSpans.inlineSpans) {
       val start = view.spanState?.getStart(style) ?: continue
       var end = endCursorPosition
-      val spans = s.getSpans(start, end, config.clazz)
+      if (config.clazz == EnrichedColoredSpan::class.java) {
+        applyTypingColorIfActive(editable, end)
+        continue
+      }
+      val spans = editable.getSpans(start, end, config.clazz)
 
       for (span in spans) {
-        end = s.getSpanEnd(span).coerceAtLeast(end)
-        s.removeSpan(span)
+        end = editable.getSpanEnd(span).coerceAtLeast(end)
+        editable.removeSpan(span)
       }
 
-      setSpan(s, config.clazz, start, end)
+      setSpan(editable, config.clazz, start, end)
     }
   }
 

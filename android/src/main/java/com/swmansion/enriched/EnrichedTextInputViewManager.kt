@@ -1,6 +1,7 @@
 package com.swmansion.enriched
 
 import android.content.Context
+import androidx.core.graphics.toColorInt
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
@@ -338,15 +339,24 @@ class EnrichedTextInputViewManager :
     view?.verifyAndToggleStyle(EnrichedSpans.UNORDERED_LIST)
   }
 
-  override fun setColor(view: EnrichedTextInputView?, color: String) {
-    // no-op for now
+  override fun setColor(
+    view: EnrichedTextInputView?,
+    color: String,
+  ) {
+    view?.setColor(color.toColorInt())
   }
 
   override fun removeColor(view: EnrichedTextInputView?) {
-    // no-op for now
+    view?.removeColor()
   }
 
-  override fun addLink(view: EnrichedTextInputView?, start: Int, end: Int, text: String, url: String) {
+  override fun addLink(
+    view: EnrichedTextInputView?,
+    start: Int,
+    end: Int,
+    text: String,
+    url: String,
+  ) {
     view?.addLink(start, end, text, url)
   }
 
