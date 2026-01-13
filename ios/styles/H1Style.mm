@@ -8,6 +8,9 @@
 + (BOOL)isParagraphStyle {
   return YES;
 }
++ (const char *)tagName {
+  return "h1";
+}
 - (CGFloat)getHeadingFontSize {
   return [((EnrichedTextInputView *)input)->config h1FontSize];
 }

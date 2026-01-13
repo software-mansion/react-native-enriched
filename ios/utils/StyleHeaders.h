@@ -3,6 +3,7 @@
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
+#import "ParameterizedStyleProtocol.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>
 @end
@@ -20,7 +21,7 @@
 - (void)handleNewlines;
 @end
 
-@interface LinkStyle : NSObject <BaseStyleProtocol>
+@interface LinkStyle : NSObject <BaseStyleProtocol, ParameterizedStyleProtocol>
 - (void)addLink:(NSString *)text
               url:(NSString *)url
             range:(NSRange)range
@@ -35,7 +36,8 @@
                      replacementText:(NSString *)text;
 @end
 
-@interface MentionStyle : NSObject <BaseStyleProtocol>
+@interface MentionStyle
+    : NSObject <BaseStyleProtocol, ParameterizedStyleProtocol>
 - (void)addMention:(NSString *)indicator
               text:(NSString *)text
         attributes:(NSString *)attributes;
@@ -101,7 +103,7 @@
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end
 
-@interface ImageStyle : NSObject <BaseStyleProtocol>
+@interface ImageStyle : NSObject <BaseStyleProtocol, ParameterizedStyleProtocol>
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData

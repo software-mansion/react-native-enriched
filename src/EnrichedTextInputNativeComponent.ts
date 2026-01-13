@@ -272,6 +272,7 @@ export interface NativeProps extends ViewProps {
 
   // Experimental
   androidExperimentalSynchronousEvents: boolean;
+  iOSExperimentalHTMLSerializer: boolean;
 }
 
 type ComponentType = HostComponent<NativeProps>;

@@ -18,6 +18,22 @@
   return YES;
 }
 
++ (const char *)tagName {
+  return "blockquote";
+}
+
++ (const char *)subTagName {
+  return "p";
+}
+
++ (BOOL)isSelfClosing {
+  return NO;
+}
+
++ (NSAttributedStringKey)attributeKey {
+  return NSParagraphStyleAttributeName;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -186,7 +202,7 @@
   return NO;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
   return pStyle != nullptr && pStyle.headIndent == [self getHeadIndent] &&
          pStyle.firstLineHeadIndent == [self getHeadIndent] &&
@@ -199,7 +215,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
@@ -207,7 +223,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -217,7 +233,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -226,7 +242,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
