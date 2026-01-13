@@ -24,6 +24,10 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return NO;
 }
 
++ (NSAttributedStringKey)attributeKey {
+  return MentionAttributeName;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -136,7 +140,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   MentionParams *params = (MentionParams *)value;
   return params != nullptr;
 }
@@ -147,7 +151,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [self getMentionParamsAt:range.location] != nullptr;
@@ -159,7 +163,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -168,7 +172,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

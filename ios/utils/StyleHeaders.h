@@ -21,10 +21,9 @@
 @end
 
 @interface ColorStyle : NSObject <BaseStyleProtocol>
-@property (nonatomic, strong) UIColor *color;
+@property(nonatomic, strong) UIColor *color;
 - (UIColor *)getColorAt:(NSUInteger)location;
 - (void)applyStyle:(NSRange)range color:(UIColor *)color;
-- (BOOL)detectExcludingColor:(UIColor *)excludedColor inRange:(NSRange)range;
 - (void)removeColorInSelectedRange;
 @end
 

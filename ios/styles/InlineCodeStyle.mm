@@ -17,6 +17,10 @@
   return NO;
 }
 
++ (NSAttributedStringKey)attributeKey {
+  return NSBackgroundColorAttributeName;
+}
+
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
@@ -174,7 +178,7 @@
                                   atIndex:index
                            effectiveRange:nil];
 
-    if (bgColor != nil && [self styleCondition:bgColor:newlineRange]) {
+    if (bgColor != nil && [self styleCondition:bgColor range:newlineRange]) {
       [self removeAttributes:newlineRange];
     }
   }
@@ -182,7 +186,7 @@
 
 // emojis don't retain monospace font attribute so we check for the background
 // color if there is no mention
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   UIColor *bgColor = (UIColor *)value;
   MentionStyle *mStyle = _input->stylesDict[@([MentionStyle getStyleType])];
   return bgColor != nullptr && mStyle != nullptr && ![mStyle detectStyle:range];
@@ -205,7 +209,7 @@
                        withInput:_input
                          inRange:currentRange
                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                     return [self styleCondition:value:range];
+                     return [self styleCondition:value range:range];
                    }];
       detected = detected && currentDetected;
     }
@@ -217,7 +221,7 @@
                           atIndex:range.location
                     checkPrevious:NO
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -227,7 +231,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -236,7 +240,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
