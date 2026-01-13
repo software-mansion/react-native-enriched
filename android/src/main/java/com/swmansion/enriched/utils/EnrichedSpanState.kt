@@ -4,7 +4,9 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.events.EventDispatcher
 import com.swmansion.enriched.EnrichedTextInputView
+import com.swmansion.enriched.events.OnChangeStateDeprecatedEvent
 import com.swmansion.enriched.events.OnChangeStateEvent
 import com.swmansion.enriched.spans.EnrichedSpans
 
@@ -12,6 +14,7 @@ class EnrichedSpanState(
   private val view: EnrichedTextInputView,
 ) {
   private var previousPayload: WritableMap? = null
+  private var previousDeprecatedPayload: WritableMap? = null
 
   var boldStart: Int? = null
     private set
@@ -194,25 +197,101 @@ class EnrichedSpanState(
   }
 
   private fun emitStateChangeEvent() {
-    val payload: WritableMap = Arguments.createMap()
-    payload.putBoolean("isBold", boldStart != null)
-    payload.putBoolean("isItalic", italicStart != null)
-    payload.putBoolean("isUnderline", underlineStart != null)
-    payload.putBoolean("isStrikeThrough", strikethroughStart != null)
-    payload.putBoolean("isInlineCode", inlineCodeStart != null)
-    payload.putBoolean("isH1", h1Start != null)
-    payload.putBoolean("isH2", h2Start != null)
-    payload.putBoolean("isH3", h3Start != null)
-    payload.putBoolean("isH4", h4Start != null)
-    payload.putBoolean("isH5", h5Start != null)
-    payload.putBoolean("isH6", h6Start != null)
-    payload.putBoolean("isCodeBlock", codeBlockStart != null)
-    payload.putBoolean("isBlockQuote", blockQuoteStart != null)
-    payload.putBoolean("isOrderedList", orderedListStart != null)
-    payload.putBoolean("isUnorderedList", unorderedListStart != null)
-    payload.putBoolean("isLink", linkStart != null)
-    payload.putBoolean("isImage", imageStart != null)
-    payload.putBoolean("isMention", mentionStart != null)
+    val context = view.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+
+    dispatchDeprecatedPayload(dispatcher, surfaceId)
+    dispatchPayload(dispatcher, surfaceId)
+  }
+
+  private fun dispatchDeprecatedPayload(
+    dispatcher: EventDispatcher?,
+    surfaceId: Int,
+  ) {
+    val deprecatedPayload = Arguments.createMap()
+    deprecatedPayload.putBoolean("isBold", boldStart != null)
+    deprecatedPayload.putBoolean("isItalic", italicStart != null)
+    deprecatedPayload.putBoolean("isUnderline", underlineStart != null)
+    deprecatedPayload.putBoolean("isStrikeThrough", strikethroughStart != null)
+    deprecatedPayload.putBoolean("isInlineCode", inlineCodeStart != null)
+    deprecatedPayload.putBoolean("isH1", h1Start != null)
+    deprecatedPayload.putBoolean("isH2", h2Start != null)
+    deprecatedPayload.putBoolean("isH3", h3Start != null)
+    deprecatedPayload.putBoolean("isH4", h4Start != null)
+    deprecatedPayload.putBoolean("isH5", h5Start != null)
+    deprecatedPayload.putBoolean("isH6", h6Start != null)
+    deprecatedPayload.putBoolean("isCodeBlock", codeBlockStart != null)
+    deprecatedPayload.putBoolean("isBlockQuote", blockQuoteStart != null)
+    deprecatedPayload.putBoolean("isOrderedList", orderedListStart != null)
+    deprecatedPayload.putBoolean("isUnorderedList", unorderedListStart != null)
+    deprecatedPayload.putBoolean("isLink", linkStart != null)
+    deprecatedPayload.putBoolean("isImage", imageStart != null)
+    deprecatedPayload.putBoolean("isMention", mentionStart != null)
+
+    if (previousDeprecatedPayload == deprecatedPayload) {
+      return
+    }
+
+    previousDeprecatedPayload =
+      Arguments.createMap().apply {
+        merge(deprecatedPayload)
+      }
+
+    dispatcher?.dispatchEvent(
+      OnChangeStateDeprecatedEvent(
+        surfaceId,
+        view.id,
+        deprecatedPayload,
+        view.experimentalSynchronousEvents,
+      ),
+    )
+  }
+
+  private fun dispatchPayload(
+    dispatcher: EventDispatcher?,
+    surfaceId: Int,
+  ) {
+    val activeStyles =
+      listOfNotNull(
+        if (boldStart != null) EnrichedSpans.BOLD else null,
+        if (italicStart != null) EnrichedSpans.ITALIC else null,
+        if (underlineStart != null) EnrichedSpans.UNDERLINE else null,
+        if (strikethroughStart != null) EnrichedSpans.STRIKETHROUGH else null,
+        if (inlineCodeStart != null) EnrichedSpans.INLINE_CODE else null,
+        if (h1Start != null) EnrichedSpans.H1 else null,
+        if (h2Start != null) EnrichedSpans.H2 else null,
+        if (h3Start != null) EnrichedSpans.H3 else null,
+        if (h4Start != null) EnrichedSpans.H4 else null,
+        if (h5Start != null) EnrichedSpans.H5 else null,
+        if (h6Start != null) EnrichedSpans.H6 else null,
+        if (codeBlockStart != null) EnrichedSpans.CODE_BLOCK else null,
+        if (blockQuoteStart != null) EnrichedSpans.BLOCK_QUOTE else null,
+        if (orderedListStart != null) EnrichedSpans.ORDERED_LIST else null,
+        if (unorderedListStart != null) EnrichedSpans.UNORDERED_LIST else null,
+        if (linkStart != null) EnrichedSpans.LINK else null,
+        if (imageStart != null) EnrichedSpans.IMAGE else null,
+        if (mentionStart != null) EnrichedSpans.MENTION else null,
+      )
+    val payload = Arguments.createMap()
+    payload.putMap("bold", getStyleState(activeStyles, EnrichedSpans.BOLD))
+    payload.putMap("italic", getStyleState(activeStyles, EnrichedSpans.ITALIC))
+    payload.putMap("underline", getStyleState(activeStyles, EnrichedSpans.UNDERLINE))
+    payload.putMap("strikeThrough", getStyleState(activeStyles, EnrichedSpans.STRIKETHROUGH))
+    payload.putMap("inlineCode", getStyleState(activeStyles, EnrichedSpans.INLINE_CODE))
+    payload.putMap("h1", getStyleState(activeStyles, EnrichedSpans.H1))
+    payload.putMap("h2", getStyleState(activeStyles, EnrichedSpans.H2))
+    payload.putMap("h3", getStyleState(activeStyles, EnrichedSpans.H3))
+    payload.putMap("h4", getStyleState(activeStyles, EnrichedSpans.H4))
+    payload.putMap("h5", getStyleState(activeStyles, EnrichedSpans.H5))
+    payload.putMap("h6", getStyleState(activeStyles, EnrichedSpans.H6))
+    payload.putMap("codeBlock", getStyleState(activeStyles, EnrichedSpans.CODE_BLOCK))
+    payload.putMap("blockQuote", getStyleState(activeStyles, EnrichedSpans.BLOCK_QUOTE))
+    payload.putMap("orderedList", getStyleState(activeStyles, EnrichedSpans.ORDERED_LIST))
+    payload.putMap("unorderedList", getStyleState(activeStyles, EnrichedSpans.UNORDERED_LIST))
+    payload.putMap("link", getStyleState(activeStyles, EnrichedSpans.LINK))
+    payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
+    payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {
@@ -223,10 +302,6 @@ class EnrichedSpanState(
       Arguments.createMap().apply {
         merge(payload)
       }
-
-    val context = view.context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
     dispatcher?.dispatchEvent(
       OnChangeStateEvent(
         surfaceId,
@@ -235,6 +310,27 @@ class EnrichedSpanState(
         view.experimentalSynchronousEvents,
       ),
     )
+  }
+
+  private fun getStyleState(
+    activeStyles: List<String>,
+    type: String,
+  ): WritableMap {
+    val mergingConfig = EnrichedSpans.getMergingConfigForStyle(type, view.htmlStyle)
+    val blockingList = mergingConfig?.blockingStyles
+    val conflictingList = mergingConfig?.conflictingStyles
+
+    val state = Arguments.createMap()
+
+    state.putBoolean("isActive", activeStyles.contains(type))
+
+    val isBlocking = blockingList?.any { activeStyles.contains(it) } ?: false
+    state.putBoolean("isBlocking", isBlocking)
+
+    val isConflicting = conflictingList?.any { activeStyles.contains(it) } ?: false
+    state.putBoolean("isConflicting", isConflicting)
+
+    return state
   }
 
   companion object {
