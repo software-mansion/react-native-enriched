@@ -16,8 +16,8 @@
   NSMutableArray *results = [[NSMutableArray alloc] init];
 
   NSInteger lastStart = fullRange.location;
-  for (int i = fullRange.location; i < fullRange.location + fullRange.length;
-       i++) {
+  for (int i = int(fullRange.location);
+       i < fullRange.location + fullRange.length; i++) {
     unichar currentChar = [textView.textStorage.string characterAtIndex:i];
     if ([[NSCharacterSet newlineCharacterSet] characterIsMember:currentChar]) {
       NSRange paragraphRange = [textView.textStorage.string
@@ -40,9 +40,9 @@
 
 + (NSArray *)getNonNewlineRangesIn:(UITextView *)textView range:(NSRange)range {
   NSMutableArray *nonNewlineRanges = [[NSMutableArray alloc] init];
-  int lastRangeLocation = range.location;
+  int lastRangeLocation = int(range.location);
 
-  for (int i = range.location; i < range.location + range.length; i++) {
+  for (int i = int(range.location); i < range.location + range.length; i++) {
     unichar currentChar = [textView.textStorage.string characterAtIndex:i];
     if ([[NSCharacterSet newlineCharacterSet] characterIsMember:currentChar]) {
       if (i - lastRangeLocation > 0) {

@@ -56,7 +56,7 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSNumber *strikethroughStyle = (NSNumber *)value;
   return strikethroughStyle != nullptr &&
          [strikethroughStyle intValue] != NSUnderlineStyleNone;
@@ -68,7 +68,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSStrikethroughStyleAttributeName
@@ -76,7 +76,7 @@
                           atIndex:range.location
                     checkPrevious:NO
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -86,7 +86,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -95,7 +95,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
