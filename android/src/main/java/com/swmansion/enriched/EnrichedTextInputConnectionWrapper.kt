@@ -11,9 +11,8 @@ class EnrichedTextInputConnectionWrapper(
   target: InputConnection,
   private val reactContext: ReactContext,
   private val editText: EnrichedTextInputView,
-  private val experimentalSynchronousEvents: Boolean
+  private val experimentalSynchronousEvents: Boolean,
 ) : InputConnectionWrapper(target, false) {
-
   private var isBatchEdit = false
   private var key: String? = null
 
@@ -31,7 +30,10 @@ class EnrichedTextInputConnectionWrapper(
     return super.endBatchEdit()
   }
 
-  override fun setComposingText(text: CharSequence, newCursorPosition: Int): Boolean {
+  override fun setComposingText(
+    text: CharSequence,
+    newCursorPosition: Int,
+  ): Boolean {
     val previousSelectionStart = editText.selectionStart
     val previousSelectionEnd = editText.selectionEnd
 
@@ -56,7 +58,10 @@ class EnrichedTextInputConnectionWrapper(
     return consumed
   }
 
-  override fun commitText(text: CharSequence, newCursorPosition: Int): Boolean {
+  override fun commitText(
+    text: CharSequence,
+    newCursorPosition: Int,
+  ): Boolean {
     var inputKey = text.toString()
     // Assume not a keyPress if length > 1 (or 2 if unicode)
     if (inputKey.length <= 2) {
@@ -68,7 +73,10 @@ class EnrichedTextInputConnectionWrapper(
     return super.commitText(text, newCursorPosition)
   }
 
-  override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
+  override fun deleteSurroundingText(
+    beforeLength: Int,
+    afterLength: Int,
+  ): Boolean {
     dispatchKeyEvent(BACKSPACE_KEY_VALUE)
     return super.deleteSurroundingText(beforeLength, afterLength)
   }
@@ -81,12 +89,19 @@ class EnrichedTextInputConnectionWrapper(
     if (event.action == KeyEvent.ACTION_DOWN) {
       val isNumberKey = event.unicodeChar in 48..57
       when (event.keyCode) {
-        KeyEvent.KEYCODE_DEL -> dispatchKeyEvent(BACKSPACE_KEY_VALUE)
-        KeyEvent.KEYCODE_ENTER -> dispatchKeyEvent(ENTER_KEY_VALUE)
-        else ->
+        KeyEvent.KEYCODE_DEL -> {
+          dispatchKeyEvent(BACKSPACE_KEY_VALUE)
+        }
+
+        KeyEvent.KEYCODE_ENTER -> {
+          dispatchKeyEvent(ENTER_KEY_VALUE)
+        }
+
+        else -> {
           if (isNumberKey) {
             dispatchKeyEvent(event.number.toString())
           }
+        }
       }
     }
     return super.sendKeyEvent(event)
@@ -104,12 +119,14 @@ class EnrichedTextInputConnectionWrapper(
     val resolvedKey = if (inputKey == NEWLINE_RAW_VALUE) ENTER_KEY_VALUE else inputKey
     val surfaceId = UIManagerHelper.getSurfaceId(editText)
     val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, editText.id)
-    eventDispatcher?.dispatchEvent(OnInputKeyPressEvent(
-      surfaceId = surfaceId,
-      viewId = editText.id,
-      key = resolvedKey,
-      experimentalSynchronousEvents = experimentalSynchronousEvents
-    ))
+    eventDispatcher?.dispatchEvent(
+      OnInputKeyPressEvent(
+        surfaceId = surfaceId,
+        viewId = editText.id,
+        key = resolvedKey,
+        experimentalSynchronousEvents = experimentalSynchronousEvents,
+      ),
+    )
   }
 
   companion object {

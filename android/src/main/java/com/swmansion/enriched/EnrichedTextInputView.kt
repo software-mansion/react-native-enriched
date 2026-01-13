@@ -123,7 +123,7 @@ class EnrichedTextInputView : AppCompatEditText {
           inputConnection,
           context as ReactContext,
           this,
-          experimentalSynchronousEvents
+          experimentalSynchronousEvents,
         )
     }
 
