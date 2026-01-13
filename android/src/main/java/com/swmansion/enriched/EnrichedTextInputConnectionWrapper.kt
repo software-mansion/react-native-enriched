@@ -7,6 +7,9 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.events.OnInputKeyPressEvent
 
+// This class is based on the implementation from Facebook React Native to provide 'onKeyPress' API on android.
+// Original source:
+// https://github.com/facebook/react-native/blob/v0.83.1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditTextInputConnectionWrapper.kt
 class EnrichedTextInputConnectionWrapper(
   target: InputConnection,
   private val reactContext: ReactContext,
