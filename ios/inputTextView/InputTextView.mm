@@ -14,6 +14,7 @@
     _placeholderView = [[UILabel alloc] initWithFrame:self.bounds];
     _placeholderView.isAccessibilityElement = NO;
     _placeholderView.numberOfLines = 0;
+    _placeholderView.adjustsFontForContentSizeCategory = YES;
     [self addSubview:_placeholderView];
 
     self.textContainer.lineFragmentPadding = 0;
@@ -189,19 +190,31 @@
 }
 
 - (void)setPlaceholderText:(NSString *)newPlaceholderText {
+  _placeholderText = newPlaceholderText;
+  [self refreshPlaceholder];
+}
+
+- (void)refreshPlaceholder {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
   if (typedInput == nullptr) {
     return;
   }
-  _placeholderText = newPlaceholderText;
-  BOOL hasPlaceholder = newPlaceholderText && newPlaceholderText.length > 0;
-  NSString *placeholderText = hasPlaceholder ? newPlaceholderText : @"";
+
   NSMutableDictionary *attributes =
       [typedInput->defaultTypingAttributes mutableCopy];
-  attributes[NSForegroundColorAttributeName] = _placeholderColor;
+
+  if (_placeholderColor) {
+    attributes[NSForegroundColorAttributeName] = _placeholderColor;
+  }
+
+  NSString *placeholder = _placeholderText ?: @"";
+
   _placeholderView.attributedText =
-      [[NSAttributedString alloc] initWithString:placeholderText
+      [[NSAttributedString alloc] initWithString:placeholder
                                       attributes:attributes];
+
+  [self updatePlaceholderVisibility];
+
   [self setNeedsLayout];
 }
 

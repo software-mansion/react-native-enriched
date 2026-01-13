@@ -251,7 +251,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.layoutManager.input = self;
   textView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  textView.adjustsFontForContentSizeCategory = YES;    
+  textView.adjustsFontForContentSizeCategory = YES;
 }
 
 // MARK: - Props
@@ -1731,7 +1731,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes = newTypingAttrs;
     textView.typingAttributes = defaultTypingAttributes;
 
-    [self refreshPlaceholderLabelStyles];
+    [textView refreshPlaceholder];
 
     NSRange prevSelectedRange = textView.selectedRange;
 
