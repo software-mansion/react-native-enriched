@@ -90,6 +90,10 @@
                       replacementText:(NSString *)text;
 @end
 
+@interface CheckboxListStyle : NSObject <BaseStyleProtocol>
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@end
+
 @interface BlockQuoteStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (void)manageBlockquoteColor;

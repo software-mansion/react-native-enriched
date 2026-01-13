@@ -107,6 +107,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getStyleType]) :
         [[OrderedListStyle alloc] initWithInput:self],
+    @([CheckboxListStyle getStyleType]) :
+        [[CheckboxListStyle alloc] initWithInput:self],
     @([BlockQuoteStyle getStyleType]) :
         [[BlockQuoteStyle alloc] initWithInput:self],
     @([CodeBlockStyle getStyleType]) :
@@ -183,6 +185,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
       @([CodeBlockStyle getStyleType])
     ],
+    @([CheckboxListStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
+      @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])
+    ],
     @([BlockQuoteStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
@@ -224,6 +233,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H6Style getStyleType]) : @[],
     @([UnorderedListStyle getStyleType]) : @[],
     @([OrderedListStyle getStyleType]) : @[],
+    @([CheckboxListStyle getStyleType]) : @[],
     @([BlockQuoteStyle getStyleType]) : @[],
     @([CodeBlockStyle getStyleType]) : @[],
     @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
@@ -553,6 +563,37 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig
         setCodeBlockBorderRadius:newViewProps.htmlStyle.codeblock.borderRadius];
     stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.boxSize !=
+      oldViewProps.htmlStyle.ulCheckbox.boxSize) {
+    [newConfig
+        setCheckboxListBoxSize:newViewProps.htmlStyle.ulCheckbox.boxSize];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.gapWidth !=
+      oldViewProps.htmlStyle.ulCheckbox.gapWidth) {
+    [newConfig
+        setCheckboxListGapWidth:newViewProps.htmlStyle.ulCheckbox.gapWidth];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.marginLeft !=
+      oldViewProps.htmlStyle.ulCheckbox.marginLeft) {
+    [newConfig
+        setCheckboxListMarginLeft:newViewProps.htmlStyle.ulCheckbox.marginLeft];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.boxColor !=
+      oldViewProps.htmlStyle.ulCheckbox.boxColor) {
+    if (isColorMeaningful(newViewProps.htmlStyle.ulCheckbox.boxColor)) {
+      [newConfig setCheckboxListBoxColor:RCTUIColorFromSharedColor(
+                                             newViewProps.htmlStyle.ulCheckbox
+                                                 .boxColor)];
+      stylePropChanged = YES;
+    }
   }
 
   if (newViewProps.htmlStyle.a.textDecorationLine !=
@@ -1055,6 +1096,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
+  } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
+    [self toggleParagraphStyle:[CheckboxListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
@@ -1622,6 +1665,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+  CheckboxListStyle *cbLStyle = stylesDict[@([CheckboxListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
   CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle getStyleType])];
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
@@ -1641,6 +1685,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle handleBackspaceInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [cbLStyle handleBackspaceInRange:range replacementText:text] ||
       [bqStyle handleBackspaceInRange:range replacementText:text] ||
       [cbStyle handleBackspaceInRange:range replacementText:text] ||
       [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
