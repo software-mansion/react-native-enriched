@@ -1,6 +1,7 @@
 package com.swmansion.enriched.utils
 
 import android.annotation.SuppressLint
+import android.text.Selection
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -157,6 +158,14 @@ fun TextView.setCheckboxClickListener() {
             // Reapply span so changes are visible without need to redraw entire TextView
             spannable.removeSpan(span)
             spannable.setSpan(span, start, end, flags)
+
+            // For focused input, ensure cursor is active for affected paragraph
+            if (tv.isFocused) {
+              val currentCursor = Selection.getSelectionEnd(spannable)
+              if (currentCursor < start || currentCursor > end) {
+                Selection.setSelection(spannable, end)
+              }
+            }
           }
 
           isDownOnCheckbox = false
