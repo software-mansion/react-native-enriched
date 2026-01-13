@@ -13,7 +13,7 @@
 
 `EnrichedTextInput`, the rich text editor component is an uncontrolled input. This means that it doesn't use any state or props to store its value, but instead directly interacts with the underlying platform-specific components. Thanks to this, the component is really performant and simple to use while offering complex and advanced features no other solution has.
 
-<https://github.com/user-attachments/assets/4778d541-d967-47e7-8013-6f7c436bcb95>
+![react-native-enriched-demo](https://github.com/user-attachments/assets/a2c968c0-9b85-492f-ac71-af64ef231fbf)
 
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
