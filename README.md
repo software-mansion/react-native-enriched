@@ -159,7 +159,7 @@ Each call toggles the style within the current text selection. We can still divi
 
 - Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
 
-- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph we mean a part of the text between two newlines (enters) or the text's beginning/ending.
+- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph, we mean a part of the text between two newlines (enters) or the text's beginning/ending.
   If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
 
 ## Links

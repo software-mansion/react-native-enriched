@@ -70,7 +70,7 @@ The recognized mention indicators. Each item needs to be a 1 character long stri
 ### `linkRegex`
 
 A custom regex pattern for detecting links in the input. If not provided, a default regex will be used.
-With this approach you can customize what patterns should be recognized as links, for example you can make it so that only links starting with `https://` are detected or you can support custom schemes.
+With this approach you can customize what patterns should be recognized as links, for example you can make it so that only links starting with `https://` are detected, or you can support custom schemes.
 Keep in mind that not all JS regex features are supported, for example variable-width lookbehinds won't work.
 
 | Type     | Default Value                 | Platform |
@@ -84,9 +84,9 @@ Keep in mind that not all JS regex features are supported, for example variable-
 
 Callback that's called whenever the input loses focused (is blurred).
 
-| Type         | Default Value | Platform |
-| ------------ | ------------- | -------- |
-| `() => void` | -             | Both     |
+| Type         | Platform |
+|--------------|----------|
+| `() => void` | Both     |
 
 ### `onChangeHtml`
 
@@ -102,9 +102,9 @@ interface OnChangeHtmlEvent {
 
 - `value` is the new HTML.
 
-| Type                                                       | Default Value | Platform |
-| ---------------------------------------------------------- | ------------- | -------- |
-| `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | -             | Both     |
+| Type                                                       | Platform |
+|------------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | Both     |
 
 > [!TIP]
 > Specifying `onChangeHtml` may have performance implications, especially with large documents, as it requires continuous HTML parsing.
@@ -127,9 +127,9 @@ interface OnChangeMentionEvent {
 - `indicator` is the indicator of the currently edited mention.
 - `text` contains whole text that has been typed after the indicator.
 
-| Type                                    | Default Value | Platform |
-| --------------------------------------- | ------------- | -------- |
-| `(event: OnChangeMentionEvent) => void` | -             | Both     |
+| Type                                    | Platform |
+|-----------------------------------------|----------|
+| `(event: OnChangeMentionEvent) => void` | Both     |
 
 ### `onChangeSelection`
 
@@ -149,9 +149,9 @@ interface OnChangeSelectionEvent {
 - `end` is the first index after the selection's ending. For just a cursor in place (no selection), `start` equals `end`.
 - `text` is the input's text in the current selection.
 
-| Type                                                            | Default Value | Platform |
-| --------------------------------------------------------------- | ------------- | -------- |
-| `(event: NativeSyntheticEvent<OnChangeSelectionEvent>) => void` | -             | Both     |
+| Type                                                            | Platform |
+|-----------------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeSelectionEvent>) => void` | Both     |
 
 ### `onChangeState`
 
@@ -258,13 +258,13 @@ interface OnChangeStateEvent {
 - `isBlocking` indicates if the style is blocked by other currently active, meaning it can't be toggled.
 - `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove conflicting style.
 
-| Type                                                        | Default Value | Platform |
-| ----------------------------------------------------------- | ------------- | -------- |
-| `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | -             | Both     |
+| Type                                                        | Platform |
+|-------------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
 
 ### `onChangeStateDeprecated`
 
-> [!WARNING]  
+> [!WARNING]
 > Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
 
 Callback that gets called when any of the styles within the selection changes.
@@ -294,9 +294,9 @@ interface OnChangeStateDeprecatedEvent {
 }
 ```
 
-| Type                                                                  | Default Value | Platform |
-| --------------------------------------------------------------------- | ------------- | -------- |
-| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | -             | Both     |
+| Type                                                                  | Platform |
+|-----------------------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | Both     |
 
 ### `onChangeText`
 
@@ -312,9 +312,9 @@ interface OnChangeTextEvent {
 
 - `value` is the new text value of the input.
 
-| Type                                                       | Default Value | Platform |
-| ---------------------------------------------------------- | ------------- | -------- |
-| `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | -             | Both     |
+| Type                                                       | Platform |
+|------------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | Both     |
 
 > [!TIP]
 > If you don't need the plain text value do not specify `onChangeText`, as it may have performance implications due to continuous text extraction.
@@ -325,17 +325,17 @@ Callback that is called when the user no longer edits a mention actively - has m
 
 - `indicator` is the indicator of the mention that was being edited.
 
-| Type                          | Default Value | Platform |
-| ----------------------------- | ------------- | -------- |
-| `(indicator: string) => void` | -             | Both     |
+| Type                          | Platform |
+|-------------------------------|----------|
+| `(indicator: string) => void` | Both     |
 
 ### `onFocus`
 
 Callback that's called whenever the input is focused.
 
-| Type         | Default Value | Platform |
-| ------------ | ------------- | -------- |
-| `() => void` | -             | Both     |
+| Type         | Platform |
+|--------------|----------|
+| `() => void` | Both     |
 
 ### `onLinkDetected`
 
@@ -357,9 +357,9 @@ interface OnLinkDetected {
 - `start` is the starting index of the link.
 - `end` is the first index after the ending index of the link.
 
-| Type                              | Default Value | Platform |
-| --------------------------------- | ------------- | -------- |
-| `(event: OnLinkDetected) => void` | -             | Both     |
+| Type                              | Platform |
+|-----------------------------------|----------|
+| `(event: OnLinkDetected) => void` | Both     |
 
 ### `onMentionDetected`
 
@@ -379,9 +379,9 @@ interface OnMentionDetected {
 - `indicator` is the indicator of the mention.
 - `attributes` are the additional user-defined attributes that are being stored with the mention.
 
-| Type                                 | Default Value | Platform |
-| ------------------------------------ | ------------- | -------- |
-| `(event: OnMentionDetected) => void` | -             | Both     |
+| Type                                 | Platform |
+|--------------------------------------|----------|
+| `(event: OnMentionDetected) => void` | Both     |
 
 ### `onStartMention`
 
@@ -389,9 +389,9 @@ Callback that gets called whenever a mention editing starts (after placing the i
 
 - `indicator` is the indicator of the mention that begins editing.
 
-| Type                          | Default Value | Platform |
-| ----------------------------- | ------------- | -------- |
-| `(indicator: string) => void` | -             | Both     |
+| Type                          | Platform |
+|-------------------------------|----------|
+| `(indicator: string) => void` | Both     |
 
 ### `placeholder`
 
@@ -530,7 +530,7 @@ Sets the currently edited mention with a given indicator, displayed text and cus
 
 - `indicator: string` - the indicator of the set mention.
 - `text: string` - the text that should be displayed for the mention. Anything the user typed gets replaced by that text. The mention indicator isn't added to that text.
-- `attributes?: Record<string, string>` - additional, custom attributes for the mention that can be passed as a typescript record. They are properly preserved through parsing from and to the HTML format.
+- `attributes?: Record<string, string>` - additional, custom attributes for the mention that can be passed as a TypeScript record. They are properly preserved through parsing from and to the HTML format.
 
 ### `.setValue()`
 
@@ -795,7 +795,7 @@ If only a single config is given, the style applies to all mention types. You ca
 
 ### ol (ordered list)
 
-By marker we mean the number that denotes next lines of the list.
+By marker, we mean the number that denotes next lines of the list.
 
 - `gapWidth` sets the gap between the marker and the list item's text, defaults to `16`.
 - `marginLeft` sets the margin to the left of the marker (between the marker and input's left edge), defaults to `16`.
@@ -804,7 +804,7 @@ By marker we mean the number that denotes next lines of the list.
 
 ### ul (unordered list)
 
-By bullet we mean the dot that begins each line of the list.
+By bullet, we mean the dot that begins each line of the list.
 
 - `bulletColor` defines the color of the bullet, takes [color](https://reactnative.dev/docs/colors) value and defaults to `black`.
 - `bulletSize` sets both the height and the width of the bullet, defaults to `8`.
