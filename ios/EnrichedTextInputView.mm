@@ -1339,6 +1339,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)emitOnKeyPressEvent:(NSString *)key {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    emitter->onInputKeyPress({.key = [key toCppString]});
+  }
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -1735,21 +1742,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)emitOnKeyPressEvent:(NSString *)key {
-  auto emitter = [self getEventEmitter];
-  if (emitter != nullptr) {
-    emitter->onInputKeyPress({.key = [key toCppString]});
-  }
-}
-
 - (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
-
-  // if text was pasted we should not emit key press event
-  if (self->textView.textWasPasted) {
-    self->textView.textWasPasted = NO;
-    return;
-  }
 
   if (text.length == 0 && range.length > 0) {
     key = @"Backspace";
