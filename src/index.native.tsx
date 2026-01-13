@@ -8,5 +8,6 @@ export type {
   OnChangeHtmlEvent,
   OnChangeMentionEvent,
   OnChangeStateEvent,
+  OnChangeStateDeprecatedEvent,
   OnMentionDetected,
 } from './common/types';

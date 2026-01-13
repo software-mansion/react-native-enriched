@@ -7,6 +7,99 @@ export interface OnChangeHtmlEvent {
 }
 
 export interface OnChangeStateEvent {
+  bold: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  italic: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  underline: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  strikeThrough: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  inlineCode: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h1: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h2: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h3: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h4: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h5: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  h6: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  codeBlock: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  blockQuote: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  orderedList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  unorderedList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  link: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  image: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+  mention: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
+}
+
+export interface OnChangeStateDeprecatedEvent {
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;

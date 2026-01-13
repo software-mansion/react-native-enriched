@@ -37,25 +37,31 @@ interface Selection {
   text: string;
 }
 
-const DEFAULT_STYLE: StylesState = {
-  isBold: false,
-  isItalic: false,
-  isUnderline: false,
-  isStrikeThrough: false,
-  isInlineCode: false,
-  isH1: false,
-  isH2: false,
-  isH3: false,
-  isH4: false,
-  isH5: false,
-  isH6: false,
-  isBlockQuote: false,
-  isCodeBlock: false,
-  isOrderedList: false,
-  isUnorderedList: false,
-  isLink: false,
-  isImage: false,
-  isMention: false,
+const DEFAULT_STYLE_STATE = {
+  isActive: false,
+  isConflicting: false,
+  isBlocking: false,
+};
+
+const DEFAULT_STYLES: StylesState = {
+  bold: DEFAULT_STYLE_STATE,
+  italic: DEFAULT_STYLE_STATE,
+  underline: DEFAULT_STYLE_STATE,
+  strikeThrough: DEFAULT_STYLE_STATE,
+  inlineCode: DEFAULT_STYLE_STATE,
+  h1: DEFAULT_STYLE_STATE,
+  h2: DEFAULT_STYLE_STATE,
+  h3: DEFAULT_STYLE_STATE,
+  h4: DEFAULT_STYLE_STATE,
+  h5: DEFAULT_STYLE_STATE,
+  h6: DEFAULT_STYLE_STATE,
+  blockQuote: DEFAULT_STYLE_STATE,
+  codeBlock: DEFAULT_STYLE_STATE,
+  orderedList: DEFAULT_STYLE_STATE,
+  unorderedList: DEFAULT_STYLE_STATE,
+  link: DEFAULT_STYLE_STATE,
+  image: DEFAULT_STYLE_STATE,
+  mention: DEFAULT_STYLE_STATE,
 };
 
 const DEFAULT_LINK_STATE = {
@@ -64,6 +70,9 @@ const DEFAULT_LINK_STATE = {
   start: 0,
   end: 0,
 };
+
+const LINK_REGEX =
+  /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
 
 const DEBUG_SCROLLABLE = false;
 
@@ -82,7 +91,7 @@ export default function App() {
   const [currentHtml, setCurrentHtml] = useState('');
 
   const [selection, setSelection] = useState<Selection>();
-  const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLE);
+  const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
@@ -92,7 +101,7 @@ export default function App() {
   const channelMention = useChannelMention();
 
   const insideCurrentLink =
-    stylesState.isLink &&
+    stylesState.link.isActive &&
     currentLink.url.length > 0 &&
     (currentLink.start || currentLink.end) &&
     selection &&
@@ -302,6 +311,7 @@ export default function App() {
             selectionColor="deepskyblue"
             cursorColor="dodgerblue"
             autoCapitalize="sentences"
+            linkRegex={LINK_REGEX}
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}

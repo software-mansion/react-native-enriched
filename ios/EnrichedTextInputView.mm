@@ -16,6 +16,13 @@
 #import <folly/dynamic.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
+#define GET_STYLE_STATE(TYPE_ENUM)                                             \
+  {                                                                            \
+    .isActive = [self isStyleActive:TYPE_ENUM],                                \
+    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
+    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
+  }
+
 using namespace facebook::react;
 
 @interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol,
@@ -27,6 +34,7 @@ using namespace facebook::react;
   EnrichedTextInputViewShadowNode::ConcreteState::Shared _state;
   int _componentViewHeightUpdateCounter;
   NSMutableSet<NSNumber *> *_activeStyles;
+  NSMutableSet<NSNumber *> *_blockedStyles;
   LinkData *_recentlyActiveLinkData;
   NSRange _recentlyActiveLinkRange;
   NSString *_recentInputString;
@@ -73,6 +81,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)setDefaults {
   _componentViewHeightUpdateCounter = 0;
   _activeStyles = [[NSMutableSet alloc] init];
+  _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
   recentlyChangedRange = NSMakeRange(0, 0);
@@ -204,7 +213,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
   };
 
-  blockingStyles = @{
+  blockingStyles = [@{
     @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([ItalicStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
@@ -227,7 +236,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([BlockQuoteStyle getStyleType]) : @[],
     @([CodeBlockStyle getStyleType]) : @[],
     @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
-  };
+  } mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
 }
@@ -240,6 +249,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
+  textView.adjustsFontForContentSizeCategory = YES;
 }
 
 - (void)setupPlaceholderLabel {
@@ -258,6 +268,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   _placeholderLabel.text = @"";
   _placeholderLabel.hidden = YES;
+  _placeholderLabel.adjustsFontForContentSizeCategory = YES;
 }
 
 // MARK: - Props
@@ -334,6 +345,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h1.bold != oldViewProps.htmlStyle.h1.bold) {
     [newConfig setH1Bold:newViewProps.htmlStyle.h1.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h1.bold ? [self addStyleBlock:H1 to:Bold]
+                                   : [self removeStyleBlock:H1 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -345,6 +361,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h2.bold != oldViewProps.htmlStyle.h2.bold) {
     [newConfig setH2Bold:newViewProps.htmlStyle.h2.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h2.bold ? [self addStyleBlock:H2 to:Bold]
+                                   : [self removeStyleBlock:H2 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -356,6 +377,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h3.bold != oldViewProps.htmlStyle.h3.bold) {
     [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h3.bold ? [self addStyleBlock:H3 to:Bold]
+                                   : [self removeStyleBlock:H3 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -367,6 +393,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h4.bold != oldViewProps.htmlStyle.h4.bold) {
     [newConfig setH4Bold:newViewProps.htmlStyle.h4.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h4.bold ? [self addStyleBlock:H4 to:Bold]
+                                   : [self removeStyleBlock:H4 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -378,6 +409,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h5.bold != oldViewProps.htmlStyle.h5.bold) {
     [newConfig setH5Bold:newViewProps.htmlStyle.h5.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h5.bold ? [self addStyleBlock:H5 to:Bold]
+                                   : [self removeStyleBlock:H5 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -389,6 +425,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (newViewProps.htmlStyle.h6.bold != oldViewProps.htmlStyle.h6.bold) {
     [newConfig setH6Bold:newViewProps.htmlStyle.h6.bold];
+
+    // Update style blocks for bold
+    newViewProps.htmlStyle.h6.bold ? [self addStyleBlock:H6 to:Bold]
+                                   : [self removeStyleBlock:H6 from:Bold];
+
     stylePropChanged = YES;
   }
 
@@ -710,6 +751,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [config setMentionIndicators:newIndicators];
   }
 
+  // linkRegex
+  LinkRegexConfig *oldRegexConfig =
+      [[LinkRegexConfig alloc] initWithLinkRegexProp:oldViewProps.linkRegex];
+  LinkRegexConfig *newRegexConfig =
+      [[LinkRegexConfig alloc] initWithLinkRegexProp:newViewProps.linkRegex];
+  if (![newRegexConfig isEqualToConfig:oldRegexConfig]) {
+    [config setLinkRegexConfig:newRegexConfig];
+  }
+
   // selection color sets both selection and cursor on iOS (just as in RN)
   if (newViewProps.selectionColor != oldViewProps.selectionColor) {
     if (isColorMeaningful(newViewProps.selectionColor)) {
@@ -864,6 +914,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // emitted
   NSMutableSet *newActiveStyles = [_activeStyles mutableCopy];
 
+  // currently blocked styles are subject to change (e.g. bold being blocked by
+  // headings might change in reaction to prop change) so they also are kept
+  // separately
+  NSMutableSet *newBlockedStyles = [_blockedStyles mutableCopy];
+
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
@@ -874,14 +929,30 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   for (NSNumber *type in stylesDict) {
     id<BaseStyleProtocol> style = stylesDict[type];
+
     BOOL wasActive = [newActiveStyles containsObject:type];
     BOOL isActive = [style detectStyle:textView.selectedRange];
+
+    BOOL wasBlocked = [newBlockedStyles containsObject:type];
+    BOOL isBlocked = [self isStyle:(StyleType)[type integerValue]
+                       activeInMap:blockingStyles];
+
     if (wasActive != isActive) {
       updateNeeded = YES;
       if (isActive) {
         [newActiveStyles addObject:type];
       } else {
         [newActiveStyles removeObject:type];
+      }
+    }
+
+    // blocked state change for a style also needs an update
+    if (wasBlocked != isBlocked) {
+      updateNeeded = YES;
+      if (isBlocked) {
+        [newBlockedStyles addObject:type];
+      } else {
+        [newBlockedStyles removeObject:type];
       }
     }
 
@@ -949,38 +1020,51 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
-      // update activeStyles only if emitter is available
+      // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
+      _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeState({
-        .isBold = [_activeStyles containsObject:@([BoldStyle getStyleType])],
-        .isItalic =
-            [_activeStyles containsObject:@([ItalicStyle getStyleType])],
-        .isUnderline =
-            [_activeStyles containsObject:@([UnderlineStyle getStyleType])],
-        .isStrikeThrough =
-            [_activeStyles containsObject:@([StrikethroughStyle getStyleType])],
-        .isInlineCode =
-            [_activeStyles containsObject:@([InlineCodeStyle getStyleType])],
-        .isLink = [_activeStyles containsObject:@([LinkStyle getStyleType])],
-        .isMention =
-            [_activeStyles containsObject:@([MentionStyle getStyleType])],
-        .isH1 = [_activeStyles containsObject:@([H1Style getStyleType])],
-        .isH2 = [_activeStyles containsObject:@([H2Style getStyleType])],
-        .isH3 = [_activeStyles containsObject:@([H3Style getStyleType])],
-        .isH4 = [_activeStyles containsObject:@([H4Style getStyleType])],
-        .isH5 = [_activeStyles containsObject:@([H5Style getStyleType])],
-        .isH6 = [_activeStyles containsObject:@([H6Style getStyleType])],
-        .isUnorderedList =
-            [_activeStyles containsObject:@([UnorderedListStyle getStyleType])],
-        .isOrderedList =
-            [_activeStyles containsObject:@([OrderedListStyle getStyleType])],
-        .isBlockQuote =
-            [_activeStyles containsObject:@([BlockQuoteStyle getStyleType])],
-        .isCodeBlock =
-            [_activeStyles containsObject:@([CodeBlockStyle getStyleType])],
-        .isImage = [_activeStyles containsObject:@([ImageStyle getStyleType])],
+      emitter->onChangeStateDeprecated({
+          .isBold = [self isStyleActive:[BoldStyle getStyleType]],
+          .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
+          .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
+          .isStrikeThrough =
+              [self isStyleActive:[StrikethroughStyle getStyleType]],
+          .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
+          .isLink = [self isStyleActive:[LinkStyle getStyleType]],
+          .isMention = [self isStyleActive:[MentionStyle getStyleType]],
+          .isH1 = [self isStyleActive:[H1Style getStyleType]],
+          .isH2 = [self isStyleActive:[H2Style getStyleType]],
+          .isH3 = [self isStyleActive:[H3Style getStyleType]],
+          .isH4 = [self isStyleActive:[H4Style getStyleType]],
+          .isH5 = [self isStyleActive:[H5Style getStyleType]],
+          .isH6 = [self isStyleActive:[H6Style getStyleType]],
+          .isUnorderedList =
+              [self isStyleActive:[UnorderedListStyle getStyleType]],
+          .isOrderedList = [self isStyleActive:[OrderedListStyle getStyleType]],
+          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
+          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
+          .isImage = [self isStyleActive:[ImageStyle getStyleType]],
       });
+      emitter->onChangeState(
+          {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+           .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
+           .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
+           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getStyleType]),
+           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
+           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+           .h1 = GET_STYLE_STATE([H1Style getStyleType]),
+           .h2 = GET_STYLE_STATE([H2Style getStyleType]),
+           .h3 = GET_STYLE_STATE([H3Style getStyleType]),
+           .h4 = GET_STYLE_STATE([H4Style getStyleType]),
+           .h5 = GET_STYLE_STATE([H5Style getStyleType]),
+           .h6 = GET_STYLE_STATE([H6Style getStyleType]),
+           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getStyleType]),
+           .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
+           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
+           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
+           .image = GET_STYLE_STATE([ImageStyle getStyleType])});
     }
   }
 
@@ -1003,6 +1087,42 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
+}
+
+- (bool)isStyleActive:(StyleType)type {
+  return [_activeStyles containsObject:@(type)];
+}
+
+- (bool)isStyle:(StyleType)type activeInMap:(NSDictionary *)styleMap {
+  NSArray *relatedStyles = styleMap[@(type)];
+
+  if (!relatedStyles) {
+    return false;
+  }
+
+  for (NSNumber *style in relatedStyles) {
+    if ([_activeStyles containsObject:style]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+- (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
+  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
+  if (![blocksArr containsObject:@(blocking)]) {
+    [blocksArr addObject:@(blocking)];
+    blockingStyles[@(blocked)] = blocksArr;
+  }
+}
+
+- (void)removeStyleBlock:(StyleType)blocking from:(StyleType)blocked {
+  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
+  if ([blocksArr containsObject:@(blocking)]) {
+    [blocksArr removeObject:@(blocking)];
+    blockingStyles[@(blocked)] = blocksArr;
+  }
 }
 
 // MARK: - Native commands and events
@@ -1658,6 +1778,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [ParagraphAttributesUtils handleBackspaceInRange:range
                                        replacementText:text
                                                  input:self] ||
+      [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
+                                                       replacementText:text
+                                                                 input:self] ||
       // CRITICAL: This callback HAS TO be always evaluated last.
       //
       // This function is the "Generic Fallback": if no specific style claims
@@ -1700,6 +1823,45 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // in anyTextMayHaveBeenModified
 - (void)textViewDidChange:(UITextView *)textView {
   [self anyTextMayHaveBeenModified];
+}
+
+/**
+ * Handles iOS Dynamic Type changes (User changing font size in System
+ * Settings).
+ *
+ * Unlike Android, iOS Views do not automatically rescale existing
+ * NSAttributedStrings when the system font size changes. The text attributes
+ * are static once drawn.
+ *
+ * This method detects the change and performs a "Hard Refresh" of the content.
+ */
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    [config invalidateFonts];
+
+    NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
+    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
+
+    defaultTypingAttributes = newTypingAttrs;
+    textView.typingAttributes = defaultTypingAttributes;
+
+    [self refreshPlaceholderLabelStyles];
+
+    NSRange prevSelectedRange = textView.selectedRange;
+
+    NSString *currentHtml = [parser
+        parseToHtmlFromRange:NSMakeRange(0,
+                                         textView.textStorage.string.length)];
+    NSString *initiallyProcessedHtml =
+        [parser initiallyProcessHtml:currentHtml];
+    [parser replaceWholeFromHtml:initiallyProcessedHtml];
+
+    textView.selectedRange = prevSelectedRange;
+    [self anyTextMayHaveBeenModified];
+  }
 }
 
 // MARK: - Media attachments delegate
