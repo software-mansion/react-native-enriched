@@ -162,7 +162,7 @@
   }
 
   [super deleteBackward];
-  
+
   if (typedInput != nullptr) {
     [typedInput anyTextMayHaveBeenModified];
   }

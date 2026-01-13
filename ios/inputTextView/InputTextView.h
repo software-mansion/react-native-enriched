@@ -3,4 +3,5 @@
 
 @interface InputTextView : UITextView
 @property(nonatomic, weak) id input;
+@property(nonatomic) BOOL textWasPasted;
 @end

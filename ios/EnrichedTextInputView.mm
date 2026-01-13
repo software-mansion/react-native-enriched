@@ -1738,15 +1738,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)emitOnKeyPressEvent:(NSString *)key {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
-    emitter->onInputKeyPress({
-      .key = [key toCppString]
-    });
+    emitter->onInputKeyPress({.key = [key toCppString]});
   }
 }
 
-- (bool)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-  recentlyChangedRange = NSMakeRange(range.location, text.length);
+- (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
+
+  // if text was pasted we should not emit key press event
+  if (self->textView.textWasPasted) {
+    self->textView.textWasPasted = NO;
+    return;
+  }
+
   if (text.length == 0 && range.length > 0) {
     key = @"Backspace";
   } else if ([text isEqualToString:@"\n"]) {
@@ -1757,10 +1761,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     key = text;
   }
 
-  if(key != nil) {
-    [self emitOnKeyPressEvent: key];
+  if (key != nil) {
+    [self emitOnKeyPressEvent:key];
   }
-  
+}
+
+- (bool)textView:(UITextView *)textView
+    shouldChangeTextInRange:(NSRange)range
+            replacementText:(NSString *)text {
+  recentlyChangedRange = NSMakeRange(range.location, text.length);
+  [self handleKeyPressInRange:text range:range];
+
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
