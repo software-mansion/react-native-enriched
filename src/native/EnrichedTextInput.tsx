@@ -39,6 +39,7 @@ import type {
   OnChangeMentionEvent,
   EnrichedTextInputInstanceBase,
 } from '../common/types';
+import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
 
 export interface EnrichedTextInputInstance
   extends EnrichedTextInputInstanceBase,
@@ -156,16 +157,16 @@ type HtmlRequest = {
 export const EnrichedTextInput = ({
   ref,
   autoFocus,
-  editable = true,
-  mentionIndicators = ['@'],
+  editable = ENRICHED_TEXT_INPUT_DEFAULTS.editable,
+  mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULTS.mentionIndicators,
   defaultValue,
   placeholder,
   placeholderTextColor,
   cursorColor,
   selectionColor,
   style,
-  autoCapitalize = 'sentences',
-  htmlStyle = {},
+  autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULTS.autoCapitalize,
+  htmlStyle = ENRICHED_TEXT_INPUT_DEFAULTS.htmlStyle,
   linkRegex: _linkRegex,
   onFocus,
   onBlur,
@@ -179,8 +180,8 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
-  androidExperimentalSynchronousEvents = false,
-  scrollEnabled = true,
+  androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULTS.androidExperimentalSynchronousEvents,
+  scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULTS.scrollEnabled,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);

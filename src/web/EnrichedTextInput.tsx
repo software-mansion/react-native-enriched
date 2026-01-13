@@ -1,21 +1,21 @@
 import {
-  forwardRef,
   useImperativeHandle,
   useRef,
   type SyntheticEvent,
   type CSSProperties,
   type RefObject,
-  type ForwardedRef,
 } from 'react';
 
 import type {
   EnrichedTextInputInstanceBase,
   OnChangeHtmlEvent,
   OnChangeMentionEvent,
+  OnChangeStateDeprecatedEvent,
   OnChangeStateEvent,
   OnChangeTextEvent,
   OnMentionDetected,
 } from '../common/types';
+import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
 
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
 
@@ -98,11 +98,18 @@ export interface EnrichedTextInputProps {
   htmlStyle?: HtmlStyle;
   style?: CSSProperties;
   scrollEnabled?: boolean;
+  linkRegex?: RegExp | null;
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (e: SyntheticEvent<HTMLElement, OnChangeTextEvent>) => void;
   onChangeHtml?: (e: SyntheticEvent<HTMLElement, OnChangeHtmlEvent>) => void;
   onChangeState?: (e: SyntheticEvent<HTMLElement, OnChangeStateEvent>) => void;
+  /**
+   * @deprecated Use onChangeState prop instead.
+   */
+  onChangeStateDeprecated?: (
+    e: SyntheticEvent<HTMLElement, OnChangeStateDeprecatedEvent>
+  ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
@@ -117,73 +124,67 @@ export interface EnrichedTextInputProps {
   androidExperimentalSynchronousEvents?: boolean;
 }
 
-export const EnrichedTextInput = forwardRef(
-  (
-    props: EnrichedTextInputProps,
-    ref: ForwardedRef<EnrichedTextInputInstance>
-  ) => {
-    const {
-      autoFocus,
-      editable = true,
-      defaultValue,
-      placeholder,
-      style,
-    } = props;
+export const EnrichedTextInput = ({
+  ref,
+  autoFocus,
+  editable = ENRICHED_TEXT_INPUT_DEFAULTS.editable,
+  defaultValue,
+  placeholder,
+  style,
+}: EnrichedTextInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-    const inputRef = useRef<HTMLInputElement>(null);
+  useImperativeHandle(ref, () => ({
+    // General commands
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    blur: () => {
+      inputRef.current?.blur();
+    },
+    setValue: (value: string) => {
+      if (inputRef.current) {
+        inputRef.current.value = value;
+      }
+    },
+    setSelection: (start: number, end: number) => {
+      inputRef.current?.setSelectionRange(start, end);
+    },
+    getHTML: () => {
+      return Promise.resolve('');
+    },
 
-    useImperativeHandle(ref, () => ({
-      // General commands
-      focus: () => {
-        inputRef.current?.focus();
-      },
-      blur: () => {
-        inputRef.current?.blur();
-      },
-      setValue: (value: string) => {
-        if (inputRef.current) {
-          inputRef.current.value = value;
-        }
-      },
-      setSelection: (start: number, end: number) => {
-        inputRef.current?.setSelectionRange(start, end);
-      },
-      getHTML: () => {
-        return Promise.resolve('');
-      },
+    // Text formatting commands
+    toggleBold: () => {},
+    toggleItalic: () => {},
+    toggleUnderline: () => {},
+    toggleStrikeThrough: () => {},
+    toggleInlineCode: () => {},
+    toggleH1: () => {},
+    toggleH2: () => {},
+    toggleH3: () => {},
+    toggleH4: () => {},
+    toggleH5: () => {},
+    toggleH6: () => {},
+    toggleCodeBlock: () => {},
+    toggleBlockQuote: () => {},
+    toggleOrderedList: () => {},
+    toggleUnorderedList: () => {},
+    setLink: () => {},
+    setImage: () => {},
+    startMention: () => {},
+    setMention: () => {},
+  }));
 
-      // Text formatting commands
-      toggleBold: () => {},
-      toggleItalic: () => {},
-      toggleUnderline: () => {},
-      toggleStrikeThrough: () => {},
-      toggleInlineCode: () => {},
-      toggleH1: () => {},
-      toggleH2: () => {},
-      toggleH3: () => {},
-      toggleH4: () => {},
-      toggleH5: () => {},
-      toggleH6: () => {},
-      toggleCodeBlock: () => {},
-      toggleBlockQuote: () => {},
-      toggleOrderedList: () => {},
-      toggleUnorderedList: () => {},
-      setLink: () => {},
-      setImage: () => {},
-      startMention: () => {},
-      setMention: () => {},
-    }));
-
-    return (
-      <input
-        ref={inputRef}
-        type="text"
-        autoFocus={autoFocus}
-        disabled={!editable}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        style={style}
-      />
-    );
-  }
-);
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      autoFocus={autoFocus}
+      disabled={!editable}
+      defaultValue={defaultValue}
+      placeholder={placeholder}
+      style={style}
+    />
+  );
+};
