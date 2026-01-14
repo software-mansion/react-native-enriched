@@ -7,6 +7,7 @@ import android.util.Log
 import com.swmansion.enriched.EnrichedTextInputView
 import com.swmansion.enriched.spans.EnrichedSpans
 import com.swmansion.enriched.spans.interfaces.EnrichedSpan
+import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 
@@ -126,7 +127,7 @@ class ParagraphStyles(
       ssb.removeSpan(span)
     }
 
-    ssb.replace(finalStart, finalEnd, ssb.substring(finalStart, finalEnd).replace("\u200B", ""))
+    ssb.replace(finalStart, finalEnd, ssb.substring(finalStart, finalEnd).replace(EnrichedConstants.ZWS.toString(), ""))
     return true
   }
 
@@ -342,7 +343,7 @@ class ParagraphStyles(
           endCursorPosition -= 1
           spanState.setStart(style, null)
         } else {
-          s.insert(endCursorPosition, "\u200B")
+          s.insert(endCursorPosition, EnrichedConstants.ZWS.toString())
           endCursorPosition += 1
         }
       }
@@ -391,7 +392,7 @@ class ParagraphStyles(
     }
 
     if (start == end) {
-      spannable.insert(start, "\u200B")
+      spannable.insert(start, EnrichedConstants.ZWS.toString())
       setAndMergeSpans(spannable, type, start, end + 1)
       view.selection.validateStyles()
 
@@ -403,7 +404,7 @@ class ParagraphStyles(
     val paragraphs = spannable.substring(start, end).split("\n")
 
     for (paragraph in paragraphs) {
-      spannable.insert(currentStart, "\u200B")
+      spannable.insert(currentStart, EnrichedConstants.ZWS.toString())
       currentEnd = currentStart + paragraph.length + 1
       currentStart = currentEnd + 1
     }

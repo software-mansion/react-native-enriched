@@ -64,13 +64,13 @@ class EnrichedSelection(
     val text = view.text ?: return false
 
     if (start != end) {
-      return text.substring(start, end) == "\u200B"
+      return text.substring(start, end) == EnrichedConstants.ZWS.toString()
     }
 
     val isNewLine = if (start > 0) text.substring(start - 1, start) == "\n" else true
     val isNextCharacterZeroWidth =
       if (start < text.length) {
-        text.substring(start, start + 1) == "\u200B"
+        text.substring(start, start + 1) == EnrichedConstants.ZWS.toString()
       } else {
         false
       }
