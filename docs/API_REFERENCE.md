@@ -393,6 +393,20 @@ Callback that gets called whenever a mention editing starts (after placing the i
 |-------------------------------|----------|
 | `(indicator: string) => void` | Both     |
 
+### `onKeyPress`
+
+Callback that is called when a key is pressed. See [TextInput onKeyPress](https://reactnative.dev/docs/textinput#onkeypress) for more details.
+
+```ts
+export interface OnKeyPressEvent {
+  key: string;
+}
+```
+
+| Type                                                     | Platform |
+|----------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
+
 ### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
