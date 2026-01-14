@@ -403,9 +403,9 @@ export interface OnKeyPressEvent {
 }
 ```
 
-| Type                                                     | Default Value | Platform |
-|----------------------------------------------------------|---------------|----------|
-| `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | -             | Both     |
+| Type                                                     | Platform |
+|----------------------------------------------------------|----------|
+| `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
 
 ### `placeholder`
 
