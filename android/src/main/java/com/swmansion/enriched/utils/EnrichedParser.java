@@ -11,6 +11,7 @@ import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
 import com.swmansion.enriched.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.spans.EnrichedBoldSpan;
+import com.swmansion.enriched.spans.EnrichedCheckboxListSpan;
 import com.swmansion.enriched.spans.EnrichedCodeBlockSpan;
 import com.swmansion.enriched.spans.EnrichedH1Span;
 import com.swmansion.enriched.spans.EnrichedH2Span;
@@ -156,6 +157,8 @@ public class EnrichedParser {
         return "ul";
       } else if (span instanceof EnrichedOrderedListSpan) {
         return "ol";
+      } else if (span instanceof EnrichedCheckboxListSpan) {
+        return "ul data-type=\"checkbox\"";
       } else if (span instanceof EnrichedH1Span) {
         return "h1";
       } else if (span instanceof EnrichedH2Span) {
@@ -177,6 +180,8 @@ public class EnrichedParser {
   private static void withinBlock(StringBuilder out, Spanned text, int start, int end) {
     boolean isInUlList = false;
     boolean isInOlList = false;
+    boolean isInCheckboxList = false;
+
     int next;
     for (int i = start; i <= end; i = next) {
       next = TextUtils.indexOf(text, '\n', i, end);
@@ -192,6 +197,10 @@ public class EnrichedParser {
           // Current paragraph is no longer a list item; close the previously opened list
           isInOlList = false;
           out.append("</ol>\n");
+        } else if (isInCheckboxList) {
+          // Current paragraph is no longer a list item; close the previously opened list
+          isInCheckboxList = false;
+          out.append("</ul>\n");
         }
         out.append("<br>\n");
       } else {
@@ -200,6 +209,7 @@ public class EnrichedParser {
         String tag = getBlockTag(paragraphStyles);
         boolean isUlListItem = tag.equals("ul");
         boolean isOlListItem = tag.equals("ol");
+        boolean isCheckboxListItem = tag.equals("ul data-type=\"checkbox\"");
 
         if (isInUlList && !isUlListItem) {
           // Current paragraph is no longer a list item; close the previously opened list
@@ -209,6 +219,10 @@ public class EnrichedParser {
           // Current paragraph is no longer a list item; close the previously opened list
           isInOlList = false;
           out.append("</ol>\n");
+        } else if (isInCheckboxList && !isCheckboxListItem) {
+          // Current paragraph is no longer a list item; close the previously opened list
+          isInCheckboxList = false;
+          out.append("</ul>\n");
         }
 
         if (isUlListItem && !isInUlList) {
@@ -219,13 +233,26 @@ public class EnrichedParser {
           // Current paragraph is the first item in a list
           isInOlList = true;
           out.append("<ol").append(">\n");
+        } else if (isCheckboxListItem && !isInCheckboxList) {
+          // Current paragraph is the first item in a list
+          isInCheckboxList = true;
+          out.append("<ul data-type=\"checkbox\">\n");
         }
 
-        boolean isList = isUlListItem || isOlListItem;
+        boolean isList = isUlListItem || isOlListItem || isCheckboxListItem;
         String tagType = isList ? "li" : tag;
-        out.append("<");
 
+        out.append("<");
         out.append(tagType);
+
+        if (isCheckboxListItem) {
+          EnrichedCheckboxListSpan[] checkboxSpans =
+              text.getSpans(i, next, EnrichedCheckboxListSpan.class);
+          if (checkboxSpans.length > 0) {
+            boolean isChecked = checkboxSpans[0].isChecked();
+            if (isChecked) out.append(" checked");
+          }
+        }
 
         out.append(">");
         withinParagraph(out, text, i, next);
@@ -238,6 +265,9 @@ public class EnrichedParser {
         } else if (next == end && isInOlList) {
           isInOlList = false;
           out.append("</ol>\n");
+        } else if (next == end && isInCheckboxList) {
+          isInCheckboxList = false;
+          out.append("</ul>\n");
         }
       }
       next++;
@@ -378,6 +408,7 @@ class HtmlToSpannedConverter implements ContentHandler {
   private final EnrichedParser.ImageGetter mImageGetter;
   private static Integer currentOrderedListItemIndex = 0;
   private static Boolean isInOrderedList = false;
+  private static Boolean isInCheckboxList = false;
   private static Boolean isEmptyTag = false;
 
   public HtmlToSpannedConverter(
@@ -454,6 +485,8 @@ class HtmlToSpannedConverter implements ContentHandler {
       startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
+      String dataType = attributes.getValue("", "data-type");
+      isInCheckboxList = "checkbox".equals(dataType);
       startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("ol")) {
       isInOrderedList = true;
@@ -461,7 +494,7 @@ class HtmlToSpannedConverter implements ContentHandler {
       startBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("li")) {
       isEmptyTag = true;
-      startLi(mSpannableStringBuilder);
+      startLi(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("b")) {
       start(mSpannableStringBuilder, new Bold());
     } else if (tag.equalsIgnoreCase("i")) {
@@ -578,14 +611,17 @@ class HtmlToSpannedConverter implements ContentHandler {
     text.append('\n');
   }
 
-  private void startLi(Editable text) {
+  private void startLi(Editable text, Attributes attributes) {
     startBlockElement(text);
 
     if (isInOrderedList) {
       currentOrderedListItemIndex++;
-      start(text, new List("ol", currentOrderedListItemIndex));
+      start(text, new List("ordered", currentOrderedListItemIndex, false));
+    } else if (isInCheckboxList) {
+      String isChecked = attributes.getValue("", "checked");
+      start(text, new List("checked", 0, "checked".equals(isChecked)));
     } else {
-      start(text, new List("ul", 0));
+      start(text, new List("unordered", 0, false));
     }
   }
 
@@ -594,8 +630,10 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     List l = getLast(text, List.class);
     if (l != null) {
-      if (l.mType.equals("ol")) {
+      if (l.mType.equals("ordered")) {
         setParagraphSpanFromMark(text, l, new EnrichedOrderedListSpan(l.mIndex, style));
+      } else if (l.mType.equals("checked")) {
+        setParagraphSpanFromMark(text, l, new EnrichedCheckboxListSpan(l.mChecked, style));
       } else {
         setParagraphSpanFromMark(text, l, new EnrichedUnorderedListSpan(style));
       }
@@ -884,10 +922,12 @@ class HtmlToSpannedConverter implements ContentHandler {
   private static class List {
     public int mIndex;
     public String mType;
+    public boolean mChecked;
 
-    public List(String type, int index) {
+    public List(String type, int index, boolean checked) {
       mType = type;
       mIndex = index;
+      mChecked = checked;
     }
   }
 

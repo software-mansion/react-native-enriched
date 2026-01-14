@@ -152,6 +152,7 @@ Supported styles:
 - blockquote
 - ordered list
 - unordered list
+- checkbox list
 
 Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 

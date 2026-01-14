@@ -17,7 +17,7 @@ data class ParagraphSpanConfig(
 
 data class ListSpanConfig(
   override val clazz: Class<*>,
-  val shortcut: String,
+  val shortcut: String?,
 ) : ISpanConfig
 
 data class StylesMergingConfig(
@@ -48,6 +48,7 @@ object EnrichedSpans {
   // list styles
   const val UNORDERED_LIST = "unordered_list"
   const val ORDERED_LIST = "ordered_list"
+  const val CHECKBOX_LIST = "checkbox_list"
 
   // parametrized styles
   const val LINK = "link"
@@ -79,6 +80,7 @@ object EnrichedSpans {
     mapOf(
       UNORDERED_LIST to ListSpanConfig(EnrichedUnorderedListSpan::class.java, "- "),
       ORDERED_LIST to ListSpanConfig(EnrichedOrderedListSpan::class.java, "1. "),
+      CHECKBOX_LIST to ListSpanConfig(EnrichedCheckboxListSpan::class.java, null),
     )
 
   val parametrizedStyles: Map<String, BaseSpanConfig> =
@@ -132,44 +134,44 @@ object EnrichedSpans {
       }
 
       H1 -> {
-        val conflictingStyles = mutableListOf(H2, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H2, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h1Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       H2 -> {
-        val conflictingStyles = mutableListOf(H1, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H1, H3, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h2Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       H3 -> {
-        val conflictingStyles = mutableListOf(H1, H2, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H1, H2, H4, H5, H6, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h3Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       H4 -> {
-        val conflictingStyles = mutableListOf(H1, H2, H3, H5, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H1, H2, H3, H5, H6, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h4Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       H5 -> {
-        val conflictingStyles = mutableListOf(H1, H2, H3, H4, H6, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H1, H2, H3, H4, H6, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h5Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       H6 -> {
-        val conflictingStyles = mutableListOf(H1, H2, H3, H4, H5, ORDERED_LIST, UNORDERED_LIST, BLOCK_QUOTE, CODE_BLOCK)
+        val conflictingStyles = mutableListOf(H1, H2, H3, H4, H5, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST, BLOCK_QUOTE, CODE_BLOCK)
         if (htmlStyle.h6Bold) conflictingStyles.add(BOLD)
         StylesMergingConfig(conflictingStyles = conflictingStyles.toTypedArray())
       }
 
       BLOCK_QUOTE -> {
         StylesMergingConfig(
-          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST),
+          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, CODE_BLOCK, ORDERED_LIST, UNORDERED_LIST, CHECKBOX_LIST),
         )
       }
 
@@ -189,6 +191,7 @@ object EnrichedSpans {
               STRIKETHROUGH,
               UNORDERED_LIST,
               ORDERED_LIST,
+              CHECKBOX_LIST,
               BLOCK_QUOTE,
               INLINE_CODE,
             ),
@@ -197,13 +200,19 @@ object EnrichedSpans {
 
       UNORDERED_LIST -> {
         StylesMergingConfig(
-          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
+          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, ORDERED_LIST, CHECKBOX_LIST, CODE_BLOCK, BLOCK_QUOTE),
         )
       }
 
       ORDERED_LIST -> {
         StylesMergingConfig(
-          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, UNORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
+          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, UNORDERED_LIST, CHECKBOX_LIST, CODE_BLOCK, BLOCK_QUOTE),
+        )
+      }
+
+      CHECKBOX_LIST -> {
+        StylesMergingConfig(
+          conflictingStyles = arrayOf(H1, H2, H3, H4, H5, H6, UNORDERED_LIST, ORDERED_LIST, CODE_BLOCK, BLOCK_QUOTE),
         )
       }
 

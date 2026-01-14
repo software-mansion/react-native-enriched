@@ -61,6 +61,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
+  toggleCheckboxList: (checked: boolean) => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;
@@ -119,6 +120,12 @@ export interface HtmlStyle {
     bulletSize?: number;
     marginLeft?: number;
     gapWidth?: number;
+  };
+  ulCheckbox?: {
+    boxSize?: number;
+    gapWidth?: number;
+    marginLeft?: number;
+    boxColor?: ColorValue;
   };
 }
 
@@ -323,6 +330,9 @@ export const EnrichedTextInput = ({
     },
     toggleUnorderedList: () => {
       Commands.toggleUnorderedList(nullthrows(nativeRef.current));
+    },
+    toggleCheckboxList: (checked: boolean) => {
+      Commands.toggleCheckboxList(nullthrows(nativeRef.current), checked);
     },
     setLink: (start: number, end: number, text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);

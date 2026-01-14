@@ -340,6 +340,13 @@ class EnrichedTextInputViewManager :
     view?.verifyAndToggleStyle(EnrichedSpans.UNORDERED_LIST)
   }
 
+  override fun toggleCheckboxList(
+    view: EnrichedTextInputView?,
+    isChecked: Boolean,
+  ) {
+    view?.toggleCheckboxListItem(isChecked)
+  }
+
   override fun addLink(
     view: EnrichedTextInputView?,
     start: Int,
