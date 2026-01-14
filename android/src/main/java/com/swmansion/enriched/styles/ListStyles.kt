@@ -11,6 +11,7 @@ import com.swmansion.enriched.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
+import com.swmansion.enriched.utils.removeZWS
 
 class ListStyles(
   private val view: EnrichedTextInputView,
@@ -86,7 +87,7 @@ class ListStyles(
       ssb.removeSpan(span)
     }
 
-    ssb.replace(start, end, ssb.substring(start, end).replace(EnrichedConstants.ZWS.toString(), ""))
+    ssb.removeZWS(start, end)
     return true
   }
 

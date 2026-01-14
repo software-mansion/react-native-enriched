@@ -10,6 +10,7 @@ import com.swmansion.enriched.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.getParagraphBounds
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
+import com.swmansion.enriched.utils.removeZWS
 
 class ParagraphStyles(
   private val view: EnrichedTextInputView,
@@ -127,7 +128,8 @@ class ParagraphStyles(
       ssb.removeSpan(span)
     }
 
-    ssb.replace(finalStart, finalEnd, ssb.substring(finalStart, finalEnd).replace(EnrichedConstants.ZWS.toString(), ""))
+    ssb.removeZWS(finalStart, finalEnd)
+
     return true
   }
 
