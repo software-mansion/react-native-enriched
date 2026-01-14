@@ -7,6 +7,7 @@
 
 @implementation CheckboxListStyle {
   EnrichedTextInputView *_input;
+  BOOL _defaultCheckboxState;
 }
 
 + (StyleType)getStyleType {
@@ -25,6 +26,7 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
+  _defaultCheckboxState = NO;
   return self;
 }
 
@@ -39,8 +41,10 @@
 }
 
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
+  NSString *markerFormat =
+      _defaultCheckboxState ? @"{checkbox:1}" : @"{checkbox:0}";
   NSTextList *checkboxMarker =
-      [[NSTextList alloc] initWithMarkerFormat:@"{checkbox:0}" options:0];
+      [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0];
   NSArray *paragraphs =
       [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
                                                range:range];
@@ -232,6 +236,31 @@
                withCondition:^BOOL(id _Nullable value, NSRange range) {
                  return [self styleCondition:value:range];
                }];
+}
+
+- (void)setDefaultCheckboxState:(BOOL)state {
+  _defaultCheckboxState = state;
+}
+
+- (BOOL)getCheckboxStateAt:(NSUInteger)location {
+  if (location >= _input->textView.textStorage.length) {
+    return NO;
+  }
+
+  NSParagraphStyle *style =
+      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                      atIndex:location
+                               effectiveRange:NULL];
+
+  if (style && style.textLists.count > 0) {
+    NSTextList *list = style.textLists.firstObject;
+
+    if ([list.markerFormat isEqualToString:@"{checkbox:1}"]) {
+      return YES;
+    }
+  }
+
+  return NO;
 }
 
 @end

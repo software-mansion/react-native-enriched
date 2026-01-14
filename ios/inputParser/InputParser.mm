@@ -113,7 +113,12 @@
           BOOL detected =
               [cbLStyle detectStyle:NSMakeRange(currentRange.location, 0)];
           if (detected) {
-            [result appendString:@"\n<li></li>"];
+            BOOL checked = [cbLStyle getCheckboxStateAt:currentRange.location];
+            if (checked) {
+              [result appendString:@"\n<li checked></li>"];
+            } else {
+              [result appendString:@"\n<li></li>"];
+            }
           } else {
             [result appendString:@"\n</ul>\n<br>"];
             inCheckboxList = NO;
@@ -570,9 +575,22 @@
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
     return @"h6";
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
-             [style isEqualToNumber:@([OrderedListStyle getStyleType])] ||
-             [style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+             [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
+  } else if ([style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+    if (openingTag) {
+      CheckboxListStyle *checkboxListStyleClass =
+          (CheckboxListStyle *)
+              _input->stylesDict[@([CheckboxListStyle getStyleType])];
+      BOOL checked = [checkboxListStyleClass getCheckboxStateAt:location];
+
+      if (checked) {
+        return @"li checked";
+      }
+      return @"li";
+    } else {
+      return @"li";
+    }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>

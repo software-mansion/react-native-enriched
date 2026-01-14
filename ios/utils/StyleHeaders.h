@@ -92,6 +92,8 @@
 
 @interface CheckboxListStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)setDefaultCheckboxState:(BOOL)state;
+- (BOOL)getCheckboxStateAt:(NSUInteger)location;
 @end
 
 @interface BlockQuoteStyle : NSObject <BaseStyleProtocol>

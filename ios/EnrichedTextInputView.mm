@@ -1216,7 +1216,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
-    BOOL checked = args[0];
+    BOOL checked = [args[0] boolValue];
+    CheckboxListStyle *checkboxListStyleClass =
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+    [checkboxListStyleClass setDefaultCheckboxState:checked];
     [self toggleParagraphStyle:[CheckboxListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
