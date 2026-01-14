@@ -7,4 +7,4 @@ export type {
   OnMentionDetected,
   OnChangeSelectionEvent,
   OnKeyPressEvent,
-} from './EnrichedTextInputNativeComponent';
+} from './spec/EnrichedTextInputNativeComponent';

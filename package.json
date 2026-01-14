@@ -164,7 +164,7 @@
   "codegenConfig": {
     "name": "RNEnrichedTextInputViewSpec",
     "type": "components",
-    "jsSrcsDir": "src",
+    "jsSrcsDir": "src/spec",
     "outputDir": {
       "ios": "ios/generated",
       "android": "android/generated"
@@ -173,8 +173,10 @@
       "javaPackageName": "com.swmansion.enriched"
     },
     "ios": {
-      "componentProvider": {
-        "EnrichedTextInputView": "EnrichedTextInputView"
+      "components": {
+        "EnrichedTextInputView": {
+          "className": "EnrichedTextInputView"
+        }
       }
     },
     "includesGeneratedCode": true
