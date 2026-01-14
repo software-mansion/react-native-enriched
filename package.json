@@ -78,6 +78,21 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
+  "dependencies": {
+    "@tiptap/core": "^3.15.3",
+    "@tiptap/extension-bold": "^3.15.3",
+    "@tiptap/extension-document": "^3.15.3",
+    "@tiptap/extension-hard-break": "^3.15.3",
+    "@tiptap/extension-heading": "^3.15.3",
+    "@tiptap/extension-italic": "^3.15.3",
+    "@tiptap/extension-paragraph": "^3.15.3",
+    "@tiptap/extension-strike": "^3.15.3",
+    "@tiptap/extension-text": "^3.15.3",
+    "@tiptap/extension-underline": "^3.15.3",
+    "@tiptap/extensions": "^3.15.3",
+    "@tiptap/pm": "^3.15.3",
+    "@tiptap/react": "^3.15.3"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/compat": "^1.2.7",
@@ -89,6 +104,7 @@
     "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
     "@types/react": "^19.1.0",
+    "@types/react-dom": "19.1.0",
     "clang-format": "^1.8.0",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
@@ -98,6 +114,7 @@
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.0",
     "react-native-builder-bob": "^0.40.6",
     "release-it": "^17.10.0",

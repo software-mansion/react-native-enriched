@@ -2,4 +2,21 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.editor {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.editor > div:last-child {
+  min-height: 200px;
+  padding: 16px;
+  background-color: #fafafa;
 }

@@ -1,10 +1,23 @@
 import {
   useImperativeHandle,
-  useRef,
+  useEffect,
   type SyntheticEvent,
   type CSSProperties,
   type RefObject,
 } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import { Placeholder } from '@tiptap/extensions';
+import Document from '@tiptap/extension-document';
+import HardBreak from '@tiptap/extension-hard-break';
+import Text from '@tiptap/extension-text';
+import Paragraph from '@tiptap/extension-paragraph';
+import Heading from '@tiptap/extension-heading';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Strike from '@tiptap/extension-strike';
+import Underline from '@tiptap/extension-underline';
+
+import './EnrichedTextInput.css';
 
 import type {
   EnrichedTextInputInstanceBase,
@@ -132,59 +145,100 @@ export const EnrichedTextInput = ({
   placeholder,
   style,
 }: EnrichedTextInputProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const editor = useEditor({
+    extensions: [
+      Document,
+      HardBreak,
+      Text,
+      Paragraph,
+      Heading,
+      Bold,
+      Italic,
+      Strike,
+      Underline,
+      Placeholder.configure({
+        placeholder: placeholder || '',
+      }),
+    ],
+    content: defaultValue,
+    editable: editable,
+    autofocus: autoFocus,
+    editorProps: {
+      attributes: {
+        style: 'outline: none;',
+      },
+    },
+  });
 
-  useImperativeHandle(ref, () => ({
-    // General commands
-    focus: () => {
-      inputRef.current?.focus();
-    },
-    blur: () => {
-      inputRef.current?.blur();
-    },
-    setValue: (value: string) => {
-      if (inputRef.current) {
-        inputRef.current.value = value;
-      }
-    },
-    setSelection: (start: number, end: number) => {
-      inputRef.current?.setSelectionRange(start, end);
-    },
-    getHTML: () => {
-      return Promise.resolve('');
-    },
+  useEffect(() => {
+    if (editor && editable !== undefined) {
+      editor.setEditable(editable);
+    }
+  }, [editable, editor]);
 
-    // Text formatting commands
-    toggleBold: () => {},
-    toggleItalic: () => {},
-    toggleUnderline: () => {},
-    toggleStrikeThrough: () => {},
-    toggleInlineCode: () => {},
-    toggleH1: () => {},
-    toggleH2: () => {},
-    toggleH3: () => {},
-    toggleH4: () => {},
-    toggleH5: () => {},
-    toggleH6: () => {},
-    toggleCodeBlock: () => {},
-    toggleBlockQuote: () => {},
-    toggleOrderedList: () => {},
-    toggleUnorderedList: () => {},
-    setLink: () => {},
-    setImage: () => {},
-    startMention: () => {},
-    setMention: () => {},
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      // General commands
+      focus: () => {
+        editor?.commands.focus();
+      },
+      blur: () => {
+        editor?.commands.blur();
+      },
+      setValue: (value: string) => {
+        editor?.commands.setContent(value);
+      },
+      setSelection: (_start: number, _end: number) => {
+        // Not implemented in this basic TipTap config
+      },
+      getHTML: () => {
+        return Promise.resolve(editor?.getHTML() || '');
+      },
 
-  return (
-    <input
-      ref={inputRef}
-      type="text"
-      autoFocus={autoFocus}
-      disabled={!editable}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      style={style}
-    />
+      // Text formatting commands
+      toggleBold: () => {
+        editor?.chain().focus().toggleBold().run();
+      },
+      toggleItalic: () => {
+        editor?.chain().focus().toggleItalic().run();
+      },
+      toggleUnderline: () => {
+        editor?.chain().focus().toggleUnderline().run();
+      },
+      toggleStrikeThrough: () => {
+        editor?.chain().focus().toggleStrike().run();
+      },
+      toggleInlineCode: () => {},
+      toggleH1: () => {
+        editor?.chain().focus().toggleHeading({ level: 1 }).run();
+      },
+      toggleH2: () => {
+        editor?.chain().focus().toggleHeading({ level: 2 }).run();
+      },
+      toggleH3: () => {
+        editor?.chain().focus().toggleHeading({ level: 3 }).run();
+      },
+      toggleH4: () => {
+        editor?.chain().focus().toggleHeading({ level: 4 }).run();
+      },
+      toggleH5: () => {
+        editor?.chain().focus().toggleHeading({ level: 5 }).run();
+      },
+      toggleH6: () => {
+        editor?.chain().focus().toggleHeading({ level: 6 }).run();
+      },
+      toggleCodeBlock: () => {},
+      toggleBlockQuote: () => {},
+      toggleOrderedList: () => {},
+      toggleUnorderedList: () => {},
+      setLink: () => {},
+      setImage: () => {},
+      startMention: () => {},
+      setMention: () => {},
+    }),
+    [editor]
   );
+
+  return <EditorContent editor={editor} style={style} />;
 };
