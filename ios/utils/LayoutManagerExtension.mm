@@ -283,179 +283,33 @@ static void const *kInputKey = &kInputKey;
                                                 NSTextContainer *container,
                                                 NSRange lineGlyphRange,
                                                 BOOL *stop) {
-                                     NSString *marker = [self
-                                         markerForList:pStyle.textLists
-                                                           .firstObject
-                                             charIndex:
-                                                 [self
-                                                     characterIndexForGlyphAtIndex:
-                                                         lineGlyphRange
-                                                             .location]
-                                                 input:typedInput];
+                                     NSString *markerFormat =
+                                         pStyle.textLists.firstObject
+                                             .markerFormat;
 
-                                     if (pStyle.textLists.firstObject
-                                             .markerFormat ==
+                                     if (markerFormat ==
                                          NSTextListMarkerDecimal) {
-                                       CGFloat gapWidth =
-                                           [typedInput->config
-                                                   orderedListGapWidth];
-                                       CGFloat markerWidth =
-                                           [marker sizeWithAttributes:
-                                                       markerAttributes]
-                                               .width;
-                                       CGFloat markerX = usedRect.origin.x -
-                                                         gapWidth -
-                                                         markerWidth / 2;
-
-                                       [marker drawAtPoint:CGPointMake(
-                                                               markerX,
-                                                               usedRect.origin
-                                                                       .y +
-                                                                   origin.y)
-                                            withAttributes:markerAttributes];
-                                     } else if (pStyle.textLists.firstObject
-                                                    .markerFormat ==
+                                       NSString *marker = [self
+                                           getDecimalMarkerForList:typedInput
+                                                         charIndex:
+                                                             [self
+                                                                 characterIndexForGlyphAtIndex:
+                                                                     lineGlyphRange
+                                                                         .location]];
+                                       [self drawDecimal:typedInput
+                                                     marker:marker
+                                           markerAttributes:markerAttributes
+                                                     origin:origin
+                                                   usedRect:usedRect];
+                                     } else if (markerFormat ==
                                                 NSTextListMarkerDisc) {
-                                       CGFloat gapWidth =
-                                           [typedInput->config
-                                                   unorderedListGapWidth];
-                                       CGFloat bulletSize =
-                                           [typedInput->config
-                                                   unorderedListBulletSize];
-                                       CGFloat bulletX = usedRect.origin.x -
-                                                         gapWidth -
-                                                         bulletSize / 2;
-                                       CGFloat centerY =
-                                           CGRectGetMidY(usedRect);
-
-                                       CGContextRef context =
-                                           UIGraphicsGetCurrentContext();
-                                       CGContextSaveGState(context);
-                                       {
-                                         [[typedInput->config
-                                                 unorderedListBulletColor]
-                                             setFill];
-                                         CGContextAddArc(
-                                             context, bulletX, centerY,
-                                             bulletSize / 2, 0, 2 * M_PI, YES);
-                                         CGContextFillPath(context);
-                                       }
-                                       CGContextRestoreGState(context);
+                                       [self drawBullet:typedInput
+                                               usedRect:usedRect];
                                      } else {
-                                       BOOL isChecked =
-                                           [pStyle.textLists.firstObject
-                                                   .markerFormat
-                                               isEqualToString:@"{checkbox:1}"];
-                                       CGFloat gapWidth =
-                                           [typedInput->config
-                                                   checkboxListGapWidth];
-                                       CGFloat boxSize =
-                                           [typedInput->config
-                                                   checkboxListBoxSize];
-                                       UIColor *boxColor =
-                                           [typedInput->config
-                                                   checkboxListBoxColor];
-
-                                       // Calculate checkbox position
-                                       CGFloat centerY =
-                                           CGRectGetMidY(usedRect) + origin.y;
-                                       CGFloat boxX = origin.x +
-                                                      usedRect.origin.x -
-                                                      gapWidth - boxSize / 2.0;
-                                       CGFloat boxY = centerY - boxSize / 2.0;
-
-                                       CGRect checkboxRect = CGRectMake(
-                                           boxX, boxY, boxSize, boxSize);
-
-                                       CGContextRef context =
-                                           UIGraphicsGetCurrentContext();
-                                       CGContextSaveGState(context);
-                                       CGFloat cornerRadius = boxSize * 0.15f;
-                                       CGFloat strokeWidth = boxSize * 0.1f;
-
-                                       if (isChecked) {
-                                         // Draw filled checkbox
-                                         CGRect insetRect = CGRectInset(
-                                             checkboxRect, strokeWidth / 2.0,
-                                             strokeWidth / 2.0);
-                                         UIBezierPath *boxPath = [UIBezierPath
-                                             bezierPathWithRoundedRect:insetRect
-                                                          cornerRadius:
-                                                              cornerRadius];
-                                         [[boxColor colorWithAlphaComponent:1.0]
-                                             setFill];
-                                         [boxPath fill];
-                                         [boxPath setLineWidth:strokeWidth];
-                                         [[boxColor colorWithAlphaComponent:1.0]
-                                             setStroke];
-                                         [boxPath stroke];
-
-                                         // Draw checkmark
-                                         UIBezierPath *checkmarkPath =
-                                             [UIBezierPath bezierPath];
-                                         CGFloat checkStartX =
-                                             insetRect.origin.x +
-                                             insetRect.size.width * 0.25;
-                                         CGFloat checkStartY =
-                                             insetRect.origin.y +
-                                             insetRect.size.height * 0.5;
-                                         CGFloat checkMidX =
-                                             insetRect.origin.x +
-                                             insetRect.size.width * 0.45;
-                                         CGFloat checkMidY =
-                                             insetRect.origin.y +
-                                             insetRect.size.height * 0.65;
-                                         CGFloat checkEndX =
-                                             insetRect.origin.x +
-                                             insetRect.size.width * 0.75;
-                                         CGFloat checkEndY =
-                                             insetRect.origin.y +
-                                             insetRect.size.height * 0.35;
-
-                                         [checkmarkPath
-                                             moveToPoint:CGPointMake(
-                                                             checkStartX,
-                                                             checkStartY)];
-                                         [checkmarkPath
-                                             addLineToPoint:CGPointMake(
-                                                                checkMidX,
-                                                                checkMidY)];
-                                         [checkmarkPath
-                                             addLineToPoint:CGPointMake(
-                                                                checkEndX,
-                                                                checkEndY)];
-                                         [checkmarkPath
-                                             setLineWidth:strokeWidth * 1.5];
-                                         [[UIColor whiteColor] setStroke];
-                                         [checkmarkPath
-                                             setLineCapStyle:kCGLineCapRound];
-                                         [checkmarkPath
-                                             setLineJoinStyle:kCGLineJoinRound];
-                                         [checkmarkPath stroke];
-                                       } else {
-                                         // Draw border-only square for
-                                         // unchecked state
-                                         [boxColor setStroke];
-                                         CGContextSetLineWidth(context,
-                                                               strokeWidth);
-
-                                         // Inset by half the stroke width to
-                                         // draw the border properly
-                                         CGRect insetRect = CGRectInset(
-                                             checkboxRect, strokeWidth / 2.0,
-                                             strokeWidth / 2.0);
-
-                                         // Draw rounded rectangle path
-                                         UIBezierPath *boxPath = [UIBezierPath
-                                             bezierPathWithRoundedRect:insetRect
-                                                          cornerRadius:
-                                                              cornerRadius];
-                                         [boxPath setLineWidth:strokeWidth];
-                                         [[boxColor colorWithAlphaComponent:1.0]
-                                             setStroke];
-                                         [boxPath stroke];
-                                       }
-                                       CGContextRestoreGState(context);
+                                       [self drawCheckbox:typedInput
+                                             markerFormat:markerFormat
+                                                   origin:origin
+                                                 usedRect:usedRect];
                                      }
                                      // only first line of a list gets its
                                      // marker drawn
@@ -465,54 +319,150 @@ static void const *kInputKey = &kInputKey;
   }
 }
 
-- (NSString *)markerForList:(NSTextList *)list
-                  charIndex:(NSUInteger)index
-                      input:(EnrichedTextInputView *)input {
-  if (list.markerFormat == NSTextListMarkerDecimal) {
-    NSString *fullText = input->textView.textStorage.string;
-    NSInteger itemNumber = 1;
+- (NSString *)getDecimalMarkerForList:(EnrichedTextInputView *)input
+                            charIndex:(NSUInteger)index {
+  NSString *fullText = input->textView.textStorage.string;
+  NSInteger itemNumber = 1;
 
-    NSRange currentParagraph =
-        [fullText paragraphRangeForRange:NSMakeRange(index, 0)];
-    if (currentParagraph.location > 0) {
-      OrderedListStyle *olStyle =
-          input->stylesDict[@([OrderedListStyle getStyleType])];
+  NSRange currentParagraph =
+      [fullText paragraphRangeForRange:NSMakeRange(index, 0)];
+  if (currentParagraph.location > 0) {
+    OrderedListStyle *olStyle =
+        input->stylesDict[@([OrderedListStyle getStyleType])];
 
-      NSInteger prevParagraphsCount = 0;
-      NSInteger recentParagraphLocation =
-          [fullText
-              paragraphRangeForRange:NSMakeRange(currentParagraph.location - 1,
-                                                 0)]
-              .location;
+    NSInteger prevParagraphsCount = 0;
+    NSInteger recentParagraphLocation =
+        [fullText paragraphRangeForRange:NSMakeRange(
+                                             currentParagraph.location - 1, 0)]
+            .location;
 
-      // seek for previous lists
-      while (true) {
-        if ([olStyle detectStyle:NSMakeRange(recentParagraphLocation, 0)]) {
-          prevParagraphsCount += 1;
+    // seek for previous lists
+    while (true) {
+      if ([olStyle detectStyle:NSMakeRange(recentParagraphLocation, 0)]) {
+        prevParagraphsCount += 1;
 
-          if (recentParagraphLocation > 0) {
-            recentParagraphLocation =
-                [fullText
-                    paragraphRangeForRange:NSMakeRange(
-                                               recentParagraphLocation - 1, 0)]
-                    .location;
-          } else {
-            break;
-          }
+        if (recentParagraphLocation > 0) {
+          recentParagraphLocation =
+              [fullText
+                  paragraphRangeForRange:NSMakeRange(
+                                             recentParagraphLocation - 1, 0)]
+                  .location;
         } else {
           break;
         }
+      } else {
+        break;
       }
-
-      itemNumber = prevParagraphsCount + 1;
     }
 
-    return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
-  } else if (list.markerFormat == NSTextListMarkerDisc) {
-    return @"•";
-  } else {
-    return @"";
+    itemNumber = prevParagraphsCount + 1;
   }
+
+  return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
+}
+
+- (void)drawCheckbox:(EnrichedTextInputView *)typedInput
+        markerFormat:(NSString *)markerFormat
+              origin:(CGPoint)origin
+            usedRect:(CGRect)usedRect {
+  BOOL isChecked = [markerFormat isEqualToString:@"{checkbox:1}"];
+  CGFloat gapWidth = [typedInput->config checkboxListGapWidth];
+  CGFloat boxSize = [typedInput->config checkboxListBoxSize];
+  UIColor *boxColor = [typedInput->config checkboxListBoxColor];
+
+  // Calculate checkbox position
+  CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
+  CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize / 2.0;
+  CGFloat boxY = centerY - boxSize / 2.0;
+
+  CGRect checkboxRect = CGRectMake(boxX, boxY, boxSize, boxSize);
+
+  CGContextRef context = UIGraphicsGetCurrentContext();
+  CGContextSaveGState(context);
+  CGFloat cornerRadius = boxSize * 0.15f;
+  CGFloat strokeWidth = boxSize * 0.1f;
+
+  if (isChecked) {
+    // Draw filled checkbox
+    CGRect insetRect =
+        CGRectInset(checkboxRect, strokeWidth / 2.0, strokeWidth / 2.0);
+    UIBezierPath *boxPath =
+        [UIBezierPath bezierPathWithRoundedRect:insetRect
+                                   cornerRadius:cornerRadius];
+    [[boxColor colorWithAlphaComponent:1.0] setFill];
+    [boxPath fill];
+    [boxPath setLineWidth:strokeWidth];
+    [[boxColor colorWithAlphaComponent:1.0] setStroke];
+    [boxPath stroke];
+
+    // Draw checkmark
+    UIBezierPath *checkmarkPath = [UIBezierPath bezierPath];
+    CGFloat checkStartX = insetRect.origin.x + insetRect.size.width * 0.25;
+    CGFloat checkStartY = insetRect.origin.y + insetRect.size.height * 0.5;
+    CGFloat checkMidX = insetRect.origin.x + insetRect.size.width * 0.45;
+    CGFloat checkMidY = insetRect.origin.y + insetRect.size.height * 0.65;
+    CGFloat checkEndX = insetRect.origin.x + insetRect.size.width * 0.75;
+    CGFloat checkEndY = insetRect.origin.y + insetRect.size.height * 0.35;
+
+    [checkmarkPath moveToPoint:CGPointMake(checkStartX, checkStartY)];
+    [checkmarkPath addLineToPoint:CGPointMake(checkMidX, checkMidY)];
+    [checkmarkPath addLineToPoint:CGPointMake(checkEndX, checkEndY)];
+    [checkmarkPath setLineWidth:strokeWidth * 1.5];
+    [[UIColor whiteColor] setStroke];
+    [checkmarkPath setLineCapStyle:kCGLineCapRound];
+    [checkmarkPath setLineJoinStyle:kCGLineJoinRound];
+    [checkmarkPath stroke];
+  } else {
+    // Draw border-only square for
+    // unchecked state
+    [boxColor setStroke];
+    CGContextSetLineWidth(context, strokeWidth);
+
+    // Inset by half the stroke width to
+    // draw the border properly
+    CGRect insetRect =
+        CGRectInset(checkboxRect, strokeWidth / 2.0, strokeWidth / 2.0);
+
+    // Draw rounded rectangle path
+    UIBezierPath *boxPath =
+        [UIBezierPath bezierPathWithRoundedRect:insetRect
+                                   cornerRadius:cornerRadius];
+    [boxPath setLineWidth:strokeWidth];
+    [[boxColor colorWithAlphaComponent:1.0] setStroke];
+    [boxPath stroke];
+  }
+  CGContextRestoreGState(context);
+}
+
+- (void)drawBullet:(EnrichedTextInputView *)typedInput
+          usedRect:(CGRect)usedRect {
+  CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
+  CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
+  CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize / 2;
+  CGFloat centerY = CGRectGetMidY(usedRect);
+
+  CGContextRef context = UIGraphicsGetCurrentContext();
+  CGContextSaveGState(context);
+  {
+    [[typedInput->config unorderedListBulletColor] setFill];
+    CGContextAddArc(context, bulletX, centerY, bulletSize / 2, 0, 2 * M_PI,
+                    YES);
+    CGContextFillPath(context);
+  }
+  CGContextRestoreGState(context);
+}
+
+- (void)drawDecimal:(EnrichedTextInputView *)typedInput
+              marker:(NSString *)marker
+    markerAttributes:(NSDictionary *)markerAttributes
+              origin:(CGPoint)origin
+            usedRect:(CGRect)usedRect {
+  CGFloat gapWidth = [typedInput->config orderedListGapWidth];
+  CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
+  CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth / 2;
+
+  [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y)
+       withAttributes:markerAttributes];
 }
 
 @end
