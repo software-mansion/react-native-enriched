@@ -220,50 +220,27 @@
     return;
   }
 
-  // Get the paragraph style at the location
-  NSParagraphStyle *style =
+  NSParagraphStyle *pStyle =
       [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
                                       atIndex:location
                                effectiveRange:NULL];
+  NSTextList *list = pStyle.textLists.firstObject;
 
-  if (!style || style.textLists.count == 0) {
-    return;
-  }
-
-  NSTextList *list = style.textLists.firstObject;
-  if (![list.markerFormat hasPrefix:@"{checkbox"]) {
-    return;
-  }
-
-  // Determine the new checkbox state
   BOOL isCurrentlyChecked = [list.markerFormat isEqualToString:@"{checkbox:1}"];
-  NSString *newMarkerFormat =
-      isCurrentlyChecked ? @"{checkbox:0}" : @"{checkbox:1}";
 
-  // Create new text list with updated marker
-  NSTextList *newList = [[NSTextList alloc] initWithMarkerFormat:newMarkerFormat
-                                                         options:0];
-
-  // Find the paragraph range containing this location
   NSString *fullText = _input->textView.textStorage.string;
   NSRange paragraphRange =
       [fullText paragraphRangeForRange:NSMakeRange(location, 0)];
 
-  // Update all paragraph styles in this paragraph with the new checkbox state
-  [_input->textView.textStorage
-      enumerateAttribute:NSParagraphStyleAttributeName
-                 inRange:paragraphRange
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                NSMutableParagraphStyle *pStyle =
-                    [(NSParagraphStyle *)value mutableCopy];
-                pStyle.textLists = @[ newList ];
-                [_input->textView.textStorage
-                    addAttribute:NSParagraphStyleAttributeName
-                           value:pStyle
-                           range:range];
-              }];
+  [self addAttributesWithCheckedValue:!isCurrentlyChecked
+                              inRange:paragraphRange];
+}
+
+- (void)addAttributesWithCheckedValue:(BOOL)checked inRange:(NSRange)range {
+  BOOL tempCheckboxState = _defaultCheckboxState;
+  _defaultCheckboxState = checked;
+  [self addAttributes:range withTypingAttr:YES];
+  _defaultCheckboxState = tempCheckboxState;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
@@ -311,6 +288,10 @@
 
 - (void)setDefaultCheckboxState:(BOOL)state {
   _defaultCheckboxState = state;
+}
+
+- (BOOL)getDefaultCheckboxState {
+  return _defaultCheckboxState;
 }
 
 - (BOOL)getCheckboxStateAt:(NSUInteger)location {

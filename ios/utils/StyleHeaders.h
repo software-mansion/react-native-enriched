@@ -95,6 +95,8 @@
 - (void)setDefaultCheckboxState:(BOOL)state;
 - (BOOL)getCheckboxStateAt:(NSUInteger)location;
 - (void)toggleCheckedAt:(NSUInteger)location;
+- (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)addAttributesWithCheckedValue:(BOOL)checked inRange:(NSRange)range;
 @end
 
 @interface BlockQuoteStyle : NSObject <BaseStyleProtocol>

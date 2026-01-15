@@ -1852,6 +1852,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [oStyle handleBackspaceInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [cbLStyle handleBackspaceInRange:range replacementText:text] ||
+      [cbLStyle handleNewlinesInRange:range replacementText:text] ||
       [bqStyle handleBackspaceInRange:range replacementText:text] ||
       [cbStyle handleBackspaceInRange:range replacementText:text] ||
       [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
