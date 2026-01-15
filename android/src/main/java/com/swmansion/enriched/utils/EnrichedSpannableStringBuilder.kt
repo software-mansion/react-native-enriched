@@ -8,7 +8,7 @@ fun SpannableStringBuilder.removeZWS(
   end: Int,
 ) {
   for (i in (end - 1) downTo start) {
-    if (this[i] == '\u200B') {
+    if (this[i] == EnrichedConstants.ZWS) {
       delete(i, i + 1)
     }
   }
