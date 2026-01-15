@@ -6,6 +6,8 @@ import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.text.TextUtils
+import android.util.Log
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
@@ -21,6 +23,8 @@ object MeasurementStore {
     spannable: CharSequence?,
     typeface: Typeface,
     fontSize: Float,
+    numberOfLines: Int,
+    ellipsizeMode: String?,
   ): Long {
     val text = spannable ?: ""
     val textLength = text.length
@@ -44,16 +48,47 @@ object MeasurementStore {
       builder.setUseLineSpacingFromFallbacks(true)
     }
 
+    if (numberOfLines > 0) {
+      val ellipsize =
+        when (ellipsizeMode) {
+          "head" -> TextUtils.TruncateAt.START
+          "middle" -> TextUtils.TruncateAt.MIDDLE
+          "tail" -> TextUtils.TruncateAt.END
+          "clip" -> null
+          else -> null
+        }
+
+      builder.setMaxLines(numberOfLines).setEllipsize(ellipsize)
+    }
+
     val staticLayout = builder.build()
-    var finalWidth = staticLayout.width.toFloat()
+
+    // Workaround for Android issue where maxLines >= 2 and ellipsize != TruncateAt.END
+    // In such scenario, StaticLayout always returns lineCount = maxLines even if text fits in less lines
+    val actualLineCount =
+      if (numberOfLines > 0) {
+        staticLayout.lineCount.coerceAtMost(numberOfLines)
+      } else {
+        staticLayout.lineCount
+      }
 
     // For one line text, use exact line width
     // For multi line, use all available width
-    if (staticLayout.lineCount == 1) {
-      finalWidth = staticLayout.getLineWidth(0)
-    }
+    val finalWidth =
+      if (staticLayout.lineCount <= 1) {
+        staticLayout.getLineWidth(0)
+      } else {
+        staticLayout.width.toFloat()
+      }
 
-    val heightInSP = PixelUtil.toDIPFromPixel(staticLayout.height.toFloat())
+    val finalHeight =
+      if (actualLineCount > 0) {
+        staticLayout.getLineBottom(actualLineCount - 1).toFloat()
+      } else {
+        0f
+      }
+
+    val heightInSP = PixelUtil.toDIPFromPixel(finalHeight)
     val widthInSP = PixelUtil.toDIPFromPixel(finalWidth)
     return YogaMeasureOutput.make(widthInSP, heightInSP)
   }
@@ -104,10 +139,12 @@ object MeasurementStore {
     val fontSize = getInitialFontSize(defaultView, props)
 
     val fontFamily = props?.getString("fontFamily")
+    val numberOfLines = props?.getInt("numberOfLines") ?: 0
+    val ellipsizeMode = props?.getString("ellipsizeMode")
     val fontStyle = parseFontStyle(props?.getString("fontStyle"))
     val fontWeight = parseFontWeight(props?.getString("fontWeight"))
     val typeface = applyStyles(defaultView.typeface, fontStyle, fontWeight, fontFamily, context.assets)
-    val size = measure(width, text, typeface, fontSize)
+    val size = measure(width, text, typeface, fontSize, numberOfLines, ellipsizeMode)
 
     return size
   }

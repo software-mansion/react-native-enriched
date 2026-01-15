@@ -74,7 +74,7 @@ const DEFAULT_LINK_STATE = {
 };
 
 const mock =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
 const LINK_REGEX =
   /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
@@ -351,8 +351,14 @@ export default function App() {
           Array.from({ length: 1000 }).map((_, i) => (
             <EnrichedText key={i} style={styles.enrichedText} text={mock} />
           ))}
-        <EnrichedText style={styles.enrichedText} text={mock} />
-        <Text style={styles.enrichedText}>{mock}</Text>
+        <EnrichedText
+          numberOfLines={2}
+          style={styles.enrichedText}
+          text={mock}
+        />
+        <Text numberOfLines={2} style={styles.enrichedText}>
+          {mock}
+        </Text>
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
@@ -518,6 +524,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     color: 'blue',
     marginTop: 1,
+    paddingVertical: 16,
   },
   scrollPlaceholder: {
     marginTop: 24,

@@ -66,6 +66,46 @@ class EnrichedTextViewManager :
     view?.setFontStyle(value)
   }
 
+  override fun setPadding(
+    view: EnrichedTextView?,
+    left: Int,
+    top: Int,
+    right: Int,
+    bottom: Int,
+  ) {
+    super.setPadding(view, left, top, right, bottom)
+
+    view?.setPadding(left, top, right, bottom)
+  }
+
+  override fun setSelectionColor(
+    view: EnrichedTextView?,
+    value: Int?,
+  ) {
+    view?.setSelectionColor(value)
+  }
+
+  override fun setSelectable(
+    view: EnrichedTextView?,
+    value: Boolean,
+  ) {
+    view?.setTextIsSelectable(value)
+  }
+
+  override fun setEllipsizeMode(
+    view: EnrichedTextView?,
+    value: String?,
+  ) {
+    view?.setEllipsizeMode(value)
+  }
+
+  override fun setNumberOfLines(
+    view: EnrichedTextView?,
+    value: Int,
+  ) {
+    view?.setNumberOfLines(value)
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextView) {
     view.updateTypeface()
   }

@@ -29,6 +29,8 @@ inline folly::dynamic toDynamic(const EnrichedTextViewProps &props) {
   serializedProps["fontWeight"] = props.fontWeight;
   serializedProps["fontStyle"] = props.fontStyle;
   serializedProps["fontFamily"] = props.fontFamily;
+  serializedProps["numberOfLines"] = props.numberOfLines;
+  serializedProps["ellipsizeMode"] = props.ellipsizeMode;
   serializedProps["text"] = props.text;
 
   return serializedProps;

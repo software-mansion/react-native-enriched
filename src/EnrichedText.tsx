@@ -5,6 +5,7 @@ import {
   useRef,
 } from 'react';
 import type {
+  ColorValue,
   HostInstance,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
@@ -23,7 +24,11 @@ export interface EnrichedTextInstance extends NativeMethods {}
 export interface EnrichedTextProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<EnrichedTextInstance | null>;
   text: string;
-  style: TextStyle;
+  style?: TextStyle;
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+  numberOfLines?: number;
+  selectable?: boolean;
+  selectionColor?: ColorValue;
 }
 
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
@@ -32,6 +37,10 @@ export const EnrichedText = ({
   ref,
   text,
   style,
+  ellipsizeMode = 'tail',
+  numberOfLines = 0,
+  selectable = false,
+  selectionColor,
   ...rest
 }: EnrichedTextProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -70,6 +79,10 @@ export const EnrichedText = ({
       ref={nativeRef}
       text={text}
       style={style}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={numberOfLines}
+      selectable={selectable}
+      selectionColor={selectionColor}
       {...rest}
     />
   );

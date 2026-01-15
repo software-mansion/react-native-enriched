@@ -4,16 +4,19 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
+import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import kotlin.math.ceil
 
+// TODO: verify how this component behaves when recycled
 class EnrichedTextView : AppCompatTextView {
   private var typefaceDirty = false
   private var fontFamily: String? = null
@@ -41,6 +44,8 @@ class EnrichedTextView : AppCompatTextView {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       breakStrategy = LineBreaker.BREAK_STRATEGY_HIGH_QUALITY
     }
+
+    setPadding(0, 0, 0, 0)
   }
 
   fun updateTypeface() {
@@ -99,5 +104,26 @@ class EnrichedTextView : AppCompatTextView {
       this.fontStyle = fontStyle
       typefaceDirty = true
     }
+  }
+
+  fun setSelectionColor(colorInt: Int?) {
+    if (colorInt == null) return
+
+    highlightColor = colorInt
+  }
+
+  fun setEllipsizeMode(mode: String?) {
+    ellipsize =
+      when (mode) {
+        "tail" -> TextUtils.TruncateAt.END
+        "head" -> TextUtils.TruncateAt.START
+        "middle" -> TextUtils.TruncateAt.MIDDLE
+        "clip" -> null
+        else -> TextUtils.TruncateAt.END
+      }
+  }
+
+  fun setNumberOfLines(lines: Int) {
+    maxLines = if (lines == 0) ViewDefaults.NUMBER_OF_LINES else lines
   }
 }
