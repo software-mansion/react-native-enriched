@@ -10,7 +10,6 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
-  EnrichedText,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -341,10 +340,6 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
-        <EnrichedText
-          style={{ width: 100, height: 100 }}
-          text={'test test test'}
-        />
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />

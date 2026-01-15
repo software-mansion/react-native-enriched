@@ -1,5 +1,4 @@
 export * from './EnrichedTextInput';
-export * from './EnrichedText';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
