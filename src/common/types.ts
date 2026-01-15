@@ -126,9 +126,26 @@ export interface OnMentionDetected {
   attributes: Record<string, string>;
 }
 
+export interface OnLinkDetected {
+  text: string;
+  url: string;
+  start: number;
+  end: number;
+}
+
+export interface OnChangeSelectionEvent {
+  start: number;
+  end: number;
+  text: string;
+}
+
 export interface OnChangeMentionEvent {
   indicator: string;
   text: string;
+}
+
+export interface OnKeyPressEvent {
+  key: string;
 }
 
 export interface EnrichedTextInputInstanceBase {

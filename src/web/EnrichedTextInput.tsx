@@ -1,7 +1,6 @@
 import {
   useImperativeHandle,
   useRef,
-  type SyntheticEvent,
   type CSSProperties,
   type RefObject,
 } from 'react';
@@ -13,24 +12,14 @@ import type {
   OnChangeStateDeprecatedEvent,
   OnChangeStateEvent,
   OnChangeTextEvent,
+  OnLinkDetected,
   OnMentionDetected,
+  OnChangeSelectionEvent,
+  OnKeyPressEvent,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
 
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
-
-export interface OnLinkDetected {
-  text: string;
-  url: string;
-  start: number;
-  end: number;
-}
-
-export interface OnChangeSelectionEvent {
-  start: number;
-  end: number;
-  text: string;
-}
 
 export interface MentionStyleProperties {
   color?: string;
@@ -101,23 +90,20 @@ export interface EnrichedTextInputProps {
   linkRegex?: RegExp | null;
   onFocus?: () => void;
   onBlur?: () => void;
-  onChangeText?: (e: SyntheticEvent<HTMLElement, OnChangeTextEvent>) => void;
-  onChangeHtml?: (e: SyntheticEvent<HTMLElement, OnChangeHtmlEvent>) => void;
-  onChangeState?: (e: SyntheticEvent<HTMLElement, OnChangeStateEvent>) => void;
+  onChangeText?: (e: OnChangeTextEvent) => void;
+  onChangeHtml?: (e: OnChangeHtmlEvent) => void;
+  onChangeState?: (e: OnChangeStateEvent) => void;
   /**
    * @deprecated Use onChangeState prop instead.
    */
-  onChangeStateDeprecated?: (
-    e: SyntheticEvent<HTMLElement, OnChangeStateDeprecatedEvent>
-  ) => void;
+  onChangeStateDeprecated?: (e: OnChangeStateDeprecatedEvent) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
-  onChangeSelection?: (
-    e: SyntheticEvent<HTMLElement, OnChangeSelectionEvent>
-  ) => void;
+  onChangeSelection?: (e: OnChangeSelectionEvent) => void;
+  onKeyPress?: (e: OnKeyPressEvent) => void;
   /**
    * Unused for web, but kept for parity with native
    */
