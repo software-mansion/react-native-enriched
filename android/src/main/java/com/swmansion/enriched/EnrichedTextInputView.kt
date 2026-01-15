@@ -45,6 +45,7 @@ import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
 import com.swmansion.enriched.styles.ParametrizedStyles
+import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.EnrichedEditableFactory
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
@@ -335,7 +336,7 @@ class EnrichedTextInputView : AppCompatEditText {
       }
 
       // If the current char is not a hidden space, it counts towards our visible index
-      if (currentText[actualIndex] != '\u200B') {
+      if (currentText[actualIndex] != EnrichedConstants.ZWS) {
         currentVisibleCount++
       }
       actualIndex++
