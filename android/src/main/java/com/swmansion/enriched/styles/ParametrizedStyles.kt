@@ -277,14 +277,14 @@ class ParametrizedStyles(
     val (start, originalEnd) = view.selection.getInlineSelection()
 
     if (start == originalEnd) {
-      spannable.insert(start, EnrichedConstants.ORC.toString())
+      spannable.insert(start, EnrichedConstants.ORC_STRING)
     } else {
       val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
       for (s in spans) {
         spannable.removeSpan(s)
       }
 
-      spannable.replace(start, originalEnd, EnrichedConstants.ORC.toString())
+      spannable.replace(start, originalEnd, EnrichedConstants.ORC_STRING)
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)

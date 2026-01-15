@@ -345,7 +345,7 @@ class ParagraphStyles(
           endCursorPosition -= 1
           spanState.setStart(style, null)
         } else {
-          s.insert(endCursorPosition, EnrichedConstants.ZWS.toString())
+          s.insert(endCursorPosition, EnrichedConstants.ZWS_STRING)
           endCursorPosition += 1
         }
       }
@@ -394,7 +394,7 @@ class ParagraphStyles(
     }
 
     if (start == end) {
-      spannable.insert(start, EnrichedConstants.ZWS.toString())
+      spannable.insert(start, EnrichedConstants.ZWS_STRING)
       setAndMergeSpans(spannable, type, start, end + 1)
       view.selection.validateStyles()
 
@@ -406,7 +406,7 @@ class ParagraphStyles(
     val paragraphs = spannable.substring(start, end).split("\n")
 
     for (paragraph in paragraphs) {
-      spannable.insert(currentStart, EnrichedConstants.ZWS.toString())
+      spannable.insert(currentStart, EnrichedConstants.ZWS_STRING)
       currentEnd = currentStart + paragraph.length + 1
       currentStart = currentEnd + 1
     }

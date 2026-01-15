@@ -433,7 +433,7 @@ class HtmlToSpannedConverter implements ContentHandler {
 
       if (mSpannableStringBuilder.charAt(start) != EnrichedConstants.ZWS) {
         // Insert zero-width space character at the start if it's not already present.
-        mSpannableStringBuilder.insert(start, String.valueOf(EnrichedConstants.ZWS));
+        mSpannableStringBuilder.insert(start, EnrichedConstants.ZWS_STRING);
         end++; // Adjust end position due to insertion.
       }
 

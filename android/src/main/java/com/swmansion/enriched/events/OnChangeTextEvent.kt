@@ -17,7 +17,7 @@ class OnChangeTextEvent(
   override fun getEventData(): WritableMap {
     val eventData: WritableMap = Arguments.createMap()
     val text = editable.toString()
-    val normalizedText = text.replace(Regex(EnrichedConstants.ZWS.toString()), "")
+    val normalizedText = text.replace(Regex(EnrichedConstants.ZWS_STRING), "")
     eventData.putString("value", normalizedText)
     return eventData
   }

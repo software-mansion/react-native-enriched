@@ -120,7 +120,7 @@ class ListStyles(
     }
 
     if (start == end) {
-      spannable.insert(start, EnrichedConstants.ZWS.toString())
+      spannable.insert(start, EnrichedConstants.ZWS_STRING)
       view.spanState?.setStart(name, start + 1)
       removeSpansForRange(spannable, start, end, config.clazz)
       setSpan(spannable, name, start, end + 1)
@@ -133,7 +133,7 @@ class ListStyles(
     removeSpansForRange(spannable, start, end, config.clazz)
 
     for (paragraph in paragraphs) {
-      spannable.insert(currentStart, EnrichedConstants.ZWS.toString())
+      spannable.insert(currentStart, EnrichedConstants.ZWS_STRING)
       val currentEnd = currentStart + paragraph.length + 1
       setSpan(spannable, name, currentStart, currentEnd)
 
@@ -165,7 +165,7 @@ class ListStyles(
     }
 
     if (!isBackspace && isShortcut) {
-      s.replace(start, cursorPosition, EnrichedConstants.ZWS.toString())
+      s.replace(start, cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, start + 1)
       // Inform that new span has been added
       view.selection?.validateStyles()
@@ -173,7 +173,7 @@ class ListStyles(
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
-      s.insert(cursorPosition, EnrichedConstants.ZWS.toString())
+      s.insert(cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, end + 1)
       // Inform that new span has been added
       view.selection?.validateStyles()
