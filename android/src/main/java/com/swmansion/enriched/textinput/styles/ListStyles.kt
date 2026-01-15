@@ -8,6 +8,7 @@ import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.EnrichedUnorderedListSpan
+import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
@@ -119,7 +120,7 @@ class ListStyles(
     }
 
     if (start == end) {
-      spannable.insert(start, "\u200B")
+      spannable.insert(start, EnrichedConstants.ZWS_STRING)
       view.spanState?.setStart(name, start + 1)
       removeSpansForRange(spannable, start, end, config.clazz)
       setSpan(spannable, name, start, end + 1)
@@ -132,7 +133,7 @@ class ListStyles(
     removeSpansForRange(spannable, start, end, config.clazz)
 
     for (paragraph in paragraphs) {
-      spannable.insert(currentStart, "\u200B")
+      spannable.insert(currentStart, EnrichedConstants.ZWS_STRING)
       val currentEnd = currentStart + paragraph.length + 1
       setSpan(spannable, name, currentStart, currentEnd)
 
@@ -164,7 +165,7 @@ class ListStyles(
     }
 
     if (!isBackspace && isShortcut) {
-      s.replace(start, cursorPosition, "\u200B")
+      s.replace(start, cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, start + 1)
       // Inform that new span has been added
       view.selection?.validateStyles()
@@ -172,7 +173,7 @@ class ListStyles(
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
-      s.insert(cursorPosition, "\u200B")
+      s.insert(cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, end + 1)
       // Inform that new span has been added
       view.selection?.validateStyles()

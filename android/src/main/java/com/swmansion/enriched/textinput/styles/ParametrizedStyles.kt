@@ -9,6 +9,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedMentionSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
+import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
 
@@ -96,7 +97,7 @@ class ParametrizedStyles(
       var wordStart = wordMatch.range.first
 
       // Do not include zero-width space in link detection
-      if (word.startsWith("\u200B")) {
+      if (word.startsWith(EnrichedConstants.ZWS_STRING)) {
         word = word.substring(1)
         wordStart += 1
       }
@@ -263,14 +264,14 @@ class ParametrizedStyles(
     val (start, originalEnd) = view.selection.getInlineSelection()
 
     if (start == originalEnd) {
-      spannable.insert(start, "\uFFFC")
+      spannable.insert(start, EnrichedConstants.ORC_STRING)
     } else {
       val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
       for (s in spans) {
         spannable.removeSpan(s)
       }
 
-      spannable.replace(start, originalEnd, "\uFFFC")
+      spannable.replace(start, originalEnd, EnrichedConstants.ORC_STRING)
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)

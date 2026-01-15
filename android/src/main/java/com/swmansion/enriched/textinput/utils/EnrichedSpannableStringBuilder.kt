@@ -1,4 +1,4 @@
-package com.swmansion.enriched.utils
+package com.swmansion.enriched.textinput.utils
 
 import android.text.SpannableStringBuilder
 

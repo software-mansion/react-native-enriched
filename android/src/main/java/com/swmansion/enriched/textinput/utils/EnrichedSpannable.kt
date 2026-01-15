@@ -1,10 +1,10 @@
-package com.swmansion.enriched.utils
+package com.swmansion.enriched.textinput.utils
 
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import com.swmansion.enriched.spans.interfaces.EnrichedBlockSpan
-import com.swmansion.enriched.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedBlockSpan
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedParagraphSpan
 
 fun Spannable.getSafeSpanBoundaries(
   start: Int,
