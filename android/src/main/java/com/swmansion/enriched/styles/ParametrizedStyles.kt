@@ -9,6 +9,7 @@ import com.swmansion.enriched.spans.EnrichedImageSpan
 import com.swmansion.enriched.spans.EnrichedLinkSpan
 import com.swmansion.enriched.spans.EnrichedMentionSpan
 import com.swmansion.enriched.spans.EnrichedSpans
+import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.utils.removeZWS
 
@@ -263,14 +264,14 @@ class ParametrizedStyles(
     val (start, originalEnd) = view.selection.getInlineSelection()
 
     if (start == originalEnd) {
-      spannable.insert(start, "\uFFFC")
+      spannable.insert(start, EnrichedConstants.ORC_STRING)
     } else {
       val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
       for (s in spans) {
         spannable.removeSpan(s)
       }
 
-      spannable.replace(start, originalEnd, "\uFFFC")
+      spannable.replace(start, originalEnd, EnrichedConstants.ORC_STRING)
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
