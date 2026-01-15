@@ -143,56 +143,56 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H2Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H3Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H3Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H4Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H5Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H6Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([UnorderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([OrderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([CheckboxListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
@@ -206,7 +206,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([CodeBlockStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
@@ -216,7 +216,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]),
       @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
       @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]),
-      @([MentionStyle getStyleType]), @([LinkStyle getStyleType])
+      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
+      @([CheckboxListStyle getStyleType])
     ],
     @([ImageStyle getStyleType]) :
         @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
