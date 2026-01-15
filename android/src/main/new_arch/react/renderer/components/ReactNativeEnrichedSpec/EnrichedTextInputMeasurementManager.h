@@ -2,7 +2,7 @@
 
 #include "ComponentDescriptors.h"
 
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
+#include <react/renderer/components/ReactNativeEnrichedSpec/Props.h>
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/utils/ContextContainer.h>
 

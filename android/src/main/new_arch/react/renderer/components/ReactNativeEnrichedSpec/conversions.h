@@ -2,7 +2,7 @@
 
 #include <folly/dynamic.h>
 #include <react/renderer/components/FBReactNativeSpec/Props.h>
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
+#include <react/renderer/components/ReactNativeEnrichedSpec/Props.h>
 #include <react/renderer/core/propsConversions.h>
 
 namespace facebook::react {

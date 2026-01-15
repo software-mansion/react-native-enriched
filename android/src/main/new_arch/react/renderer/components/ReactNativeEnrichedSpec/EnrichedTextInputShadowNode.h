@@ -3,8 +3,8 @@
 #include "EnrichedTextInputMeasurementManager.h"
 #include "EnrichedTextInputState.h"
 
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/EventEmitters.h>
-#include <react/renderer/components/RNEnrichedTextInputViewSpec/Props.h>
+#include <react/renderer/components/ReactNativeEnrichedSpec/EventEmitters.h>
+#include <react/renderer/components/ReactNativeEnrichedSpec/Props.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
 namespace facebook::react {
