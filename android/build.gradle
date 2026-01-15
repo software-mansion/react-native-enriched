@@ -1,6 +1,6 @@
 buildscript {
 	ext.getExtOrDefault = {name ->
-		return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['EnrichedTextInput_' + name]
+		return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['ReactNativeEnriched_' + name]
 	}
 
 	repositories {
@@ -27,7 +27,7 @@ apply plugin: "com.facebook.react"
 apply from: "lint.gradle"
 
 def getExtOrIntegerDefault(name) {
-	return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["EnrichedTextInput_" + name]).toInteger()
+	return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["ReactNativeEnriched_" + name]).toInteger()
 }
 
 def supportsNamespace() {
@@ -101,6 +101,6 @@ dependencies {
 
 react {
 	jsRootDir = file("../src/")
-	libraryName = "EnrichedTextInputView"
+	libraryName = "ReactNativeEnriched"
 	codegenJavaPackageName = "com.swmansion.enriched"
 }
