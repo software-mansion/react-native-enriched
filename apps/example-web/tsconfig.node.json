@@ -1,9 +1,12 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "lib": ["ES2023"],
     "types": ["node"],
+    "paths": {
+      "react-native-enriched": ["../../src/index"]
+    }
   },
   "include": ["vite.config.ts"]
 }
