@@ -2,6 +2,7 @@ export * from './native/EnrichedTextInput';
 export type {
   OnLinkDetected,
   OnChangeSelectionEvent,
+  OnKeyPressEvent,
 } from './native/EnrichedTextInputNativeComponent';
 export type {
   OnChangeTextEvent,

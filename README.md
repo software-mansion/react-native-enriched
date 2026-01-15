@@ -13,7 +13,7 @@
 
 `EnrichedTextInput`, the rich text editor component is an uncontrolled input. This means that it doesn't use any state or props to store its value, but instead directly interacts with the underlying platform-specific components. Thanks to this, the component is really performant and simple to use while offering complex and advanced features no other solution has.
 
-<https://github.com/user-attachments/assets/4778d541-d967-47e7-8013-6f7c436bcb95>
+![react-native-enriched-demo](https://github.com/user-attachments/assets/a2c968c0-9b85-492f-ac71-af64ef231fbf)
 
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues.
 We can help you build your next dream product –
@@ -159,7 +159,7 @@ Each call toggles the style within the current text selection. We can still divi
 
 - Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
 
-- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph we mean a part of the text between two newlines (enters) or the text's beginning/ending.
+- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph, we mean a part of the text between two newlines (enters) or the text's beginning/ending.
   If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
 
 ## Links
@@ -228,6 +228,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
 - [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
+- [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
 
 ## Customizing \<EnrichedTextInput /> styles
 

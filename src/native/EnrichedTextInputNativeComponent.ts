@@ -59,6 +59,10 @@ export interface MentionStyleProperties {
   textDecorationLine?: 'underline' | 'none';
 }
 
+export interface OnKeyPressEvent {
+  key: string;
+}
+
 type Heading = {
   fontSize?: Float;
   bold?: boolean;
@@ -134,6 +138,7 @@ export interface NativeProps extends ViewProps {
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
+  onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

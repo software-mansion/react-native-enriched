@@ -10,7 +10,7 @@
 
   if (folly["color"].isNumber()) {
     facebook::react::SharedColor color = facebook::react::SharedColor(
-        facebook::react::Color(folly["color"].asInt()));
+        facebook::react::Color(int32_t(folly["color"].asInt())));
     nativeProps.color = RCTUIColorFromSharedColor(color);
   } else {
     nativeProps.color = [UIColor blueColor];
@@ -18,7 +18,7 @@
 
   if (folly["backgroundColor"].isNumber()) {
     facebook::react::SharedColor bgColor = facebook::react::SharedColor(
-        facebook::react::Color(folly["backgroundColor"].asInt()));
+        facebook::react::Color(int32_t(folly["backgroundColor"].asInt())));
     nativeProps.backgroundColor = RCTUIColorFromSharedColor(bgColor);
   } else {
     nativeProps.backgroundColor = [UIColor yellowColor];
