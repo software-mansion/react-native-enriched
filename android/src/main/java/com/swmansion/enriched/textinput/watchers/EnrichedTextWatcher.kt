@@ -11,6 +11,7 @@ class EnrichedTextWatcher(
   private val view: EnrichedTextInputView,
 ) : TextWatcher {
   private var endCursorPosition: Int = 0
+  private var startCursorPosition: Int = 0
   private var previousTextLength: Int = 0
 
   override fun beforeTextChanged(
@@ -28,6 +29,7 @@ class EnrichedTextWatcher(
     before: Int,
     count: Int,
   ) {
+    startCursorPosition = start
     endCursorPosition = start + count
     view.layoutManager.invalidateLayout()
     view.isRemovingMany = !view.isDuringTransaction && before > count + 1
@@ -45,7 +47,7 @@ class EnrichedTextWatcher(
     view.inlineStyles?.afterTextChanged(s, endCursorPosition)
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
-    view.parametrizedStyles?.afterTextChanged(s, endCursorPosition)
+    view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
   }
 
   private fun emitChangeText(editable: Editable) {

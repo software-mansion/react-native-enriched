@@ -270,9 +270,13 @@ class EnrichedTextInputView : AppCompatEditText {
 
     // Currently, we do not support pasting images
     if (item?.text == null) return
+    val lengthBefore = currentText.length
     val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
-    parametrizedStyles?.detectAllLinks()
+
+    // Detect links in the newly pasted range
+    val finalEndIndex = start + finalText.length - lengthBefore
+    parametrizedStyles?.detectLinksInRange(finalText, start, finalEndIndex)
   }
 
   fun requestFocusProgrammatically() {

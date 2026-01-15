@@ -70,31 +70,56 @@ class ParametrizedStyles(
 
   fun afterTextChanged(
     s: Editable,
+    startCursorPosition: Int,
     endCursorPosition: Int,
   ) {
-    val result = getWordAtIndex(s, endCursorPosition) ?: return
-
-    afterTextChangedLinks(result)
-    afterTextChangedMentions(result)
+    afterTextChangedLinks(startCursorPosition, endCursorPosition)
+    afterTextChangedMentions(s, startCursorPosition)
   }
 
-  fun detectAllLinks() {
+  fun detectLinksInRange(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ) {
     val regex = view.linkRegex ?: return
-    val spannable = view.text as Spannable
-    val urlPattern = regex.matcher(spannable)
+    val contextText = spannable.subSequence(start, end).toString()
 
-    val spans = spannable.getSpans(0, spannable.length, EnrichedLinkSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
 
-    while (urlPattern.find()) {
-      val word = urlPattern.group()
-      val start = urlPattern.start()
-      val end = urlPattern.end()
-      val span = EnrichedLinkSpan(word, view.htmlStyle)
-      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    val wordsRegex = Regex("\\S+")
+    for (wordMatch in wordsRegex.findAll(contextText)) {
+      var word = wordMatch.value
+      var wordStart = wordMatch.range.first
+
+      // Do not include zero-width space in link detection
+      if (word.startsWith("\u200B")) {
+        word = word.substring(1)
+        wordStart += 1
+      }
+
+      // Loop over words and detect links
+      val matcher = regex.matcher(word)
+      while (matcher.find()) {
+        val linkStart = matcher.start()
+        val linkEnd = matcher.end()
+
+        val spanStart = start + wordStart + linkStart
+        val spanEnd = start + wordStart + linkEnd
+
+        val span = EnrichedLinkSpan(matcher.group(), view.htmlStyle)
+        val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(spanStart, spanEnd)
+
+        spannable.setSpan(
+          span,
+          safeStart,
+          safeEnd,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+      }
     }
   }
 
@@ -120,6 +145,29 @@ class ParametrizedStyles(
     return TextRange(result, start, end)
   }
 
+  // After editing text we want to automatically detect links in the affected range
+  // Affected range is range + previous word + next word
+  private fun getLinksAffectedRange(
+    s: CharSequence,
+    start: Int,
+    end: Int,
+  ): IntRange {
+    var actualStart = start
+    var actualEnd = end
+
+    // Expand backward to find the start of the first affected word
+    while (actualStart > 0 && !Character.isWhitespace(s[actualStart - 1])) {
+      actualStart--
+    }
+
+    // Expand forward to find the end of the last affected word
+    while (actualEnd < s.length && !Character.isWhitespace(s[actualEnd])) {
+      actualEnd++
+    }
+
+    return actualStart..actualEnd
+  }
+
   private fun canLinkBeApplied(): Boolean {
     val mergingConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle) ?: return true
     val conflictingStyles = mergingConfig.conflictingStyles
@@ -136,31 +184,24 @@ class ParametrizedStyles(
     return true
   }
 
-  private fun afterTextChangedLinks(result: TextRange) {
-    val regex = view.linkRegex ?: return
-
+  private fun afterTextChangedLinks(
+    editStart: Int,
+    editEnd: Int,
+  ) {
     // Do not detect link if it's applied manually
     if (isSettingLinkSpan || !canLinkBeApplied()) return
 
-    val spannable = view.text as Spannable
-    val (word, start, end) = result
-
-    val urlPattern = regex.matcher(word)
-
-    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
-    for (span in spans) {
-      spannable.removeSpan(span)
-    }
-
-    if (urlPattern.matches()) {
-      val span = EnrichedLinkSpan(word, view.htmlStyle)
-      val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-    }
+    val spannable = view.text as? Spannable ?: return
+    val affectedRange = getLinksAffectedRange(spannable, editStart, editEnd)
+    detectLinksInRange(spannable, affectedRange.first, affectedRange.last)
   }
 
-  private fun afterTextChangedMentions(currentWord: TextRange) {
+  private fun afterTextChangedMentions(
+    s: CharSequence,
+    endCursorPosition: Int,
+  ) {
     val mentionHandler = view.mentionHandler ?: return
+    val currentWord = getWordAtIndex(s, endCursorPosition) ?: return
     val spannable = view.text as Spannable
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }

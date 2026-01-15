@@ -4,6 +4,7 @@ import android.text.Editable
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
+import com.swmansion.enriched.utils.EnrichedConstants
 
 class OnChangeTextEvent(
   surfaceId: Int,
@@ -16,7 +17,7 @@ class OnChangeTextEvent(
   override fun getEventData(): WritableMap {
     val eventData: WritableMap = Arguments.createMap()
     val text = editable.toString()
-    val normalizedText = text.replace(Regex("\\u200B"), "")
+    val normalizedText = text.replace(Regex(EnrichedConstants.ZWS_STRING), "")
     eventData.putString("value", normalizedText)
     return eventData
   }
