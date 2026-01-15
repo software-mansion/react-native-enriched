@@ -5,6 +5,7 @@
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "TextBlockTapGestureRecognizer.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -24,7 +25,8 @@
 using namespace facebook::react;
 
 @interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol,
-                                     UITextViewDelegate, NSObject>
+                                     UITextViewDelegate,
+                                     UIGestureRecognizerDelegate, NSObject>
 
 @end
 
@@ -257,6 +259,47 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
+
+  TextBlockTapGestureRecognizer *blockTap =
+      [[TextBlockTapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(onTextBlockTap:)];
+
+  blockTap.textView = textView;
+  blockTap.input = self;
+  blockTap.cancelsTouchesInView = YES;
+  blockTap.delaysTouchesBegan = YES;
+  blockTap.delaysTouchesEnded = YES;
+
+  for (UIGestureRecognizer *gr in textView.gestureRecognizers) {
+    [gr requireGestureRecognizerToFail:blockTap];
+  }
+  [textView addGestureRecognizer:blockTap];
+}
+
+- (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {
+  if (gr.state != UIGestureRecognizerStateEnded)
+    return;
+  if (![self->textView isFirstResponder]) {
+    [self->textView becomeFirstResponder];
+  }
+
+  switch (gr.tapKind) {
+
+  case TextBlockTapKindCheckbox: {
+    CheckboxListStyle *checkboxStyle =
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+
+    if (checkboxStyle) {
+      [checkboxStyle toggleCheckedAt:(NSUInteger)gr.characterIndex];
+      [self anyTextMayHaveBeenModified];
+    }
+    break;
+  }
+
+  default:
+    break;
+  }
 }
 
 - (void)setupPlaceholderLabel {

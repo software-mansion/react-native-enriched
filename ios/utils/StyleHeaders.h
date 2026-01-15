@@ -94,6 +94,7 @@
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (void)setDefaultCheckboxState:(BOOL)state;
 - (BOOL)getCheckboxStateAt:(NSUInteger)location;
+- (void)toggleCheckedAt:(NSUInteger)location;
 @end
 
 @interface BlockQuoteStyle : NSObject <BaseStyleProtocol>

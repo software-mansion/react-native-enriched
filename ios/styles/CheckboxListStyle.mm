@@ -20,7 +20,8 @@
 
 - (CGFloat)getHeadIndent {
   return [_input->config checkboxListMarginLeft] +
-         [_input->config checkboxListGapWidth];
+         [_input->config checkboxListGapWidth] +
+         [_input->config checkboxListBoxSize];
 }
 
 - (instancetype)initWithInput:(id)input {
@@ -193,6 +194,76 @@
     }
   }
   return NO;
+}
+
+// used to make sure checkbox marker is correct when a newline is placed
+- (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {
+  // in a checkbox list and a new text ends with a newline
+  if ([self detectStyle:_input->textView.selectedRange] && text.length > 0 &&
+      [[NSCharacterSet newlineCharacterSet]
+          characterIsMember:[text characterAtIndex:text.length - 1]]) {
+    // do the replacement manually
+    [TextInsertionUtils replaceText:text
+                                 at:range
+               additionalAttributes:nullptr
+                              input:_input
+                      withSelection:YES];
+    // apply checkbox attributes to the new paragraph
+    [self addAttributes:_input->textView.selectedRange withTypingAttr:YES];
+    return YES;
+  }
+  return NO;
+}
+
+- (void)toggleCheckedAt:(NSUInteger)location {
+  if (location >= _input->textView.textStorage.length) {
+    return;
+  }
+
+  // Get the paragraph style at the location
+  NSParagraphStyle *style =
+      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                      atIndex:location
+                               effectiveRange:NULL];
+
+  if (!style || style.textLists.count == 0) {
+    return;
+  }
+
+  NSTextList *list = style.textLists.firstObject;
+  if (![list.markerFormat hasPrefix:@"{checkbox"]) {
+    return;
+  }
+
+  // Determine the new checkbox state
+  BOOL isCurrentlyChecked = [list.markerFormat isEqualToString:@"{checkbox:1}"];
+  NSString *newMarkerFormat =
+      isCurrentlyChecked ? @"{checkbox:0}" : @"{checkbox:1}";
+
+  // Create new text list with updated marker
+  NSTextList *newList = [[NSTextList alloc] initWithMarkerFormat:newMarkerFormat
+                                                         options:0];
+
+  // Find the paragraph range containing this location
+  NSString *fullText = _input->textView.textStorage.string;
+  NSRange paragraphRange =
+      [fullText paragraphRangeForRange:NSMakeRange(location, 0)];
+
+  // Update all paragraph styles in this paragraph with the new checkbox state
+  [_input->textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:paragraphRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle =
+                    [(NSParagraphStyle *)value mutableCopy];
+                pStyle.textLists = @[ newList ];
+                [_input->textView.textStorage
+                    addAttribute:NSParagraphStyleAttributeName
+                           value:pStyle
+                           range:range];
+              }];
 }
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {

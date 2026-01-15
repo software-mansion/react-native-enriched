@@ -304,6 +304,7 @@ static void const *kInputKey = &kInputKey;
                                      } else if (markerFormat ==
                                                 NSTextListMarkerDisc) {
                                        [self drawBullet:typedInput
+                                                 origin:origin
                                                usedRect:usedRect];
                                      } else {
                                        [self drawCheckbox:typedInput
@@ -372,7 +373,7 @@ static void const *kInputKey = &kInputKey;
 
   // Calculate checkbox position
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
-  CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize / 2.0;
+  CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize;
   CGFloat boxY = centerY - boxSize / 2.0;
 
   CGRect checkboxRect = CGRectMake(boxX, boxY, boxSize, boxSize);
@@ -435,10 +436,11 @@ static void const *kInputKey = &kInputKey;
 }
 
 - (void)drawBullet:(EnrichedTextInputView *)typedInput
+            origin:(CGPoint)origin
           usedRect:(CGRect)usedRect {
   CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
   CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
-  CGFloat bulletX = usedRect.origin.x - gapWidth - bulletSize / 2;
+  CGFloat bulletX = origin.x + usedRect.origin.x - gapWidth - bulletSize / 2;
   CGFloat centerY = CGRectGetMidY(usedRect);
 
   CGContextRef context = UIGraphicsGetCurrentContext();
