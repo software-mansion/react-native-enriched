@@ -10,6 +10,7 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  EnrichedText,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -72,6 +73,9 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
+const mock =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+
 const LINK_REGEX =
   /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
 
@@ -97,6 +101,8 @@ export default function App() {
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
+
+  const [isVisible, setIsVisible] = useState(false);
 
   const userMention = useUserMention();
   const channelMention = useChannelMention();
@@ -340,6 +346,13 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
+        <Button title={'toggle'} onPress={() => setIsVisible((c) => !c)} />
+        {isVisible &&
+          Array.from({ length: 1000 }).map((_, i) => (
+            <EnrichedText key={i} style={styles.enrichedText} text={mock} />
+          ))}
+        <EnrichedText style={styles.enrichedText} text={mock} />
+        <Text style={styles.enrichedText}>{mock}</Text>
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
@@ -498,6 +511,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+  },
+  enrichedText: {
+    fontSize: 24,
+    backgroundColor: 'red',
+    fontFamily: 'Nunito-Regular',
+    color: 'blue',
+    marginTop: 1,
   },
   scrollPlaceholder: {
     marginTop: 24,

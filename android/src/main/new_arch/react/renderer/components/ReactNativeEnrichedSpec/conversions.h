@@ -21,6 +21,18 @@ inline folly::dynamic toDynamic(const EnrichedTextInputViewProps &props) {
 
   return serializedProps;
 }
+
+inline folly::dynamic toDynamic(const EnrichedTextViewProps &props) {
+  // Serialize only metrics affecting props
+  folly::dynamic serializedProps = folly::dynamic::object();
+  serializedProps["fontSize"] = props.fontSize;
+  serializedProps["fontWeight"] = props.fontWeight;
+  serializedProps["fontStyle"] = props.fontStyle;
+  serializedProps["fontFamily"] = props.fontFamily;
+  serializedProps["text"] = props.text;
+
+  return serializedProps;
+}
 #endif
 
 } // namespace facebook::react

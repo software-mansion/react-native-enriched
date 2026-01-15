@@ -173,8 +173,10 @@
       "javaPackageName": "com.swmansion.enriched"
     },
     "ios": {
-      "componentProvider": {
-        "EnrichedTextInputView": "EnrichedTextInputView"
+      "components": {
+        "EnrichedTextInputView": {
+          "className": "EnrichedTextInputView"
+        }
       }
     },
     "includesGeneratedCode": true

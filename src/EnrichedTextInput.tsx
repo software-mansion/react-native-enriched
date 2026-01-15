@@ -36,6 +36,7 @@ import type {
 } from 'react-native';
 import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from './utils/regexParser';
+import { nullthrows } from './utils/nullthrows';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -164,14 +165,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    */
   androidExperimentalSynchronousEvents?: boolean;
 }
-
-const nullthrows = <T,>(value: T | null | undefined): T => {
-  if (value == null) {
-    throw new Error('Unexpected null or undefined value');
-  }
-
-  return value;
-};
 
 const warnAboutMissconfiguredMentions = (indicator: string) => {
   console.warn(

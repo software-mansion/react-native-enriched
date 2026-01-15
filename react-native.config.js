@@ -6,7 +6,10 @@ module.exports = {
     platforms: {
       android: {
         cmakeListsPath: '../android/src/main/new_arch/CMakeLists.txt',
-        componentDescriptors: ['EnrichedTextInputComponentDescriptor'],
+        componentDescriptors: [
+          'EnrichedTextComponentDescriptor',
+          'EnrichedTextInputComponentDescriptor',
+        ],
       },
     },
   },
