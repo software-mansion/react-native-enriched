@@ -1,7 +1,6 @@
 import {
   useImperativeHandle,
   useEffect,
-  type SyntheticEvent,
   type CSSProperties,
   type RefObject,
 } from 'react';
@@ -29,6 +28,15 @@ import type {
   OnMentionDetected,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
+import { useEnrichedTextInputState } from './hooks/useEnrichedTextInputState';
+
+/**
+ * Web equivalent of React Native's NativeSyntheticEvent.
+ * Wraps custom event data in the nativeEvent property for cross-platform parity.
+ */
+export interface WebSyntheticEvent<T> {
+  nativeEvent: T;
+}
 
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
 
@@ -114,23 +122,21 @@ export interface EnrichedTextInputProps {
   linkRegex?: RegExp | null;
   onFocus?: () => void;
   onBlur?: () => void;
-  onChangeText?: (e: SyntheticEvent<HTMLElement, OnChangeTextEvent>) => void;
-  onChangeHtml?: (e: SyntheticEvent<HTMLElement, OnChangeHtmlEvent>) => void;
-  onChangeState?: (e: SyntheticEvent<HTMLElement, OnChangeStateEvent>) => void;
+  onChangeText?: (e: WebSyntheticEvent<OnChangeTextEvent>) => void;
+  onChangeHtml?: (e: WebSyntheticEvent<OnChangeHtmlEvent>) => void;
+  onChangeState?: (e: WebSyntheticEvent<OnChangeStateEvent>) => void;
   /**
    * @deprecated Use onChangeState prop instead.
    */
   onChangeStateDeprecated?: (
-    e: SyntheticEvent<HTMLElement, OnChangeStateDeprecatedEvent>
+    e: WebSyntheticEvent<OnChangeStateDeprecatedEvent>
   ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
-  onChangeSelection?: (
-    e: SyntheticEvent<HTMLElement, OnChangeSelectionEvent>
-  ) => void;
+  onChangeSelection?: (e: WebSyntheticEvent<OnChangeSelectionEvent>) => void;
   /**
    * Unused for web, but kept for parity with native
    */
@@ -144,6 +150,7 @@ export const EnrichedTextInput = ({
   defaultValue,
   placeholder,
   style,
+  onChangeState,
 }: EnrichedTextInputProps) => {
   const editor = useEditor({
     extensions: [
@@ -169,6 +176,8 @@ export const EnrichedTextInput = ({
       },
     },
   });
+
+  useEnrichedTextInputState(editor, onChangeState);
 
   useEffect(() => {
     if (editor && editable !== undefined) {

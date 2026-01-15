@@ -41,6 +41,7 @@ function App() {
     useState<OnChangeStateEvent>(DEFAULT_STYLES);
 
   const handleChangeState = (state: OnChangeStateEvent) => {
+    console.log('Editor state changed:', state);
     setStylesState(state);
   };
 
