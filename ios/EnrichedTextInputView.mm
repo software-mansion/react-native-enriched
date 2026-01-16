@@ -1261,10 +1261,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
     BOOL checked = [args[0] boolValue];
-    CheckboxListStyle *checkboxListStyleClass =
-        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
-    [checkboxListStyleClass setDefaultCheckboxState:checked];
-    [self toggleParagraphStyle:[CheckboxListStyle getStyleType]];
+    [self toggleCheckboxList:checked];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
@@ -1448,6 +1445,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if ([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
     [styleClass applyStyle:paragraphRange];
+    [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)toggleCheckboxList:(BOOL)checked {
+  CheckboxListStyle *checkboxListStyleClass =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+  if (checkboxListStyleClass == nullptr) {
+    return;
+  }
+  // we always pass whole paragraph/s range to these styles
+  NSRange paragraphRange = [textView.textStorage.string
+      paragraphRangeForRange:textView.selectedRange];
+
+  if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getStyleType]
+                                    range:paragraphRange]) {
+    [checkboxListStyleClass applyStyleWithCheckedValue:checked
+                                               inRange:paragraphRange];
     [self anyTextMayHaveBeenModified];
   }
 }

@@ -73,9 +73,9 @@
                             withSelection:YES];
           typedInput->textView.typingAttributes =
               typedInput->defaultTypingAttributes;
-          [cbLStyle
-              addAttributesWithCheckedValue:isCurrentlyChecked
-                                    inRange:NSMakeRange(range.location, 0)];
+          [cbLStyle addAttributesWithCheckedValue:isCurrentlyChecked
+                                          inRange:NSMakeRange(range.location, 0)
+                                   withTypingAttr:YES];
         } else {
           [TextInsertionUtils replaceText:text
                                        at:range

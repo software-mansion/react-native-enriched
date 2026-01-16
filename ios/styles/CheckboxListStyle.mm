@@ -7,7 +7,6 @@
 
 @implementation CheckboxListStyle {
   EnrichedTextInputView *_input;
-  BOOL _defaultCheckboxState;
 }
 
 + (StyleType)getStyleType {
@@ -27,105 +26,36 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   _input = (EnrichedTextInputView *)input;
-  _defaultCheckboxState = NO;
   return self;
 }
 
 - (void)applyStyle:(NSRange)range {
+}
+
+- (void)applyStyleWithCheckedValue:(BOOL)checked inRange:(NSRange)range {
   BOOL isStylePresent = [self detectStyle:range];
   if (range.length >= 1) {
     isStylePresent ? [self removeAttributes:range]
-                   : [self addAttributes:range withTypingAttr:YES];
+                   : [self addAttributesWithCheckedValue:checked
+                                                 inRange:range
+                                          withTypingAttr:YES];
   } else {
-    isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
+    isStylePresent
+        ? [self removeTypingAttributes]
+        : [self addAttributesWithCheckedValue:checked
+                                      inRange:_input->textView.selectedRange
+                               withTypingAttr:YES];
+    ;
   }
 }
 
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
-  NSString *markerFormat =
-      _defaultCheckboxState ? @"{checkbox:1}" : @"{checkbox:0}";
-  NSTextList *checkboxMarker =
-      [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0];
-  NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
-  // if we fill empty lines with zero width spaces, we need to offset later
-  // ranges
-  NSInteger offset = 0;
-  // needed for range adjustments
-  NSRange preModificationRange = _input->textView.selectedRange;
-
-  // let's not emit some weird selection changes or text/html changes
-  _input->blockEmitting = YES;
-
-  for (NSValue *value in paragraphs) {
-    // take previous offsets into consideration
-    NSRange fixedRange = NSMakeRange([value rangeValue].location + offset,
-                                     [value rangeValue].length);
-
-    // length 0 with first line, length 1 and newline with some empty lines in
-    // the middle
-    if (fixedRange.length == 0 ||
-        (fixedRange.length == 1 &&
-         [[NSCharacterSet newlineCharacterSet]
-             characterIsMember:[_input->textView.textStorage.string
-                                   characterAtIndex:fixedRange.location]])) {
-      [TextInsertionUtils insertText:@"\u200B"
-                                  at:fixedRange.location
-                additionalAttributes:nullptr
-                               input:_input
-                       withSelection:NO];
-      fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
-      offset += 1;
-    }
-
-    [_input->textView.textStorage
-        enumerateAttribute:NSParagraphStyleAttributeName
-                   inRange:fixedRange
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  NSMutableParagraphStyle *pStyle =
-                      [(NSParagraphStyle *)value mutableCopy];
-                  pStyle.textLists = @[ checkboxMarker ];
-                  pStyle.headIndent = [self getHeadIndent];
-                  pStyle.firstLineHeadIndent = [self getHeadIndent];
-                  [_input->textView.textStorage
-                      addAttribute:NSParagraphStyleAttributeName
-                             value:pStyle
-                             range:range];
-                }];
-  }
-
-  // back to emitting
-  _input->blockEmitting = NO;
-
-  if (preModificationRange.length == 0) {
-    // fix selection if only one line was possibly made a list and filled with a
-    // space
-    _input->textView.selectedRange = preModificationRange;
-  } else {
-    // in other cases, fix the selection with newly made offsets
-    _input->textView.selectedRange = NSMakeRange(
-        preModificationRange.location, preModificationRange.length + offset);
-  }
-
-  // also add typing attributes
-  if (withTypingAttr) {
-    NSMutableDictionary *typingAttrs =
-        [_input->textView.typingAttributes mutableCopy];
-    NSMutableParagraphStyle *pStyle =
-        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = @[ checkboxMarker ];
-    pStyle.headIndent = [self getHeadIndent];
-    pStyle.firstLineHeadIndent = [self getHeadIndent];
-    typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-    _input->textView.typingAttributes = typingAttrs;
-  }
+  [self addAttributesWithCheckedValue:NO
+                              inRange:range
+                       withTypingAttr:withTypingAttr];
 }
 
 - (void)addTypingAttributes {
-  [self addAttributes:_input->textView.selectedRange withTypingAttr:YES];
 }
 
 - (void)removeAttributes:(NSRange)range {
@@ -233,14 +163,92 @@
       [fullText paragraphRangeForRange:NSMakeRange(location, 0)];
 
   [self addAttributesWithCheckedValue:!isCurrentlyChecked
-                              inRange:paragraphRange];
+                              inRange:paragraphRange
+                       withTypingAttr:YES];
 }
 
-- (void)addAttributesWithCheckedValue:(BOOL)checked inRange:(NSRange)range {
-  BOOL tempCheckboxState = _defaultCheckboxState;
-  _defaultCheckboxState = checked;
-  [self addAttributes:range withTypingAttr:YES];
-  _defaultCheckboxState = tempCheckboxState;
+- (void)addAttributesWithCheckedValue:(BOOL)checked
+                              inRange:(NSRange)range
+                       withTypingAttr:(BOOL)withTypingAttr {
+  NSString *markerFormat = checked ? @"{checkbox:1}" : @"{checkbox:0}";
+  NSTextList *checkboxMarker =
+      [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0];
+  NSArray *paragraphs =
+      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
+                                               range:range];
+  // if we fill empty lines with zero width spaces, we need to offset later
+  // ranges
+  NSInteger offset = 0;
+  // needed for range adjustments
+  NSRange preModificationRange = _input->textView.selectedRange;
+
+  // let's not emit some weird selection changes or text/html changes
+  _input->blockEmitting = YES;
+
+  for (NSValue *value in paragraphs) {
+    // take previous offsets into consideration
+    NSRange fixedRange = NSMakeRange([value rangeValue].location + offset,
+                                     [value rangeValue].length);
+
+    // length 0 with first line, length 1 and newline with some empty lines in
+    // the middle
+    if (fixedRange.length == 0 ||
+        (fixedRange.length == 1 &&
+         [[NSCharacterSet newlineCharacterSet]
+             characterIsMember:[_input->textView.textStorage.string
+                                   characterAtIndex:fixedRange.location]])) {
+      [TextInsertionUtils insertText:@"\u200B"
+                                  at:fixedRange.location
+                additionalAttributes:nullptr
+                               input:_input
+                       withSelection:NO];
+      fixedRange = NSMakeRange(fixedRange.location, fixedRange.length + 1);
+      offset += 1;
+    }
+
+    [_input->textView.textStorage
+        enumerateAttribute:NSParagraphStyleAttributeName
+                   inRange:fixedRange
+                   options:0
+                usingBlock:^(id _Nullable value, NSRange range,
+                             BOOL *_Nonnull stop) {
+                  NSMutableParagraphStyle *pStyle =
+                      [(NSParagraphStyle *)value mutableCopy];
+                  pStyle.textLists = @[ checkboxMarker ];
+                  pStyle.headIndent = [self getHeadIndent];
+                  pStyle.firstLineHeadIndent = [self getHeadIndent];
+                  [_input->textView.textStorage
+                      addAttribute:NSParagraphStyleAttributeName
+                             value:pStyle
+                             range:range];
+                }];
+  }
+
+  // back to emitting
+  _input->blockEmitting = NO;
+
+  if (preModificationRange.length == 0) {
+    // fix selection if only one line was possibly made a list and filled with a
+    // space
+    _input->textView.selectedRange = preModificationRange;
+  } else {
+    // in other cases, fix the selection with newly made offsets
+    _input->textView.selectedRange = NSMakeRange(
+        preModificationRange.location, preModificationRange.length + offset);
+  }
+
+  // also add typing attributes
+  if (withTypingAttr) {
+    NSMutableDictionary *typingAttrs =
+        [_input->textView.typingAttributes mutableCopy];
+    NSMutableParagraphStyle *pStyle =
+        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
+    pStyle.textLists = @[ checkboxMarker ];
+    pStyle.headIndent = [self getHeadIndent];
+    pStyle.firstLineHeadIndent = [self getHeadIndent];
+    typingAttrs[NSParagraphStyleAttributeName] = pStyle;
+    _input->textView.typingAttributes = typingAttrs;
+  }
 }
 
 - (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
@@ -284,14 +292,6 @@
                withCondition:^BOOL(id _Nullable value, NSRange range) {
                  return [self styleCondition:value:range];
                }];
-}
-
-- (void)setDefaultCheckboxState:(BOOL)state {
-  _defaultCheckboxState = state;
-}
-
-- (BOOL)getDefaultCheckboxState {
-  return _defaultCheckboxState;
 }
 
 - (BOOL)getCheckboxStateAt:(NSUInteger)location {
