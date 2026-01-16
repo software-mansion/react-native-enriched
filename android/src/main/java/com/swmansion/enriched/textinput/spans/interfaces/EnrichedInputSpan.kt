@@ -6,5 +6,5 @@ import com.swmansion.enriched.textinput.styles.HtmlStyle
 interface EnrichedInputSpan : EnrichedSpan {
   val dependsOnHtmlStyle: Boolean
 
-  fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedSpan
+  fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedInputSpan
 }

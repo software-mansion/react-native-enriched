@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, Text, Platform, FlatList } from 'react-native';
 import {
   EnrichedTextInput,
   type OnChangeTextEvent,
@@ -21,7 +21,6 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { type MentionItem, MentionPopup } from './components/MentionPopup';
 import { useUserMention } from './hooks/useUserMention';
 import { useChannelMention } from './hooks/useChannelMention';
-import { HtmlSection } from './components/HtmlSection';
 import { ImageModal } from './components/ImageModal';
 import {
   DEFAULT_IMAGE_HEIGHT,
@@ -73,13 +72,8 @@ const DEFAULT_LINK_STATE = {
   end: 0,
 };
 
-const mock =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
-
 const LINK_REGEX =
   /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
-
-const DEBUG_SCROLLABLE = false;
 
 // Enabling this prop fixes input flickering while auto growing.
 // However, it's still experimental and not tested well.
@@ -93,7 +87,8 @@ export default function App() {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
-  const [currentHtml, setCurrentHtml] = useState('');
+
+  const [richText, setRichText] = useState<Array<string>>([]);
 
   const [selection, setSelection] = useState<Selection>();
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
@@ -101,8 +96,6 @@ export default function App() {
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
-
-  const [isVisible, setIsVisible] = useState(false);
 
   const userMention = useUserMention();
   const channelMention = useChannelMention();
@@ -121,19 +114,17 @@ export default function App() {
 
   const handleChangeHtml = (e: OnChangeHtmlEvent) => {
     console.log('HTML changed:', e.value);
-    setCurrentHtml(e.value);
   };
 
   const handleChangeState = (state: OnChangeStateEvent) => {
     setStylesState(state);
   };
 
-  const handleFocus = () => {
-    ref.current?.focus();
-  };
-
-  const handleBlur = () => {
-    ref.current?.blur();
+  const pushRichText = async () => {
+    const text = await ref.current?.getHTML();
+    if (text) {
+      setRichText((prev) => [...prev, text]);
+    }
   };
 
   const openLinkModal = () => {
@@ -168,10 +159,6 @@ export default function App() {
   const closeChannelMentionPopup = () => {
     setIsChannelPopupOpen(false);
     channelMention.onMentionChange('');
-  };
-
-  const openValueModal = () => {
-    setIsValueModalOpen(true);
   };
 
   const closeValueModal = () => {
@@ -304,12 +291,18 @@ export default function App() {
     setSelection(sel);
   };
 
+  const renderRichText = ({ item }: { item: string }) => (
+    <EnrichedText
+      numberOfLines={1}
+      text={item}
+      htmlStyle={htmlStyle}
+      style={styles.enrichedText}
+    />
+  );
+
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
+      <View style={styles.content}>
         <Text style={styles.label}>Enriched Text Input</Text>
         <View style={styles.editor}>
           <EnrichedTextInput
@@ -346,31 +339,16 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
-        <Button title={'toggle'} onPress={() => setIsVisible((c) => !c)} />
-        {isVisible &&
-          Array.from({ length: 1000 }).map((_, i) => (
-            <EnrichedText key={i} style={styles.enrichedText} text={mock} />
-          ))}
-        <EnrichedText
-          numberOfLines={2}
-          style={styles.enrichedText}
-          text={mock}
+        <Button title="Push text" onPress={pushRichText} />
+        <FlatList
+          overScrollMode="never"
+          data={richText}
+          renderItem={renderRichText}
+          keyExtractor={(_, index) => `${index}`}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
         />
-        <Text numberOfLines={2} style={styles.enrichedText}>
-          {mock}
-        </Text>
-        <View style={styles.buttonStack}>
-          <Button title="Focus" onPress={handleFocus} style={styles.button} />
-          <Button title="Blur" onPress={handleBlur} style={styles.button} />
-        </View>
-        <Button
-          title="Set input's value"
-          onPress={openValueModal}
-          style={styles.valueButton}
-        />
-        <HtmlSection currentHtml={currentHtml} />
-        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
-      </ScrollView>
+      </View>
       <LinkModal
         isOpen={isLinkModalOpen}
         editedText={
@@ -408,7 +386,7 @@ export default function App() {
 
 const htmlStyle: HtmlStyle = {
   h1: {
-    fontSize: 72,
+    fontSize: 24,
     bold: true,
   },
   h2: {
@@ -477,15 +455,22 @@ const htmlStyle: HtmlStyle = {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
+    padding: 16,
+    alignItems: 'center',
     backgroundColor: 'white',
   },
-  content: {
-    flexGrow: 1,
-    padding: 16,
-    paddingTop: 100,
-    alignItems: 'center',
+  list: {
+    flex: 1,
+    borderColor: 'navy',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    marginVertical: 12,
+    width: '100%',
+  },
+  listContent: {
+    padding: 12,
   },
   editor: {
     width: '100%',
@@ -519,12 +504,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   enrichedText: {
-    fontSize: 24,
-    backgroundColor: 'red',
+    fontSize: 16,
     fontFamily: 'Nunito-Regular',
-    color: 'blue',
-    marginTop: 1,
-    paddingVertical: 16,
+    color: 'black',
   },
   scrollPlaceholder: {
     marginTop: 24,

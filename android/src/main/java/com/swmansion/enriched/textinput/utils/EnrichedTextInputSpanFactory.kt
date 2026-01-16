@@ -1,6 +1,5 @@
 package com.swmansion.enriched.textinput.utils
 
-import android.graphics.drawable.Drawable
 import com.swmansion.enriched.common.parser.EnrichedSpanFactory
 import com.swmansion.enriched.common.spans.EnrichedImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputBlockQuoteSpan

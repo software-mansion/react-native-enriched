@@ -8,6 +8,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.Log
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
@@ -15,6 +16,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.enriched.common.parser.EnrichedParser
 import kotlin.math.ceil
 
 object MeasurementStore {
@@ -93,29 +95,25 @@ object MeasurementStore {
     return YogaMeasureOutput.make(widthInSP, heightInSP)
   }
 
-  // TODO: parse text to HTML to construct Spannable
   private fun getInitialText(
-    defaultView: EnrichedTextView,
+    context: Context,
     props: ReadableMap?,
   ): CharSequence {
-    val defaultValue = props?.getString("text")
+    val text = props?.getString("text") ?: ""
 
-    // If there is no default value, assume text is one line, "I" is a good approximation of height
-    if (defaultValue == null) return "I"
+    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
+    if (!isHtml) return text
 
-    val isHtml = defaultValue.startsWith("<html>") && defaultValue.endsWith("</html>")
-    if (!isHtml) return defaultValue
-
-//    try {
-//      val htmlStyle = HtmlStyle(defaultView, props.getMap("htmlStyle"))
-//      val parsed = EnrichedParser.fromHtml(defaultValue, htmlStyle, null)
-//      return parsed.trimEnd('\n')
-//    } catch (e: Exception) {
-//      Log.w("MeasurementStore", "Error parsing initial HTML text: ${e.message}")
-//      return defaultValue
-//    }
-
-    return defaultValue
+    try {
+      val style = props?.getMap("htmlStyle") ?: return text
+      val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, style)
+      val factory = EnrichedTextSpanFactory()
+      val parsed = EnrichedParser.fromHtml(text, enrichedStyle, null, factory)
+      return parsed.trimEnd('\n')
+    } catch (e: Exception) {
+      Log.w("MeasurementStore", "Error parsing initial HTML text: ${e.message}")
+      return text
+    }
   }
 
   private fun getInitialFontSize(
@@ -135,7 +133,7 @@ object MeasurementStore {
   ): Long {
     val defaultView = EnrichedTextView(context)
 
-    val text = getInitialText(defaultView, props)
+    val text = getInitialText(context, props)
     val fontSize = getInitialFontSize(defaultView, props)
 
     val fontFamily = props?.getString("fontFamily")

@@ -1,7 +1,6 @@
 package com.swmansion.enriched.text
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
@@ -28,7 +27,7 @@ class EnrichedTextViewManager :
     view: EnrichedTextView?,
     value: String?,
   ) {
-    view?.text = value
+    view?.setValue(value)
   }
 
   override fun setColor(
@@ -106,8 +105,15 @@ class EnrichedTextViewManager :
     view?.setNumberOfLines(value)
   }
 
+  override fun setHtmlStyle(
+    view: EnrichedTextView?,
+    value: ReadableMap?,
+  ) {
+    view?.setHtmlStyle(value)
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextView) {
-    view.updateTypeface()
+    view.afterUpdateTransaction()
   }
 
   override fun measure(

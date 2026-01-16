@@ -1,10 +1,63 @@
 import { codegenNativeComponent, type ColorValue } from 'react-native';
 import type { HostComponent, ViewProps } from 'react-native';
-import type { Float, Int32 } from 'react-native/Libraries/Types/CodegenTypes';
+import type {
+  Float,
+  Int32,
+  UnsafeMixed,
+} from 'react-native/Libraries/Types/CodegenTypes';
+
+type Heading = {
+  fontSize?: Float;
+  bold?: boolean;
+};
+
+export interface EnrichedTextHtmlStyle {
+  h1?: Heading;
+  h2?: Heading;
+  h3?: Heading;
+  h4?: Heading;
+  h5?: Heading;
+  h6?: Heading;
+  blockquote?: {
+    borderColor?: ColorValue;
+    borderWidth?: Float;
+    gapWidth?: Float;
+    color?: ColorValue;
+  };
+  codeblock?: {
+    color?: ColorValue;
+    borderRadius?: Float;
+    backgroundColor?: ColorValue;
+  };
+  code?: {
+    color?: ColorValue;
+    backgroundColor?: ColorValue;
+  };
+  a?: {
+    color?: ColorValue;
+    textDecorationLine?: string;
+  };
+  // This is a workaround for the fact that codegen does not support Records.
+  // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.
+  mention?: UnsafeMixed;
+  ol?: {
+    gapWidth?: Float;
+    marginLeft?: Float;
+    markerFontWeight?: string;
+    markerColor?: ColorValue;
+  };
+  ul?: {
+    bulletColor?: ColorValue;
+    bulletSize?: Float;
+    marginLeft?: Float;
+    gapWidth?: Float;
+  };
+}
 
 export interface NativeProps extends ViewProps {
   // Custom props
   text: string;
+  htmlStyle?: EnrichedTextHtmlStyle;
 
   // ReactNative TextProps
   ellipsizeMode: string;
