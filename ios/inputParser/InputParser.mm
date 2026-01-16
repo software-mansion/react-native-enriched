@@ -689,6 +689,28 @@
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
                                      withSelection:NO];
+      } else if ([styleType
+                     isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+        NSDictionary *checkboxStates = (NSDictionary *)stylePair.styleValue;
+        CheckboxListStyle *cbLStyle = (CheckboxListStyle *)baseStyle;
+
+        // First apply the checkbox list style to the entire range with
+        // unchecked value
+        BOOL shouldAddTypingAttr =
+            styleRange.location + styleRange.length == plainTextLength;
+        [cbLStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
+
+        if (!checkboxStates && checkboxStates.count == 0) {
+          continue;
+        }
+        // Then toggle checked checkboxes
+        for (NSNumber *key in checkboxStates) {
+          NSUInteger checkboxPosition = offset + [key unsignedIntegerValue];
+          BOOL isChecked = [checkboxStates[key] boolValue];
+          if (isChecked) {
+            [cbLStyle toggleCheckedAt:checkboxPosition];
+          }
+        }
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
@@ -803,7 +825,7 @@
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];
-    fixedHtml = [self stringByAddingNewlinesToTag:@"<li>"
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<li"
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];
@@ -1038,6 +1060,8 @@
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
+  NSMutableDictionary *checkboxStates = [[NSMutableDictionary alloc] init];
+  BOOL insideCheckboxList = NO;
   _precedingImageCount = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
@@ -1078,9 +1102,14 @@
       }
 
       if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"] ||
-          [currentTagName isEqualToString:@"li"]) {
+          [currentTagName isEqualToString:@"br"]) {
         // do nothing, we don't include these tags in styles
+      } else if ([currentTagName isEqualToString:@"li"]) {
+        // Only track checkbox state if we're inside a checkbox list
+        if (insideCheckboxList && !closingTag) {
+          BOOL isChecked = [currentTagParams containsString:@"checked"];
+          checkboxStates[@(plainText.length)] = @(isChecked);
+        }
       } else if (!closingTag) {
         // we finish opening tag - get its location and optionally params and
         // put them under tag name key in ongoingTags
@@ -1090,6 +1119,12 @@
           [tagArr addObject:[currentTagParams copy]];
         }
         ongoingTags[currentTagName] = tagArr;
+
+        // Check if this is a checkbox list
+        if ([currentTagName isEqualToString:@"ul"] &&
+            [self isUlCheckboxList:currentTagParams]) {
+          insideCheckboxList = YES;
+        }
 
         // skip one newline after opening tags that are in separate lines
         // intentionally
@@ -1109,6 +1144,12 @@
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag
         // params into an entry that goes inside initiallyProcessedTags
+
+        // Check if we're closing a checkbox list by looking at the params
+        if ([currentTagName isEqualToString:@"ul"] &&
+            [self isUlCheckboxList:currentTagParams]) {
+          insideCheckboxList = NO;
+        }
 
         // skip one newline that was added before some closing tags that are in
         // separate lines
@@ -1322,7 +1363,14 @@
         [styleArr addObject:@([H6Style getStyleType])];
       }
     } else if ([tagName isEqualToString:@"ul"]) {
-      [styleArr addObject:@([UnorderedListStyle getStyleType])];
+      if ([self isUlCheckboxList:params]) {
+        [styleArr addObject:@([CheckboxListStyle getStyleType])];
+        stylePair.styleValue =
+            [self prepareCheckboxListStyleValue:tagRangeValue
+                                 checkboxStates:checkboxStates];
+      } else {
+        [styleArr addObject:@([UnorderedListStyle getStyleType])];
+      }
     } else if ([tagName isEqualToString:@"ol"]) {
       [styleArr addObject:@([OrderedListStyle getStyleType])];
     } else if ([tagName isEqualToString:@"blockquote"]) {
@@ -1341,6 +1389,26 @@
   }
 
   return @[ plainText, processedStyles ];
+}
+
+- (BOOL)isUlCheckboxList:(NSString *)params {
+  return ([params containsString:@"data-type=\"checkbox\""] ||
+          [params containsString:@"data-type='checkbox'"]);
+}
+
+- (NSDictionary *)prepareCheckboxListStyleValue:(NSValue *)rangeValue
+                                 checkboxStates:(NSDictionary *)checkboxStates {
+  NSRange range = [rangeValue rangeValue];
+  NSMutableDictionary *statesInRange = [[NSMutableDictionary alloc] init];
+
+  for (NSNumber *key in checkboxStates) {
+    NSUInteger pos = [key unsignedIntegerValue];
+    if (pos >= range.location && pos < range.location + range.length) {
+      [statesInRange setObject:checkboxStates[key] forKey:key];
+    }
+  }
+
+  return statesInRange;
 }
 
 @end
