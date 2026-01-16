@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="container">
       <div>Text input</div>
-      <EnrichedTextInput />
+      <EnrichedTextInput placeholder="Type something..." />
     </div>
   );
 }

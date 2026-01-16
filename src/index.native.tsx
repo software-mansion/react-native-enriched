@@ -2,9 +2,11 @@ export * from './native/EnrichedTextInput';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
+  OnChangeMentionEvent,
+  OnChangeSelectionEvent,
   OnChangeStateEvent,
+  OnChangeStateDeprecatedEvent,
+  OnKeyPressEvent,
   OnLinkDetected,
   OnMentionDetected,
-  OnChangeSelectionEvent,
-  OnKeyPressEvent,
-} from './native/EnrichedTextInputNativeComponent';
+} from './common/types';
