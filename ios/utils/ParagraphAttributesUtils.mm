@@ -22,6 +22,8 @@
       typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
   CodeBlockStyle *cbStyle =
       typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+  CheckboxListStyle *cbLStyle =
+      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
 
   if (typedInput == nullptr) {
     return NO;
@@ -57,17 +59,35 @@
     // applied
     // - reapply the paragraph style that was present so that a zero width space
     // appears here
-    NSArray *handledStyles = @[ ulStyle, olStyle, bqStyle, cbStyle ];
+    NSArray *handledStyles = @[ ulStyle, olStyle, bqStyle, cbStyle, cbLStyle ];
     for (id<BaseStyleProtocol> style in handledStyles) {
       if ([style detectStyle:nonNewlineRange]) {
-        [TextInsertionUtils replaceText:text
-                                     at:range
-                   additionalAttributes:nullptr
-                                  input:typedInput
-                          withSelection:YES];
-        typedInput->textView.typingAttributes =
-            typedInput->defaultTypingAttributes;
-        [style addAttributes:NSMakeRange(range.location, 0) withTypingAttr:YES];
+        // For checkbox lists, preserve the current checked state
+        if (style == cbLStyle) {
+          BOOL isCurrentlyChecked =
+              [cbLStyle getCheckboxStateAt:range.location];
+          [TextInsertionUtils replaceText:text
+                                       at:range
+                     additionalAttributes:nullptr
+                                    input:typedInput
+                            withSelection:YES];
+          typedInput->textView.typingAttributes =
+              typedInput->defaultTypingAttributes;
+          [cbLStyle addAttributesWithCheckedValue:isCurrentlyChecked
+                                          inRange:NSMakeRange(range.location, 0)
+                                   withTypingAttr:YES];
+        } else {
+          [TextInsertionUtils replaceText:text
+                                       at:range
+                     additionalAttributes:nullptr
+                                    input:typedInput
+                            withSelection:YES];
+          typedInput->textView.typingAttributes =
+              typedInput->defaultTypingAttributes;
+          [style addAttributes:NSMakeRange(range.location, 0)
+                withTypingAttr:YES];
+        }
+
         return YES;
       }
     }

@@ -7,6 +7,7 @@ typedef NS_ENUM(NSInteger, StyleType) {
   CodeBlock,
   UnorderedList,
   OrderedList,
+  CheckboxList,
   H1,
   H2,
   H3,

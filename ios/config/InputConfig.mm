@@ -47,6 +47,10 @@
   UIColor *_codeBlockBgColor;
   LinkRegexConfig *_linkRegexConfig;
   NSRegularExpression *_parsedLinkRegex;
+  CGFloat _checkboxListBoxSize;
+  CGFloat _checkboxListGapWidth;
+  CGFloat _checkboxListMarginLeft;
+  UIColor *_checkboxListBoxColor;
 }
 
 - (instancetype)init {
@@ -101,6 +105,10 @@
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
   copy->_linkRegexConfig = [_linkRegexConfig copy];
   copy->_parsedLinkRegex = [_parsedLinkRegex copy];
+  copy->_checkboxListBoxSize = _checkboxListBoxSize;
+  copy->_checkboxListGapWidth = _checkboxListGapWidth;
+  copy->_checkboxListMarginLeft = _checkboxListMarginLeft;
+  copy->_checkboxListBoxColor = [_checkboxListBoxColor copy];
   return copy;
 }
 
@@ -513,6 +521,38 @@
 
 - (NSRegularExpression *)parsedLinkRegex {
   return _parsedLinkRegex;
+}
+
+- (CGFloat)checkboxListBoxSize {
+  return _checkboxListBoxSize;
+}
+
+- (void)setCheckboxListBoxSize:(CGFloat)newValue {
+  _checkboxListBoxSize = newValue;
+}
+
+- (CGFloat)checkboxListGapWidth {
+  return _checkboxListGapWidth;
+}
+
+- (void)setCheckboxListGapWidth:(CGFloat)newValue {
+  _checkboxListGapWidth = newValue;
+}
+
+- (CGFloat)checkboxListMarginLeft {
+  return _checkboxListMarginLeft;
+}
+
+- (void)setCheckboxListMarginLeft:(CGFloat)newValue {
+  _checkboxListMarginLeft = newValue;
+}
+
+- (UIColor *)checkboxListBoxColor {
+  return _checkboxListBoxColor;
+}
+
+- (void)setCheckboxListBoxColor:(UIColor *)newValue {
+  _checkboxListBoxColor = newValue;
 }
 
 @end
