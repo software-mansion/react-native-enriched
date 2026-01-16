@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
 import type { OnChangeStateEvent } from '../../common/types';
-import type { WebSyntheticEvent } from '../EnrichedTextInput';
 
 export const useEnrichedTextInputState = (
   editor: Editor | null,
-  onChangeState?: (e: WebSyntheticEvent<OnChangeStateEvent>) => void
+  onChangeState?: (e: OnChangeStateEvent) => void
 ) => {
   const lastStateRef = useRef('');
   useEffect(() => {
@@ -123,7 +122,7 @@ export const useEnrichedTextInputState = (
       const currentStateString = JSON.stringify(state);
       if (currentStateString !== lastStateRef.current) {
         lastStateRef.current = currentStateString;
-        onChangeState?.({ nativeEvent: state });
+        onChangeState?.(state);
       }
 
       return state;

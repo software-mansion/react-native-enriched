@@ -9,8 +9,8 @@ import {
 import EnrichedTextInputNativeComponent, {
   Commands,
   type NativeProps,
-  type OnChangeSelectionEvent,
-  type OnLinkDetected,
+  type OnChangeSelectionNativeEvent,
+  type OnLinkDetectedNativeEvent,
   type OnMentionEvent,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
@@ -36,7 +36,10 @@ import type {
   OnChangeStateEvent,
   OnChangeStateDeprecatedEvent,
   OnMentionDetected,
+  OnLinkDetected,
+  OnChangeSelectionEvent,
   OnChangeMentionEvent,
+  OnKeyPressEvent,
   EnrichedTextInputInstanceBase,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
@@ -108,21 +111,20 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   linkRegex?: RegExp | null;
   onFocus?: () => void;
   onBlur?: () => void;
-  onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
-  onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
-  onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
+  onChangeText?: (e: OnChangeTextEvent) => void;
+  onChangeHtml?: (e: OnChangeHtmlEvent) => void;
+  onChangeState?: (e: OnChangeStateEvent) => void;
   /**
    * @deprecated Use onChangeState prop instead.
    */
-  onChangeStateDeprecated?: (
-    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
-  ) => void;
+  onChangeStateDeprecated?: (e: OnChangeStateDeprecatedEvent) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
-  onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
+  onChangeSelection?: (e: OnChangeSelectionEvent) => void;
+  onKeyPress?: (e: OnKeyPressEvent) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -180,6 +182,7 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
+  onKeyPress,
   androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULTS.androidExperimentalSynchronousEvents,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULTS.scrollEnabled,
   ...rest
@@ -339,9 +342,39 @@ export const EnrichedTextInput = ({
     }
   };
 
-  const handleLinkDetected = (e: NativeSyntheticEvent<OnLinkDetected>) => {
+  const handleLinkDetected = (
+    e: NativeSyntheticEvent<OnLinkDetectedNativeEvent>
+  ) => {
     const { text, url, start, end } = e.nativeEvent;
     onLinkDetected?.({ text, url, start, end });
+  };
+
+  const handleChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
+    onChangeText?.(e.nativeEvent);
+  };
+
+  const handleChangeHtml = (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => {
+    onChangeHtml?.(e.nativeEvent);
+  };
+
+  const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
+    onChangeState?.(e.nativeEvent);
+  };
+
+  const handleChangeStateDeprecated = (
+    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
+  ) => {
+    onChangeStateDeprecated?.(e.nativeEvent);
+  };
+
+  const handleKeyPress = (e: NativeSyntheticEvent<OnKeyPressEvent>) => {
+    onKeyPress?.(e.nativeEvent);
+  };
+
+  const handleChangeSelection = (
+    e: NativeSyntheticEvent<OnChangeSelectionNativeEvent>
+  ) => {
+    onChangeSelection?.(e.nativeEvent);
   };
 
   const handleMentionDetected = (
@@ -385,17 +418,18 @@ export const EnrichedTextInput = ({
       linkRegex={linkRegex}
       onInputFocus={onFocus}
       onInputBlur={onBlur}
-      onChangeText={onChangeText}
-      onChangeHtml={onChangeHtml}
+      onChangeText={handleChangeText}
+      onChangeHtml={handleChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeState}
-      onChangeStateDeprecated={onChangeStateDeprecated}
+      onChangeState={handleChangeState}
+      onChangeStateDeprecated={handleChangeStateDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
-      onChangeSelection={onChangeSelection}
+      onChangeSelection={handleChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
+      onInputKeyPress={handleKeyPress}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
