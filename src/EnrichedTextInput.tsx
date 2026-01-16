@@ -18,7 +18,6 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-  type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
 } from './spec/EnrichedTextInputNativeComponent';
@@ -37,6 +36,7 @@ import type {
 import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from './utils/regexParser';
 import { nullthrows } from './utils/nullthrows';
+import type { HtmlStyle } from './types';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -75,52 +75,6 @@ export interface EnrichedTextInputInstance extends NativeMethods {
 export interface OnChangeMentionEvent {
   indicator: string;
   text: string;
-}
-
-type HeadingStyle = {
-  fontSize?: number;
-  bold?: boolean;
-};
-
-export interface HtmlStyle {
-  h1?: HeadingStyle;
-  h2?: HeadingStyle;
-  h3?: HeadingStyle;
-  h4?: HeadingStyle;
-  h5?: HeadingStyle;
-  h6?: HeadingStyle;
-  blockquote?: {
-    borderColor?: ColorValue;
-    borderWidth?: number;
-    gapWidth?: number;
-    color?: ColorValue;
-  };
-  codeblock?: {
-    color?: ColorValue;
-    borderRadius?: number;
-    backgroundColor?: ColorValue;
-  };
-  code?: {
-    color?: ColorValue;
-    backgroundColor?: ColorValue;
-  };
-  a?: {
-    color?: ColorValue;
-    textDecorationLine?: 'underline' | 'none';
-  };
-  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  ol?: {
-    gapWidth?: number;
-    marginLeft?: number;
-    markerFontWeight?: TextStyle['fontWeight'];
-    markerColor?: ColorValue;
-  };
-  ul?: {
-    bulletColor?: ColorValue;
-    bulletSize?: number;
-    marginLeft?: number;
-    gapWidth?: number;
-  };
 }
 
 export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {

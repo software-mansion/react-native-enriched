@@ -11,7 +11,7 @@ type Heading = {
   bold?: boolean;
 };
 
-export interface EnrichedTextHtmlStyle {
+export interface EnrichedTextHtmlStyleInternal {
   h1?: Heading;
   h2?: Heading;
   h3?: Heading;
@@ -57,7 +57,7 @@ export interface EnrichedTextHtmlStyle {
 export interface NativeProps extends ViewProps {
   // Custom props
   text: string;
-  htmlStyle?: EnrichedTextHtmlStyle;
+  htmlStyle?: EnrichedTextHtmlStyleInternal;
 
   // ReactNative TextProps
   ellipsizeMode: string;

@@ -19,62 +19,16 @@ import EnrichedTextNativeComponent, {
   type NativeProps,
 } from './spec/EnrichedTextNativeComponent';
 import { nullthrows } from './utils/nullthrows';
-import type { MentionStyleProperties } from './spec/EnrichedTextInputNativeComponent';
-import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
-
-type HeadingStyle = {
-  fontSize?: number;
-  bold?: boolean;
-};
-
-export interface EnrichedTextHtmlStyle {
-  h1?: HeadingStyle;
-  h2?: HeadingStyle;
-  h3?: HeadingStyle;
-  h4?: HeadingStyle;
-  h5?: HeadingStyle;
-  h6?: HeadingStyle;
-  blockquote?: {
-    borderColor?: ColorValue;
-    borderWidth?: number;
-    gapWidth?: number;
-    color?: ColorValue;
-  };
-  codeblock?: {
-    color?: ColorValue;
-    borderRadius?: number;
-    backgroundColor?: ColorValue;
-  };
-  code?: {
-    color?: ColorValue;
-    backgroundColor?: ColorValue;
-  };
-  a?: {
-    color?: ColorValue;
-    textDecorationLine?: 'underline' | 'none';
-  };
-  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  ol?: {
-    gapWidth?: number;
-    marginLeft?: number;
-    markerFontWeight?: TextStyle['fontWeight'];
-    markerColor?: ColorValue;
-  };
-  ul?: {
-    bulletColor?: ColorValue;
-    bulletSize?: number;
-    marginLeft?: number;
-    gapWidth?: number;
-  };
-}
+import { normalizeEnrichedTextHtmlStyle } from './utils/normalizeHtmlStyle';
+import type { EnrichedTextHtmlStyle } from './types';
 
 export interface EnrichedTextInstance extends NativeMethods {}
 
-export interface EnrichedTextProps extends Omit<ViewProps, 'children'> {
+export interface EnrichedTextProps extends ViewProps {
   ref?: RefObject<EnrichedTextInstance | null>;
-  text: string;
+  children: string;
   style?: TextStyle;
-  htmlStyle: EnrichedTextHtmlStyle;
+  htmlStyle?: EnrichedTextHtmlStyle;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
   numberOfLines?: number;
   selectable?: boolean;
@@ -85,7 +39,7 @@ type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 
 export const EnrichedText = ({
   ref,
-  text,
+  children,
   style,
   htmlStyle: _htmlStyle = {},
   ellipsizeMode = 'tail',
@@ -96,9 +50,8 @@ export const EnrichedText = ({
 }: EnrichedTextProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
 
-  // TODO: eliminate need to specify mention indicators here
   const htmlStyle = useMemo(
-    () => normalizeHtmlStyle(_htmlStyle, ['@']),
+    () => normalizeEnrichedTextHtmlStyle(_htmlStyle),
     [_htmlStyle]
   );
 
@@ -134,7 +87,7 @@ export const EnrichedText = ({
   return (
     <EnrichedTextNativeComponent
       ref={nativeRef}
-      text={text}
+      text={children}
       style={style}
       htmlStyle={htmlStyle}
       ellipsizeMode={ellipsizeMode}

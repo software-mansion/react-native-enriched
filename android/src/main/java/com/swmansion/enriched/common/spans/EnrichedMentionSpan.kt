@@ -20,8 +20,8 @@ open class EnrichedMentionSpan(
 
   override fun updateDrawState(textPaint: TextPaint) {
     super.updateDrawState(textPaint)
-
-    val mentionsStyle = enrichedStyle.mentionsStyle[indicator] ?: return
+    val style = enrichedStyle.mentionsStyle
+    val mentionsStyle = style[indicator] ?: style["_default"] ?: return
     textPaint.color = mentionsStyle.color
     textPaint.bgColor = mentionsStyle.backgroundColor
     textPaint.isUnderlineText = mentionsStyle.underline

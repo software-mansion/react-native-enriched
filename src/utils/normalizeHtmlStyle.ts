@@ -1,9 +1,13 @@
-import type { HtmlStyle } from '../EnrichedTextInput';
 import { type ColorValue, processColor } from 'react-native';
+import type { HtmlStyleInternal } from '../spec/EnrichedTextInputNativeComponent';
 import type {
+  HtmlStyle,
   MentionStyleProperties,
-  HtmlStyleInternal,
-} from '../spec/EnrichedTextInputNativeComponent';
+  EnrichedTextHtmlStyle,
+} from '../types';
+import type { EnrichedTextHtmlStyleInternal } from '../spec/EnrichedTextNativeComponent';
+
+const MENTION_DEFAULT_KEY = '_default';
 
 const defaultStyle: Required<HtmlStyle> = {
   h1: {
@@ -90,6 +94,22 @@ const isMentionStyleRecord = (
   return false;
 };
 
+const parseOlStyles = (style: HtmlStyle) => {
+  let markerFontWeight: string | undefined;
+  if (style.ol?.markerFontWeight) {
+    if (typeof style.ol?.markerFontWeight === 'number') {
+      markerFontWeight = String(style.ol?.markerFontWeight);
+    } else if (typeof style.ol?.markerFontWeight === 'string') {
+      markerFontWeight = style.ol?.markerFontWeight;
+    }
+  }
+
+  return {
+    ...style.ol,
+    markerFontWeight: markerFontWeight,
+  };
+};
+
 const convertToHtmlStyleInternal = (
   style: HtmlStyle,
   mentionIndicators: string[]
@@ -105,24 +125,47 @@ const convertToHtmlStyleInternal = (
     };
   });
 
-  let markerFontWeight: string | undefined;
-  if (style.ol?.markerFontWeight) {
-    if (typeof style.ol?.markerFontWeight === 'number') {
-      markerFontWeight = String(style.ol?.markerFontWeight);
-    } else if (typeof style.ol?.markerFontWeight === 'string') {
-      markerFontWeight = style.ol?.markerFontWeight;
+  return {
+    ...style,
+    mention: mentionStyles,
+    ol: parseOlStyles(style),
+  };
+};
+
+const convertToEnrichedTextHtmlStyleInternal = (
+  style: HtmlStyle
+): HtmlStyleInternal => {
+  const mentionStyles: Record<string, MentionStyleProperties> = {};
+
+  const mention = style.mention;
+  if (mention && typeof mention === 'object' && !Array.isArray(mention)) {
+    for (const key of Object.keys(mention)) {
+      const value = (mention as Record<string, unknown>)[key];
+
+      if (typeof value === 'object' && value !== null) {
+        mentionStyles[key] = {
+          ...defaultStyle.mention,
+          ...(value as MentionStyleProperties),
+        };
+      } else {
+        mentionStyles[MENTION_DEFAULT_KEY] = {
+          ...defaultStyle.mention,
+          ...(mention as MentionStyleProperties),
+        };
+      }
     }
   }
 
-  const olStyles = {
-    ...style.ol,
-    markerFontWeight: markerFontWeight,
-  };
+  if (mentionStyles[MENTION_DEFAULT_KEY] === undefined) {
+    mentionStyles[MENTION_DEFAULT_KEY] = {
+      ...defaultStyle.mention,
+    };
+  }
 
   return {
     ...style,
     mention: mentionStyles,
-    ol: olStyles,
+    ol: parseOlStyles(style),
   };
 };
 
@@ -191,6 +234,14 @@ export const normalizeHtmlStyle = (
   mentionIndicators: string[]
 ): HtmlStyleInternal => {
   const converted = convertToHtmlStyleInternal(style, mentionIndicators);
+  const withDefaults = assignDefaultValues(converted);
+  return parseColors(withDefaults);
+};
+
+export const normalizeEnrichedTextHtmlStyle = (
+  style: EnrichedTextHtmlStyle
+): EnrichedTextHtmlStyleInternal => {
+  const converted = convertToEnrichedTextHtmlStyleInternal(style);
   const withDefaults = assignDefaultValues(converted);
   return parseColors(withDefaults);
 };

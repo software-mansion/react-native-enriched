@@ -16,6 +16,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.parser.EnrichedParser
 import kotlin.math.ceil
 
@@ -97,6 +98,7 @@ object MeasurementStore {
 
   private fun getInitialText(
     context: Context,
+    fontSize: Int,
     props: ReadableMap?,
   ): CharSequence {
     val text = props?.getString("text") ?: ""
@@ -106,7 +108,7 @@ object MeasurementStore {
 
     try {
       val style = props?.getMap("htmlStyle") ?: return text
-      val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, style)
+      val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize, style)
       val factory = EnrichedTextSpanFactory()
       val parsed = EnrichedParser.fromHtml(text, enrichedStyle, null, factory)
       return parsed.trimEnd('\n')
@@ -116,14 +118,15 @@ object MeasurementStore {
     }
   }
 
-  private fun getInitialFontSize(
-    defaultView: EnrichedTextView,
-    props: ReadableMap?,
-  ): Float {
-    val propsFontSize = props?.getDouble("fontSize")?.toFloat()
-    if (propsFontSize == null) return defaultView.textSize
+  private fun getInitialFontSize(props: ReadableMap?): Float {
+    val propsFontSize = props?.getDouble("fontSize")?.toFloat() ?: EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
+    val fontSize =
+      when {
+        propsFontSize > 0f -> propsFontSize
+        else -> EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
+      }
 
-    return ceil(PixelUtil.toPixelFromSP(propsFontSize))
+    return ceil(PixelUtil.toPixelFromSP(fontSize))
   }
 
   private fun getMeasureById(
@@ -131,17 +134,15 @@ object MeasurementStore {
     width: Float,
     props: ReadableMap?,
   ): Long {
-    val defaultView = EnrichedTextView(context)
-
-    val text = getInitialText(context, props)
-    val fontSize = getInitialFontSize(defaultView, props)
+    val fontSize = getInitialFontSize(props)
+    val text = getInitialText(context, fontSize.toInt(), props)
 
     val fontFamily = props?.getString("fontFamily")
     val numberOfLines = props?.getInt("numberOfLines") ?: 0
     val ellipsizeMode = props?.getString("ellipsizeMode")
     val fontStyle = parseFontStyle(props?.getString("fontStyle"))
     val fontWeight = parseFontWeight(props?.getString("fontWeight"))
-    val typeface = applyStyles(defaultView.typeface, fontStyle, fontWeight, fontFamily, context.assets)
+    val typeface = applyStyles(null, fontStyle, fontWeight, fontFamily, context.assets)
     val size = measure(width, text, typeface, fontSize, numberOfLines, ellipsizeMode)
 
     return size

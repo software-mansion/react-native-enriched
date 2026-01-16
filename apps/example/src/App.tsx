@@ -294,10 +294,11 @@ export default function App() {
   const renderRichText = ({ item }: { item: string }) => (
     <EnrichedText
       numberOfLines={1}
-      text={item}
       htmlStyle={htmlStyle}
       style={styles.enrichedText}
-    />
+    >
+      {item}
+    </EnrichedText>
   );
 
   return (
@@ -339,6 +340,15 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
+        <EnrichedText
+          numberOfLines={1}
+          htmlStyle={htmlStyle}
+          style={styles.enrichedText}
+        >
+          {
+            'Lorem ipsum dolor sit amet,  consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+          }
+        </EnrichedText>
         <Button title="Push text" onPress={pushRichText} />
         <FlatList
           overScrollMode="never"

@@ -175,12 +175,6 @@ export interface OnRequestHtmlResultEvent {
   html: UnsafeMixed;
 }
 
-export interface MentionStyleProperties {
-  color?: ColorValue;
-  backgroundColor?: ColorValue;
-  textDecorationLine?: 'underline' | 'none';
-}
-
 export interface OnKeyPressEvent {
   key: string;
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -17,6 +17,7 @@ import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 import kotlin.math.ceil
@@ -28,7 +29,7 @@ class EnrichedTextView : AppCompatTextView {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
-  private var fontSize: Float = textSize
+  private var fontSize: Float = EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
 
   private var enrichedStyle: EnrichedTextStyle? = null
   private val spannableFactory = EnrichedTextSpanFactory()
@@ -55,6 +56,7 @@ class EnrichedTextView : AppCompatTextView {
     }
 
     setPadding(0, 0, 0, 0)
+    setFontSize(EnrichedConstants.TEXT_DEFAULT_FONT_SIZE)
   }
 
   private fun updateValue() {
@@ -72,7 +74,7 @@ class EnrichedTextView : AppCompatTextView {
     try {
       val parsed = EnrichedParser.fromHtml(text, style, null, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine, BufferType.SPANNABLE)
+      setText(withoutLastNewLine)
     } catch (e: Exception) {
       setText(text)
     }
@@ -95,13 +97,16 @@ class EnrichedTextView : AppCompatTextView {
   fun setHtmlStyle(style: ReadableMap?) {
     if (style == null) return
 
-    val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, style)
+    val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize.toInt(), style)
     this.enrichedStyle = enrichedStyle
 
-    val spannable = text as? Spannable ?: return
-    if (spannable.isEmpty()) return
+    val currentText = text ?: return
+    if (currentText.isEmpty()) return
 
+    val spannable = SpannableString(currentText)
     val spans = spannable.getSpans(0, spannable.length, EnrichedTextSpan::class.java)
+    var modified = false
+
     for (span in spans) {
       val start = spannable.getSpanStart(span)
       val end = spannable.getSpanEnd(span)
@@ -112,6 +117,11 @@ class EnrichedTextView : AppCompatTextView {
       spannable.removeSpan(span)
       val newSpan = span.rebuildWithStyle(enrichedStyle)
       spannable.setSpan(newSpan, start, end, flags)
+      modified = true
+    }
+
+    if (modified) {
+      this.text = spannable
     }
   }
 

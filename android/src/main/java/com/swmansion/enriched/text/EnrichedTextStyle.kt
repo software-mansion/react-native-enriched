@@ -1,6 +1,7 @@
 package com.swmansion.enriched.text
 
 import android.graphics.Color
+import android.util.Log
 import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
@@ -8,6 +9,7 @@ import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.MentionStyle
+import com.swmansion.enriched.textinput.EnrichedTextInputView
 import kotlin.math.ceil
 
 data class EnrichedTextStyle(
@@ -47,6 +49,7 @@ data class EnrichedTextStyle(
   companion object {
     fun fromReadableMap(
       context: ReactContext,
+      fontSize: Int,
       map: ReadableMap,
     ): EnrichedTextStyle {
       val h1 = map.getMap("h1")
@@ -81,7 +84,7 @@ data class EnrichedTextStyle(
         blockquoteStripeWidth = parseFloat(bq, "borderWidth").toInt(),
         blockquoteGapWidth = parseFloat(bq, "gapWidth").toInt(),
         olGapWidth = parseFloat(ol, "gapWidth").toInt(),
-        olMarginLeft = parseFloat(ol, "marginLeft").toInt(),
+        olMarginLeft = calculateOlMarginLeft(fontSize, parseFloat(ol, "marginLeft").toInt()),
         olMarkerFontWeight = parseOptionalFontWeight(ol, "markerFontWeight"),
         olMarkerColor = parseOptionalColor(context, ol, "markerColor"),
         ulGapWidth = parseFloat(ul, "gapWidth").toInt(),
@@ -144,6 +147,14 @@ data class EnrichedTextStyle(
     ): Int? {
       val weight = map?.getString(key) ?: return null
       return parseFontWeight(weight)
+    }
+
+    private fun calculateOlMarginLeft(
+      fontSize: Int,
+      userMargin: Int,
+    ): Int {
+      val leadMargin = fontSize / 2
+      return leadMargin + userMargin
     }
 
     private fun parseMentionsStyle(
