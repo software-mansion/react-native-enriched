@@ -43,7 +43,6 @@ function App() {
   const [html, setHtml] = useState('');
 
   const handleChangeState = (state: OnChangeStateEvent) => {
-    console.log('Editor state changed:', state);
     setStylesState(state);
   };
 
@@ -58,6 +57,14 @@ function App() {
   const handleSelectImage = () => {
     console.log('Select image');
   };
+
+  const defaultValue = `<html>
+<p><b>Bold</b></p>
+<p><i>Italic</i></p>
+<p><u>Underline</u></p>
+<p><s>Strike</s></p>
+<h1>Header1</h1>
+</html>`;
 
   return (
     <div className="container">
@@ -76,19 +83,11 @@ function App() {
           style={{ border: '1px solid #ddd', padding: '8px' }}
           onChangeState={handleChangeState}
           onChangeHtml={handleOnChangeHtml}
+          defaultValue={defaultValue}
         />
         <div className="html-output">
           <h3>HTML Output:</h3>
-          <pre
-            style={{
-              background: '#f5f5f5',
-              padding: '12px',
-              borderRadius: '4px',
-              overflow: 'auto',
-            }}
-          >
-            {html}
-          </pre>
+          <div>{html}</div>
         </div>
       </div>
     </div>

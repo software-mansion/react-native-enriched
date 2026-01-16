@@ -31,8 +31,8 @@ import type {
   OnKeyPressEvent,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
-import { useEnrichedTextInputState } from './hooks/useEnrichedTextInputState';
-import { useEnrichedTextInputHtml } from './hooks/useEnrichedTextInputHtml';
+import { useOnChangeState } from './hooks/useOnChangeState';
+import { useOnChangeHtml } from './hooks/useOnChangeHtml';
 
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
 
@@ -142,8 +142,16 @@ export const EnrichedTextInput = ({
       Text,
       Paragraph,
       Heading.extend({ marks: '' }),
-      Bold,
-      Italic,
+      Bold.extend({
+        renderHTML({ HTMLAttributes }) {
+          return ['b', HTMLAttributes, 0];
+        },
+      }),
+      Italic.extend({
+        renderHTML({ HTMLAttributes }) {
+          return ['i', HTMLAttributes, 0];
+        },
+      }),
       Strike,
       Underline,
       Placeholder.configure({
@@ -160,8 +168,8 @@ export const EnrichedTextInput = ({
     },
   });
 
-  useEnrichedTextInputState(editor, onChangeState);
-  useEnrichedTextInputHtml(editor, onChangeHtml);
+  useOnChangeState(editor, onChangeState);
+  useOnChangeHtml(editor, onChangeHtml);
 
   useEffect(() => {
     if (editor && editable !== undefined) {

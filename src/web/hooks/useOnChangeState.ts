@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
 import type { OnChangeStateEvent } from '../../common/types';
 
-export const useEnrichedTextInputState = (
+export const useOnChangeState = (
   editor: Editor | null,
   onChangeState?: (e: OnChangeStateEvent) => void
 ) => {
@@ -11,7 +11,6 @@ export const useEnrichedTextInputState = (
     if (!editor) return;
 
     const updateState = (): OnChangeStateEvent => {
-      // Helper to check if any heading is active
       const isAnyHeadingActive = () =>
         [1, 2, 3, 4, 5, 6].some((level) =>
           editor.isActive('heading', { level })
@@ -158,11 +157,10 @@ export const useEnrichedTextInputState = (
       return state;
     };
 
-    // Listen to every editor update
-    editor.on('transaction', updateState);
-
     // Initial check
     updateState();
+
+    editor.on('transaction', updateState);
 
     return () => {
       editor.off('transaction', updateState);
