@@ -15,8 +15,9 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.styles.HtmlStyle
-import com.swmansion.enriched.textinput.utils.EnrichedParser
+import com.swmansion.enriched.textinput.utils.EnrichedTextInputSpanFactory
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
 
@@ -112,7 +113,8 @@ object MeasurementStore {
 
     try {
       val htmlStyle = HtmlStyle(defaultView, props.getMap("htmlStyle"))
-      val parsed = EnrichedParser.fromHtml(defaultValue, htmlStyle, null)
+      val factory = EnrichedTextInputSpanFactory()
+      val parsed = EnrichedParser.fromHtml(defaultValue, htmlStyle, null, factory)
       return parsed.trimEnd('\n')
     } catch (e: Exception) {
       Log.w("MeasurementStore", "Error parsing initial HTML text: ${e.message}")

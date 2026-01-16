@@ -4,11 +4,11 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
-import com.swmansion.enriched.textinput.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
-import com.swmansion.enriched.textinput.spans.EnrichedUnorderedListSpan
-import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
@@ -47,7 +47,7 @@ class ListStyles(
     spannable: Spannable,
     s: Int,
   ): Int {
-    val span = getPreviousParagraphSpan(spannable, s, EnrichedOrderedListSpan::class.java)
+    val span = getPreviousParagraphSpan(spannable, s, EnrichedInputOrderedListSpan::class.java)
     val index = span?.getIndex() ?: 0
     return index + 1
   }
@@ -61,14 +61,14 @@ class ListStyles(
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
 
     if (name == EnrichedSpans.UNORDERED_LIST) {
-      val span = EnrichedUnorderedListSpan(view.htmlStyle)
+      val span = EnrichedInputUnorderedListSpan(view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       return
     }
 
     if (name == EnrichedSpans.ORDERED_LIST) {
       val index = getOrderedListIndex(spannable, safeStart)
-      val span = EnrichedOrderedListSpan(index, view.htmlStyle)
+      val span = EnrichedInputOrderedListSpan(index, view.htmlStyle)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
@@ -95,7 +95,7 @@ class ListStyles(
     text: Spannable,
     position: Int,
   ) {
-    val spans = text.getSpans(position + 1, text.length, EnrichedOrderedListSpan::class.java)
+    val spans = text.getSpans(position + 1, text.length, EnrichedInputOrderedListSpan::class.java)
     val sortedSpans = spans.sortedBy { text.getSpanStart(it) }
     for (span in sortedSpans) {
       val spanStart = text.getSpanStart(span)
