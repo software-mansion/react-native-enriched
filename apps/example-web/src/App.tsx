@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   EnrichedTextInput,
   type EnrichedTextInputInstance,
+  type OnChangeHtmlEvent,
   type OnChangeStateEvent,
 } from 'react-native-enriched';
 import { Toolbar } from './components/Toolbar';
@@ -39,10 +40,15 @@ function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [stylesState, setStylesState] =
     useState<OnChangeStateEvent>(DEFAULT_STYLES);
+  const [html, setHtml] = useState('');
 
   const handleChangeState = (state: OnChangeStateEvent) => {
     console.log('Editor state changed:', state);
     setStylesState(state);
+  };
+
+  const handleOnChangeHtml = (state: OnChangeHtmlEvent) => {
+    setHtml(state.value);
   };
 
   const handleOpenLinkModal = () => {
@@ -68,10 +74,22 @@ function App() {
           autoFocus={false}
           placeholder="Type something..."
           style={{ border: '1px solid #ddd', padding: '8px' }}
-          onChangeState={(e) => {
-            handleChangeState(e.nativeEvent);
-          }}
+          onChangeState={handleChangeState}
+          onChangeHtml={handleOnChangeHtml}
         />
+        <div className="html-output">
+          <h3>HTML Output:</h3>
+          <pre
+            style={{
+              background: '#f5f5f5',
+              padding: '12px',
+              borderRadius: '4px',
+              overflow: 'auto',
+            }}
+          >
+            {html}
+          </pre>
+        </div>
       </div>
     </div>
   );

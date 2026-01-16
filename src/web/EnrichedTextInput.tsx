@@ -32,6 +32,7 @@ import type {
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
 import { useEnrichedTextInputState } from './hooks/useEnrichedTextInputState';
+import { useEnrichedTextInputHtml } from './hooks/useEnrichedTextInputHtml';
 
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
 
@@ -132,6 +133,7 @@ export const EnrichedTextInput = ({
   placeholder,
   style,
   onChangeState,
+  onChangeHtml,
 }: EnrichedTextInputProps) => {
   const editor = useEditor({
     extensions: [
@@ -139,7 +141,7 @@ export const EnrichedTextInput = ({
       HardBreak,
       Text,
       Paragraph,
-      Heading,
+      Heading.extend({ marks: '' }),
       Bold,
       Italic,
       Strike,
@@ -159,6 +161,7 @@ export const EnrichedTextInput = ({
   });
 
   useEnrichedTextInputState(editor, onChangeState);
+  useEnrichedTextInputHtml(editor, onChangeHtml);
 
   useEffect(() => {
     if (editor && editable !== undefined) {

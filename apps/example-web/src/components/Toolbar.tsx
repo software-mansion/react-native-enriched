@@ -173,12 +173,51 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     }
   };
 
+  const isConflicting = (item: Item) => {
+    switch (item.name) {
+      case 'bold':
+        return stylesState.bold.isConflicting;
+      case 'italic':
+        return stylesState.italic.isConflicting;
+      case 'underline':
+        return stylesState.underline.isConflicting;
+      case 'strikethrough':
+        return stylesState.strikeThrough.isConflicting;
+      case 'heading-1':
+        return stylesState.h1.isConflicting;
+      case 'heading-2':
+        return stylesState.h2.isConflicting;
+      case 'heading-3':
+        return stylesState.h3.isConflicting;
+      case 'heading-4':
+        return stylesState.h4.isConflicting;
+      case 'heading-5':
+        return stylesState.h5.isConflicting;
+      case 'heading-6':
+        return stylesState.h6.isConflicting;
+      case 'code-block':
+        return stylesState.codeBlock.isConflicting;
+      case 'quote':
+        return stylesState.blockQuote.isConflicting;
+      case 'unordered-list':
+        return stylesState.unorderedList.isConflicting;
+      case 'ordered-list':
+        return stylesState.orderedList.isConflicting;
+      case 'link':
+        return stylesState.link.isConflicting;
+      case 'image':
+        return stylesState.image.isConflicting;
+      default:
+        return false;
+    }
+  };
+
   return (
     <div className="toolbar">
       {STYLE_ITEMS.map((item) => (
         <button
           key={item.name}
-          className={`toolbar-button ${isActive(item) ? 'active' : ''}`}
+          className={`toolbar-button ${isActive(item) ? 'active' : ''} ${isConflicting(item) ? 'conflicting' : ''}`}
           disabled={isDisabled(item)}
           onClick={() => {
             handlePress(item);

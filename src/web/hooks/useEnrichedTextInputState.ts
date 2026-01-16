@@ -11,6 +11,12 @@ export const useEnrichedTextInputState = (
     if (!editor) return;
 
     const updateState = (): OnChangeStateEvent => {
+      // Helper to check if any heading is active
+      const isAnyHeadingActive = () =>
+        [1, 2, 3, 4, 5, 6].some((level) =>
+          editor.isActive('heading', { level })
+        );
+
       const state: OnChangeStateEvent = {
         // Marks
         bold: {
@@ -23,16 +29,15 @@ export const useEnrichedTextInputState = (
           isConflicting: false,
           isBlocking: !editor.can().chain().focus().toggleItalic().run(),
         },
-
         underline: {
           isActive: editor.isActive('underline'),
           isConflicting: false,
-          isBlocking: false,
+          isBlocking: !editor.can().chain().focus().toggleUnderline().run(),
         },
         strikeThrough: {
           isActive: editor.isActive('strike'),
           isConflicting: false,
-          isBlocking: false,
+          isBlocking: !editor.can().chain().focus().toggleStrike().run(),
         },
         inlineCode: {
           isActive: editor.isActive('code'),
@@ -43,7 +48,8 @@ export const useEnrichedTextInputState = (
         // Nodes
         h1: {
           isActive: editor.isActive('heading', { level: 1 }),
-          isConflicting: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 1 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -53,7 +59,8 @@ export const useEnrichedTextInputState = (
         },
         h2: {
           isActive: editor.isActive('heading', { level: 2 }),
-          isConflicting: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 2 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -63,23 +70,47 @@ export const useEnrichedTextInputState = (
         },
         h3: {
           isActive: editor.isActive('heading', { level: 3 }),
-          isConflicting: false,
-          isBlocking: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 3 }),
+          isBlocking: !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleHeading({ level: 3 })
+            .run(),
         },
         h4: {
           isActive: editor.isActive('heading', { level: 4 }),
-          isConflicting: false,
-          isBlocking: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 4 }),
+          isBlocking: !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleHeading({ level: 4 })
+            .run(),
         },
         h5: {
           isActive: editor.isActive('heading', { level: 5 }),
-          isConflicting: false,
-          isBlocking: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 5 }),
+          isBlocking: !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleHeading({ level: 5 })
+            .run(),
         },
         h6: {
           isActive: editor.isActive('heading', { level: 6 }),
-          isConflicting: false,
-          isBlocking: false,
+          isConflicting:
+            isAnyHeadingActive() && !editor.isActive('heading', { level: 6 }),
+          isBlocking: !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleHeading({ level: 6 })
+            .run(),
         },
         blockQuote: {
           isActive: editor.isActive('blockquote'),
@@ -93,21 +124,21 @@ export const useEnrichedTextInputState = (
         },
         orderedList: {
           isActive: editor.isActive('orderedList'),
-          isConflicting: false,
+          isConflicting: editor.isActive('bulletList'),
           isBlocking: false,
         },
         unorderedList: {
           isActive: editor.isActive('bulletList'),
-          isConflicting: false,
+          isConflicting: editor.isActive('orderedList'),
           isBlocking: false,
         },
         link: {
-          isActive: editor.isActive('link'),
+          isActive: false,
           isConflicting: false,
           isBlocking: false,
         },
         image: {
-          isActive: editor.isActive('image'),
+          isActive: false,
           isConflicting: false,
           isBlocking: false,
         },
@@ -118,7 +149,6 @@ export const useEnrichedTextInputState = (
         },
       };
 
-      // Simple stringify check to see if the UI-relevant state actually changed
       const currentStateString = JSON.stringify(state);
       if (currentStateString !== lastStateRef.current) {
         lastStateRef.current = currentStateString;

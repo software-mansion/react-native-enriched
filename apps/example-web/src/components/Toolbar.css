@@ -39,3 +39,12 @@
 .toolbar-button.active:hover:not(:disabled) {
   background-color: #1976d2;
 }
+
+.toolbar-button.conflicting {
+  background-color: #ffebee;
+  border-color: #ef5350;
+}
+
+.toolbar-button.conflicting:hover:not(:disabled) {
+  background-color: #ffcdd2;
+}
