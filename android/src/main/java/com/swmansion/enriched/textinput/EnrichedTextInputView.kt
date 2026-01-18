@@ -858,6 +858,5 @@ class EnrichedTextInputView : AppCompatEditText {
 
   companion object {
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
-    const val IME_ACTION_ID = 0x670
   }
 }

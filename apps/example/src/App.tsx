@@ -313,7 +313,6 @@ export default function App() {
         <View style={styles.editor}>
           <EnrichedTextInput
             ref={ref}
-            returnKeyType="default"
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={htmlStyle}
