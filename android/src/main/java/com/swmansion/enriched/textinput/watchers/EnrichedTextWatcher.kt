@@ -6,6 +6,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
+import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
 
 class EnrichedTextWatcher(
   private val view: EnrichedTextInputView,
@@ -32,6 +33,18 @@ class EnrichedTextWatcher(
     startCursorPosition = start
     endCursorPosition = start + count
     view.layoutManager.invalidateLayout()
+
+    if (count == 1) {
+      val currentChar = s?.get(start + count - 1)
+      if (currentChar == '\n') {
+        view.text?.delete(start, start + count)
+
+        emitSubmitEditing(view.text)
+      }
+
+      return
+    }
+
     view.isRemovingMany = !view.isDuringTransaction && before > count + 1
   }
 
@@ -48,6 +61,29 @@ class EnrichedTextWatcher(
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
+  }
+
+  private fun emitSubmitEditing(editable: Editable?) {
+    val shouldSubmit = view.shouldSubmitOnReturn()
+    val shouldBlur = view.shouldBlurOnReturn()
+
+    if (shouldSubmit) {
+      val context = view.context as ReactContext
+      val surfaceId = UIManagerHelper.getSurfaceId(context)
+      val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+      dispatcher?.dispatchEvent(
+        OnSubmitEditingEvent(
+          surfaceId,
+          view.id,
+          editable,
+          view.experimentalSynchronousEvents,
+        ),
+      )
+    }
+
+    if (shouldBlur) {
+      view.clearFocus()
+    }
   }
 
   private fun emitChangeText(editable: Editable) {

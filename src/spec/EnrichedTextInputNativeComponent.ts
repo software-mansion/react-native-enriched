@@ -253,6 +253,7 @@ export interface NativeProps extends ViewProps {
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
   returnKeyType?: string;
+  returnKeyLabel?: string;
   submitBehavior?: string;
 
   // event callbacks

@@ -91,6 +91,7 @@ class EnrichedTextInputView : AppCompatEditText {
   var experimentalSynchronousEvents: Boolean = false
 
   var fontSize: Float? = null
+  var submitBehavior: String? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
@@ -399,6 +400,25 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
+  fun setReturnKeyType(returnKeyType: String?) {
+    var returnKeyFlag = EditorInfo.IME_ACTION_DONE
+    when (returnKeyType) {
+      "go" -> returnKeyFlag = EditorInfo.IME_ACTION_GO
+      "next" -> returnKeyFlag = EditorInfo.IME_ACTION_NEXT
+      "none" -> returnKeyFlag = EditorInfo.IME_ACTION_NONE
+      "previous" -> returnKeyFlag = EditorInfo.IME_ACTION_PREVIOUS
+      "search" -> returnKeyFlag = EditorInfo.IME_ACTION_SEARCH
+      "send" -> returnKeyFlag = EditorInfo.IME_ACTION_SEND
+      "done" -> returnKeyFlag = EditorInfo.IME_ACTION_DONE
+    }
+
+    imeOptions = returnKeyFlag
+  }
+
+  fun setReturnKeyLabel(returnKeyLabel: String?) {
+    setImeActionLabel(returnKeyLabel, imeOptions)
+  }
+
   fun setColor(colorInt: Int?) {
     if (colorInt == null) {
       setTextColor(Color.BLACK)
@@ -510,6 +530,10 @@ class EnrichedTextInputView : AppCompatEditText {
     defaultValue = value
     defaultValueDirty = true
   }
+
+  fun shouldBlurOnReturn(): Boolean = submitBehavior == "blurAndSubmit"
+
+  fun shouldSubmitOnReturn(): Boolean = submitBehavior == "submit" || submitBehavior == "blurAndSubmit"
 
   private fun updateDefaultValue() {
     if (!defaultValueDirty) return
@@ -834,5 +858,6 @@ class EnrichedTextInputView : AppCompatEditText {
 
   companion object {
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
+    const val IME_ACTION_ID = 0x670
   }
 }

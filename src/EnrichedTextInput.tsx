@@ -140,6 +140,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   returnKeyType?: ReturnKeyTypeOptions;
+  returnKeyLabel?: string;
   submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
   onFocus?: () => void;
   onBlur?: () => void;
@@ -221,7 +222,6 @@ export const EnrichedTextInput = ({
   onSubmitEditing,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
-  returnKeyType,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -442,7 +442,6 @@ export const EnrichedTextInput = ({
         androidExperimentalSynchronousEvents
       }
       scrollEnabled={scrollEnabled}
-      returnKeyType={returnKeyType}
       {...rest}
     />
   );

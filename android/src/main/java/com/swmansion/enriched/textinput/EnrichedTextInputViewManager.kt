@@ -27,6 +27,7 @@ import com.swmansion.enriched.textinput.events.OnLinkDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import com.swmansion.enriched.textinput.utils.jsonStringToStringMap
@@ -72,6 +73,7 @@ class EnrichedTextInputViewManager :
     map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
+    map.put(OnSubmitEditingEvent.EVENT_NAME, mapOf("registrationName" to OnSubmitEditingEvent.EVENT_NAME))
 
     return map
   }
@@ -106,6 +108,30 @@ class EnrichedTextInputViewManager :
     color: Int?,
   ) {
     view?.setCursorColor(color)
+  }
+
+  @ReactProp(name = "returnKeyType")
+  override fun setReturnKeyType(
+    view: EnrichedTextInputView?,
+    returnKeyType: String?,
+  ) {
+    view?.setReturnKeyType(returnKeyType)
+  }
+
+  @ReactProp(name = "submitBehavior")
+  override fun setSubmitBehavior(
+    view: EnrichedTextInputView?,
+    submitBehavior: String?,
+  ) {
+    view?.submitBehavior = submitBehavior
+  }
+
+  @ReactProp(name = "returnKeyLabel")
+  override fun setReturnKeyLabel(
+    view: EnrichedTextInputView?,
+    returnKeyLabel: String?,
+  ) {
+    view?.setReturnKeyLabel(returnKeyLabel)
   }
 
   @ReactProp(name = "selectionColor", customType = "Color")
