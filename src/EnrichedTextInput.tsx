@@ -21,6 +21,7 @@ import EnrichedTextInputNativeComponent, {
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
+  type OnSubmitEditing,
 } from './spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -30,6 +31,7 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  ReturnKeyTypeOptions,
   TextStyle,
   ViewProps,
   ViewStyle,
@@ -137,6 +139,8 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
+  returnKeyType?: ReturnKeyTypeOptions;
+  submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -155,6 +159,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -213,8 +218,10 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   onKeyPress,
+  onSubmitEditing,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
+  returnKeyType,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -430,10 +437,12 @@ export const EnrichedTextInput = ({
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
+      onSubmitEditing={onSubmitEditing}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
       scrollEnabled={scrollEnabled}
+      returnKeyType={returnKeyType}
       {...rest}
     />
   );

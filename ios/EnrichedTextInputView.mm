@@ -1,5 +1,6 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
+#import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
 #import "RCTFabricComponentsPlugins.h"
@@ -46,6 +47,7 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
+  NSString *_submitBehavior;
 }
 
 // MARK: - Component utils
@@ -770,6 +772,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  if (newViewProps.returnKeyType != oldViewProps.returnKeyType) {
+    NSString *str = [NSString fromCppString:newViewProps.returnKeyType];
+
+    textView.returnKeyType =
+        [KeyboardUtils getUIReturnKeyTypeFromReturnKeyType:str];
+  }
+
+  if (newViewProps.submitBehavior != oldViewProps.submitBehavior) {
+    _submitBehavior = [NSString fromCppString:newViewProps.submitBehavior];
+  }
+
   // autoCapitalize
   if (newViewProps.autoCapitalize != oldViewProps.autoCapitalize) {
     NSString *str = [NSString fromCppString:newViewProps.autoCapitalize];
@@ -1211,6 +1224,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)focus {
   [textView reactFocus];
+}
+
+- (BOOL)textInputShouldReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"];
+}
+
+- (BOOL)textInputShouldSubmitOnReturn {
+  const BOOL shouldSubmit =
+      [_submitBehavior isEqualToString:@"blurAndSubmit"] ||
+      [_submitBehavior isEqualToString:@"submit"];
+
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    if (shouldSubmit) {
+      NSString *stringToBeEmitted = [[textView.textStorage.string
+          stringByReplacingOccurrencesOfString:@"\u200B"
+                                    withString:@""] copy];
+
+      emitter->onSubmitEditing({
+          .text = [stringToBeEmitted toCppString],
+      });
+    }
+  }
+
+  return shouldSubmit;
 }
 
 - (void)setValue:(NSString *)value {
@@ -1763,6 +1801,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  if ([text isEqualToString:@"\n"]) {
+    const BOOL shouldSubmit = [self textInputShouldSubmitOnReturn];
+    const BOOL shouldReturn = [self textInputShouldReturn];
+    if (shouldReturn) {
+      [textView endEditing:NO];
+      return NO;
+    } else if (shouldSubmit) {
+      return NO;
+    }
+  }
+
   recentlyChangedRange = NSMakeRange(range.location, text.length);
   [self handleKeyPressInRange:text range:range];
 

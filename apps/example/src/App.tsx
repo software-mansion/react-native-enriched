@@ -27,6 +27,7 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
+import type { OnSubmitEditing } from '../../../src/EnrichedTextInputNativeComponent';
 
 type StylesState = OnChangeStateEvent;
 
@@ -289,6 +290,10 @@ export default function App() {
     console.log('Key pressed:', e.key);
   };
 
+  const handleSubmitEditing = ({ text }: OnSubmitEditing) => {
+    console.log('Text submitted with: ', text);
+  };
+
   const handleLinkDetected = (state: CurrentLinkState) => {
     console.log(state);
     setCurrentLink(state);
@@ -308,6 +313,7 @@ export default function App() {
         <View style={styles.editor}>
           <EnrichedTextInput
             ref={ref}
+            returnKeyType="default"
             mentionIndicators={['@', '#']}
             style={styles.editorInput}
             htmlStyle={htmlStyle}
@@ -320,6 +326,7 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            onSubmitEditing={(e) => handleSubmitEditing(e.nativeEvent)}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
