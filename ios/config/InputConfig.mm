@@ -571,19 +571,19 @@
 
 - (UIImage *)checkboxCheckedImage {
   if (!_checkboxCheckedImage) {
-    _checkboxCheckedImage = [self generateCheckboxImageChecked:YES];
+    _checkboxCheckedImage = [self generateCheckboxImage:YES];
   }
   return _checkboxCheckedImage;
 }
 
 - (UIImage *)checkboxUncheckedImage {
   if (!_checkboxUncheckedImage) {
-    _checkboxUncheckedImage = [self generateCheckboxImageChecked:NO];
+    _checkboxUncheckedImage = [self generateCheckboxImage:NO];
   }
   return _checkboxUncheckedImage;
 }
 
-- (UIImage *)generateCheckboxImageChecked:(BOOL)isChecked {
+- (UIImage *)generateCheckboxImage:(BOOL)isChecked {
   CGFloat boxSize = self.checkboxListBoxSize;
   UIColor *boxColor = self.checkboxListBoxColor ?: [UIColor blackColor];
 
