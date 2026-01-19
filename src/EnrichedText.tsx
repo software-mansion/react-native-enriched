@@ -1,6 +1,7 @@
 import {
   type Component,
   type RefObject,
+  useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -17,10 +18,14 @@ import type {
 } from 'react-native';
 import EnrichedTextNativeComponent, {
   type NativeProps,
+  type OnLinkPressEvent,
+  type OnMentionPressEvent,
+  type OnMentionPressEventInternal,
 } from './spec/EnrichedTextNativeComponent';
 import { nullthrows } from './utils/nullthrows';
 import { normalizeEnrichedTextHtmlStyle } from './utils/normalizeHtmlStyle';
 import type { EnrichedTextHtmlStyle } from './types';
+import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface EnrichedTextInstance extends NativeMethods {}
 
@@ -33,6 +38,8 @@ export interface EnrichedTextProps extends ViewProps {
   numberOfLines?: number;
   selectable?: boolean;
   selectionColor?: ColorValue;
+  onLinkPress?: (event: OnLinkPressEvent) => void;
+  onMentionPress?: (event: OnMentionPressEvent) => void;
 }
 
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
@@ -46,6 +53,8 @@ export const EnrichedText = ({
   numberOfLines = 0,
   selectable = false,
   selectionColor,
+  onLinkPress: _onLinkPress,
+  onMentionPress: _onMentionPress,
   ...rest
 }: EnrichedTextProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -54,6 +63,26 @@ export const EnrichedText = ({
     () => normalizeEnrichedTextHtmlStyle(_htmlStyle),
     [_htmlStyle]
   );
+
+  const onLinkPress: DirectEventHandler<OnLinkPressEvent> = useCallback(
+    (e) => {
+      _onLinkPress?.(e.nativeEvent);
+    },
+    [_onLinkPress]
+  );
+
+  const onMentionPress: DirectEventHandler<OnMentionPressEventInternal> =
+    useCallback(
+      (e) => {
+        const { text, indicator, attributes } = e.nativeEvent;
+        _onMentionPress?.({
+          text,
+          indicator,
+          attributes: attributes as Record<string, string>,
+        });
+      },
+      [_onMentionPress]
+    );
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -94,6 +123,8 @@ export const EnrichedText = ({
       numberOfLines={numberOfLines}
       selectable={selectable}
       selectionColor={selectionColor}
+      onLinkPress={onLinkPress}
+      onMentionPress={onMentionPress}
       {...rest}
     />
   );

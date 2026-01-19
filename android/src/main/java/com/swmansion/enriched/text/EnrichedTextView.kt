@@ -6,6 +6,7 @@ import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.SpannableString
 import android.text.TextUtils
+import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatTextView
@@ -55,6 +56,7 @@ class EnrichedTextView : AppCompatTextView {
       breakStrategy = LineBreaker.BREAK_STRATEGY_HIGH_QUALITY
     }
 
+    movementMethod = LinkMovementMethod.getInstance()
     setPadding(0, 0, 0, 0)
     setFontSize(EnrichedConstants.TEXT_DEFAULT_FONT_SIZE)
   }

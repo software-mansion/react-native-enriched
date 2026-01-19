@@ -9,6 +9,8 @@ import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedTextViewManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedTextViewManagerInterface
 import com.facebook.yoga.YogaMeasureMode
+import com.swmansion.enriched.text.events.OnLinkPress
+import com.swmansion.enriched.text.events.OnMentionPress
 
 @ReactModule(name = EnrichedTextViewManager.NAME)
 class EnrichedTextViewManager :
@@ -22,6 +24,13 @@ class EnrichedTextViewManager :
   override fun getName(): String = NAME
 
   public override fun createViewInstance(context: ThemedReactContext): EnrichedTextView = EnrichedTextView(context)
+
+  override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
+    val map = mutableMapOf<String, Any>()
+    map.put(OnLinkPress.EVENT_NAME, mapOf("registrationName" to OnLinkPress.EVENT_NAME))
+    map.put(OnMentionPress.EVENT_NAME, mapOf("registrationName" to OnMentionPress.EVENT_NAME))
+    return map
+  }
 
   override fun setText(
     view: EnrichedTextView?,

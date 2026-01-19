@@ -1,6 +1,7 @@
 import { codegenNativeComponent, type ColorValue } from 'react-native';
 import type { HostComponent, ViewProps } from 'react-native';
 import type {
+  DirectEventHandler,
   Float,
   Int32,
   UnsafeMixed,
@@ -54,6 +55,22 @@ export interface EnrichedTextHtmlStyleInternal {
   };
 }
 
+export interface OnLinkPressEvent {
+  url: string;
+}
+
+export interface OnMentionPressEventInternal {
+  text: string;
+  indicator: string;
+  attributes: UnsafeMixed;
+}
+
+export interface OnMentionPressEvent {
+  text: string;
+  indicator: string;
+  attributes: Record<string, string>;
+}
+
 export interface NativeProps extends ViewProps {
   // Custom props
   text: string;
@@ -64,6 +81,10 @@ export interface NativeProps extends ViewProps {
   numberOfLines: Int32;
   selectable: boolean;
   selectionColor?: ColorValue;
+
+  // Events
+  onLinkPress?: DirectEventHandler<OnLinkPressEvent>;
+  onMentionPress?: DirectEventHandler<OnMentionPressEventInternal>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

@@ -1,4 +1,11 @@
-import { View, StyleSheet, Text, Platform, FlatList } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Platform,
+  FlatList,
+  Alert,
+} from 'react-native';
 import {
   EnrichedTextInput,
   type OnChangeTextEvent,
@@ -10,6 +17,8 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  type OnLinkPressEvent,
+  type OnMentionPressEvent,
   EnrichedText,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
@@ -291,11 +300,24 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handleLinkPress = (e: OnLinkPressEvent) => {
+    Alert.alert('Link pressed', e.url);
+  };
+
+  const handleMentionPress = (e: OnMentionPressEvent) => {
+    Alert.alert(
+      'Mention pressed',
+      `Indicator: ${e.indicator}, Text: ${e.text}, Attributes: ${JSON.stringify(e.attributes)}`
+    );
+  };
+
   const renderRichText = ({ item }: { item: string }) => (
     <EnrichedText
       numberOfLines={1}
       htmlStyle={htmlStyle}
       style={styles.enrichedText}
+      onLinkPress={handleLinkPress}
+      onMentionPress={handleMentionPress}
     >
       {item}
     </EnrichedText>
@@ -340,15 +362,6 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
-        <EnrichedText
-          numberOfLines={1}
-          htmlStyle={htmlStyle}
-          style={styles.enrichedText}
-        >
-          {
-            'Lorem ipsum dolor sit amet,  consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-          }
-        </EnrichedText>
         <Button title="Push text" onPress={pushRichText} />
         <FlatList
           overScrollMode="never"

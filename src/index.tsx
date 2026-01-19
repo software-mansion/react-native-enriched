@@ -9,4 +9,8 @@ export type {
   OnChangeSelectionEvent,
   OnKeyPressEvent,
 } from './spec/EnrichedTextInputNativeComponent';
+export type {
+  OnLinkPressEvent,
+  OnMentionPressEvent,
+} from './spec/EnrichedTextNativeComponent';
 export type { MentionStyleProperties, HtmlStyle } from './types';
