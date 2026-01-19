@@ -22,6 +22,7 @@ import com.swmansion.enriched.events.OnChangeStateEvent
 import com.swmansion.enriched.events.OnChangeTextEvent
 import com.swmansion.enriched.events.OnInputBlurEvent
 import com.swmansion.enriched.events.OnInputFocusEvent
+import com.swmansion.enriched.events.OnInputKeyPressEvent
 import com.swmansion.enriched.events.OnLinkDetectedEvent
 import com.swmansion.enriched.events.OnMentionDetectedEvent
 import com.swmansion.enriched.events.OnMentionEvent
@@ -70,6 +71,7 @@ class EnrichedTextInputViewManager :
     map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
     map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
+    map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
 
     return map
   }

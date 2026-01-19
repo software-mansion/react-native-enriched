@@ -249,6 +249,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
+  textView.adjustsFontForContentSizeCategory = YES;
 }
 
 - (void)setupPlaceholderLabel {
@@ -267,6 +268,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   _placeholderLabel.text = @"";
   _placeholderLabel.hidden = YES;
+  _placeholderLabel.adjustsFontForContentSizeCategory = YES;
 }
 
 // MARK: - Props
@@ -1337,6 +1339,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)emitOnKeyPressEvent:(NSString *)key {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    emitter->onInputKeyPress({.key = [key toCppString]});
+  }
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -1733,10 +1742,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
+  NSString *key = nil;
+
+  if (text.length == 0 && range.length > 0) {
+    key = @"Backspace";
+  } else if ([text isEqualToString:@"\n"]) {
+    key = @"Enter";
+  } else if ([text isEqualToString:@"\t"]) {
+    key = @"Tab";
+  } else if (text.length == 1) {
+    key = text;
+  }
+
+  if (key != nil) {
+    [self emitOnKeyPressEvent:key];
+  }
+}
+
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
   recentlyChangedRange = NSMakeRange(range.location, text.length);
+  [self handleKeyPressInRange:text range:range];
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
@@ -1821,6 +1849,45 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // in anyTextMayHaveBeenModified
 - (void)textViewDidChange:(UITextView *)textView {
   [self anyTextMayHaveBeenModified];
+}
+
+/**
+ * Handles iOS Dynamic Type changes (User changing font size in System
+ * Settings).
+ *
+ * Unlike Android, iOS Views do not automatically rescale existing
+ * NSAttributedStrings when the system font size changes. The text attributes
+ * are static once drawn.
+ *
+ * This method detects the change and performs a "Hard Refresh" of the content.
+ */
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    [config invalidateFonts];
+
+    NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
+    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
+
+    defaultTypingAttributes = newTypingAttrs;
+    textView.typingAttributes = defaultTypingAttributes;
+
+    [self refreshPlaceholderLabelStyles];
+
+    NSRange prevSelectedRange = textView.selectedRange;
+
+    NSString *currentHtml = [parser
+        parseToHtmlFromRange:NSMakeRange(0,
+                                         textView.textStorage.string.length)];
+    NSString *initiallyProcessedHtml =
+        [parser initiallyProcessHtml:currentHtml];
+    [parser replaceWholeFromHtml:initiallyProcessedHtml];
+
+    textView.selectedRange = prevSelectedRange;
+    [self anyTextMayHaveBeenModified];
+  }
 }
 
 // MARK: - Media attachments delegate
