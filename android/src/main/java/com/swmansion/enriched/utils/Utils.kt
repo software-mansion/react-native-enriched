@@ -1,6 +1,13 @@
 package com.swmansion.enriched.utils
 
+import android.annotation.SuppressLint
+import android.text.Selection
+import android.text.Spannable
+import android.text.Spanned
 import android.util.Log
+import android.view.MotionEvent
+import android.widget.TextView
+import com.swmansion.enriched.spans.EnrichedCheckboxListSpan
 import org.json.JSONObject
 
 fun jsonStringToStringMap(json: String): Map<String, String> {
