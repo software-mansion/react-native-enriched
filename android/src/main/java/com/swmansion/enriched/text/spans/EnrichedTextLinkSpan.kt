@@ -6,14 +6,17 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.common.spans.EnrichedLinkSpan
 import com.swmansion.enriched.text.EnrichedTextStyle
 import com.swmansion.enriched.text.events.OnLinkPress
+import com.swmansion.enriched.text.spans.interfaces.EnrichedTextClickableSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 
 class EnrichedTextLinkSpan(
   private val url: String,
   enrichedStyle: EnrichedTextStyle,
 ) : EnrichedLinkSpan(url, enrichedStyle),
-  EnrichedTextSpan {
+  EnrichedTextSpan,
+  EnrichedTextClickableSpan {
   override val dependsOnHtmlStyle = true
+  override var isPressed = false
 
   override fun rebuildWithStyle(style: EnrichedTextStyle) = EnrichedTextLinkSpan(url, style)
 

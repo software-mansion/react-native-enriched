@@ -7,6 +7,7 @@ import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.EnrichedMentionSpan
 import com.swmansion.enriched.text.EnrichedTextStyle
 import com.swmansion.enriched.text.events.OnMentionPress
+import com.swmansion.enriched.text.spans.interfaces.EnrichedTextClickableSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 
 class EnrichedTextMentionSpan(
@@ -15,8 +16,10 @@ class EnrichedTextMentionSpan(
   private val attributes: Map<String, String>,
   enrichedStyle: EnrichedStyle,
 ) : EnrichedMentionSpan(text, indicator, attributes, enrichedStyle),
-  EnrichedTextSpan {
+  EnrichedTextSpan,
+  EnrichedTextClickableSpan {
   override val dependsOnHtmlStyle = true
+  override var isPressed = false
 
   override fun rebuildWithStyle(style: EnrichedTextStyle) = EnrichedTextMentionSpan(text, indicator, attributes, style)
 

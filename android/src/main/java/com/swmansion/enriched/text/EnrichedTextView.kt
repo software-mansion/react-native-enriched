@@ -6,7 +6,6 @@ import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.SpannableString
 import android.text.TextUtils
-import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatTextView
@@ -56,7 +55,7 @@ class EnrichedTextView : AppCompatTextView {
       breakStrategy = LineBreaker.BREAK_STRATEGY_HIGH_QUALITY
     }
 
-    movementMethod = LinkMovementMethod.getInstance()
+    movementMethod = EnrichedTextMovementMethod.getInstance()
     setPadding(0, 0, 0, 0)
     setFontSize(EnrichedConstants.TEXT_DEFAULT_FONT_SIZE)
   }
@@ -69,16 +68,16 @@ class EnrichedTextView : AppCompatTextView {
     valueDirty = false
     val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
     if (!isHtml) {
-      setText(text)
+      this.text = text
       return
     }
 
     try {
       val parsed = EnrichedParser.fromHtml(text, style, null, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine)
+      this.text = withoutLastNewLine
     } catch (e: Exception) {
-      setText(text)
+      this.text = text
     }
   }
 

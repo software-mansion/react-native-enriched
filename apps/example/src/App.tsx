@@ -313,7 +313,6 @@ export default function App() {
 
   const renderRichText = ({ item }: { item: string }) => (
     <EnrichedText
-      numberOfLines={1}
       htmlStyle={htmlStyle}
       style={styles.enrichedText}
       onLinkPress={handleLinkPress}
