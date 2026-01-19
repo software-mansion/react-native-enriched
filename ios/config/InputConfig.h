@@ -94,4 +94,6 @@
 - (void)setCheckboxListMarginLeft:(CGFloat)newValue;
 - (UIColor *)checkboxListBoxColor;
 - (void)setCheckboxListBoxColor:(UIColor *)newValue;
+- (UIImage *)checkboxCheckedImage;
+- (UIImage *)checkboxUncheckedImage;
 @end

@@ -367,72 +367,17 @@ static void const *kInputKey = &kInputKey;
               origin:(CGPoint)origin
             usedRect:(CGRect)usedRect {
   BOOL isChecked = [markerFormat isEqualToString:@"{checkbox:1}"];
+
+  UIImage *image = isChecked ? typedInput->config.checkboxCheckedImage
+                             : typedInput->config.checkboxUncheckedImage;
   CGFloat gapWidth = [typedInput->config checkboxListGapWidth];
   CGFloat boxSize = [typedInput->config checkboxListBoxSize];
-  UIColor *boxColor = [typedInput->config checkboxListBoxColor];
 
-  // Calculate checkbox position
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
   CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize;
   CGFloat boxY = centerY - boxSize / 2.0;
 
-  CGRect checkboxRect = CGRectMake(boxX, boxY, boxSize, boxSize);
-
-  CGContextRef context = UIGraphicsGetCurrentContext();
-  CGContextSaveGState(context);
-  CGFloat cornerRadius = boxSize * 0.15f;
-  CGFloat strokeWidth = boxSize * 0.1f;
-
-  if (isChecked) {
-    // Draw filled checkbox
-    CGRect insetRect =
-        CGRectInset(checkboxRect, strokeWidth / 2.0, strokeWidth / 2.0);
-    UIBezierPath *boxPath =
-        [UIBezierPath bezierPathWithRoundedRect:insetRect
-                                   cornerRadius:cornerRadius];
-    [[boxColor colorWithAlphaComponent:1.0] setFill];
-    [boxPath fill];
-    [boxPath setLineWidth:strokeWidth];
-    [[boxColor colorWithAlphaComponent:1.0] setStroke];
-    [boxPath stroke];
-
-    // Draw checkmark
-    UIBezierPath *checkmarkPath = [UIBezierPath bezierPath];
-    CGFloat checkStartX = insetRect.origin.x + insetRect.size.width * 0.25;
-    CGFloat checkStartY = insetRect.origin.y + insetRect.size.height * 0.5;
-    CGFloat checkMidX = insetRect.origin.x + insetRect.size.width * 0.45;
-    CGFloat checkMidY = insetRect.origin.y + insetRect.size.height * 0.65;
-    CGFloat checkEndX = insetRect.origin.x + insetRect.size.width * 0.75;
-    CGFloat checkEndY = insetRect.origin.y + insetRect.size.height * 0.35;
-
-    [checkmarkPath moveToPoint:CGPointMake(checkStartX, checkStartY)];
-    [checkmarkPath addLineToPoint:CGPointMake(checkMidX, checkMidY)];
-    [checkmarkPath addLineToPoint:CGPointMake(checkEndX, checkEndY)];
-    [checkmarkPath setLineWidth:strokeWidth * 1.5];
-    [[UIColor whiteColor] setStroke];
-    [checkmarkPath setLineCapStyle:kCGLineCapRound];
-    [checkmarkPath setLineJoinStyle:kCGLineJoinRound];
-    [checkmarkPath stroke];
-  } else {
-    // Draw border-only square for
-    // unchecked state
-    [boxColor setStroke];
-    CGContextSetLineWidth(context, strokeWidth);
-
-    // Inset by half the stroke width to
-    // draw the border properly
-    CGRect insetRect =
-        CGRectInset(checkboxRect, strokeWidth / 2.0, strokeWidth / 2.0);
-
-    // Draw rounded rectangle path
-    UIBezierPath *boxPath =
-        [UIBezierPath bezierPathWithRoundedRect:insetRect
-                                   cornerRadius:cornerRadius];
-    [boxPath setLineWidth:strokeWidth];
-    [[boxColor colorWithAlphaComponent:1.0] setStroke];
-    [boxPath stroke];
-  }
-  CGContextRestoreGState(context);
+  [image drawAtPoint:CGPointMake(boxX, boxY)];
 }
 
 - (void)drawBullet:(EnrichedTextInputView *)typedInput
