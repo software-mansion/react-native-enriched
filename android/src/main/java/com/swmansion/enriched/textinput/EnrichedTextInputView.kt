@@ -37,6 +37,9 @@ import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.spans.EnrichedH1Span
 import com.swmansion.enriched.textinput.spans.EnrichedH2Span
 import com.swmansion.enriched.textinput.spans.EnrichedH3Span
+import com.swmansion.enriched.textinput.spans.EnrichedH4Span
+import com.swmansion.enriched.textinput.spans.EnrichedH5Span
+import com.swmansion.enriched.textinput.spans.EnrichedH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedSpan
@@ -752,14 +755,35 @@ class EnrichedTextInputView : AppCompatEditText {
     scrollTo(scrollX, targetScrollY)
   }
 
+  private fun isHeadingBold(
+    style: HtmlStyle,
+    span: EnrichedSpan,
+  ): Boolean =
+    when (span) {
+      is EnrichedH1Span -> style.h1Bold
+      is EnrichedH2Span -> style.h2Bold
+      is EnrichedH3Span -> style.h3Bold
+      is EnrichedH4Span -> style.h4Bold
+      is EnrichedH5Span -> style.h5Bold
+      is EnrichedH6Span -> style.h6Bold
+      else -> false
+    }
+
+  private fun shouldRemoveBoldFromHeading(
+    span: EnrichedSpan,
+    prevStyle: HtmlStyle,
+    nextStyle: HtmlStyle,
+  ): Boolean {
+    val wasBold = isHeadingBold(prevStyle, span)
+    val isNowBold = isHeadingBold(nextStyle, span)
+
+    return !wasBold && isNowBold
+  }
+
   private fun reApplyHtmlStyleForSpans(
     previousHtmlStyle: HtmlStyle,
     nextHtmlStyle: HtmlStyle,
   ) {
-    val shouldRemoveBoldSpanFromH1Span = !previousHtmlStyle.h1Bold && nextHtmlStyle.h1Bold
-    val shouldRemoveBoldSpanFromH2Span = !previousHtmlStyle.h2Bold && nextHtmlStyle.h2Bold
-    val shouldRemoveBoldSpanFromH3Span = !previousHtmlStyle.h3Bold && nextHtmlStyle.h3Bold
-
     val spannable = text as? Spannable ?: return
     if (spannable.isEmpty()) return
 
@@ -776,9 +800,8 @@ class EnrichedTextInputView : AppCompatEditText {
 
         if (start == -1 || end == -1) continue
 
-        if ((span is EnrichedH1Span && shouldRemoveBoldSpanFromH1Span) || (span is EnrichedH2Span && shouldRemoveBoldSpanFromH2Span) ||
-          (span is EnrichedH3Span && shouldRemoveBoldSpanFromH3Span)
-        ) {
+        // Check if we need to remove explicit bold spans
+        if (shouldRemoveBoldFromHeading(span, previousHtmlStyle, nextHtmlStyle)) {
           val isRemoved = removeStyle(EnrichedSpans.BOLD, start, end)
           if (isRemoved) shouldEmitStateChange = true
         }
