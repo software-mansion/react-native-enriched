@@ -292,8 +292,25 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
 
     if (checkboxStyle) {
-      [checkboxStyle toggleCheckedAt:(NSUInteger)gr.characterIndex];
+      NSUInteger charIndex = (NSUInteger)gr.characterIndex;
+      [checkboxStyle toggleCheckedAt:charIndex];
       [self anyTextMayHaveBeenModified];
+
+      NSString *fullText = textView.textStorage.string;
+      NSRange paragraphRange =
+          [fullText paragraphRangeForRange:NSMakeRange(charIndex, 0)];
+      NSUInteger endOfLineIndex = NSMaxRange(paragraphRange);
+
+      // If the paragraph ends with a newline, step back by 1 so the cursor
+      // stays on the current line instead of jumping to the next one.
+      if (endOfLineIndex > 0 && endOfLineIndex <= fullText.length) {
+        unichar lastChar = [fullText characterAtIndex:endOfLineIndex - 1];
+        if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
+          endOfLineIndex--;
+        }
+      }
+
+      textView.selectedRange = NSMakeRange(endOfLineIndex, 0);
     }
     break;
   }
