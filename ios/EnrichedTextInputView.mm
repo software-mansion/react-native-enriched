@@ -1282,6 +1282,32 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    std::vector<EnrichedTextInputViewEventEmitter::OnPasteImagesImages>
+        imagesVector;
+    imagesVector.reserve(images.count);
+
+    for (NSDictionary *img in images) {
+      NSString *uri = img[@"uri"];
+      NSString *type = img[@"type"];
+      double width = [img[@"width"] doubleValue];
+      double height = [img[@"height"] doubleValue];
+
+      EnrichedTextInputViewEventEmitter::OnPasteImagesImages imageStruct = {
+          .uri = [uri toCppString],
+          .type = [type toCppString],
+          .width = width,
+          .height = height};
+
+      imagesVector.push_back(imageStruct);
+    }
+
+    emitter->onPasteImages({.images = imagesVector});
+  }
+}
+
 - (void)emitOnMentionDetectedEvent:(NSString *)text
                          indicator:(NSString *)indicator
                         attributes:(NSString *)attributes {

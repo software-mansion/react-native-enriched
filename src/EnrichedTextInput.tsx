@@ -21,6 +21,7 @@ import EnrichedTextInputNativeComponent, {
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
+  type OnPasteImagesEvent,
 } from './spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -155,6 +156,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.

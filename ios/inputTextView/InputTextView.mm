@@ -55,6 +55,42 @@
   NSArray<NSString *> *pasteboardTypes = pasteboard.pasteboardTypes;
   NSRange currentRange = typedInput->textView.selectedRange;
 
+  if (pasteboard.hasImages) {
+    NSArray<UIImage *> *images = pasteboard.images;
+    NSMutableArray<NSDictionary *> *foundImages = [NSMutableArray new];
+
+    for (UIImage *image in images) {
+      NSData *data;
+      NSString *ext;
+      NSString *mimeType;
+
+      if ([self imageHasAlpha:image]) {
+        data = UIImagePNGRepresentation(image);
+        ext = @"png";
+        mimeType = @"image/png";
+      } else {
+        data = UIImageJPEGRepresentation(image, 0.9);
+        ext = @"jpg";
+        mimeType = @"image/jpeg";
+      }
+
+      NSString *path = [self saveToTempFile:data extension:ext];
+      if (path) {
+        [foundImages addObject:@{
+          @"uri" : path,
+          @"type" : mimeType,
+          @"width" : @(image.size.width),
+          @"height" : @(image.size.height)
+        }];
+      }
+    }
+
+    if (foundImages.count > 0) {
+      [typedInput emitOnPasteImagesEvent:foundImages];
+      return;
+    }
+  }
+
   if ([pasteboardTypes containsObject:UTTypeHTML.identifier]) {
     // we try processing the html contents
 
@@ -92,6 +128,30 @@
   }
 
   [typedInput anyTextMayHaveBeenModified];
+}
+
+- (NSString *)saveToTempFile:(NSData *)data extension:(NSString *)ext {
+  if (!data)
+    return nil;
+  NSString *fileName =
+      [NSString stringWithFormat:@"%@.%@", [NSUUID UUID].UUIDString, ext];
+
+  NSString *filePath =
+      [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
+
+  if ([data writeToFile:filePath atomically:YES]) {
+    return [NSURL fileURLWithPath:filePath].absoluteString;
+  }
+
+  return nil;
+}
+
+// Helper to detect if an image needs PNG
+- (BOOL)imageHasAlpha:(UIImage *)image {
+  CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image.CGImage);
+  return (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaLast ||
+          alpha == kCGImageAlphaPremultipliedFirst ||
+          alpha == kCGImageAlphaPremultipliedLast);
 }
 
 - (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard
@@ -151,6 +211,17 @@
                     withSelection:YES];
 
   [typedInput anyTextMayHaveBeenModified];
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  if (action == @selector(paste:)) {
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    // Enable Paste if clipboard has Text OR Images
+    if (pasteboard.hasStrings || pasteboard.hasImages) {
+      return YES;
+    }
+  }
+  return [super canPerformAction:action withSender:sender];
 }
 
 @end
