@@ -10,6 +10,7 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  type OnSubmitEditing,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -27,7 +28,6 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
-import type { OnSubmitEditing } from '../../../src/EnrichedTextInputNativeComponent';
 
 type StylesState = OnChangeStateEvent;
 

@@ -159,6 +159,8 @@ class EnrichedTextInputView : AppCompatEditText {
     setEditableFactory(EnrichedEditableFactory(spanWatcher))
 
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    setReturnKeyLabel(DEFAULT_IME_ACTION_LABEL)
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -401,7 +403,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   fun setReturnKeyLabel(returnKeyLabel: String?) {
-    setImeActionLabel(returnKeyLabel, imeOptions)
+    setImeActionLabel(returnKeyLabel, EditorInfo.IME_ACTION_UNSPECIFIED)
   }
 
   fun setColor(colorInt: Int?) {
@@ -851,5 +853,6 @@ class EnrichedTextInputView : AppCompatEditText {
 
   companion object {
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
+    const val DEFAULT_IME_ACTION_LABEL = "DONE"
   }
 }

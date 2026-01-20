@@ -8,4 +8,5 @@ export type {
   OnMentionDetected,
   OnChangeSelectionEvent,
   OnKeyPressEvent,
+  OnSubmitEditing,
 } from './spec/EnrichedTextInputNativeComponent';
