@@ -115,7 +115,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     returnKeyType: String?,
   ) {
-    view?.setReturnKeyType(returnKeyType)
+    // Not supported on multiline text input
   }
 
   @ReactProp(name = "submitBehavior")

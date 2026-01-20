@@ -1122,6 +1122,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return false;
 }
 
+- (bool)textInputShouldReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"];
+}
+
+- (bool)textInputShouldSubmitOnReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"] ||
+         [_submitBehavior isEqualToString:@"submit"];
+}
+
 - (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
   NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
   if (![blocksArr containsObject:@(blocking)]) {
@@ -1226,31 +1235,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [textView reactFocus];
 }
 
-- (BOOL)textInputShouldReturn {
-  return [_submitBehavior isEqualToString:@"blurAndSubmit"];
-}
-
-- (BOOL)textInputShouldSubmitOnReturn {
-  const BOOL shouldSubmit =
-      [_submitBehavior isEqualToString:@"blurAndSubmit"] ||
-      [_submitBehavior isEqualToString:@"submit"];
-
-  auto emitter = [self getEventEmitter];
-  if (emitter != nullptr) {
-    if (shouldSubmit) {
-      NSString *stringToBeEmitted = [[textView.textStorage.string
-          stringByReplacingOccurrencesOfString:@"\u200B"
-                                    withString:@""] copy];
-
-      emitter->onSubmitEditing({
-          .text = [stringToBeEmitted toCppString],
-      });
-    }
-  }
-
-  return shouldSubmit;
-}
-
 - (void)setValue:(NSString *)value {
   NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
   if (initiallyProcessedHtml == nullptr) {
@@ -1297,6 +1281,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   return actualIndex;
+}
+
+- (void)emitOnSubmitEdittingEvent {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSString *stringToBeEmitted = [[textView.textStorage.string
+        stringByReplacingOccurrencesOfString:@"\u200B"
+                                  withString:@""] copy];
+
+    emitter->onSubmitEditing({
+        .text = [stringToBeEmitted toCppString],
+    });
+  }
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text
@@ -1801,13 +1798,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  // Check if the user pressed "Enter"
   if ([text isEqualToString:@"\n"]) {
-    const BOOL shouldSubmit = [self textInputShouldSubmitOnReturn];
-    const BOOL shouldReturn = [self textInputShouldReturn];
+    const bool shouldSubmit = [self textInputShouldSubmitOnReturn];
+    const bool shouldReturn = [self textInputShouldReturn];
+
+    if (shouldSubmit) {
+      [self emitOnSubmitEdittingEvent];
+    }
+
     if (shouldReturn) {
       [textView endEditing:NO];
-      return NO;
-    } else if (shouldSubmit) {
+    }
+
+    if (shouldSubmit || shouldReturn) {
       return NO;
     }
   }

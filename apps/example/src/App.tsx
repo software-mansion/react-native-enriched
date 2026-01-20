@@ -291,7 +291,7 @@ export default function App() {
   };
 
   const handleSubmitEditing = ({ text }: OnSubmitEditing) => {
-    console.log('Text submitted with: ', text);
+    console.log('Text submitted with:', text);
   };
 
   const handleLinkDetected = (state: CurrentLinkState) => {

@@ -34,15 +34,22 @@ class EnrichedTextWatcher(
     endCursorPosition = start + count
     view.layoutManager.invalidateLayout()
 
+    // Check if the user pressed "Enter"
     if (count == 1) {
       val currentChar = s?.get(start + count - 1)
+
       if (currentChar == '\n') {
-        view.text?.delete(start, start + count)
+        val shouldSubmit = view.shouldSubmitOnReturn()
 
-        emitSubmitEditing(view.text)
+        if (shouldSubmit) {
+          view.text?.delete(start, start + count)
+
+          emitSubmitEditing(view.text)
+          view.blurOnReturn()
+
+          return
+        }
       }
-
-      return
     }
 
     view.isRemovingMany = !view.isDuringTransaction && before > count + 1
@@ -64,26 +71,17 @@ class EnrichedTextWatcher(
   }
 
   private fun emitSubmitEditing(editable: Editable?) {
-    val shouldSubmit = view.shouldSubmitOnReturn()
-    val shouldBlur = view.shouldBlurOnReturn()
-
-    if (shouldSubmit) {
-      val context = view.context as ReactContext
-      val surfaceId = UIManagerHelper.getSurfaceId(context)
-      val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-      dispatcher?.dispatchEvent(
-        OnSubmitEditingEvent(
-          surfaceId,
-          view.id,
-          editable,
-          view.experimentalSynchronousEvents,
-        ),
-      )
-    }
-
-    if (shouldBlur) {
-      view.clearFocus()
-    }
+    val context = view.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    dispatcher?.dispatchEvent(
+      OnSubmitEditingEvent(
+        surfaceId,
+        view.id,
+        editable,
+        view.experimentalSynchronousEvents,
+      ),
+    )
   }
 
   private fun emitChangeText(editable: Editable) {

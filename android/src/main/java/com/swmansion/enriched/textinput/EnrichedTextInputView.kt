@@ -400,21 +400,6 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  fun setReturnKeyType(returnKeyType: String?) {
-    var returnKeyFlag = EditorInfo.IME_ACTION_DONE
-    when (returnKeyType) {
-      "go" -> returnKeyFlag = EditorInfo.IME_ACTION_GO
-      "next" -> returnKeyFlag = EditorInfo.IME_ACTION_NEXT
-      "none" -> returnKeyFlag = EditorInfo.IME_ACTION_NONE
-      "previous" -> returnKeyFlag = EditorInfo.IME_ACTION_PREVIOUS
-      "search" -> returnKeyFlag = EditorInfo.IME_ACTION_SEARCH
-      "send" -> returnKeyFlag = EditorInfo.IME_ACTION_SEND
-      "done" -> returnKeyFlag = EditorInfo.IME_ACTION_DONE
-    }
-
-    imeOptions = returnKeyFlag
-  }
-
   fun setReturnKeyLabel(returnKeyLabel: String?) {
     setImeActionLabel(returnKeyLabel, imeOptions)
   }
@@ -534,6 +519,14 @@ class EnrichedTextInputView : AppCompatEditText {
   fun shouldBlurOnReturn(): Boolean = submitBehavior == "blurAndSubmit"
 
   fun shouldSubmitOnReturn(): Boolean = submitBehavior == "submit" || submitBehavior == "blurAndSubmit"
+
+  fun blurOnReturn() {
+    val shouldBlur = shouldBlurOnReturn()
+
+    if (shouldBlur) {
+      clearFocus()
+    }
+  }
 
   private fun updateDefaultValue() {
     if (!defaultValueDirty) return
