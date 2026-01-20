@@ -86,6 +86,8 @@
 - (LinkRegexConfig *)linkRegexConfig;
 - (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
 - (NSRegularExpression *)parsedLinkRegex;
+- (void)invalidateFonts;
+- (NSNumber *)scaledPrimaryFontSize;
 - (CGFloat)checkboxListBoxSize;
 - (void)setCheckboxListBoxSize:(CGFloat)newValue;
 - (CGFloat)checkboxListGapWidth;

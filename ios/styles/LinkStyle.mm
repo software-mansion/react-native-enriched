@@ -164,7 +164,7 @@ static NSString *const AutomaticLinkAttributeName =
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSString *linkValue = (NSString *)value;
   return linkValue != nullptr;
 }
@@ -176,7 +176,7 @@ static NSString *const AutomaticLinkAttributeName =
              withInput:_input
                inRange:range
          withCondition:^BOOL(id _Nullable value, NSRange range) {
-           return [self styleCondition:value:range];
+           return [self styleCondition:value range:range];
          }];
     return onlyLinks ? [self isSingleLinkIn:range] : NO;
   } else {
@@ -190,7 +190,7 @@ static NSString *const AutomaticLinkAttributeName =
           withInput:_input
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange range) {
-        return [self styleCondition:value:range];
+        return [self styleCondition:value range:range];
       }];
 }
 
@@ -200,7 +200,7 @@ static NSString *const AutomaticLinkAttributeName =
           withInput:_input
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange range) {
-        return [self styleCondition:value:range];
+        return [self styleCondition:value range:range];
       }];
 }
 
@@ -614,14 +614,14 @@ static NSString *const AutomaticLinkAttributeName =
                 withInput:_input
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange range) {
-              return [self styleCondition:value:range];
+              return [self styleCondition:value range:range];
             }];
   BOOL anyManual =
       [OccurenceUtils any:ManualLinkAttributeName
                 withInput:_input
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange range) {
-              return [self styleCondition:value:range];
+              return [self styleCondition:value range:range];
             }];
 
   // both manual and automatic links are somewhere - delete!
@@ -637,7 +637,7 @@ static NSString *const AutomaticLinkAttributeName =
            withInput:_input
              inRange:wordRange
        withCondition:^BOOL(id _Nullable value, NSRange range) {
-         return [self styleCondition:value:range];
+         return [self styleCondition:value range:range];
        }];
 
   // only one link might be present!

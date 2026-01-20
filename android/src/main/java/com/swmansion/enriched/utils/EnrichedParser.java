@@ -367,7 +367,7 @@ public class EnrichedParser {
   private static void withinStyle(StringBuilder out, CharSequence text, int start, int end) {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
-      if (c == '\u200B') {
+      if (c == EnrichedConstants.ZWS) {
         // Do not output zero-width space characters.
         continue;
       } else if (c == '<') {
@@ -462,9 +462,9 @@ class HtmlToSpannedConverter implements ContentHandler {
       int start = mSpannableStringBuilder.getSpanStart(zeroWidthSpaceSpan);
       int end = mSpannableStringBuilder.getSpanEnd(zeroWidthSpaceSpan);
 
-      if (mSpannableStringBuilder.charAt(start) != '\u200B') {
+      if (mSpannableStringBuilder.charAt(start) != EnrichedConstants.ZWS) {
         // Insert zero-width space character at the start if it's not already present.
-        mSpannableStringBuilder.insert(start, "\u200B");
+        mSpannableStringBuilder.insert(start, EnrichedConstants.ZWS_STRING);
         end++; // Adjust end position due to insertion.
       }
 
@@ -755,7 +755,7 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     // Block spans require at least one character to be applied.
     if (isEmptyTag) {
-      text.append("\u200B");
+      text.append(EnrichedConstants.ZWS);
       len++;
     }
 

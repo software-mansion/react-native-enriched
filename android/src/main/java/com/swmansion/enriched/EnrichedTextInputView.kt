@@ -17,6 +17,8 @@ import android.util.Patterns
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.facebook.react.bridge.ReactContext
@@ -43,6 +45,7 @@ import com.swmansion.enriched.styles.InlineStyles
 import com.swmansion.enriched.styles.ListStyles
 import com.swmansion.enriched.styles.ParagraphStyles
 import com.swmansion.enriched.styles.ParametrizedStyles
+import com.swmansion.enriched.utils.EnrichedConstants
 import com.swmansion.enriched.utils.EnrichedEditableFactory
 import com.swmansion.enriched.utils.EnrichedParser
 import com.swmansion.enriched.utils.EnrichedSelection
@@ -112,6 +115,21 @@ class EnrichedTextInputView : AppCompatEditText {
     defStyleAttr,
   ) {
     prepareComponent()
+  }
+
+  override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
+    var inputConnection = super.onCreateInputConnection(outAttrs)
+    if (inputConnection != null) {
+      inputConnection =
+        EnrichedTextInputConnectionWrapper(
+          inputConnection,
+          context as ReactContext,
+          this,
+          experimentalSynchronousEvents,
+        )
+    }
+
+    return inputConnection
   }
 
   init {
@@ -257,9 +275,13 @@ class EnrichedTextInputView : AppCompatEditText {
 
     // Currently, we do not support pasting images
     if (item?.text == null) return
+    val lengthBefore = currentText.length
     val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
-    parametrizedStyles?.detectAllLinks()
+
+    // Detect links in the newly pasted range
+    val finalEndIndex = start + finalText.length - lengthBefore
+    parametrizedStyles?.detectLinksInRange(finalText, start, finalEndIndex)
   }
 
   fun requestFocusProgrammatically() {
@@ -318,7 +340,7 @@ class EnrichedTextInputView : AppCompatEditText {
       }
 
       // If the current char is not a hidden space, it counts towards our visible index
-      if (currentText[actualIndex] != '\u200B') {
+      if (currentText[actualIndex] != EnrichedConstants.ZWS) {
         currentVisibleCount++
       }
       actualIndex++

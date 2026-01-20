@@ -20,6 +20,7 @@ import EnrichedTextInputNativeComponent, {
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
+  type OnKeyPressEvent,
 } from './EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -160,6 +161,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeMention?: (e: OnChangeMentionEvent) => void;
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
+  onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -217,6 +219,7 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   onChangeSelection,
+  onKeyPress,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
   ...rest
@@ -436,6 +439,7 @@ export const EnrichedTextInput = ({
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
+      onInputKeyPress={onKeyPress}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }

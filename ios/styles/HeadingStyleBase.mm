@@ -16,6 +16,9 @@
 - (BOOL)isHeadingBold {
   return false;
 }
++ (BOOL)isParagraphStyle {
+  return true;
+}
 
 - (EnrichedTextInputView *)typedInput {
   return (EnrichedTextInputView *)input;
@@ -24,6 +27,7 @@
 - (instancetype)initWithInput:(id)input {
   self = [super init];
   self->input = input;
+  _lastAppliedFontSize = 0.0;
   return self;
 }
 
@@ -37,6 +41,7 @@
   } else {
     isStylePresent ? [self removeTypingAttributes] : [self addTypingAttributes];
   }
+  _lastAppliedFontSize = [self getHeadingFontSize];
 }
 
 // the range will already be the proper full paragraph/s range
@@ -98,9 +103,9 @@
                  options:0
               usingBlock:^(id _Nullable value, NSRange range,
                            BOOL *_Nonnull stop) {
-                if ([self styleCondition:value:range]) {
+                if ([self styleCondition:value range:range]) {
                   UIFont *newFont = [(UIFont *)value
-                      setSize:[[[self typedInput]->config primaryFontSize]
+                      setSize:[[[self typedInput]->config scaledPrimaryFontSize]
                                   floatValue]];
                   if ([self isHeadingBold]) {
                     newFont = [newFont removeBold];
@@ -121,7 +126,7 @@
     NSMutableDictionary *newTypingAttrs =
         [[self typedInput]->textView.typingAttributes mutableCopy];
     UIFont *newFont = [currentFontAttr
-        setSize:[[[self typedInput]->config primaryFontSize] floatValue]];
+        setSize:[[[self typedInput]->config scaledPrimaryFontSize] floatValue]];
     if ([self isHeadingBold]) {
       newFont = [newFont removeBold];
     }
@@ -137,9 +142,20 @@
   [self removeAttributes:[self typedInput]->textView.selectedRange];
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+// when the traits already change, the getHeadginFontSize will return the new
+// font size and no headings would be properly detected, so that's why we have
+// to use the latest applied font size rather than that value.
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   UIFont *font = (UIFont *)value;
-  return font != nullptr && font.pointSize == [self getHeadingFontSize];
+  if (font == nullptr) {
+    return NO;
+  }
+
+  if (self.lastAppliedFontSize > 0.0) {
+    return font.pointSize == self.lastAppliedFontSize;
+  }
+
+  return font.pointSize == [self getHeadingFontSize];
 }
 
 - (BOOL)detectStyle:(NSRange)range {
@@ -148,7 +164,7 @@
                         withInput:[self typedInput]
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSFontAttributeName
@@ -156,7 +172,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -166,7 +182,7 @@
                    withInput:[self typedInput]
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -175,7 +191,7 @@
                    withInput:[self typedInput]
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -216,6 +232,7 @@
       [self addAttributes:paragraphRange withTypingAttr:NO];
     }
   }
+  _lastAppliedFontSize = [self getHeadingFontSize];
 }
 
 @end
