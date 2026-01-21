@@ -21,7 +21,7 @@ import EnrichedTextInputNativeComponent, {
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
-} from './EnrichedTextInputNativeComponent';
+} from '../spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
   HostInstance,
