@@ -89,6 +89,9 @@ function App() {
           style={{ border: '1px solid #ddd', padding: '8px' }}
           onChangeState={handleChangeState}
           onChangeHtml={handleOnChangeHtml}
+          onChangeSelection={(sel) => {
+            console.log('selection changed:', sel);
+          }}
         />
         <div className="html-output">
           <h3>HTML Output:</h3>

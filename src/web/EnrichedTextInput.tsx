@@ -135,6 +135,9 @@ export const EnrichedTextInput = ({
   selectionColor,
   cursorColor,
   style,
+  onFocus,
+  onBlur,
+  onChangeSelection,
   onChangeState,
   onChangeHtml,
 }: EnrichedTextInputProps) => {
@@ -164,6 +167,19 @@ export const EnrichedTextInput = ({
     content: defaultValue,
     editable: editable,
     autofocus: autoFocus,
+    onFocus: onFocus,
+    onBlur: onBlur,
+    onSelectionUpdate: ({ editor: _editor }) => {
+      if (onChangeSelection) {
+        const { from, to } = _editor.state.selection;
+        // TipTap's positions are 1-based, adjust to 0-based
+        onChangeSelection({
+          start: from - 1,
+          end: to - 1,
+          text: _editor.state.doc.textBetween(from, to),
+        });
+      }
+    },
     editorProps: {
       attributes: {
         style: 'outline: none;',
@@ -193,8 +209,13 @@ export const EnrichedTextInput = ({
       setValue: (value: string) => {
         editor?.commands.setContent(value);
       },
-      setSelection: (_start: number, _end: number) => {
-        // Not implemented in this basic TipTap config
+      setSelection: (start: number, end: number) => {
+        // Convert from 0-based (React Native) to 1-based (TipTap)
+        editor
+          ?.chain()
+          .focus()
+          .setTextSelection({ from: start + 1, to: end + 1 })
+          .run();
       },
       getHTML: () => {
         return Promise.resolve(editor?.getHTML() || '');
