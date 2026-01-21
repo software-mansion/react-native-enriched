@@ -5,7 +5,7 @@ export type {
   OnChangeStateEvent,
   OnChangeStateDeprecatedEvent,
   OnKeyPressEvent,
-} from '../native/EnrichedTextInputNativeComponent';
+} from '../spec/EnrichedTextInputNativeComponent';
 
 export interface OnMentionDetected {
   text: string;
