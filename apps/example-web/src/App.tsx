@@ -92,6 +92,9 @@ function App() {
           onChangeSelection={(sel) => {
             console.log('selection changed:', sel);
           }}
+          onKeyPress={({ key }) => {
+            console.log('keypress event, key:', key);
+          }}
         />
         <div className="html-output">
           <h3>HTML Output:</h3>

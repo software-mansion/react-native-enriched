@@ -138,6 +138,7 @@ export const EnrichedTextInput = ({
   onFocus,
   onBlur,
   onChangeSelection,
+  onKeyPress,
   onChangeState,
   onChangeHtml,
 }: EnrichedTextInputProps) => {
@@ -183,6 +184,15 @@ export const EnrichedTextInput = ({
     editorProps: {
       attributes: {
         style: 'outline: none;',
+      },
+      handleKeyDown: (_, event) => {
+        if (onKeyPress) {
+          onKeyPress({
+            key: event.key,
+          });
+        }
+        // returning false allows the event to be processed further by TipTap
+        return false;
       },
     },
   });
