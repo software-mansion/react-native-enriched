@@ -13,3 +13,7 @@ p.is-editor-empty:first-child::before {
 .ProseMirror::-webkit-selection {
   background-color: var(--selection-color);
 }
+
+.ProseMirror {
+  caret-color: var(--cursor-color);
+}
