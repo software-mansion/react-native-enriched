@@ -132,6 +132,7 @@ export const EnrichedTextInput = ({
   defaultValue,
   placeholder,
   placeholderTextColor,
+  selectionColor,
   style,
   onChangeState,
   onChangeHtml,
@@ -249,6 +250,7 @@ export const EnrichedTextInput = ({
         {
           ...style,
           '--placeholder-color': placeholderTextColor,
+          '--selection-color': selectionColor,
         } as CSSProperties
       }
     />

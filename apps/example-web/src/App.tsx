@@ -82,7 +82,10 @@ function App() {
           editable={true}
           defaultValue={defaultValue}
           placeholder="Type something..."
-          placeholderTextColor="#f04b4b"
+          placeholderTextColor="rgb(0, 26, 114)"
+          selectionColor="deepskyblue"
+          cursorColor="dodgerblue"
+          autoCapitalize="sentences"
           style={{ border: '1px solid #ddd', padding: '8px' }}
           onChangeState={handleChangeState}
           onChangeHtml={handleOnChangeHtml}
