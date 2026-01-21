@@ -15,7 +15,9 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
   type MentionStyleProperties,
-} from './EnrichedTextInputNativeComponent';
+  type OnChangeStateDeprecatedEvent,
+  type OnKeyPressEvent,
+} from '../spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
   HostInstance,
@@ -34,12 +36,10 @@ import type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
-  OnChangeStateDeprecatedEvent,
   OnMentionDetected,
   OnLinkDetected,
   OnChangeSelectionEvent,
   OnChangeMentionEvent,
-  OnKeyPressEvent,
   EnrichedTextInputInstanceBase,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';

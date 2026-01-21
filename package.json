@@ -1,6 +1,6 @@
 {
   "name": "react-native-enriched",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Rich Text Editor component for React Native",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -171,9 +171,9 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNEnrichedTextInputViewSpec",
+    "name": "ReactNativeEnrichedSpec",
     "type": "components",
-    "jsSrcsDir": "src",
+    "jsSrcsDir": "src/spec",
     "outputDir": {
       "ios": "ios/generated",
       "android": "android/generated"
