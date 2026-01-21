@@ -228,6 +228,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
 - [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
+- [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
 
 ## Customizing \<EnrichedTextInput /> styles
 

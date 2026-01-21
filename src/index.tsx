@@ -3,7 +3,9 @@ export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
+  OnChangeStateDeprecatedEvent,
   OnLinkDetected,
   OnMentionDetected,
   OnChangeSelectionEvent,
-} from './EnrichedTextInputNativeComponent';
+  OnKeyPressEvent,
+} from './spec/EnrichedTextInputNativeComponent';
