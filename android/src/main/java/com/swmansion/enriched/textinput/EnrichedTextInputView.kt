@@ -182,6 +182,7 @@ class EnrichedTextInputView :
     setReturnKeyLabel(DEFAULT_IME_ACTION_LABEL)
   }
 
+  // Similar implementation to: https://github.com/facebook/react-native/blob/c1f5445f4a59d0035389725e47da58eb3d2c267c/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactTextInputManager.kt#L940
   override fun onEditorAction(
     v: TextView?,
     actionId: Int,
