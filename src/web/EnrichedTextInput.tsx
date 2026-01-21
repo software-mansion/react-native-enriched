@@ -131,6 +131,7 @@ export const EnrichedTextInput = ({
   editable = ENRICHED_TEXT_INPUT_DEFAULTS.editable,
   defaultValue,
   placeholder,
+  placeholderTextColor,
   style,
   onChangeState,
   onChangeHtml,
@@ -241,5 +242,15 @@ export const EnrichedTextInput = ({
     [editor]
   );
 
-  return <EditorContent editor={editor} style={style} />;
+  return (
+    <EditorContent
+      editor={editor}
+      style={
+        {
+          ...style,
+          '--placeholder-color': placeholderTextColor,
+        } as CSSProperties
+      }
+    />
+  );
 };

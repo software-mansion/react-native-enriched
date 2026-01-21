@@ -1,5 +1,5 @@
 p.is-editor-empty:first-child::before {
-  color: var(--gray-4);
+  color: var(--placeholder-color, var(--gray-4));
   content: attr(data-placeholder);
   float: left;
   height: 0;

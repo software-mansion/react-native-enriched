@@ -59,12 +59,12 @@ function App() {
   };
 
   const defaultValue = `<html>
-<p><b>Bold</b></p>
-<p><i>Italic</i></p>
-<p><u>Underline</u></p>
-<p><s>Strike</s></p>
-<h1>Header1</h1>
-</html>`;
+    <p><b>Bold</b></p>
+    <p><i>Italic</i></p>
+    <p><u>Underline</u></p>
+    <p><s>Strike</s></p>
+    <h1>Header1</h1>
+    </html>`;
 
   return (
     <div className="container">
@@ -79,11 +79,13 @@ function App() {
         <EnrichedTextInput
           ref={ref}
           autoFocus={false}
+          editable={true}
+          defaultValue={defaultValue}
           placeholder="Type something..."
+          placeholderTextColor="#f04b4b"
           style={{ border: '1px solid #ddd', padding: '8px' }}
           onChangeState={handleChangeState}
           onChangeHtml={handleOnChangeHtml}
-          defaultValue={defaultValue}
         />
         <div className="html-output">
           <h3>HTML Output:</h3>
