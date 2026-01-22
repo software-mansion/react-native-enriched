@@ -41,7 +41,7 @@ export const useOnChangeState = (
         inlineCode: {
           isActive: editor.isActive('code'),
           isConflicting: false,
-          isBlocking: false,
+          isBlocking: !editor.can().chain().focus().toggleCode().run(),
         },
 
         // Nodes

@@ -82,6 +82,7 @@
     "@tiptap/core": "^3.16.0",
     "@tiptap/extension-blockquote": "^3.16.0",
     "@tiptap/extension-bold": "^3.16.0",
+    "@tiptap/extension-code": "^3.16.0",
     "@tiptap/extension-document": "^3.16.0",
     "@tiptap/extension-hard-break": "^3.16.0",
     "@tiptap/extension-heading": "^3.16.0",

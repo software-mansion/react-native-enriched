@@ -9,6 +9,7 @@ const STYLE_ITEMS = [
   { name: 'italic', label: 'I' },
   { name: 'underline', label: 'U' },
   { name: 'strikethrough', label: 'S' },
+  { name: 'inline-code', label: 'IC' },
   { name: 'heading-1', label: 'H1' },
   { name: 'heading-2', label: 'H2' },
   { name: 'heading-3', label: 'H3' },
@@ -55,6 +56,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         break;
       case 'strikethrough':
         currentRef.toggleStrikeThrough();
+        break;
+      case 'inline-code':
+        currentRef.toggleInlineCode();
         break;
       case 'heading-1':
         currentRef.toggleH1();
@@ -105,6 +109,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.underline.isBlocking;
       case 'strikethrough':
         return stylesState.strikeThrough.isBlocking;
+      case 'inline-code':
+        return stylesState.inlineCode.isBlocking;
       case 'heading-1':
         return stylesState.h1.isBlocking;
       case 'heading-2':
@@ -144,6 +150,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.underline.isActive;
       case 'strikethrough':
         return stylesState.strikeThrough.isActive;
+      case 'inline-code':
+        return stylesState.inlineCode.isActive;
       case 'heading-1':
         return stylesState.h1.isActive;
       case 'heading-2':
@@ -183,6 +191,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.underline.isConflicting;
       case 'strikethrough':
         return stylesState.strikeThrough.isConflicting;
+      case 'inline-code':
+        return stylesState.inlineCode.isConflicting;
       case 'heading-1':
         return stylesState.h1.isConflicting;
       case 'heading-2':

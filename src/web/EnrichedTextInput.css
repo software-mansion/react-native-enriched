@@ -17,3 +17,12 @@ p.is-editor-empty:first-child::before {
 .ProseMirror {
   caret-color: var(--cursor-color);
 }
+
+code {
+  background-color: var(--code-bg-color);
+  color: var(--code-color);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  font-family: monospace;
+}

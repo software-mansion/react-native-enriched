@@ -15,6 +15,7 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Strike from '@tiptap/extension-strike';
 import Underline from '@tiptap/extension-underline';
+import Code from '@tiptap/extension-code';
 import Blockquote from '@tiptap/extension-blockquote';
 
 import './EnrichedTextInput.css';
@@ -136,6 +137,7 @@ export const EnrichedTextInput = ({
   selectionColor,
   cursorColor,
   style,
+  htmlStyle,
   onFocus,
   onBlur,
   onChangeSelection,
@@ -150,7 +152,7 @@ export const EnrichedTextInput = ({
       Text,
       Paragraph,
       Heading.extend({
-        marks: '',
+        marks: 'italic underline strike code',
         addCommands() {
           return {
             ...this.parent?.(),
@@ -182,6 +184,9 @@ export const EnrichedTextInput = ({
       }),
       Strike,
       Underline,
+      Code.extend({
+        excludes: '',
+      }),
       Placeholder.configure({
         placeholder: placeholder || '',
       }),
@@ -287,7 +292,9 @@ export const EnrichedTextInput = ({
       toggleStrikeThrough: () => {
         editor?.chain().focus().toggleStrike().run();
       },
-      toggleInlineCode: () => {},
+      toggleInlineCode: () => {
+        editor?.chain().focus().toggleCode().run();
+      },
       toggleH1: () => {
         editor?.chain().focus().toggleHeading({ level: 1 }).run();
       },
@@ -329,6 +336,8 @@ export const EnrichedTextInput = ({
           '--placeholder-color': placeholderTextColor,
           '--selection-color': selectionColor,
           '--cursor-color': cursorColor,
+          '--code-bg-color': htmlStyle?.code?.backgroundColor ?? 'darkgray',
+          '--code-color': htmlStyle?.code?.color ?? 'red',
         } as CSSProperties
       }
     />
