@@ -21,6 +21,9 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.ViewCompat
+import androidx.core.view.inputmethod.EditorInfoCompat
+import androidx.core.view.inputmethod.InputConnectionCompat
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
@@ -33,7 +36,9 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
+import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.textinput.events.PastedImage
 import com.swmansion.enriched.textinput.spans.EnrichedH1Span
 import com.swmansion.enriched.textinput.spans.EnrichedH2Span
 import com.swmansion.enriched.textinput.spans.EnrichedH3Span
@@ -53,6 +58,7 @@ import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
+import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.textinput.watchers.EnrichedTextWatcher
@@ -136,6 +142,11 @@ class EnrichedTextInputView : AppCompatEditText {
 
   init {
     inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    ViewCompat.setOnReceiveContentListener(
+      this,
+      RichContentReceiver.MIME_TYPES,
+      RichContentReceiver(this, context as ReactContext),
+    )
   }
 
   private fun prepareComponent() {
@@ -228,11 +239,6 @@ class EnrichedTextInputView : AppCompatEditText {
         handleCustomCopy()
         return true
       }
-
-      android.R.id.paste -> {
-        handleCustomPaste()
-        return true
-      }
     }
     return super.onTextContextMenuItem(id)
   }
@@ -252,16 +258,11 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun handleCustomPaste() {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    if (!clipboard.hasPrimaryClip()) return
-
-    val clip = clipboard.primaryClip
-    val item = clip?.getItemAt(0)
-    val htmlText = item?.htmlText
+  fun handleTextPaste(item: ClipData.Item) {
+    val htmlText = item.htmlText
     val currentText = text as Spannable
-    val start = selection?.start ?: 0
-    val end = selection?.end ?: 0
+    val start = selectionStart.coerceAtLeast(0)
+    val end = selectionEnd.coerceAtLeast(0)
 
     if (htmlText != null) {
       val parsedText = parseText(htmlText)
@@ -272,8 +273,7 @@ class EnrichedTextInputView : AppCompatEditText {
       }
     }
 
-    // Currently, we do not support pasting images
-    if (item?.text == null) return
+    if (item.text == null) return
     val lengthBefore = currentText.length
     val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
