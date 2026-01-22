@@ -55,40 +55,62 @@
   NSArray<NSString *> *pasteboardTypes = pasteboard.pasteboardTypes;
   NSRange currentRange = typedInput->textView.selectedRange;
 
-  if (pasteboard.hasImages) {
-    NSArray<UIImage *> *images = pasteboard.images;
-    NSMutableArray<NSDictionary *> *foundImages = [NSMutableArray new];
+  NSMutableArray<NSDictionary *> *foundImages = [NSMutableArray new];
 
-    for (UIImage *image in images) {
-      NSData *data;
-      NSString *ext;
-      NSString *mimeType;
+  for (NSDictionary<NSString *, id> *item in pasteboard.items) {
+    NSData *imageData = nil;
+    BOOL added = NO;
+    NSString *ext = nil;
+    NSString *mimeType = nil;
 
-      if ([self imageHasAlpha:image]) {
-        data = UIImagePNGRepresentation(image);
-        ext = @"png";
-        mimeType = @"image/png";
-      } else {
-        data = UIImageJPEGRepresentation(image, 0.9);
-        ext = @"jpg";
-        mimeType = @"image/jpeg";
+    for (int j = 0; j < item.allKeys.count; j++) {
+      if (added) {
+        break;
       }
 
-      NSString *path = [self saveToTempFile:data extension:ext];
-      if (path) {
-        [foundImages addObject:@{
-          @"uri" : path,
-          @"type" : mimeType,
-          @"width" : @(image.size.width),
-          @"height" : @(image.size.height)
-        }];
+      NSString *type = item.allKeys[j];
+      if ([type isEqual:UTTypeJPEG.identifier] ||
+          [type isEqual:UTTypePNG.identifier] ||
+          [type isEqual:UTTypeWebP.identifier] ||
+          [type isEqual:UTTypeHEIC.identifier] ||
+          [type isEqual:UTTypeTIFF.identifier]) {
+        imageData = [self getDataForImageItem:item[type] type:type];
+      } else if ([type isEqual:UTTypeGIF.identifier]) {
+        // gifs
+        imageData = [pasteboard dataForPasteboardType:type];
+      }
+      if (!imageData) {
+        continue;
+      }
+
+      NSDictionary *info = [self detectImageFormat:type];
+      if (!info) {
+        continue;
+      }
+      ext = info[@"ext"];
+      mimeType = info[@"mime"];
+
+      UIImage *imageInfo = [UIImage imageWithData:imageData];
+
+      if (imageInfo) {
+        NSString *path = [self saveToTempFile:imageData extension:ext];
+
+        if (path) {
+          added = YES;
+          [foundImages addObject:@{
+            @"uri" : path,
+            @"type" : mimeType,
+            @"width" : @(imageInfo.size.width),
+            @"height" : @(imageInfo.size.height)
+          }];
+        }
       }
     }
+  }
 
-    if (foundImages.count > 0) {
-      [typedInput emitOnPasteImagesEvent:foundImages];
-      return;
-    }
+  if (foundImages.count > 0) {
+    [typedInput emitOnPasteImagesEvent:foundImages];
+    return;
   }
 
   if ([pasteboardTypes containsObject:UTTypeHTML.identifier]) {
@@ -128,6 +150,36 @@
   }
 
   [typedInput anyTextMayHaveBeenModified];
+}
+
+- (NSDictionary *)detectImageFormat:(NSString *)type {
+  if ([type isEqual:UTTypeJPEG.identifier]) {
+    return @{@"ext" : @"jpg", @"mime" : @"image/jpeg"};
+  } else if ([type isEqual:UTTypePNG.identifier]) {
+    return @{@"ext" : @"png", @"mime" : @"image/png"};
+  } else if ([type isEqual:UTTypeGIF.identifier]) {
+    return @{@"ext" : @"gif", @"mime" : @"image/gif"};
+  } else if ([type isEqual:UTTypeHEIC.identifier]) {
+    return @{@"ext" : @"heic", @"mime" : @"image/heic"};
+  } else if ([type isEqual:UTTypeWebP.identifier]) {
+    return @{@"ext" : @"webp", @"mime" : @"image/webp"};
+  } else if ([type isEqual:UTTypeTIFF.identifier]) {
+    return @{@"ext" : @"tiff", @"mime" : @"image/tiff"};
+  } else {
+    return nil;
+  }
+}
+
+- (NSData *)getDataForImageItem:(NSData *)imageData type:(NSString *)type {
+  UIImage *image = (UIImage *)imageData;
+
+  if ([type isEqual:UTTypePNG.identifier]) {
+    return UIImagePNGRepresentation(image);
+  } else if ([type isEqual:UTTypeHEIC.identifier]) {
+    return UIImageHEICRepresentation(image);
+  } else {
+    return UIImageJPEGRepresentation(image, 1.0);
+  }
 }
 
 - (NSString *)saveToTempFile:(NSData *)data extension:(NSString *)ext {

@@ -95,6 +95,7 @@ class RichContentReceiver(
           mimeType.contains("png") -> "png"
           mimeType.contains("webp") -> "webp"
           mimeType.contains("heic") -> "heic"
+          mimeType.contains("tiff") -> "tiff"
           else -> "jpg"
         }
 
@@ -137,6 +138,8 @@ class RichContentReceiver(
           str.contains("png") -> "image/png"
           str.contains("gif") -> "image/gif"
           str.contains("webp") -> "image/webp"
+          str.contains("heic") -> "image/heic"
+          str.contains("tiff") -> "image/tiff"
           else -> "image/jpeg"
         }
     }
