@@ -198,14 +198,6 @@
   return nil;
 }
 
-// Helper to detect if an image needs PNG
-- (BOOL)imageHasAlpha:(UIImage *)image {
-  CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image.CGImage);
-  return (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaLast ||
-          alpha == kCGImageAlphaPremultipliedFirst ||
-          alpha == kCGImageAlphaPremultipliedLast);
-}
-
 - (void)tryHandlingPlainTextItemsIn:(UIPasteboard *)pasteboard
                               range:(NSRange)range
                               input:(EnrichedTextInputView *)input {
