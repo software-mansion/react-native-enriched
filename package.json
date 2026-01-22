@@ -79,19 +79,20 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tiptap/core": "^3.15.3",
-    "@tiptap/extension-bold": "^3.15.3",
-    "@tiptap/extension-document": "^3.15.3",
-    "@tiptap/extension-hard-break": "^3.15.3",
-    "@tiptap/extension-heading": "^3.15.3",
-    "@tiptap/extension-italic": "^3.15.3",
-    "@tiptap/extension-paragraph": "^3.15.3",
-    "@tiptap/extension-strike": "^3.15.3",
-    "@tiptap/extension-text": "^3.15.3",
-    "@tiptap/extension-underline": "^3.15.3",
-    "@tiptap/extensions": "^3.15.3",
-    "@tiptap/pm": "^3.15.3",
-    "@tiptap/react": "^3.15.3"
+    "@tiptap/core": "^3.16.0",
+    "@tiptap/extension-blockquote": "^3.16.0",
+    "@tiptap/extension-bold": "^3.16.0",
+    "@tiptap/extension-document": "^3.16.0",
+    "@tiptap/extension-hard-break": "^3.16.0",
+    "@tiptap/extension-heading": "^3.16.0",
+    "@tiptap/extension-italic": "^3.16.0",
+    "@tiptap/extension-paragraph": "^3.16.0",
+    "@tiptap/extension-strike": "^3.16.0",
+    "@tiptap/extension-text": "^3.16.0",
+    "@tiptap/extension-underline": "^3.16.0",
+    "@tiptap/extensions": "^3.16.0",
+    "@tiptap/pm": "^3.16.0",
+    "@tiptap/react": "^3.16.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",

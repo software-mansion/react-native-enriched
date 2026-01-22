@@ -15,6 +15,7 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Strike from '@tiptap/extension-strike';
 import Underline from '@tiptap/extension-underline';
+import Blockquote from '@tiptap/extension-blockquote';
 
 import './EnrichedTextInput.css';
 
@@ -148,7 +149,27 @@ export const EnrichedTextInput = ({
       HardBreak,
       Text,
       Paragraph,
-      Heading.extend({ marks: '' }),
+      Heading.extend({
+        marks: '',
+        addCommands() {
+          return {
+            ...this.parent?.(),
+            toggleHeading:
+              (attributes) =>
+              ({ chain, editor: _editor }) => {
+                const newChain = chain();
+                // Remove blockquote if active
+                if (_editor.isActive('blockquote')) {
+                  newChain.lift('blockquote');
+                }
+
+                return newChain
+                  .toggleNode(this.name, 'paragraph', attributes)
+                  .run();
+              },
+          };
+        },
+      }),
       Bold.extend({
         renderHTML({ HTMLAttributes }) {
           return ['b', HTMLAttributes, 0];
@@ -163,6 +184,28 @@ export const EnrichedTextInput = ({
       Underline,
       Placeholder.configure({
         placeholder: placeholder || '',
+      }),
+      Blockquote.extend({
+        addCommands() {
+          return {
+            ...this.parent?.(),
+            toggleBlockquote:
+              () =>
+              ({ chain, editor: _editor }) => {
+                const newChain = chain();
+                // If we are toggling blockquote ON, first disable any active heading
+                if (!_editor.isActive('blockquote')) {
+                  for (let level = 1; level <= 6; level++) {
+                    if (_editor.isActive('heading', { level })) {
+                      newChain.toggleNode('heading', 'paragraph', { level });
+                      break;
+                    }
+                  }
+                }
+                return newChain.toggleWrap('blockquote').run();
+              },
+          };
+        },
       }),
     ],
     content: defaultValue,
@@ -264,7 +307,9 @@ export const EnrichedTextInput = ({
         editor?.chain().focus().toggleHeading({ level: 6 }).run();
       },
       toggleCodeBlock: () => {},
-      toggleBlockQuote: () => {},
+      toggleBlockQuote: () => {
+        editor?.chain().focus().toggleBlockquote().run();
+      },
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       setLink: () => {},

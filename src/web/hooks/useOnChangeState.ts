@@ -48,7 +48,8 @@ export const useOnChangeState = (
         h1: {
           isActive: editor.isActive('heading', { level: 1 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 1 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 1 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -59,7 +60,8 @@ export const useOnChangeState = (
         h2: {
           isActive: editor.isActive('heading', { level: 2 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 2 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 2 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -70,7 +72,8 @@ export const useOnChangeState = (
         h3: {
           isActive: editor.isActive('heading', { level: 3 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 3 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 3 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -81,7 +84,8 @@ export const useOnChangeState = (
         h4: {
           isActive: editor.isActive('heading', { level: 4 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 4 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 4 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -92,7 +96,8 @@ export const useOnChangeState = (
         h5: {
           isActive: editor.isActive('heading', { level: 5 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 5 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 5 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -103,7 +108,8 @@ export const useOnChangeState = (
         h6: {
           isActive: editor.isActive('heading', { level: 6 }),
           isConflicting:
-            isAnyHeadingActive() && !editor.isActive('heading', { level: 6 }),
+            (isAnyHeadingActive() || editor.isActive('blockquote')) &&
+            !editor.isActive('heading', { level: 6 }),
           isBlocking: !editor
             .can()
             .chain()
@@ -113,8 +119,8 @@ export const useOnChangeState = (
         },
         blockQuote: {
           isActive: editor.isActive('blockquote'),
-          isConflicting: false,
-          isBlocking: false,
+          isConflicting: isAnyHeadingActive(),
+          isBlocking: !editor.can().chain().focus().toggleBlockquote().run(),
         },
         codeBlock: {
           isActive: editor.isActive('codeBlock'),

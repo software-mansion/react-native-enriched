@@ -63,7 +63,14 @@ function App() {
     <p><i>Italic</i></p>
     <p><u>Underline</u></p>
     <p><s>Strike</s></p>
-    <h1>Header1</h1>
+    <h3>Header3</h3>
+    <blockquote>
+    <p>Blockquote</p>
+    </blockquote>
+    <codeblock>
+    <p>Codeblock</p>
+    </codeblock>
+    <p><code>Inlinecode</code></p>
     </html>`;
 
   return (

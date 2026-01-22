@@ -15,7 +15,7 @@ const STYLE_ITEMS = [
   { name: 'heading-4', label: 'H4' },
   { name: 'heading-5', label: 'H5' },
   { name: 'heading-6', label: 'H6' },
-  { name: 'quote', label: 'Quote' },
+  { name: 'blockquote', label: 'Quote' },
   { name: 'code-block', label: 'Code' },
   { name: 'unordered-list', label: 'UL' },
   { name: 'ordered-list', label: 'OL' },
@@ -77,7 +77,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       case 'code-block':
         currentRef.toggleCodeBlock();
         break;
-      case 'quote':
+      case 'blockquote':
         currentRef.toggleBlockQuote();
         break;
       case 'unordered-list':
@@ -119,7 +119,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.h6.isBlocking;
       case 'code-block':
         return stylesState.codeBlock.isBlocking;
-      case 'quote':
+      case 'blockquote':
         return stylesState.blockQuote.isBlocking;
       case 'unordered-list':
         return stylesState.unorderedList.isBlocking;
@@ -158,7 +158,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.h6.isActive;
       case 'code-block':
         return stylesState.codeBlock.isActive;
-      case 'quote':
+      case 'blockquote':
         return stylesState.blockQuote.isActive;
       case 'unordered-list':
         return stylesState.unorderedList.isActive;
@@ -197,7 +197,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.h6.isConflicting;
       case 'code-block':
         return stylesState.codeBlock.isConflicting;
-      case 'quote':
+      case 'blockquote':
         return stylesState.blockQuote.isConflicting;
       case 'unordered-list':
         return stylesState.unorderedList.isConflicting;
