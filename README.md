@@ -229,6 +229,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 - [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
+- [onPasteImages](docs/API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
 
 ## Customizing \<EnrichedTextInput /> styles
 
