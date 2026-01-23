@@ -162,9 +162,9 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNEnrichedTextInputViewSpec",
+    "name": "ReactNativeEnrichedSpec",
     "type": "components",
-    "jsSrcsDir": "src",
+    "jsSrcsDir": "src/spec",
     "outputDir": {
       "ios": "ios/generated",
       "android": "android/generated"

@@ -386,7 +386,7 @@ static void const *kInputKey = &kInputKey;
   CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
   CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
   CGFloat bulletX = origin.x + usedRect.origin.x - gapWidth - bulletSize / 2;
-  CGFloat centerY = CGRectGetMidY(usedRect);
+  CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
 
   CGContextRef context = UIGraphicsGetCurrentContext();
   CGContextSaveGState(context);
