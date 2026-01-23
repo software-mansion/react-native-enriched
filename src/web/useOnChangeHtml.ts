@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
-import type { OnChangeHtmlEvent } from '../../common/types';
+import type { OnChangeHtmlEvent } from '../common/types';
 
 export const useOnChangeHtml = (
   editor: Editor | null,

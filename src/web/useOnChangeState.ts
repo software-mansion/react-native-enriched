@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
-import type { OnChangeStateEvent } from '../../common/types';
+import type { OnChangeStateEvent } from '../common/types';
 
 export const useOnChangeState = (
   editor: Editor | null,

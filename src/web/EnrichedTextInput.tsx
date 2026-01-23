@@ -1,6 +1,7 @@
 import {
   useImperativeHandle,
   useEffect,
+  useMemo,
   type CSSProperties,
   type RefObject,
 } from 'react';
@@ -33,62 +34,16 @@ import type {
   OnKeyPressEvent,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
-import { useOnChangeState } from './hooks/useOnChangeState';
-import { useOnChangeHtml } from './hooks/useOnChangeHtml';
+import { useOnChangeState } from './useOnChangeState';
+import { useOnChangeHtml } from './useOnChangeHtml';
+import {
+  buildStyleVars,
+  type HtmlStyle,
+  type MentionStyleProperties,
+} from './buildStyleVars';
 
+export type { HtmlStyle, MentionStyleProperties };
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
-
-export interface MentionStyleProperties {
-  color?: string;
-  backgroundColor?: string;
-  textDecorationLine?: 'underline' | 'none';
-}
-
-type HeadingStyle = {
-  fontSize?: number;
-  bold?: boolean;
-};
-
-export interface HtmlStyle {
-  h1?: HeadingStyle;
-  h2?: HeadingStyle;
-  h3?: HeadingStyle;
-  h4?: HeadingStyle;
-  h5?: HeadingStyle;
-  h6?: HeadingStyle;
-  blockquote?: {
-    borderColor?: string;
-    borderWidth?: number;
-    gapWidth?: number;
-    color?: string;
-  };
-  codeblock?: {
-    color?: string;
-    borderRadius?: number;
-    backgroundColor?: string;
-  };
-  code?: {
-    color?: string;
-    backgroundColor?: string;
-  };
-  a?: {
-    color?: string;
-    textDecorationLine?: 'underline' | 'none';
-  };
-  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  ol?: {
-    gapWidth?: number;
-    marginLeft?: number;
-    markerFontWeight?: string | number;
-    markerColor?: string;
-  };
-  ul?: {
-    bulletColor?: string;
-    bulletSize?: number;
-    marginLeft?: number;
-    gapWidth?: number;
-  };
-}
 
 export interface EnrichedTextInputProps {
   ref?: RefObject<EnrichedTextInputInstance | null>;
@@ -327,19 +282,20 @@ export const EnrichedTextInput = ({
     [editor]
   );
 
+  const editorStyle = useMemo(
+    () => ({
+      ...style,
+      ...buildStyleVars(
+        htmlStyle,
+        placeholderTextColor,
+        selectionColor,
+        cursorColor
+      ),
+    }),
+    [style, htmlStyle, placeholderTextColor, selectionColor, cursorColor]
+  );
+
   return (
-    <EditorContent
-      editor={editor}
-      style={
-        {
-          ...style,
-          '--placeholder-color': placeholderTextColor,
-          '--selection-color': selectionColor,
-          '--cursor-color': cursorColor,
-          '--code-bg-color': htmlStyle?.code?.backgroundColor ?? 'darkgray',
-          '--code-color': htmlStyle?.code?.color ?? 'red',
-        } as CSSProperties
-      }
-    />
+    <EditorContent editor={editor} className="eti-editor" style={editorStyle} />
   );
 };

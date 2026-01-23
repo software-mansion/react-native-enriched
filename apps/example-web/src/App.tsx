@@ -64,13 +64,9 @@ function App() {
     <p><u>Underline</u></p>
     <p><s>Strike</s></p>
     <h3>Header3</h3>
-    <blockquote>
-    <p>Blockquote</p>
-    </blockquote>
-    <codeblock>
-    <p>Codeblock</p>
-    </codeblock>
-    <p><code>Inlinecode</code></p>
+    <blockquote><p>Blockquote</p></blockquote>
+    <p><code>Inline code</code></p>
+    <codeblock><p>Codeblock</p></codeblock>
     </html>`;
 
   return (
@@ -103,7 +99,7 @@ function App() {
             console.log('keypress event, key:', key);
           }}
         />
-        <div className="html-output">
+        <div>
           <h3>HTML Output:</h3>
           <div>{html}</div>
         </div>
