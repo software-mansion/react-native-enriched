@@ -1,4 +1,4 @@
-import type { HtmlStyle } from '../EnrichedTextInput';
+import type { HtmlStyle } from '../native/EnrichedTextInput';
 import { type ColorValue, processColor } from 'react-native';
 import type {
   MentionStyleProperties,

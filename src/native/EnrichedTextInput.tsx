@@ -21,7 +21,7 @@ import EnrichedTextInputNativeComponent, {
   type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
-} from './spec/EnrichedTextInputNativeComponent';
+} from '../spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
   HostInstance,
@@ -34,8 +34,8 @@ import type {
   ViewProps,
   ViewStyle,
 } from 'react-native';
-import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
-import { toNativeRegexConfig } from './utils/regexParser';
+import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
+import { toNativeRegexConfig } from '../utils/regexParser';
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
