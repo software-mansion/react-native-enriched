@@ -58,40 +58,30 @@ class ListStyles(
     name: String,
     start: Int,
     end: Int,
-    isChecked: Boolean?,
+    isChecked: Boolean? = false,
   ) {
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
 
-    if (name == EnrichedSpans.UNORDERED_LIST) {
-      val span = EnrichedUnorderedListSpan(view.htmlStyle)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-      return
+    when (name) {
+      EnrichedSpans.UNORDERED_LIST -> {
+        val span = EnrichedUnorderedListSpan(view.htmlStyle)
+        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      }
+
+      EnrichedSpans.ORDERED_LIST -> {
+        val index = getOrderedListIndex(spannable, safeStart)
+        val span = EnrichedOrderedListSpan(index, view.htmlStyle)
+        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      }
+
+      EnrichedSpans.CHECKBOX_LIST -> {
+        val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
+        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
+        view.layoutManager.invalidateLayout()
+      }
     }
-
-    if (name == EnrichedSpans.ORDERED_LIST) {
-      val index = getOrderedListIndex(spannable, safeStart)
-      val span = EnrichedOrderedListSpan(index, view.htmlStyle)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-      return
-    }
-
-    if (name == EnrichedSpans.CHECKBOX_LIST) {
-      val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-      // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
-      view.layoutManager.invalidateLayout()
-      return
-    }
-  }
-
-  private fun setSpan(
-    spannable: Spannable,
-    name: String,
-    start: Int,
-    end: Int,
-  ) {
-    setSpan(spannable, name, start, end, null)
   }
 
   private fun <T> removeSpansForRange(
