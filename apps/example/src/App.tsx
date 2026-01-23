@@ -64,6 +64,7 @@ const DEFAULT_STYLES: StylesState = {
   link: DEFAULT_STYLE_STATE,
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,
+  checkboxList: DEFAULT_STYLE_STATE,
 };
 
 const DEFAULT_LINK_STATE = {
@@ -460,6 +461,12 @@ const htmlStyle: HtmlStyle = {
     bulletSize: 8,
     marginLeft: 24,
     gapWidth: 16,
+  },
+  ulCheckbox: {
+    boxSize: 24,
+    gapWidth: 16,
+    marginLeft: 24,
+    boxColor: 'rgb(0, 26, 114)',
   },
 };
 
