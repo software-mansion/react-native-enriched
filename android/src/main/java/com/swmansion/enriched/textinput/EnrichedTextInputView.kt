@@ -54,6 +54,7 @@ import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.mergeSpannables
+import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.textinput.watchers.EnrichedTextWatcher
 import java.util.regex.Pattern
@@ -155,9 +156,12 @@ class EnrichedTextInputView : AppCompatEditText {
     // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
     val spanWatcher = EnrichedSpanWatcher(this)
     this.spanWatcher = spanWatcher
-    setEditableFactory(EnrichedEditableFactory(spanWatcher))
 
+    setEditableFactory(EnrichedEditableFactory(spanWatcher))
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    // Handle checkbox list item clicks
+    this.setCheckboxClickListener()
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -546,6 +550,7 @@ class EnrichedTextInputView : AppCompatEditText {
       EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EnrichedSpans.BLOCK_QUOTE)
       EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
       EnrichedSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.UNORDERED_LIST)
+      EnrichedSpans.CHECKBOX_LIST -> listStyles?.toggleStyle(EnrichedSpans.CHECKBOX_LIST)
       else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
     }
 
@@ -574,6 +579,7 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
         EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
         EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
+        EnrichedSpans.CHECKBOX_LIST -> listStyles?.removeStyle(EnrichedSpans.CHECKBOX_LIST, start, end)
         EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
         EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
         EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
@@ -601,6 +607,7 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
         EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
         EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.CHECKBOX_LIST -> listStyles?.getStyleRange()
         EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
         EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
         EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
@@ -658,6 +665,13 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     toggleStyle(name)
+  }
+
+  fun toggleCheckboxListItem(checked: Boolean) {
+    val isValid = verifyStyle(EnrichedSpans.CHECKBOX_LIST)
+    if (!isValid) return
+
+    listStyles?.toggleCheckboxListStyle(checked)
   }
 
   fun addLink(
