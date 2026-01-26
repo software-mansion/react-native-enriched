@@ -10,21 +10,20 @@ import android.text.style.LineHeightSpan
 import android.text.style.MetricAffectingSpan
 import androidx.core.graphics.withTranslation
 import com.swmansion.enriched.common.CheckboxDrawable
+import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
-class EnrichedCheckboxListSpan(
-  var isChecked: Boolean,
-  private val htmlStyle: HtmlStyle,
+open class EnrichedCheckboxListSpan(
+  open var isChecked: Boolean,
+  private val enrichedStyle: EnrichedStyle,
 ) : MetricAffectingSpan(),
   LineHeightSpan,
   LeadingMarginSpan,
   EnrichedParagraphSpan {
-  override val dependsOnHtmlStyle: Boolean = true
-
   private val checkboxDrawable =
-    CheckboxDrawable(htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxColor, isChecked).apply {
-      setBounds(0, 0, htmlStyle.ulCheckboxBoxSize, htmlStyle.ulCheckboxBoxSize)
+    CheckboxDrawable(enrichedStyle.ulCheckboxBoxSize, enrichedStyle.ulCheckboxBoxColor, isChecked).apply {
+      setBounds(0, 0, enrichedStyle.ulCheckboxBoxSize, enrichedStyle.ulCheckboxBoxSize)
     }
 
   override fun updateMeasureState(tp: TextPaint) {
@@ -44,7 +43,7 @@ class EnrichedCheckboxListSpan(
     v: Int,
     fm: Paint.FontMetricsInt,
   ) {
-    val checkboxSize = htmlStyle.ulCheckboxBoxSize
+    val checkboxSize = enrichedStyle.ulCheckboxBoxSize
     val currentLineHeight = fm.descent - fm.ascent
 
     if (checkboxSize > currentLineHeight) {
@@ -60,7 +59,7 @@ class EnrichedCheckboxListSpan(
   }
 
   override fun getLeadingMargin(first: Boolean): Int =
-    htmlStyle.ulCheckboxBoxSize + htmlStyle.ulCheckboxMarginLeft + htmlStyle.ulCheckboxGapWidth
+    enrichedStyle.ulCheckboxBoxSize + enrichedStyle.ulCheckboxMarginLeft + enrichedStyle.ulCheckboxGapWidth
 
   override fun drawLeadingMargin(
     canvas: Canvas,
@@ -82,13 +81,11 @@ class EnrichedCheckboxListSpan(
       checkboxDrawable.update(isChecked)
 
       val lineCenter = (top + bottom) / 2f
-      val drawableTop = lineCenter - (htmlStyle.ulCheckboxBoxSize / 2f)
+      val drawableTop = lineCenter - (enrichedStyle.ulCheckboxBoxSize / 2f)
 
-      canvas.withTranslation(x.toFloat() + htmlStyle.ulCheckboxMarginLeft, drawableTop) {
+      canvas.withTranslation(x.toFloat() + enrichedStyle.ulCheckboxMarginLeft, drawableTop) {
         checkboxDrawable.draw(this)
       }
     }
   }
-
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedCheckboxListSpan = EnrichedCheckboxListSpan(isChecked, htmlStyle)
 }

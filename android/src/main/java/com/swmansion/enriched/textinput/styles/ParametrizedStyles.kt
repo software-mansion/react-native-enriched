@@ -5,10 +5,10 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
-import com.swmansion.enriched.common.spans.EnrichedImageSpan
-import com.swmansion.enriched.common.spans.EnrichedLinkSpan
-import com.swmansion.enriched.common.spans.EnrichedMentionSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
+import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputMentionSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
@@ -49,7 +49,7 @@ class ParametrizedStyles(
     isSettingLinkSpan = true
 
     val spannable = view.text as SpannableStringBuilder
-    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedInputLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -61,7 +61,7 @@ class ParametrizedStyles(
     }
 
     val spanEnd = start + text.length
-    val span = EnrichedLinkSpan(url, view.htmlStyle)
+    val span = EnrichedInputLinkSpan(url, view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
@@ -86,7 +86,7 @@ class ParametrizedStyles(
     val regex = view.linkRegex ?: return
     val contextText = spannable.subSequence(start, end).toString()
 
-    val spans = spannable.getSpans(start, end, EnrichedLinkSpan::class.java)
+    val spans = spannable.getSpans(start, end, EnrichedInputLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -111,7 +111,7 @@ class ParametrizedStyles(
         val spanStart = start + wordStart + linkStart
         val spanEnd = start + wordStart + linkEnd
 
-        val span = EnrichedLinkSpan(matcher.group(), view.htmlStyle)
+        val span = EnrichedInputLinkSpan(matcher.group(), view.htmlStyle)
         val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(spanStart, spanEnd)
 
         spannable.setSpan(
@@ -209,7 +209,7 @@ class ParametrizedStyles(
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
     val mentionRegex = Regex("^($indicatorsPattern)\\w*")
 
-    val spans = spannable.getSpans(currentWord.start, currentWord.end, EnrichedMentionSpan::class.java)
+    val spans = spannable.getSpans(currentWord.start, currentWord.end, EnrichedInputMentionSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
@@ -266,7 +266,7 @@ class ParametrizedStyles(
     if (start == originalEnd) {
       spannable.insert(start, EnrichedConstants.ORC_STRING)
     } else {
-      val spans = spannable.getSpans(start, originalEnd, EnrichedImageSpan::class.java)
+      val spans = spannable.getSpans(start, originalEnd, EnrichedInputImageSpan::class.java)
       for (s in spans) {
         spannable.removeSpan(s)
       }
@@ -275,7 +275,7 @@ class ParametrizedStyles(
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
-    val span = EnrichedImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
+    val span = EnrichedInputImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
     span.observeAsyncDrawableLoaded(view.text)
 
     spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -303,7 +303,7 @@ class ParametrizedStyles(
 
     val spannable = view.text as SpannableStringBuilder
     val (selectionStart, selectionEnd) = selection.getInlineSelection()
-    val spans = spannable.getSpans(selectionStart, selectionEnd, EnrichedMentionSpan::class.java)
+    val spans = spannable.getSpans(selectionStart, selectionEnd, EnrichedInputMentionSpan::class.java)
 
     for (span in spans) {
       spannable.removeSpan(span)
@@ -314,7 +314,7 @@ class ParametrizedStyles(
     view.runAsATransaction {
       spannable.replace(start, selectionEnd, text)
 
-      val span = EnrichedMentionSpan(text, indicator, attributes, view.htmlStyle)
+      val span = EnrichedInputMentionSpan(text, indicator, attributes, view.htmlStyle)
       val spanEnd = start + text.length
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
       spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
