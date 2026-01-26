@@ -5,9 +5,9 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.Log
 import com.swmansion.enriched.common.EnrichedConstants
-import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
@@ -259,7 +259,7 @@ class ParagraphStyles(
       }
 
       for (span in spans) {
-        extendStyleOnWholeParagraph(s, span as EnrichedSpan, conflictingType, paragraphEnd)
+        extendStyleOnWholeParagraph(s, span as EnrichedInputSpan, conflictingType, paragraphEnd)
       }
     }
 
@@ -294,7 +294,7 @@ class ParagraphStyles(
 
   private fun <T> extendStyleOnWholeParagraph(
     s: Editable,
-    span: EnrichedSpan,
+    span: EnrichedInputSpan,
     type: Class<T>,
     paragraphEnd: Int,
   ) {
@@ -325,7 +325,7 @@ class ParagraphStyles(
           for (span in spans) {
             // handle conflicts when entering paragraph with some paragraph style applied
             deleteConflictingAndBlockingStyles(s, style, start, end)
-            extendStyleOnWholeParagraph(s, span as EnrichedSpan, config.clazz, end)
+            extendStyleOnWholeParagraph(s, span as EnrichedInputSpan, config.clazz, end)
           }
         }
 

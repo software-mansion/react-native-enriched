@@ -9,19 +9,17 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.LineBackgroundSpan
 import android.text.style.MetricAffectingSpan
+import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
-import com.swmansion.enriched.textinput.styles.HtmlStyle
 
-class EnrichedCodeBlockSpan(
-  private val htmlStyle: HtmlStyle,
+open class EnrichedCodeBlockSpan(
+  private val enrichedStyle: EnrichedStyle,
 ) : MetricAffectingSpan(),
   LineBackgroundSpan,
   EnrichedBlockSpan {
-  override val dependsOnHtmlStyle: Boolean = true
-
   override fun updateDrawState(paint: TextPaint) {
     paint.typeface = Typeface.MONOSPACE
-    paint.color = htmlStyle.codeBlockColor
+    paint.color = enrichedStyle.codeBlockColor
   }
 
   override fun updateMeasureState(paint: TextPaint) {
@@ -46,9 +44,9 @@ class EnrichedCodeBlockSpan(
     }
 
     val previousColor = p.color
-    p.color = htmlStyle.codeBlockBackgroundColor
+    p.color = enrichedStyle.codeBlockBackgroundColor
 
-    val radius = htmlStyle.codeBlockRadius
+    val radius = enrichedStyle.codeBlockRadius
 
     val spanStart = text.getSpanStart(this)
     val spanEnd = text.getSpanEnd(this)
@@ -80,6 +78,4 @@ class EnrichedCodeBlockSpan(
     canvas.drawPath(path, p)
     p.color = previousColor
   }
-
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedCodeBlockSpan = EnrichedCodeBlockSpan(htmlStyle)
 }

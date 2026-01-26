@@ -5,12 +5,12 @@ import android.text.Spannable
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.common.EnrichedConstants
-import com.swmansion.enriched.common.spans.EnrichedLinkSpan
-import com.swmansion.enriched.common.spans.EnrichedMentionSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeSelectionEvent
 import com.swmansion.enriched.textinput.events.OnLinkDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
+import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputMentionSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import org.json.JSONObject
 
@@ -191,8 +191,8 @@ class EnrichedSelection(
     val (start, end) = getInlineSelection()
     val spannable = view.text as Spannable
     val spans = spannable.getSpans(start, end, type)
-    val isLinkType = type == EnrichedLinkSpan::class.java
-    val isMentionType = type == EnrichedMentionSpan::class.java
+    val isLinkType = type == EnrichedInputLinkSpan::class.java
+    val isMentionType = type == EnrichedInputMentionSpan::class.java
 
     if (isLinkType && spans.isEmpty()) {
       emitLinkDetectedEvent(spannable, null, start, end)
@@ -209,9 +209,9 @@ class EnrichedSelection(
       val spanEnd = spannable.getSpanEnd(span)
 
       if (start >= spanStart && end <= spanEnd) {
-        if (isLinkType && span is EnrichedLinkSpan) {
+        if (isLinkType && span is EnrichedInputLinkSpan) {
           emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
-        } else if (isMentionType && span is EnrichedMentionSpan) {
+        } else if (isMentionType && span is EnrichedInputMentionSpan) {
           emitMentionDetectedEvent(spannable, span, spanStart, spanEnd)
         }
 
@@ -248,7 +248,7 @@ class EnrichedSelection(
 
   private fun emitLinkDetectedEvent(
     spannable: Spannable,
-    span: EnrichedLinkSpan?,
+    span: EnrichedInputLinkSpan?,
     start: Int,
     end: Int,
   ) {
@@ -279,7 +279,7 @@ class EnrichedSelection(
 
   private fun emitMentionDetectedEvent(
     spannable: Spannable,
-    span: EnrichedMentionSpan?,
+    span: EnrichedInputMentionSpan?,
     start: Int,
     end: Int,
   ) {
