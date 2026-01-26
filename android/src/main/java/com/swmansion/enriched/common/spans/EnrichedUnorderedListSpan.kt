@@ -7,17 +7,15 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.LeadingMarginSpan
 import android.text.style.MetricAffectingSpan
+import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
-import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/text/style/BulletSpan.java
-class EnrichedUnorderedListSpan(
-  private val htmlStyle: HtmlStyle,
+open class EnrichedUnorderedListSpan(
+  private val enrichedStyle: EnrichedStyle,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan,
   EnrichedParagraphSpan {
-  override val dependsOnHtmlStyle: Boolean = true
-
   override fun updateMeasureState(p0: TextPaint) {
     // Do nothing, but inform layout that this span affects text metrics
   }
@@ -26,7 +24,7 @@ class EnrichedUnorderedListSpan(
     // Do nothing, but inform layout that this span affects text metrics
   }
 
-  override fun getLeadingMargin(p0: Boolean): Int = htmlStyle.ulBulletSize + htmlStyle.ulGapWidth + htmlStyle.ulMarginLeft
+  override fun getLeadingMargin(p0: Boolean): Int = enrichedStyle.ulBulletSize + enrichedStyle.ulGapWidth + enrichedStyle.ulMarginLeft
 
   override fun drawLeadingMargin(
     canvas: Canvas,
@@ -47,12 +45,12 @@ class EnrichedUnorderedListSpan(
     if (spannedText.getSpanStart(this) == start) {
       val style = paint.style
       val oldColor = paint.color
-      paint.color = htmlStyle.ulBulletColor
+      paint.color = enrichedStyle.ulBulletColor
       paint.style = Paint.Style.FILL
 
-      val bulletRadius = htmlStyle.ulBulletSize / 2f
+      val bulletRadius = enrichedStyle.ulBulletSize / 2f
       val yPosition = (top + bottom) / 2f
-      val xPosition = x + dir * bulletRadius + htmlStyle.ulMarginLeft
+      val xPosition = x + dir * bulletRadius + enrichedStyle.ulMarginLeft
 
       canvas.drawCircle(xPosition, yPosition, bulletRadius, paint)
 
@@ -60,6 +58,4 @@ class EnrichedUnorderedListSpan(
       paint.style = style
     }
   }
-
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedUnorderedListSpan = EnrichedUnorderedListSpan(htmlStyle)
 }

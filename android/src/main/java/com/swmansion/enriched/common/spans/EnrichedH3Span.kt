@@ -3,22 +3,18 @@ package com.swmansion.enriched.common.spans
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
+import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
-import com.swmansion.enriched.textinput.styles.HtmlStyle
 
-class EnrichedH3Span(
-  private val htmlStyle: HtmlStyle,
-) : AbsoluteSizeSpan(htmlStyle.h3FontSize),
+open class EnrichedH3Span(
+  private val enrichedStyle: EnrichedStyle,
+) : AbsoluteSizeSpan(enrichedStyle.h3FontSize),
   EnrichedHeadingSpan {
-  override val dependsOnHtmlStyle: Boolean = true
-
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
-    val bold = htmlStyle.h3Bold
+    val bold = enrichedStyle.h3Bold
     if (bold) {
       tp.typeface = Typeface.create(tp.typeface, Typeface.BOLD)
     }
   }
-
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedH3Span = EnrichedH3Span(htmlStyle)
 }

@@ -31,19 +31,19 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
-import com.swmansion.enriched.common.spans.EnrichedH1Span
-import com.swmansion.enriched.common.spans.EnrichedH2Span
-import com.swmansion.enriched.common.spans.EnrichedH3Span
-import com.swmansion.enriched.common.spans.EnrichedH4Span
-import com.swmansion.enriched.common.spans.EnrichedH5Span
-import com.swmansion.enriched.common.spans.EnrichedH6Span
-import com.swmansion.enriched.common.spans.EnrichedImageSpan
-import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.textinput.spans.EnrichedInputH1Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH2Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH3Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import com.swmansion.enriched.textinput.styles.InlineStyles
 import com.swmansion.enriched.textinput.styles.ListStyles
@@ -359,7 +359,7 @@ class EnrichedTextInputView : AppCompatEditText {
   private fun observeAsyncImages() {
     val liveText = text ?: return
 
-    val spans = liveText.getSpans(0, liveText.length, EnrichedImageSpan::class.java)
+    val spans = liveText.getSpans(0, liveText.length, EnrichedInputImageSpan::class.java)
 
     for (span in spans) {
       span.observeAsyncDrawableLoaded(liveText)
@@ -771,20 +771,20 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private fun isHeadingBold(
     style: HtmlStyle,
-    span: EnrichedSpan,
+    span: EnrichedInputSpan,
   ): Boolean =
     when (span) {
-      is EnrichedH1Span -> style.h1Bold
-      is EnrichedH2Span -> style.h2Bold
-      is EnrichedH3Span -> style.h3Bold
-      is EnrichedH4Span -> style.h4Bold
-      is EnrichedH5Span -> style.h5Bold
-      is EnrichedH6Span -> style.h6Bold
+      is EnrichedInputH1Span -> style.h1Bold
+      is EnrichedInputH2Span -> style.h2Bold
+      is EnrichedInputH3Span -> style.h3Bold
+      is EnrichedInputH4Span -> style.h4Bold
+      is EnrichedInputH5Span -> style.h5Bold
+      is EnrichedInputH6Span -> style.h6Bold
       else -> false
     }
 
   private fun shouldRemoveBoldFromHeading(
-    span: EnrichedSpan,
+    span: EnrichedInputSpan,
     prevStyle: HtmlStyle,
     nextStyle: HtmlStyle,
   ): Boolean {
@@ -804,7 +804,7 @@ class EnrichedTextInputView : AppCompatEditText {
     var shouldEmitStateChange = false
 
     runAsATransaction {
-      val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
+      val spans = spannable.getSpans(0, spannable.length, EnrichedInputSpan::class.java)
       for (span in spans) {
         if (!span.dependsOnHtmlStyle) continue
 

@@ -17,13 +17,10 @@ import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ForceRedrawSpan
 import com.swmansion.enriched.common.ResourceManager
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
-import com.swmansion.enriched.textinput.styles.HtmlStyle
 
-class EnrichedImageSpan :
+open class EnrichedImageSpan :
   ImageSpan,
   EnrichedInlineSpan {
-  override val dependsOnHtmlStyle: Boolean = false
-
   private var width: Int = 0
   private var height: Int = 0
 
@@ -128,24 +125,8 @@ class EnrichedImageSpan :
 
   fun getHeight(): Int = height
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedImageSpan = this
-
   companion object {
-    fun createEnrichedImageSpan(
-      src: String,
-      width: Int,
-      height: Int,
-    ): EnrichedImageSpan {
-      var imgDrawable = prepareDrawableForImage(src)
-
-      if (imgDrawable == null) {
-        imgDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
-      }
-
-      return EnrichedImageSpan(imgDrawable, src, width, height)
-    }
-
-    private fun prepareDrawableForImage(src: String): Drawable? {
+    fun prepareDrawableForImage(src: String): Drawable? {
       var cleanPath = src
 
       if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
