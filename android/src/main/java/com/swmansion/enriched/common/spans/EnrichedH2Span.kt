@@ -1,9 +1,9 @@
-package com.swmansion.enriched.textinput.spans
+package com.swmansion.enriched.common.spans
 
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedHeadingSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 class EnrichedH2Span(

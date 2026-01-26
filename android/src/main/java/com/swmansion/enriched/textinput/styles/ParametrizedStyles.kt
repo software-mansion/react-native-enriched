@@ -5,10 +5,10 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.spans.EnrichedImageSpan
+import com.swmansion.enriched.common.spans.EnrichedLinkSpan
+import com.swmansion.enriched.common.spans.EnrichedMentionSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
-import com.swmansion.enriched.textinput.spans.EnrichedImageSpan
-import com.swmansion.enriched.textinput.spans.EnrichedLinkSpan
-import com.swmansion.enriched.textinput.spans.EnrichedMentionSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS

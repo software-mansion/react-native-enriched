@@ -1,9 +1,9 @@
-package com.swmansion.enriched.textinput.spans
+package com.swmansion.enriched.common.spans
 
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 class EnrichedInlineCodeSpan(

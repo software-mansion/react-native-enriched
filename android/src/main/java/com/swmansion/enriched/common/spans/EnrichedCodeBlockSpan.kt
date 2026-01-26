@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.spans
+package com.swmansion.enriched.common.spans
 
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -9,7 +9,7 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.LineBackgroundSpan
 import android.text.style.MetricAffectingSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedBlockSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 class EnrichedCodeBlockSpan(

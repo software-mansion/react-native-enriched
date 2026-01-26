@@ -1,7 +1,7 @@
-package com.swmansion.enriched.textinput.spans
+package com.swmansion.enriched.common.spans
 
 import android.text.style.StrikethroughSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 @Suppress("UNUSED_PARAMETER")

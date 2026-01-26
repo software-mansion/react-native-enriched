@@ -7,7 +7,7 @@ import android.text.Spanned
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.TextView
-import com.swmansion.enriched.textinput.spans.EnrichedCheckboxListSpan
+import com.swmansion.enriched.common.spans.EnrichedCheckboxListSpan
 import org.json.JSONObject
 
 fun jsonStringToStringMap(json: String): Map<String, String> {

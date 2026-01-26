@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.spans
+package com.swmansion.enriched.common.spans
 
 import android.content.res.Resources
 import android.graphics.BitmapFactory
@@ -16,7 +16,7 @@ import com.swmansion.enriched.R
 import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ForceRedrawSpan
 import com.swmansion.enriched.common.ResourceManager
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 class EnrichedImageSpan :

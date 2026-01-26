@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.spans.interfaces
+package com.swmansion.enriched.common.spans.interfaces
 
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
