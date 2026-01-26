@@ -4,7 +4,7 @@ import android.text.Editable
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
-import com.swmansion.enriched.textinput.utils.EnrichedConstants
+import com.swmansion.enriched.common.EnrichedConstants
 
 class OnChangeTextEvent(
   surfaceId: Int,

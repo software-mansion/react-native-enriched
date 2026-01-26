@@ -30,6 +30,7 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
@@ -48,7 +49,6 @@ import com.swmansion.enriched.textinput.styles.InlineStyles
 import com.swmansion.enriched.textinput.styles.ListStyles
 import com.swmansion.enriched.textinput.styles.ParagraphStyles
 import com.swmansion.enriched.textinput.styles.ParametrizedStyles
-import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.EnrichedSelection

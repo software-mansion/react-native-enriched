@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.utils
+package com.swmansion.enriched.common
 
 object EnrichedConstants {
   // Zero Width Space
