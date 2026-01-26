@@ -29,7 +29,7 @@ test.describe('EnrichedTextInput Interactions', () => {
 
     // Verification 1: Bold is active
     await expect(boldBtn).toHaveClass(/active/);
-    await expect(editor.locator('strong, b')).toHaveText('Hello World');
+    await expect(editor.locator('b')).toHaveText('Hello World');
 
     // 4. Toggle Header 1
     const h1Btn = page.getByRole('button', { name: 'H1', exact: true });
@@ -76,5 +76,75 @@ test.describe('EnrichedTextInput Interactions', () => {
     // Example: <b><code>Mixed Styles</code></b>
     await expect(editor.locator('code')).toHaveText('Mixed Styles');
     await expect(editor.locator('b')).toHaveText('Mixed Styles');
+  });
+
+  test('headings and blockquote show conflicting state when H1 is active', async ({
+    page,
+  }) => {
+    const editor = page.locator('.ProseMirror');
+
+    // 1. Type text
+    await editor.pressSequentially('Heading Text');
+
+    // 2. Click H1
+    const h1Btn = page.getByRole('button', { name: 'H1', exact: true });
+    await h1Btn.click();
+
+    // Verify H1 is active
+    await expect(h1Btn).toHaveClass(/active/);
+
+    // Verify other Headings and Blockquote are conflicting
+    const conflictButtonsIds = ['H2', 'H3', 'H4', 'H5', 'H6', 'Quote'];
+    for (const name of conflictButtonsIds) {
+      const btn = page.getByRole('button', { name, exact: true });
+      await expect(btn).toHaveClass(/conflicting/);
+    }
+
+    // 3. Toggle off H1
+    await h1Btn.click();
+
+    // Verify H1 is not active
+    await expect(h1Btn).not.toHaveClass(/active/);
+
+    // Verify others are not conflicting
+    for (const name of conflictButtonsIds) {
+      const btn = page.getByRole('button', { name, exact: true });
+      await expect(btn).not.toHaveClass(/conflicting/);
+    }
+  });
+
+  test('headings show conflicting state when Blockquote is active', async ({
+    page,
+  }) => {
+    const editor = page.locator('.ProseMirror');
+
+    // 1. Type text
+    await editor.pressSequentially('Quote Text');
+
+    // 2. Click Blockquote
+    const quoteBtn = page.getByRole('button', { name: 'Quote', exact: true });
+    await quoteBtn.click();
+
+    // Verify Quote is active
+    await expect(quoteBtn).toHaveClass(/active/);
+
+    // Verify H1-H6 are conflicting
+    const conflictButtonsIds = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+    for (const name of conflictButtonsIds) {
+      const btn = page.getByRole('button', { name, exact: true });
+      await expect(btn).toHaveClass(/conflicting/);
+    }
+
+    // 3. Toggle off Blockquote
+    await quoteBtn.click();
+
+    // Verify Quote is not active
+    await expect(quoteBtn).not.toHaveClass(/active/);
+
+    // Verify others are not conflicting
+    for (const name of conflictButtonsIds) {
+      const btn = page.getByRole('button', { name, exact: true });
+      await expect(btn).not.toHaveClass(/conflicting/);
+    }
   });
 });
