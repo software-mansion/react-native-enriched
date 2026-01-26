@@ -825,7 +825,11 @@
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];
-    fixedHtml = [self stringByAddingNewlinesToTag:@"<li"
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<li>"
+                                         inString:fixedHtml
+                                          leading:YES
+                                         trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<li checked>"
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];

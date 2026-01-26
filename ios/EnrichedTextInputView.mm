@@ -264,64 +264,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   textView.adjustsFontForContentSizeCategory = YES;
-
-  TextBlockTapGestureRecognizer *blockTap =
-      [[TextBlockTapGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(onTextBlockTap:)];
-
-  blockTap.textView = textView;
-  blockTap.input = self;
-  blockTap.cancelsTouchesInView = YES;
-  blockTap.delaysTouchesBegan = YES;
-  blockTap.delaysTouchesEnded = YES;
-
-  for (UIGestureRecognizer *gr in textView.gestureRecognizers) {
-    [gr requireGestureRecognizerToFail:blockTap];
-  }
-  [textView addGestureRecognizer:blockTap];
-}
-
-- (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {
-  if (gr.state != UIGestureRecognizerStateEnded)
-    return;
-  if (![self->textView isFirstResponder]) {
-    [self->textView becomeFirstResponder];
-  }
-
-  switch (gr.tapKind) {
-
-  case TextBlockTapKindCheckbox: {
-    CheckboxListStyle *checkboxStyle =
-        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
-
-    if (checkboxStyle) {
-      NSUInteger charIndex = (NSUInteger)gr.characterIndex;
-      [checkboxStyle toggleCheckedAt:charIndex];
-      [self anyTextMayHaveBeenModified];
-
-      NSString *fullText = textView.textStorage.string;
-      NSRange paragraphRange =
-          [fullText paragraphRangeForRange:NSMakeRange(charIndex, 0)];
-      NSUInteger endOfLineIndex = NSMaxRange(paragraphRange);
-
-      // If the paragraph ends with a newline, step back by 1 so the cursor
-      // stays on the current line instead of jumping to the next one.
-      if (endOfLineIndex > 0 && endOfLineIndex <= fullText.length) {
-        unichar lastChar = [fullText characterAtIndex:endOfLineIndex - 1];
-        if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
-          endOfLineIndex--;
-        }
-      }
-
-      textView.selectedRange = NSMakeRange(endOfLineIndex, 0);
-    }
-    break;
-  }
-
-  default:
-    break;
-  }
+  [textView addGestureRecognizer:[[TextBlockTapGestureRecognizer alloc]
+                                     initWithInput:self
+                                            action:@selector(onTextBlockTap:)]];
 }
 
 // MARK: - Props
@@ -1898,6 +1843,51 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     textView.selectedRange = prevSelectedRange;
     [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {
+  if (gr.state != UIGestureRecognizerStateEnded)
+    return;
+  if (![self->textView isFirstResponder]) {
+    [self->textView becomeFirstResponder];
+  }
+
+  switch (gr.tapKind) {
+
+  case TextBlockTapKindCheckbox: {
+    CheckboxListStyle *checkboxStyle =
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+
+    if (checkboxStyle) {
+      NSUInteger charIndex = (NSUInteger)gr.characterIndex;
+      [checkboxStyle toggleCheckedAt:charIndex];
+      [self anyTextMayHaveBeenModified];
+
+      NSString *fullText = textView.textStorage.string;
+      NSRange paragraphRange =
+          [fullText paragraphRangeForRange:NSMakeRange(charIndex, 0)];
+      NSUInteger endOfLineIndex = NSMaxRange(paragraphRange);
+
+      // If the paragraph ends with a newline, step back by 1 so the cursor
+      // stays on the current line instead of jumping to the next one.
+      if (endOfLineIndex > 0 && endOfLineIndex <= fullText.length) {
+        unichar lastChar = [fullText characterAtIndex:endOfLineIndex - 1];
+        if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
+          endOfLineIndex--;
+        }
+      }
+
+      // Move the cursor to the end of the currently tapped checkbox line.
+      // Without this, the cursor may remain at its previous position,
+      // potentially inside a different checkbox line.
+      textView.selectedRange = NSMakeRange(endOfLineIndex, 0);
+    }
+    break;
+  }
+
+  default:
+    break;
   }
 }
 

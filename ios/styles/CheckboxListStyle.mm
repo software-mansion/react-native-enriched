@@ -30,6 +30,9 @@
 }
 
 - (void)applyStyle:(NSRange)range {
+  // Applying a checkbox list style requires a checked value,
+  // which is why this method is not implemented.
+  // Use 'applyStyleWithCheckedValue' and provide the checked value instead.
 }
 
 - (void)applyStyleWithCheckedValue:(BOOL)checked inRange:(NSRange)range {
