@@ -2,11 +2,21 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "lib": ["ES2023"],
-    "types": ["node"],
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "react-native-enriched": ["../../src/index"]
+      "react-native-enriched": [
+        "../../src/index"
+      ]
     }
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "playwright.config.ts",
+    "tests"
+  ]
 }
