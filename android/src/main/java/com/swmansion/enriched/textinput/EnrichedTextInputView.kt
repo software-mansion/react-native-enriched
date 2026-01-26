@@ -31,6 +31,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
@@ -50,7 +51,6 @@ import com.swmansion.enriched.textinput.styles.ListStyles
 import com.swmansion.enriched.textinput.styles.ParagraphStyles
 import com.swmansion.enriched.textinput.styles.ParametrizedStyles
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
-import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.mergeSpannables
@@ -103,6 +103,7 @@ class EnrichedTextInputView : AppCompatEditText {
   private var defaultValueDirty: Boolean = false
 
   private var inputMethodManager: InputMethodManager? = null
+  private val spannableFactory = EnrichedTextInputSpannableFactory()
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -298,7 +299,7 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isHtml) return text
 
     try {
-      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, null)
+      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
       return withoutLastNewLine
     } catch (e: Exception) {
