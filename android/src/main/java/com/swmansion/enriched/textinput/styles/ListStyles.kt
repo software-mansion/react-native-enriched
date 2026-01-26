@@ -49,7 +49,7 @@ class ListStyles(
     s: Int,
   ): Int {
     val span = getPreviousParagraphSpan(spannable, s, EnrichedInputOrderedListSpan::class.java)
-    val index = span?.index ?: 0
+    val index = span?.getListIndex() ?: 0
     return index + 1
   }
 
@@ -111,7 +111,7 @@ class ListStyles(
     for (span in sortedSpans) {
       val spanStart = text.getSpanStart(span)
       val index = getOrderedListIndex(text, spanStart)
-      span.index = index
+      span.setListIndex(index)
     }
   }
 

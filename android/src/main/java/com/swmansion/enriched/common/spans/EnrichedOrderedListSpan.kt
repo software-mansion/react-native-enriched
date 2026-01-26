@@ -12,7 +12,7 @@ import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
 
 open class EnrichedOrderedListSpan(
-  private var index: Int,
+  var index: Int,
   private val enrichedStyle: EnrichedStyle,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan,
