@@ -9,9 +9,9 @@ import android.text.style.LeadingMarginSpan
 import android.text.style.LineHeightSpan
 import android.text.style.MetricAffectingSpan
 import androidx.core.graphics.withTranslation
+import com.swmansion.enriched.common.CheckboxDrawable
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
-import com.swmansion.enriched.utils.CheckboxDrawable
 
 class EnrichedCheckboxListSpan(
   var isChecked: Boolean,

@@ -1,4 +1,4 @@
-package com.swmansion.enriched.utils
+package com.swmansion.enriched.common
 
 import android.graphics.Canvas
 import android.graphics.ColorFilter
