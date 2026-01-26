@@ -9,6 +9,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
+import com.swmansion.enriched.common.EnrichedConstants;
 import com.swmansion.enriched.textinput.spans.EnrichedBlockQuoteSpan;
 import com.swmansion.enriched.textinput.spans.EnrichedBoldSpan;
 import com.swmansion.enriched.textinput.spans.EnrichedCheckboxListSpan;

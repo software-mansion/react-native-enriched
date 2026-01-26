@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.utils
+package com.swmansion.enriched.common
 
 import android.content.res.Resources
 import android.graphics.BitmapFactory
@@ -12,7 +12,6 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import com.swmansion.enriched.R
-import com.swmansion.enriched.common.ResourceManager
 import java.net.URL
 import java.util.concurrent.Executors
 

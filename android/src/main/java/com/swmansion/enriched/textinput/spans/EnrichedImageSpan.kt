@@ -13,11 +13,11 @@ import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.R
+import com.swmansion.enriched.common.AsyncDrawable
+import com.swmansion.enriched.common.ForceRedrawSpan
 import com.swmansion.enriched.common.ResourceManager
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineSpan
-import com.swmansion.enriched.textinput.spans.utils.ForceRedrawSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
-import com.swmansion.enriched.textinput.utils.AsyncDrawable
 
 class EnrichedImageSpan :
   ImageSpan,

@@ -1,4 +1,4 @@
-package com.swmansion.enriched.textinput.spans.utils
+package com.swmansion.enriched.common
 
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
