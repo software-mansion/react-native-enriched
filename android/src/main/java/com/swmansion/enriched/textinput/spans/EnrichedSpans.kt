@@ -1,5 +1,24 @@
 package com.swmansion.enriched.textinput.spans
 
+import com.swmansion.enriched.common.spans.EnrichedBlockQuoteSpan
+import com.swmansion.enriched.common.spans.EnrichedBoldSpan
+import com.swmansion.enriched.common.spans.EnrichedCheckboxListSpan
+import com.swmansion.enriched.common.spans.EnrichedCodeBlockSpan
+import com.swmansion.enriched.common.spans.EnrichedH1Span
+import com.swmansion.enriched.common.spans.EnrichedH2Span
+import com.swmansion.enriched.common.spans.EnrichedH3Span
+import com.swmansion.enriched.common.spans.EnrichedH4Span
+import com.swmansion.enriched.common.spans.EnrichedH5Span
+import com.swmansion.enriched.common.spans.EnrichedH6Span
+import com.swmansion.enriched.common.spans.EnrichedImageSpan
+import com.swmansion.enriched.common.spans.EnrichedInlineCodeSpan
+import com.swmansion.enriched.common.spans.EnrichedItalicSpan
+import com.swmansion.enriched.common.spans.EnrichedLinkSpan
+import com.swmansion.enriched.common.spans.EnrichedMentionSpan
+import com.swmansion.enriched.common.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.common.spans.EnrichedStrikeThroughSpan
+import com.swmansion.enriched.common.spans.EnrichedUnderlineSpan
+import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 interface ISpanConfig {

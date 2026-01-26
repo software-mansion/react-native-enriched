@@ -5,11 +5,11 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.spans.EnrichedCheckboxListSpan
+import com.swmansion.enriched.common.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
-import com.swmansion.enriched.textinput.spans.EnrichedCheckboxListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedOrderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
-import com.swmansion.enriched.textinput.spans.EnrichedUnorderedListSpan
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
