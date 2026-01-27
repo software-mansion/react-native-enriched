@@ -33,6 +33,7 @@
   BOOL inOrderedList = NO;
   BOOL inBlockQuote = NO;
   BOOL inCodeBlock = NO;
+  BOOL inCheckboxList = NO;
   unichar lastCharacter = 0;
 
   for (int i = 0; i < text.length; i++) {
@@ -107,6 +108,21 @@
             [result appendString:@"\n</codeblock>\n<br>"];
             inCodeBlock = NO;
           }
+        } else if (inCheckboxList) {
+          CheckboxListStyle *cbLStyle = _input->stylesDict[@(CheckboxList)];
+          BOOL detected =
+              [cbLStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          if (detected) {
+            BOOL checked = [cbLStyle getCheckboxStateAt:currentRange.location];
+            if (checked) {
+              [result appendString:@"\n<li checked></li>"];
+            } else {
+              [result appendString:@"\n<li></li>"];
+            }
+          } else {
+            [result appendString:@"\n</ul>\n<br>"];
+            inCheckboxList = NO;
+          }
         } else {
           [result appendString:@"\n<br>"];
         }
@@ -145,7 +161,9 @@
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [previousActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [previousActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
           // do nothing, proper closing paragraph tags have been already
           // appended
         } else {
@@ -191,6 +209,13 @@
           inCodeBlock = NO;
           [result appendString:@"\n</codeblock>"];
         }
+        // handle ending checkbox list
+        if (inCheckboxList &&
+            ![currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
+          inCheckboxList = NO;
+          [result appendString:@"\n</ul>"];
+        }
 
         // handle starting unordered list
         if (!inUnorderedList &&
@@ -220,6 +245,13 @@
           inCodeBlock = YES;
           [result appendString:@"\n<codeblock>"];
         }
+        // handle starting checkbox list
+        if (!inCheckboxList &&
+            [currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
+          inCheckboxList = YES;
+          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+        }
 
         // don't add the <p> tag if some paragraph styles are present
         if ([currentActiveStyles
@@ -235,7 +267,9 @@
             [currentActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
             [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [currentActiveStyles
+                containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
           [result appendString:@"\n<p>"];
@@ -382,6 +416,9 @@
                    containsObject:@([CodeBlockStyle getStyleType])]) {
       [result appendString:@"\n</codeblock>"];
     } else if ([previousActiveStyles
+                   containsObject:@([CheckboxListStyle getStyleType])]) {
+      [result appendString:@"\n</ul>"];
+    } else if ([previousActiveStyles
                    containsObject:@([H1Style getStyleType])] ||
                [previousActiveStyles
                    containsObject:@([H2Style getStyleType])] ||
@@ -414,6 +451,10 @@
     if (inCodeBlock) {
       inCodeBlock = NO;
       [result appendString:@"\n</codeblock>"];
+    }
+    if (inCheckboxList) {
+      inCheckboxList = NO;
+      [result appendString:@"\n</ul>"];
     }
   }
 
@@ -536,6 +577,20 @@
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
+  } else if ([style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+    if (openingTag) {
+      CheckboxListStyle *checkboxListStyleClass =
+          (CheckboxListStyle *)
+              _input->stylesDict[@([CheckboxListStyle getStyleType])];
+      BOOL checked = [checkboxListStyleClass getCheckboxStateAt:location];
+
+      if (checked) {
+        return @"li checked";
+      }
+      return @"li";
+    } else {
+      return @"li";
+    }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
@@ -634,6 +689,28 @@
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
                                      withSelection:NO];
+      } else if ([styleType
+                     isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+        NSDictionary *checkboxStates = (NSDictionary *)stylePair.styleValue;
+        CheckboxListStyle *cbLStyle = (CheckboxListStyle *)baseStyle;
+
+        // First apply the checkbox list style to the entire range with
+        // unchecked value
+        BOOL shouldAddTypingAttr =
+            styleRange.location + styleRange.length == plainTextLength;
+        [cbLStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
+
+        if (!checkboxStates && checkboxStates.count == 0) {
+          continue;
+        }
+        // Then toggle checked checkboxes
+        for (NSNumber *key in checkboxStates) {
+          NSUInteger checkboxPosition = offset + [key unsignedIntegerValue];
+          BOOL isChecked = [checkboxStates[key] boolValue];
+          if (isChecked) {
+            [cbLStyle toggleCheckedAt:checkboxPosition];
+          }
+        }
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
@@ -749,6 +826,10 @@
                                           leading:YES
                                          trailing:NO];
     fixedHtml = [self stringByAddingNewlinesToTag:@"<li>"
+                                         inString:fixedHtml
+                                          leading:YES
+                                         trailing:NO];
+    fixedHtml = [self stringByAddingNewlinesToTag:@"<li checked>"
                                          inString:fixedHtml
                                           leading:YES
                                          trailing:NO];
@@ -983,6 +1064,8 @@
   NSMutableString *plainText = [[NSMutableString alloc] initWithString:@""];
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
+  NSMutableDictionary *checkboxStates = [[NSMutableDictionary alloc] init];
+  BOOL insideCheckboxList = NO;
   _precedingImageCount = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
@@ -1023,9 +1106,14 @@
       }
 
       if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"] ||
-          [currentTagName isEqualToString:@"li"]) {
+          [currentTagName isEqualToString:@"br"]) {
         // do nothing, we don't include these tags in styles
+      } else if ([currentTagName isEqualToString:@"li"]) {
+        // Only track checkbox state if we're inside a checkbox list
+        if (insideCheckboxList && !closingTag) {
+          BOOL isChecked = [currentTagParams containsString:@"checked"];
+          checkboxStates[@(plainText.length)] = @(isChecked);
+        }
       } else if (!closingTag) {
         // we finish opening tag - get its location and optionally params and
         // put them under tag name key in ongoingTags
@@ -1035,6 +1123,12 @@
           [tagArr addObject:[currentTagParams copy]];
         }
         ongoingTags[currentTagName] = tagArr;
+
+        // Check if this is a checkbox list
+        if ([currentTagName isEqualToString:@"ul"] &&
+            [self isUlCheckboxList:currentTagParams]) {
+          insideCheckboxList = YES;
+        }
 
         // skip one newline after opening tags that are in separate lines
         // intentionally
@@ -1054,6 +1148,12 @@
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag
         // params into an entry that goes inside initiallyProcessedTags
+
+        // Check if we're closing a checkbox list by looking at the params
+        if ([currentTagName isEqualToString:@"ul"] &&
+            [self isUlCheckboxList:currentTagParams]) {
+          insideCheckboxList = NO;
+        }
 
         // skip one newline that was added before some closing tags that are in
         // separate lines
@@ -1267,7 +1367,14 @@
         [styleArr addObject:@([H6Style getStyleType])];
       }
     } else if ([tagName isEqualToString:@"ul"]) {
-      [styleArr addObject:@([UnorderedListStyle getStyleType])];
+      if ([self isUlCheckboxList:params]) {
+        [styleArr addObject:@([CheckboxListStyle getStyleType])];
+        stylePair.styleValue =
+            [self prepareCheckboxListStyleValue:tagRangeValue
+                                 checkboxStates:checkboxStates];
+      } else {
+        [styleArr addObject:@([UnorderedListStyle getStyleType])];
+      }
     } else if ([tagName isEqualToString:@"ol"]) {
       [styleArr addObject:@([OrderedListStyle getStyleType])];
     } else if ([tagName isEqualToString:@"blockquote"]) {
@@ -1286,6 +1393,26 @@
   }
 
   return @[ plainText, processedStyles ];
+}
+
+- (BOOL)isUlCheckboxList:(NSString *)params {
+  return ([params containsString:@"data-type=\"checkbox\""] ||
+          [params containsString:@"data-type='checkbox'"]);
+}
+
+- (NSDictionary *)prepareCheckboxListStyleValue:(NSValue *)rangeValue
+                                 checkboxStates:(NSDictionary *)checkboxStates {
+  NSRange range = [rangeValue rangeValue];
+  NSMutableDictionary *statesInRange = [[NSMutableDictionary alloc] init];
+
+  for (NSNumber *key in checkboxStates) {
+    NSUInteger pos = [key unsignedIntegerValue];
+    if (pos >= range.location && pos < range.location + range.length) {
+      [statesInRange setObject:checkboxStates[key] forKey:key];
+    }
+  }
+
+  return statesInRange;
 }
 
 @end

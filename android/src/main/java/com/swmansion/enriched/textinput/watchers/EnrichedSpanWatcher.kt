@@ -5,11 +5,11 @@ import android.text.Spannable
 import android.text.style.ParagraphStyle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
-import com.swmansion.enriched.textinput.spans.EnrichedOrderedListSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedHeadingSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 
@@ -56,7 +56,7 @@ class EnrichedSpanWatcher(
     text: Spannable,
     end: Int,
   ) {
-    if (what is EnrichedOrderedListSpan) {
+    if (what is EnrichedInputOrderedListSpan) {
       view.listStyles?.updateOrderedListIndexes(text, end)
     }
   }
@@ -86,7 +86,7 @@ class EnrichedSpanWatcher(
     if (!view.shouldEmitHtml) return
 
     // Emit event only if we change one of ours spans
-    if (what != null && what !is EnrichedSpan) return
+    if (what != null && what !is EnrichedInputSpan) return
 
     val html = EnrichedParser.toHtml(s)
     if (html == previousHtml) return
