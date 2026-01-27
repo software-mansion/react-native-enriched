@@ -57,3 +57,6 @@ export interface HtmlStyle {
     boxColor?: ColorValue;
   };
 }
+
+// TODO: extend it if needed, so it supports press styles
+export type EnrichedTextHtmlStyle = HtmlStyle;

@@ -10,6 +10,7 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  EnrichedText,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -96,6 +97,7 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
+  const [textNodes, setTextNodes] = useState<Array<string>>([]);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -299,6 +301,15 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handlePushTextNode = async () => {
+    const currentText = await ref.current?.getHTML();
+    if (currentText) {
+      setTextNodes((prevTextNodes) => [...prevTextNodes, currentText]);
+    }
+  };
+
+  console.log(textNodes);
+
   return (
     <>
       <ScrollView
@@ -341,6 +352,20 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
+        <Button
+          title="Push text"
+          onPress={handlePushTextNode}
+          style={styles.button}
+        />
+        {textNodes.map((node, i) => (
+          <EnrichedText
+            key={i}
+            style={styles.enrichedText}
+            htmlStyle={htmlStyle}
+          >
+            {node}
+          </EnrichedText>
+        ))}
         <View style={styles.buttonStack}>
           <Button title="Focus" onPress={handleFocus} style={styles.button} />
           <Button title="Blur" onPress={handleBlur} style={styles.button} />
@@ -505,6 +530,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+  },
+  enrichedText: {
+    fontSize: 12,
+    color: 'black',
   },
   scrollPlaceholder: {
     marginTop: 24,

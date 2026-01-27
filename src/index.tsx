@@ -1,4 +1,5 @@
 export * from './EnrichedTextInput';
+export * from './EnrichedText';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
@@ -9,4 +10,12 @@ export type {
   OnChangeSelectionEvent,
   OnKeyPressEvent,
 } from './spec/EnrichedTextInputNativeComponent';
-export type { HtmlStyle, MentionStyleProperties } from './types';
+export type {
+  OnMentionPressEvent,
+  OnLinkPressEvent,
+} from './spec/EnrichedTextNativeComponent';
+export type {
+  HtmlStyle,
+  EnrichedTextHtmlStyle,
+  MentionStyleProperties,
+} from './types';
