@@ -1963,63 +1963,66 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [NSMutableDictionary dictionary];
 
   // Iterate over the entire text to find ImageAttachments
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:NSMakeRange(0, storage.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if ([value isKindOfClass:[ImageAttachment class]]) {
-                       ImageAttachment *attachment = (ImageAttachment *)value;
+  [storage
+      enumerateAttribute:NSAttachmentAttributeName
+                 inRange:NSMakeRange(0, storage.length)
+                 options:0
+              usingBlock:^(id value, NSRange range, BOOL *stop) {
+                if ([value isKindOfClass:[ImageAttachment class]]) {
+                  ImageAttachment *attachment = (ImageAttachment *)value;
 
-                       // Ask LayoutManager for the exact screen coordinates of
-                       // this attachment
-                       NSRange glyphRange =
-                           [layoutManager glyphRangeForCharacterRange:range
-                                                 actualCharacterRange:NULL];
-                       CGRect rect = [layoutManager
-                           boundingRectForGlyphRange:glyphRange
-                                     inTextContainer:textContainer];
+                  // Ask LayoutManager for the exact screen coordinates of
+                  // this attachment
+                  NSRange glyphRange =
+                      [layoutManager glyphRangeForCharacterRange:range
+                                            actualCharacterRange:NULL];
+                  CGRect layoutRect =
+                      [layoutManager boundingRectForGlyphRange:glyphRange
+                                               inTextContainer:textContainer];
+                  CGRect rect = CGRectMake(
+                      layoutRect.origin.x + textView.textContainerInset.left,
+                      layoutRect.origin.y + textView.textContainerInset.top,
+                      attachment.bounds.size.width,
+                      attachment.bounds.size.height);
+                  
+                  // Get or Create the UIImageView for this specific
+                  // attachment key
+                  NSValue *key =
+                      [NSValue valueWithNonretainedObject:attachment];
+                  UIImageView *imgView = _attachmentViews[key];
 
-                       // Add text view padding (inset) to the coordinates
-                       rect.origin.x += textView.textContainerInset.left;
-                       rect.origin.y += textView.textContainerInset.top;
+                  if (!imgView) {
+                    // It doesn't exist yet, create it
+                    imgView = [[UIImageView alloc] initWithFrame:rect];
+                    imgView.contentMode = UIViewContentModeScaleAspectFit;
+                    imgView.tintColor = [UIColor labelColor];
 
-                       // Get or Create the UIImageView for this specific
-                       // attachment key
-                       NSValue *key =
-                           [NSValue valueWithNonretainedObject:attachment];
-                       UIImageView *imgView = _attachmentViews[key];
+                    // Add it directly to the TextView
+                    [textView addSubview:imgView];
+                  }
 
-                       if (!imgView) {
-                         // It doesn't exist yet, create it
-                         imgView = [[UIImageView alloc] initWithFrame:rect];
-                         imgView.contentMode = UIViewContentModeScaleAspectFit;
-                         imgView.tintColor = [UIColor labelColor];
+                  // Update position (in case text moved/scrolled)
+                  if (!CGRectEqualToRect(imgView.frame, rect)) {
+                    imgView.frame = rect;
+                  }
+                  UIImage *targetImage =
+                      attachment.storedAnimatedImage ?: attachment.image;
 
-                         // Add it directly to the TextView
-                         [textView addSubview:imgView];
-                       }
+                  // Only set if different to avoid resetting the animation
+                  // loop
+                  if (imgView.image != targetImage) {
+                    imgView.image = targetImage;
+                  }
 
-                       // Update position (in case text moved/scrolled)
-                       imgView.frame = rect;
+                  // Ensure it is visible on top
+                  imgView.hidden = NO;
+                  [textView bringSubviewToFront:imgView];
 
-                       UIImage *targetImage =
-                           attachment.storedAnimatedImage ?: attachment.image;
-
-                       // Only set if different to avoid resetting the animation
-                       // loop
-                       if (imgView.image != targetImage) {
-                         imgView.image = targetImage;
-                       }
-
-                       // Ensure it is visible on top
-                       imgView.hidden = NO;
-                       [textView bringSubviewToFront:imgView];
-
-                       activeAttachmentViews[key] = imgView;
-                       // Remove from the old map so we know it has been claimed
-                       [_attachmentViews removeObjectForKey:key];
-                     }
-                   }];
+                  activeAttachmentViews[key] = imgView;
+                  // Remove from the old map so we know it has been claimed
+                  [_attachmentViews removeObjectForKey:key];
+                }
+              }];
 
   // Everything remaining in _attachmentViews is dead or off-screen
   for (UIImageView *danglingView in _attachmentViews.allValues) {
