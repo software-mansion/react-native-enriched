@@ -55,5 +55,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
     marginTop: 4,
+    fontFamily: 'Nunito-Regular',
   },
 });
