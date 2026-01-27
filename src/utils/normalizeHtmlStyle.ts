@@ -78,6 +78,19 @@ const defaultStyle: Required<HtmlStyle> = {
   },
 };
 
+const defaultEnrichedTextStyle: Required<EnrichedTextHtmlStyle> = {
+  ...defaultStyle,
+  a: {
+    ...defaultStyle.a,
+    pressColor: 'darkblue',
+  },
+  mention: {
+    ...defaultStyle.mention,
+    pressColor: 'darkblue',
+    pressBackgroundColor: 'yellow',
+  },
+};
+
 const isMentionStyleRecord = (
   mentionStyle: HtmlStyle['mention']
 ): mentionStyle is Record<string, MentionStyleProperties> => {
@@ -153,8 +166,8 @@ const convertToHtmlStyleInternal = (
 };
 
 const convertToEnrichedTextHtmlStyleInternal = (
-  style: HtmlStyle
-): HtmlStyleInternal => {
+  style: EnrichedTextHtmlStyle
+): EnrichedTextHtmlStyleInternal => {
   const mentionStyles: Record<string, MentionStyleProperties> = {};
 
   const mention = style.mention;
@@ -164,12 +177,12 @@ const convertToEnrichedTextHtmlStyleInternal = (
 
       if (typeof value === 'object' && value !== null) {
         mentionStyles[key] = {
-          ...defaultStyle.mention,
+          ...defaultEnrichedTextStyle.mention,
           ...(value as MentionStyleProperties),
         };
       } else {
         mentionStyles[MENTION_DEFAULT_KEY] = {
-          ...defaultStyle.mention,
+          ...defaultEnrichedTextStyle.mention,
           ...(mention as MentionStyleProperties),
         };
       }
@@ -178,7 +191,7 @@ const convertToEnrichedTextHtmlStyleInternal = (
 
   if (mentionStyles[MENTION_DEFAULT_KEY] === undefined) {
     mentionStyles[MENTION_DEFAULT_KEY] = {
-      ...defaultStyle.mention,
+      ...defaultEnrichedTextStyle.mention,
     };
   }
 
@@ -189,8 +202,11 @@ const convertToEnrichedTextHtmlStyleInternal = (
   };
 };
 
-const assignDefaultValues = (style: HtmlStyleInternal): HtmlStyleInternal => {
-  const merged: Record<string, any> = { ...defaultStyle };
+const assignDefaultValues = <T extends Record<string, any>>(
+  style: T,
+  base: Record<string, any>
+): HtmlStyleInternal => {
+  const merged: Record<string, any> = { ...base };
 
   for (const key in style) {
     if (key === 'mention') {
@@ -202,12 +218,12 @@ const assignDefaultValues = (style: HtmlStyleInternal): HtmlStyleInternal => {
     }
 
     merged[key] = {
-      ...defaultStyle[key as keyof HtmlStyle],
-      ...(style[key as keyof HtmlStyle] as object),
+      ...(base[key] ?? {}),
+      ...(style[key as keyof typeof style] as object),
     };
   }
 
-  return merged;
+  return merged as HtmlStyleInternal;
 };
 
 const parseStyle = (name: string, value: unknown) => {
@@ -254,7 +270,7 @@ export const normalizeHtmlStyle = (
   mentionIndicators: string[]
 ): HtmlStyleInternal => {
   const converted = convertToHtmlStyleInternal(style, mentionIndicators);
-  const withDefaults = assignDefaultValues(converted);
+  const withDefaults = assignDefaultValues(converted, defaultStyle);
   return parseColors(withDefaults);
 };
 
@@ -262,6 +278,6 @@ export const normalizeEnrichedTextHtmlStyle = (
   style: EnrichedTextHtmlStyle
 ): EnrichedTextHtmlStyleInternal => {
   const converted = convertToEnrichedTextHtmlStyleInternal(style);
-  const withDefaults = assignDefaultValues(converted);
+  const withDefaults = assignDefaultValues(converted, defaultEnrichedTextStyle);
   return parseColors(withDefaults);
 };

@@ -47,6 +47,7 @@ data class EnrichedTextStyle(
   // Links
   override val aColor: Int,
   override val aUnderline: Boolean,
+  val aPressColor: Int,
   // Code Blocks
   override val codeBlockColor: Int,
   override val codeBlockBackgroundColor: Int,
@@ -109,6 +110,7 @@ data class EnrichedTextStyle(
         ulCheckboxMarginLeft = parseFloat(checkboxList, "marginLeft").toInt(),
         aColor = parseColor(context, link, "color"),
         aUnderline = parseIsUnderline(link),
+        aPressColor = parseColor(context, link, "pressColor"),
         codeBlockColor = parseColor(context, codeblock, "color"),
         codeBlockBackgroundColor = parseColorWithOpacity(context, codeblock, "backgroundColor", 80),
         codeBlockRadius = parseFloat(codeblock, "borderRadius"),
@@ -182,11 +184,14 @@ data class EnrichedTextStyle(
       while (iterator.hasNextKey()) {
         val key = iterator.nextKey()
         val value = map.getMap(key) ?: continue
+
         result[key] =
           MentionStyle(
             color = parseColor(context, value, "color"),
             backgroundColor = parseColorWithOpacity(context, value, "backgroundColor", 80),
             underline = parseIsUnderline(value),
+            pressColor = parseColor(context, value, "pressColor"),
+            pressBackgroundColor = parseColorWithOpacity(context, value, "pressBackgroundColor", 80),
           )
       }
       return result

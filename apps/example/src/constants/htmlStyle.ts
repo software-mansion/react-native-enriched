@@ -1,6 +1,6 @@
-import type { HtmlStyle } from 'react-native-enriched';
+import type { EnrichedTextHtmlStyle, HtmlStyle } from 'react-native-enriched';
 
-export const htmlStyle: HtmlStyle = {
+export const htmlStyle = {
   h1: {
     fontSize: 72,
     bold: true,
@@ -73,5 +73,25 @@ export const htmlStyle: HtmlStyle = {
     gapWidth: 16,
     marginLeft: 24,
     boxColor: 'rgb(0, 26, 114)',
+  },
+} satisfies HtmlStyle;
+
+export const enrichedTextHtmlStyle: EnrichedTextHtmlStyle = {
+  ...htmlStyle,
+  a: {
+    ...htmlStyle.a,
+    pressColor: 'darkgreen',
+  },
+  mention: {
+    '#': {
+      ...htmlStyle.mention['#'],
+      pressColor: 'darkgreen',
+      pressBackgroundColor: 'lightgreen',
+    },
+    '@': {
+      ...htmlStyle.mention['@'],
+      pressColor: 'darkblue',
+      pressBackgroundColor: 'blue',
+    },
   },
 };

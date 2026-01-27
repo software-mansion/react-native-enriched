@@ -1,5 +1,6 @@
 package com.swmansion.enriched.text.spans
 
+import android.text.TextPaint
 import android.view.View
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -11,7 +12,7 @@ import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 
 class EnrichedTextLinkSpan(
   private val url: String,
-  enrichedStyle: EnrichedTextStyle,
+  private val enrichedStyle: EnrichedTextStyle,
 ) : EnrichedLinkSpan(url, enrichedStyle),
   EnrichedTextSpan,
   EnrichedTextClickableSpan {
@@ -19,6 +20,11 @@ class EnrichedTextLinkSpan(
   override var isPressed = false
 
   override fun rebuildWithStyle(style: EnrichedTextStyle) = EnrichedTextLinkSpan(url, style)
+
+  override fun updateDrawState(textPaint: TextPaint) {
+    super.updateDrawState(textPaint)
+    textPaint.color = if (isPressed) enrichedStyle.aPressColor else enrichedStyle.aColor
+  }
 
   override fun onClick(view: View) {
     val context = view.context as? ReactContext ?: return

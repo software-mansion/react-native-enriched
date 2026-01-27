@@ -1,5 +1,6 @@
 package com.swmansion.enriched.text.spans
 
+import android.text.TextPaint
 import android.view.View
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -14,7 +15,7 @@ class EnrichedTextMentionSpan(
   private val text: String,
   private val indicator: String,
   private val attributes: Map<String, String>,
-  enrichedStyle: EnrichedStyle,
+  private val enrichedStyle: EnrichedStyle,
 ) : EnrichedMentionSpan(text, indicator, attributes, enrichedStyle),
   EnrichedTextSpan,
   EnrichedTextClickableSpan {
@@ -22,6 +23,28 @@ class EnrichedTextMentionSpan(
   override var isPressed = false
 
   override fun rebuildWithStyle(style: EnrichedTextStyle) = EnrichedTextMentionSpan(text, indicator, attributes, style)
+
+  override fun updateDrawState(textPaint: TextPaint) {
+    super.updateDrawState(textPaint)
+
+    val mentionsStyle = enrichedStyle.mentionsStyle[indicator] ?: return
+    val color =
+      if (isPressed && mentionsStyle.pressColor != null) {
+        mentionsStyle.pressColor
+      } else {
+        mentionsStyle.color
+      }
+
+    val bgColor =
+      if (isPressed && mentionsStyle.pressBackgroundColor != null) {
+        mentionsStyle.pressBackgroundColor
+      } else {
+        mentionsStyle.backgroundColor
+      }
+
+    textPaint.color = color
+    textPaint.bgColor = bgColor
+  }
 
   override fun onClick(view: View) {
     val context = view.context as? ReactContext ?: return

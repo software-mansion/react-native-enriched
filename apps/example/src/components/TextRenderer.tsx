@@ -4,7 +4,7 @@ import {
   type OnLinkPressEvent,
   type OnMentionPressEvent,
 } from 'react-native-enriched';
-import { htmlStyle } from '../constants/htmlStyle';
+import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
 
 interface TextRendererProps {
   nodes: Array<string>;
@@ -32,7 +32,7 @@ export const TextRenderer = ({ nodes }: TextRendererProps) => {
         <EnrichedText
           key={index}
           style={styles.text}
-          htmlStyle={htmlStyle}
+          htmlStyle={enrichedTextHtmlStyle}
           onLinkPress={handleLinkPress}
           onMentionPress={handleMentionPress}
         >

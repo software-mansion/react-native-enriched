@@ -37,6 +37,8 @@ export interface EnrichedTextHtmlStyleInternal {
   a?: {
     color?: ColorValue;
     textDecorationLine?: string;
+    pressColor?: ColorValue;
+    pressTextDecorationLine?: string;
   };
   // This is a workaround for the fact that codegen does not support Records.
   // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.

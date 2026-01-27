@@ -58,5 +58,17 @@ export interface HtmlStyle {
   };
 }
 
-// TODO: extend it if needed, so it supports press styles
-export type EnrichedTextHtmlStyle = HtmlStyle;
+interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
+  pressColor?: ColorValue;
+  pressBackgroundColor?: ColorValue;
+}
+
+export interface EnrichedTextHtmlStyle
+  extends Omit<HtmlStyle, 'a' | 'mention'> {
+  a?: HtmlStyle['a'] & {
+    pressColor?: ColorValue;
+  };
+  mention?:
+    | Record<string, EnrichedTextMentionStyleProperties>
+    | EnrichedTextMentionStyleProperties;
+}
