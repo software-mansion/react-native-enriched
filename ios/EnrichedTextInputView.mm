@@ -1,5 +1,6 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
+#import "ImageAttachment.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
 #import "RCTFabricComponentsPlugins.h"
@@ -46,6 +47,7 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
+  NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
 }
 
 // MARK: - Component utils
@@ -239,6 +241,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
+  _attachmentViews = [[NSMutableDictionary alloc] init];
 }
 
 - (void)setupTextView {
@@ -1727,6 +1730,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // measureSize may not be up-to date at that point
     CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
     self->textView.contentSize = measuredSize;
+
+    [self layoutAttachments];
   });
 }
 
@@ -1941,6 +1946,86 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [storage edited:NSTextStorageEditedAttributes
                range:foundRange
       changeInLength:0];
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self layoutAttachments];
+  });
+}
+
+// MARK: - Image/GIF Overlay Management
+
+- (void)layoutAttachments {
+  NSTextStorage *storage = textView.textStorage;
+  NSLayoutManager *layoutManager = textView.layoutManager;
+  NSTextContainer *textContainer = textView.textContainer;
+
+  NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
+      [NSMutableDictionary dictionary];
+
+  // Iterate over the entire text to find ImageAttachments
+  [storage enumerateAttribute:NSAttachmentAttributeName
+                      inRange:NSMakeRange(0, storage.length)
+                      options:0
+                   usingBlock:^(id value, NSRange range, BOOL *stop) {
+                     if ([value isKindOfClass:[ImageAttachment class]]) {
+                       ImageAttachment *attachment = (ImageAttachment *)value;
+
+                       // Ask LayoutManager for the exact screen coordinates of
+                       // this attachment
+                       NSRange glyphRange =
+                           [layoutManager glyphRangeForCharacterRange:range
+                                                 actualCharacterRange:NULL];
+                       CGRect rect = [layoutManager
+                           boundingRectForGlyphRange:glyphRange
+                                     inTextContainer:textContainer];
+
+                       // Add text view padding (inset) to the coordinates
+                       rect.origin.x += textView.textContainerInset.left;
+                       rect.origin.y += textView.textContainerInset.top;
+
+                       // Get or Create the UIImageView for this specific
+                       // attachment key
+                       NSValue *key =
+                           [NSValue valueWithNonretainedObject:attachment];
+                       UIImageView *imgView = _attachmentViews[key];
+
+                       if (!imgView) {
+                         // It doesn't exist yet, create it
+                         imgView = [[UIImageView alloc] initWithFrame:rect];
+                         imgView.contentMode = UIViewContentModeScaleAspectFit;
+                         imgView.tintColor = [UIColor labelColor];
+
+                         // Add it directly to the TextView
+                         [textView addSubview:imgView];
+                       }
+
+                       // Update position (in case text moved/scrolled)
+                       imgView.frame = rect;
+
+                       UIImage *targetImage =
+                           attachment.storedAnimatedImage ?: attachment.image;
+
+                       // Only set if different to avoid resetting the animation
+                       // loop
+                       if (imgView.image != targetImage) {
+                         imgView.image = targetImage;
+                       }
+
+                       // Ensure it is visible on top
+                       imgView.hidden = NO;
+                       [textView bringSubviewToFront:imgView];
+
+                       activeAttachmentViews[key] = imgView;
+                       // Remove from the old map so we know it has been claimed
+                       [_attachmentViews removeObjectForKey:key];
+                     }
+                   }];
+
+  // Everything remaining in _attachmentViews is dead or off-screen
+  for (UIImageView *danglingView in _attachmentViews.allValues) {
+    [danglingView removeFromSuperview];
+  }
+  _attachmentViews = activeAttachmentViews;
 }
 
 @end

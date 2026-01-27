@@ -247,7 +247,8 @@ export default function App() {
 
     if (imageUri) {
       const { finalWidth, finalHeight } = prepareImageDimensions(
-        asset,
+        asset.width,
+        asset.height,
         width,
         height
       );
@@ -303,7 +304,11 @@ export default function App() {
     console.log('Pasted images:', e.images);
 
     for (let image of e.images) {
-      ref.current?.setImage(image.uri, 50, 50);
+      const { finalWidth, finalHeight } = prepareImageDimensions(
+        image.width,
+        image.height
+      );
+      ref.current?.setImage(image.uri, finalWidth, finalHeight);
     }
   };
 
