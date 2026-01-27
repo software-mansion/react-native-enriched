@@ -1,6 +1,5 @@
-package com.swmansion.enriched.textinput.utils;
+package com.swmansion.enriched.common.parser;
 
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
@@ -10,30 +9,28 @@ import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.ParagraphStyle;
 import com.swmansion.enriched.common.EnrichedConstants;
+import com.swmansion.enriched.common.spans.EnrichedBoldSpan;
+import com.swmansion.enriched.common.spans.EnrichedCheckboxListSpan;
+import com.swmansion.enriched.common.spans.EnrichedCodeBlockSpan;
+import com.swmansion.enriched.common.spans.EnrichedH1Span;
+import com.swmansion.enriched.common.spans.EnrichedH2Span;
+import com.swmansion.enriched.common.spans.EnrichedH3Span;
+import com.swmansion.enriched.common.spans.EnrichedH4Span;
+import com.swmansion.enriched.common.spans.EnrichedH5Span;
+import com.swmansion.enriched.common.spans.EnrichedH6Span;
+import com.swmansion.enriched.common.spans.EnrichedImageSpan;
+import com.swmansion.enriched.common.spans.EnrichedInlineCodeSpan;
+import com.swmansion.enriched.common.spans.EnrichedItalicSpan;
+import com.swmansion.enriched.common.spans.EnrichedLinkSpan;
+import com.swmansion.enriched.common.spans.EnrichedMentionSpan;
+import com.swmansion.enriched.common.spans.EnrichedOrderedListSpan;
+import com.swmansion.enriched.common.spans.EnrichedStrikeThroughSpan;
+import com.swmansion.enriched.common.spans.EnrichedUnderlineSpan;
+import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedZeroWidthSpaceSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputBlockQuoteSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputBoldSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputCodeBlockSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH1Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH2Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH3Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span;
-import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputInlineCodeSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputItalicSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputMentionSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputStrikeThroughSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputUnderlineSpan;
-import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan;
-import com.swmansion.enriched.textinput.styles.HtmlStyle;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -56,16 +53,6 @@ import org.xml.sax.XMLReader;
  */
 public class EnrichedParser {
   /** Retrieves images for HTML &lt;img&gt; tags. */
-  public interface ImageGetter {
-    /**
-     * This method is called when the HTML parser encounters an &lt;img&gt; tag. The <code>source
-     * </code> argument is the string from the "src" attribute; the return value should be a
-     * Drawable representation of the image or <code>null</code> for a generic replacement image.
-     * Make sure you call setBounds() on your Drawable if it doesn't already have its bounds set.
-     */
-    Drawable getDrawable(String source);
-  }
-
   private EnrichedParser() {}
 
   /**
@@ -76,15 +63,7 @@ public class EnrichedParser {
     private static final HTMLSchema schema = new HTMLSchema();
   }
 
-  /**
-   * Returns displayable styled text from the provided HTML string. Any &lt;img&gt; tags in the HTML
-   * will use the specified ImageGetter to request a representation of the image (use null if you
-   * don't want this) and the specified TagHandler to handle unknown tags (specify null if you don't
-   * want this).
-   *
-   * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
-   */
-  public static Spanned fromHtml(String source, HtmlStyle style, ImageGetter imageGetter) {
+  public static <T> Spanned fromHtml(String source, T style, EnrichedSpanFactory<T> spanFactory) {
     Parser parser = new Parser();
     try {
       parser.setProperty(Parser.schemaProperty, HtmlParser.schema);
@@ -93,7 +72,7 @@ public class EnrichedParser {
       throw new RuntimeException(e);
     }
     HtmlToSpannedConverter converter =
-        new HtmlToSpannedConverter(source, style, imageGetter, parser);
+        new HtmlToSpannedConverter(source, style, parser, spanFactory);
     return converter.convert();
   }
 
@@ -133,7 +112,7 @@ public class EnrichedParser {
       EnrichedBlockSpan[] blocks = text.getSpans(i, next, EnrichedBlockSpan.class);
       String tag = "unknown";
       if (blocks.length > 0) {
-        tag = blocks[0] instanceof EnrichedInputCodeBlockSpan ? "codeblock" : "blockquote";
+        tag = blocks[0] instanceof EnrichedCodeBlockSpan ? "codeblock" : "blockquote";
       }
 
       // Each block appends a newline by default.
@@ -154,23 +133,23 @@ public class EnrichedParser {
 
   private static String getBlockTag(EnrichedParagraphSpan[] spans) {
     for (EnrichedParagraphSpan span : spans) {
-      if (span instanceof EnrichedInputUnorderedListSpan) {
+      if (span instanceof EnrichedUnorderedListSpan) {
         return "ul";
-      } else if (span instanceof EnrichedInputOrderedListSpan) {
+      } else if (span instanceof EnrichedOrderedListSpan) {
         return "ol";
-      } else if (span instanceof EnrichedInputCheckboxListSpan) {
+      } else if (span instanceof EnrichedCheckboxListSpan) {
         return "ul data-type=\"checkbox\"";
-      } else if (span instanceof EnrichedInputH1Span) {
+      } else if (span instanceof EnrichedH1Span) {
         return "h1";
-      } else if (span instanceof EnrichedInputH2Span) {
+      } else if (span instanceof EnrichedH2Span) {
         return "h2";
-      } else if (span instanceof EnrichedInputH3Span) {
+      } else if (span instanceof EnrichedH3Span) {
         return "h3";
-      } else if (span instanceof EnrichedInputH4Span) {
+      } else if (span instanceof EnrichedH4Span) {
         return "h4";
-      } else if (span instanceof EnrichedInputH5Span) {
+      } else if (span instanceof EnrichedH5Span) {
         return "h5";
-      } else if (span instanceof EnrichedInputH6Span) {
+      } else if (span instanceof EnrichedH6Span) {
         return "h6";
       }
     }
@@ -247,8 +226,8 @@ public class EnrichedParser {
         out.append(tagType);
 
         if (isCheckboxListItem) {
-          EnrichedInputCheckboxListSpan[] checkboxSpans =
-              text.getSpans(i, next, EnrichedInputCheckboxListSpan.class);
+          EnrichedCheckboxListSpan[] checkboxSpans =
+              text.getSpans(i, next, EnrichedCheckboxListSpan.class);
           if (checkboxSpans.length > 0) {
             boolean isChecked = checkboxSpans[0].isChecked();
             if (isChecked) out.append(" checked");
@@ -281,36 +260,36 @@ public class EnrichedParser {
       next = text.nextSpanTransition(i, end, EnrichedInlineSpan.class);
       EnrichedInlineSpan[] style = text.getSpans(i, next, EnrichedInlineSpan.class);
       for (int j = 0; j < style.length; j++) {
-        if (style[j] instanceof EnrichedInputBoldSpan) {
+        if (style[j] instanceof EnrichedBoldSpan) {
           out.append("<b>");
         }
-        if (style[j] instanceof EnrichedInputItalicSpan) {
+        if (style[j] instanceof EnrichedItalicSpan) {
           out.append("<i>");
         }
-        if (style[j] instanceof EnrichedInputUnderlineSpan) {
+        if (style[j] instanceof EnrichedUnderlineSpan) {
           out.append("<u>");
         }
-        if (style[j] instanceof EnrichedInputInlineCodeSpan) {
+        if (style[j] instanceof EnrichedInlineCodeSpan) {
           out.append("<code>");
         }
-        if (style[j] instanceof EnrichedInputStrikeThroughSpan) {
+        if (style[j] instanceof EnrichedStrikeThroughSpan) {
           out.append("<s>");
         }
-        if (style[j] instanceof EnrichedInputLinkSpan) {
+        if (style[j] instanceof EnrichedLinkSpan) {
           out.append("<a href=\"");
-          out.append(((EnrichedInputLinkSpan) style[j]).getUrl());
+          out.append(((EnrichedLinkSpan) style[j]).getUrl());
           out.append("\">");
         }
-        if (style[j] instanceof EnrichedInputMentionSpan) {
+        if (style[j] instanceof EnrichedMentionSpan) {
           out.append("<mention text=\"");
-          out.append(((EnrichedInputMentionSpan) style[j]).getText());
+          out.append(((EnrichedMentionSpan) style[j]).getText());
           out.append("\"");
 
           out.append(" indicator=\"");
-          out.append(((EnrichedInputMentionSpan) style[j]).getIndicator());
+          out.append(((EnrichedMentionSpan) style[j]).getIndicator());
           out.append("\"");
 
-          Map<String, String> attributes = ((EnrichedInputMentionSpan) style[j]).getAttributes();
+          Map<String, String> attributes = ((EnrichedMentionSpan) style[j]).getAttributes();
           for (Map.Entry<String, String> entry : attributes.entrySet()) {
             out.append(" ");
             out.append(entry.getKey());
@@ -321,17 +300,17 @@ public class EnrichedParser {
 
           out.append(">");
         }
-        if (style[j] instanceof EnrichedInputImageSpan) {
+        if (style[j] instanceof EnrichedImageSpan) {
           out.append("<img src=\"");
-          out.append(((EnrichedInputImageSpan) style[j]).getSource());
+          out.append(((EnrichedImageSpan) style[j]).getSource());
           out.append("\"");
 
           out.append(" width=\"");
-          out.append(((EnrichedInputImageSpan) style[j]).getWidth());
+          out.append(((EnrichedImageSpan) style[j]).getWidth());
           out.append("\"");
 
           out.append(" height=\"");
-          out.append(((EnrichedInputImageSpan) style[j]).getHeight());
+          out.append(((EnrichedImageSpan) style[j]).getHeight());
 
           out.append("\"/>");
           // Don't output the placeholder character underlying the image.
@@ -340,25 +319,25 @@ public class EnrichedParser {
       }
       withinStyle(out, text, i, next);
       for (int j = style.length - 1; j >= 0; j--) {
-        if (style[j] instanceof EnrichedInputLinkSpan) {
+        if (style[j] instanceof EnrichedLinkSpan) {
           out.append("</a>");
         }
-        if (style[j] instanceof EnrichedInputMentionSpan) {
+        if (style[j] instanceof EnrichedMentionSpan) {
           out.append("</mention>");
         }
-        if (style[j] instanceof EnrichedInputStrikeThroughSpan) {
+        if (style[j] instanceof EnrichedStrikeThroughSpan) {
           out.append("</s>");
         }
-        if (style[j] instanceof EnrichedInputUnderlineSpan) {
+        if (style[j] instanceof EnrichedUnderlineSpan) {
           out.append("</u>");
         }
-        if (style[j] instanceof EnrichedInputInlineCodeSpan) {
+        if (style[j] instanceof EnrichedInlineCodeSpan) {
           out.append("</code>");
         }
-        if (style[j] instanceof EnrichedInputBoldSpan) {
+        if (style[j] instanceof EnrichedBoldSpan) {
           out.append("</b>");
         }
-        if (style[j] instanceof EnrichedInputItalicSpan) {
+        if (style[j] instanceof EnrichedItalicSpan) {
           out.append("</i>");
         }
       }
@@ -401,24 +380,24 @@ public class EnrichedParser {
   }
 }
 
-class HtmlToSpannedConverter implements ContentHandler {
-  private final HtmlStyle mStyle;
+class HtmlToSpannedConverter<T> implements ContentHandler {
+  private final EnrichedSpanFactory<T> mSpanFactory;
+  private final T mStyle;
   private final String mSource;
   private final XMLReader mReader;
   private final SpannableStringBuilder mSpannableStringBuilder;
-  private final EnrichedParser.ImageGetter mImageGetter;
   private static Integer currentOrderedListItemIndex = 0;
   private static Boolean isInOrderedList = false;
   private static Boolean isInCheckboxList = false;
   private static Boolean isEmptyTag = false;
 
   public HtmlToSpannedConverter(
-      String source, HtmlStyle style, EnrichedParser.ImageGetter imageGetter, Parser parser) {
+      String source, T style, Parser parser, EnrichedSpanFactory<T> spanFactory) {
     mStyle = style;
     mSource = source;
     mSpannableStringBuilder = new SpannableStringBuilder();
-    mImageGetter = imageGetter;
     mReader = parser;
+    mSpanFactory = spanFactory;
   }
 
   public Spanned convert() {
@@ -527,7 +506,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("h6")) {
       startHeading(mSpannableStringBuilder, 6);
     } else if (tag.equalsIgnoreCase("img")) {
-      startImg(mSpannableStringBuilder, attributes, mImageGetter);
+      startImg(mSpannableStringBuilder, attributes, mSpanFactory);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
@@ -543,37 +522,40 @@ class HtmlToSpannedConverter implements ContentHandler {
     } else if (tag.equalsIgnoreCase("ul")) {
       endBlockElement(mSpannableStringBuilder);
     } else if (tag.equalsIgnoreCase("li")) {
-      endLi(mSpannableStringBuilder, mStyle);
+      endLi(mSpannableStringBuilder, mStyle, mSpanFactory);
     } else if (tag.equalsIgnoreCase("b")) {
-      end(mSpannableStringBuilder, Bold.class, new EnrichedInputBoldSpan(mStyle));
+      end(mSpannableStringBuilder, Bold.class, mSpanFactory.createBoldSpan(mStyle));
     } else if (tag.equalsIgnoreCase("i")) {
-      end(mSpannableStringBuilder, Italic.class, new EnrichedInputItalicSpan(mStyle));
+      end(mSpannableStringBuilder, Italic.class, mSpanFactory.createItalicSpan(mStyle));
     } else if (tag.equalsIgnoreCase("blockquote")) {
-      endBlockquote(mSpannableStringBuilder, mStyle);
+      endBlockquote(mSpannableStringBuilder, mStyle, mSpanFactory);
     } else if (tag.equalsIgnoreCase("codeblock")) {
-      endCodeBlock(mSpannableStringBuilder, mStyle);
+      endCodeBlock(mSpannableStringBuilder, mStyle, mSpanFactory);
     } else if (tag.equalsIgnoreCase("a")) {
-      endA(mSpannableStringBuilder, mStyle);
+      endA(mSpannableStringBuilder, mStyle, mSpanFactory);
     } else if (tag.equalsIgnoreCase("u")) {
-      end(mSpannableStringBuilder, Underline.class, new EnrichedInputUnderlineSpan(mStyle));
+      end(mSpannableStringBuilder, Underline.class, mSpanFactory.createUnderlineSpan(mStyle));
     } else if (tag.equalsIgnoreCase("s")) {
-      end(mSpannableStringBuilder, Strikethrough.class, new EnrichedInputStrikeThroughSpan(mStyle));
+      end(
+          mSpannableStringBuilder,
+          Strikethrough.class,
+          mSpanFactory.createStrikeThroughSpan(mStyle));
     } else if (tag.equalsIgnoreCase("h1")) {
-      endHeading(mSpannableStringBuilder, mStyle, 1);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 1);
     } else if (tag.equalsIgnoreCase("h2")) {
-      endHeading(mSpannableStringBuilder, mStyle, 2);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 2);
     } else if (tag.equalsIgnoreCase("h3")) {
-      endHeading(mSpannableStringBuilder, mStyle, 3);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 3);
     } else if (tag.equalsIgnoreCase("h4")) {
-      endHeading(mSpannableStringBuilder, mStyle, 4);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 4);
     } else if (tag.equalsIgnoreCase("h5")) {
-      endHeading(mSpannableStringBuilder, mStyle, 5);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 5);
     } else if (tag.equalsIgnoreCase("h6")) {
-      endHeading(mSpannableStringBuilder, mStyle, 6);
+      endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 6);
     } else if (tag.equalsIgnoreCase("code")) {
-      end(mSpannableStringBuilder, Code.class, new EnrichedInputInlineCodeSpan(mStyle));
+      end(mSpannableStringBuilder, Code.class, mSpanFactory.createInlineCodeSpan(mStyle));
     } else if (tag.equalsIgnoreCase("mention")) {
-      endMention(mSpannableStringBuilder, mStyle);
+      endMention(mSpannableStringBuilder, mStyle, mSpanFactory);
     }
   }
 
@@ -626,17 +608,17 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void endLi(Editable text, HtmlStyle style) {
+  private static <T> void endLi(Editable text, T style, EnrichedSpanFactory<T> spanFactory) {
     endBlockElement(text);
 
     List l = getLast(text, List.class);
     if (l != null) {
       if (l.mType.equals("ordered")) {
-        setParagraphSpanFromMark(text, l, new EnrichedInputOrderedListSpan(l.mIndex, style));
+        setParagraphSpanFromMark(text, l, spanFactory.createOrderedListSpan(l.mIndex, style));
       } else if (l.mType.equals("checked")) {
-        setParagraphSpanFromMark(text, l, new EnrichedInputCheckboxListSpan(l.mChecked, style));
+        setParagraphSpanFromMark(text, l, spanFactory.createCheckboxListSpan(l.mChecked, style));
       } else {
-        setParagraphSpanFromMark(text, l, new EnrichedInputUnorderedListSpan(style));
+        setParagraphSpanFromMark(text, l, spanFactory.createUnorderedListSpan(style));
       }
     }
 
@@ -648,10 +630,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     start(text, new Blockquote());
   }
 
-  private static void endBlockquote(Editable text, HtmlStyle style) {
+  private static <T> void endBlockquote(
+      Editable text, T style, EnrichedSpanFactory<T> spanFactory) {
     endBlockElement(text);
     Blockquote last = getLast(text, Blockquote.class);
-    setParagraphSpanFromMark(text, last, new EnrichedInputBlockQuoteSpan(style));
+    setParagraphSpanFromMark(text, last, spanFactory.createBlockQuoteSpan(style));
   }
 
   private void startCodeBlock(Editable text) {
@@ -659,10 +642,10 @@ class HtmlToSpannedConverter implements ContentHandler {
     start(text, new CodeBlock());
   }
 
-  private static void endCodeBlock(Editable text, HtmlStyle style) {
+  private static <T> void endCodeBlock(Editable text, T style, EnrichedSpanFactory<T> spanFactory) {
     endBlockElement(text);
     CodeBlock last = getLast(text, CodeBlock.class);
-    setParagraphSpanFromMark(text, last, new EnrichedInputCodeBlockSpan(style));
+    setParagraphSpanFromMark(text, last, spanFactory.createCodeBlockSpan(style));
   }
 
   private void startHeading(Editable text, int level) {
@@ -692,33 +675,34 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void endHeading(Editable text, HtmlStyle style, int level) {
+  private static <T> void endHeading(
+      Editable text, T style, EnrichedSpanFactory<T> spanFactory, int level) {
     endBlockElement(text);
 
     switch (level) {
       case 1:
         H1 lastH1 = getLast(text, H1.class);
-        setParagraphSpanFromMark(text, lastH1, new EnrichedInputH1Span(style));
+        setParagraphSpanFromMark(text, lastH1, spanFactory.createH1Span(style));
         break;
       case 2:
         H2 lastH2 = getLast(text, H2.class);
-        setParagraphSpanFromMark(text, lastH2, new EnrichedInputH2Span(style));
+        setParagraphSpanFromMark(text, lastH2, spanFactory.createH2Span(style));
         break;
       case 3:
         H3 lastH3 = getLast(text, H3.class);
-        setParagraphSpanFromMark(text, lastH3, new EnrichedInputH3Span(style));
+        setParagraphSpanFromMark(text, lastH3, spanFactory.createH3Span(style));
         break;
       case 4:
         H4 lastH4 = getLast(text, H4.class);
-        setParagraphSpanFromMark(text, lastH4, new EnrichedInputH4Span(style));
+        setParagraphSpanFromMark(text, lastH4, spanFactory.createH4Span(style));
         break;
       case 5:
         H5 lastH5 = getLast(text, H5.class);
-        setParagraphSpanFromMark(text, lastH5, new EnrichedInputH5Span(style));
+        setParagraphSpanFromMark(text, lastH5, spanFactory.createH5Span(style));
         break;
       case 6:
         H6 lastH6 = getLast(text, H6.class);
-        setParagraphSpanFromMark(text, lastH6, new EnrichedInputH6Span(style));
+        setParagraphSpanFromMark(text, lastH6, spanFactory.createH6Span(style));
         break;
       default:
         throw new IllegalArgumentException("Unsupported heading level: " + level);
@@ -784,18 +768,19 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
   }
 
-  private static void startImg(
-      Editable text, Attributes attributes, EnrichedParser.ImageGetter img) {
+  private static <T> void startImg(
+      Editable text, Attributes attributes, EnrichedSpanFactory<T> spanFactory) {
     String src = attributes.getValue("", "src");
     String width = attributes.getValue("", "width");
     String height = attributes.getValue("", "height");
 
     int len = text.length();
-    EnrichedInputImageSpan span =
-        EnrichedInputImageSpan.Companion.createEnrichedImageSpan(
-            src, Integer.parseInt(width), Integer.parseInt(height));
     text.append("￼");
-    text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    text.setSpan(
+        spanFactory.createImageSpan(src, Integer.parseInt(width), Integer.parseInt(height)),
+        len,
+        text.length(),
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
 
   private static void startA(Editable text, Attributes attributes) {
@@ -803,11 +788,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     start(text, new Href(href));
   }
 
-  private void endA(Editable text, HtmlStyle style) {
+  private static <T> void endA(Editable text, T style, EnrichedSpanFactory<T> spanFactory) {
     Href h = getLast(text, Href.class);
     if (h != null) {
       if (h.mHref != null) {
-        setSpanFromMark(text, h, new EnrichedInputLinkSpan(h.mHref, style));
+        setSpanFromMark(text, h, spanFactory.createLinkSpan(h.mHref, style));
       }
     }
   }
@@ -828,14 +813,14 @@ class HtmlToSpannedConverter implements ContentHandler {
     start(mention, new Mention(indicator, text, attributesMap));
   }
 
-  private void endMention(Editable text, HtmlStyle style) {
+  private static <T> void endMention(Editable text, T style, EnrichedSpanFactory<T> spanFactory) {
     Mention m = getLast(text, Mention.class);
 
     if (m == null) return;
     if (m.mText == null) return;
 
     setSpanFromMark(
-        text, m, new EnrichedInputMentionSpan(m.mText, m.mIndicator, m.mAttributes, style));
+        text, m, spanFactory.createMentionSpan(m.mText, m.mIndicator, m.mAttributes, style));
   }
 
   public void setDocumentLocator(Locator locator) {}

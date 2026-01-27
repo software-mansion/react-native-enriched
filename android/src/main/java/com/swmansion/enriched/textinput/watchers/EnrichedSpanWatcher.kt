@@ -5,12 +5,12 @@ import android.text.Spannable
 import android.text.style.ParagraphStyle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
-import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 
 class EnrichedSpanWatcher(
