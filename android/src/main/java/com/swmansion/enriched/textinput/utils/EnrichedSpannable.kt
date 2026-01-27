@@ -3,8 +3,8 @@ package com.swmansion.enriched.textinput.utils
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedBlockSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
 
 fun Spannable.getSafeSpanBoundaries(
   start: Int,

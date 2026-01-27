@@ -186,14 +186,12 @@ export interface OnSubmitEditing {
   text: string;
 }
 
-export interface MentionStyleProperties {
-  color?: ColorValue;
-  backgroundColor?: ColorValue;
-  textDecorationLine?: 'underline' | 'none';
-}
-
 export interface OnKeyPressEvent {
   key: string;
+}
+
+interface TargetedEvent {
+  target: Int32;
 }
 
 type Heading = {
@@ -269,8 +267,8 @@ export interface NativeProps extends ViewProps {
   submitBehavior?: string;
 
   // event callbacks
-  onInputFocus?: DirectEventHandler<null>;
-  onInputBlur?: DirectEventHandler<null>;
+  onInputFocus?: DirectEventHandler<TargetedEvent>;
+  onInputBlur?: DirectEventHandler<TargetedEvent>;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;

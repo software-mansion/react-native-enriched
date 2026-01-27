@@ -47,6 +47,12 @@
   UIColor *_codeBlockBgColor;
   LinkRegexConfig *_linkRegexConfig;
   NSRegularExpression *_parsedLinkRegex;
+  CGFloat _checkboxListBoxSize;
+  CGFloat _checkboxListGapWidth;
+  CGFloat _checkboxListMarginLeft;
+  UIColor *_checkboxListBoxColor;
+  UIImage *_checkboxCheckedImage;
+  UIImage *_checkboxUncheckedImage;
 }
 
 - (instancetype)init {
@@ -101,6 +107,12 @@
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
   copy->_linkRegexConfig = [_linkRegexConfig copy];
   copy->_parsedLinkRegex = [_parsedLinkRegex copy];
+  copy->_checkboxListBoxSize = _checkboxListBoxSize;
+  copy->_checkboxListGapWidth = _checkboxListGapWidth;
+  copy->_checkboxListMarginLeft = _checkboxListMarginLeft;
+  copy->_checkboxListBoxColor = [_checkboxListBoxColor copy];
+  copy->_checkboxCheckedImage = _checkboxCheckedImage;
+  copy->_checkboxUncheckedImage = _checkboxUncheckedImage;
   return copy;
 }
 
@@ -525,6 +537,113 @@
   CGFloat scaledSize = [[UIFontMetrics defaultMetrics]
       scaledValueForValue:[[self primaryFontSize] floatValue]];
   return @(scaledSize);
+}
+
+- (CGFloat)checkboxListBoxSize {
+  return _checkboxListBoxSize;
+}
+
+- (void)setCheckboxListBoxSize:(CGFloat)newValue {
+  if (_checkboxListBoxSize != newValue) {
+    _checkboxListBoxSize = newValue;
+    // Invalidate checkbox images because box size changed
+    _checkboxCheckedImage = nil;
+    _checkboxUncheckedImage = nil;
+  }
+}
+
+- (CGFloat)checkboxListGapWidth {
+  return _checkboxListGapWidth;
+}
+
+- (void)setCheckboxListGapWidth:(CGFloat)newValue {
+  _checkboxListGapWidth = newValue;
+}
+
+- (CGFloat)checkboxListMarginLeft {
+  return _checkboxListMarginLeft;
+}
+
+- (void)setCheckboxListMarginLeft:(CGFloat)newValue {
+  _checkboxListMarginLeft = newValue;
+}
+
+- (UIColor *)checkboxListBoxColor {
+  return _checkboxListBoxColor;
+}
+
+- (void)setCheckboxListBoxColor:(UIColor *)newValue {
+  if (_checkboxListBoxColor != newValue) {
+    _checkboxListBoxColor = newValue;
+    // Invalidate checkbox images because color changed
+    _checkboxCheckedImage = nil;
+    _checkboxUncheckedImage = nil;
+  }
+}
+
+- (UIImage *)checkboxCheckedImage {
+  if (!_checkboxCheckedImage) {
+    _checkboxCheckedImage = [self generateCheckboxImage:YES];
+  }
+  return _checkboxCheckedImage;
+}
+
+- (UIImage *)checkboxUncheckedImage {
+  if (!_checkboxUncheckedImage) {
+    _checkboxUncheckedImage = [self generateCheckboxImage:NO];
+  }
+  return _checkboxUncheckedImage;
+}
+
+- (UIImage *)generateCheckboxImage:(BOOL)isChecked {
+  CGFloat boxSize = self.checkboxListBoxSize;
+  UIColor *boxColor = self.checkboxListBoxColor ?: [UIColor blackColor];
+
+  UIGraphicsBeginImageContextWithOptions(CGSizeMake(boxSize, boxSize), NO, 0.0);
+  CGRect localRect = CGRectMake(0, 0, boxSize, boxSize);
+  CGFloat cornerRadius = boxSize * 0.15f;
+  CGFloat strokeWidth = boxSize * 0.1f;
+  CGRect insetRect =
+      CGRectInset(localRect, strokeWidth / 2.0, strokeWidth / 2.0);
+
+  // Draw Box
+  UIBezierPath *boxPath = [UIBezierPath bezierPathWithRoundedRect:insetRect
+                                                     cornerRadius:cornerRadius];
+  [boxPath setLineWidth:strokeWidth];
+
+  if (isChecked) {
+    [[boxColor colorWithAlphaComponent:1.0] setFill];
+    [boxPath fill];
+    [[boxColor colorWithAlphaComponent:1.0] setStroke];
+    [boxPath stroke];
+
+    // Draw Checkmark
+    UIBezierPath *checkPath = [UIBezierPath bezierPath];
+    CGFloat startX = insetRect.origin.x + insetRect.size.width * 0.25;
+    CGFloat startY = insetRect.origin.y + insetRect.size.height * 0.5;
+    CGFloat midX = insetRect.origin.x + insetRect.size.width * 0.45;
+    CGFloat midY = insetRect.origin.y + insetRect.size.height * 0.65;
+    CGFloat endX = insetRect.origin.x + insetRect.size.width * 0.75;
+    CGFloat endY = insetRect.origin.y + insetRect.size.height * 0.35;
+
+    [checkPath moveToPoint:CGPointMake(startX, startY)];
+    [checkPath addLineToPoint:CGPointMake(midX, midY)];
+    [checkPath addLineToPoint:CGPointMake(endX, endY)];
+
+    [checkPath setLineWidth:strokeWidth * 1.5];
+    [[UIColor whiteColor] setStroke];
+    [checkPath setLineCapStyle:kCGLineCapRound];
+    [checkPath setLineJoinStyle:kCGLineJoinRound];
+    [checkPath stroke];
+  } else {
+    [[boxColor colorWithAlphaComponent:1.0] setStroke];
+    [boxPath stroke];
+  }
+
+  UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  return result;
 }
 
 @end

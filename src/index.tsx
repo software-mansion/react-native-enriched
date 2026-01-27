@@ -10,3 +10,4 @@ export type {
   OnKeyPressEvent,
   OnSubmitEditing,
 } from './spec/EnrichedTextInputNativeComponent';
+export type { HtmlStyle, MentionStyleProperties } from './types';
