@@ -30,12 +30,16 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  TargetedEvent,
   TextStyle,
   ViewProps,
   ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from './utils/regexParser';
+
+export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
+export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -144,8 +148,8 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
-  onFocus?: () => void;
-  onBlur?: () => void;
+  onFocus?: (e: FocusEvent) => void;
+  onBlur?: (e: BlurEvent) => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
