@@ -1690,6 +1690,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  [self layoutAttachments];
 }
 
 // MARK: - UITextView delegate methods
