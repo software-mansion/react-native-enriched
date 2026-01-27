@@ -1,4 +1,5 @@
 #import "ImageAttachment.h"
+#import "UIImage+animatedGIF.h"
 
 @implementation ImageAttachment
 
@@ -17,17 +18,17 @@
 - (void)loadAsync {
   NSURL *url = [NSURL URLWithString:self.uri];
   if (!url) {
-    self.image = [UIImage systemImageNamed:@"file"];
+    self.storedAnimatedImage = [UIImage systemImageNamed:@"photo"];
     return;
   }
 
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
     NSData *bytes = [NSData dataWithContentsOfURL:url];
-    UIImage *img = bytes ? [UIImage imageWithData:bytes]
-                         : [UIImage systemImageNamed:@"file"];
+    UIImage *img = bytes ? [UIImage animatedImageWithAnimatedGIFData:bytes]
+                         : [UIImage systemImageNamed:@"photo"];
 
     dispatch_async(dispatch_get_main_queue(), ^{
-      self.image = img;
+      self.storedAnimatedImage = img;
       [self notifyUpdate];
     });
   });
