@@ -6,63 +6,70 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.enriched.common.EnrichedStyle
+import com.swmansion.enriched.common.MentionStyle
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import kotlin.Float
 import kotlin.Int
 import kotlin.String
 import kotlin.math.ceil
 
-class HtmlStyle {
+class HtmlStyle : EnrichedStyle {
   private var style: ReadableMap? = null
   private var view: EnrichedTextInputView? = null
 
   // Default values are ignored as they are specified on the JS side.
   // They are specified only because they are required by the constructor.
   // JS passes them as a prop - so they are initialized after the constructor is called.
-  var h1FontSize: Int = 72
-  var h1Bold: Boolean = false
+  override var h1FontSize: Int = 72
+  override var h1Bold: Boolean = false
 
-  var h2FontSize: Int = 64
-  var h2Bold: Boolean = false
+  override var h2FontSize: Int = 64
+  override var h2Bold: Boolean = false
 
-  var h3FontSize: Int = 56
-  var h3Bold: Boolean = false
+  override var h3FontSize: Int = 56
+  override var h3Bold: Boolean = false
 
-  var h4FontSize: Int = 48
-  var h4Bold: Boolean = false
+  override var h4FontSize: Int = 48
+  override var h4Bold: Boolean = false
 
-  var h5FontSize: Int = 40
-  var h5Bold: Boolean = false
+  override var h5FontSize: Int = 40
+  override var h5Bold: Boolean = false
 
-  var h6FontSize: Int = 32
-  var h6Bold: Boolean = false
+  override var h6FontSize: Int = 32
+  override var h6Bold: Boolean = false
 
-  var blockquoteColor: Int? = null
-  var blockquoteBorderColor: Int = Color.BLACK
-  var blockquoteStripeWidth: Int = 2
-  var blockquoteGapWidth: Int = 16
+  override var blockquoteColor: Int? = null
+  override var blockquoteBorderColor: Int = Color.BLACK
+  override var blockquoteStripeWidth: Int = 2
+  override var blockquoteGapWidth: Int = 16
 
-  var olGapWidth: Int = 16
-  var olMarginLeft: Int = 24
-  var olMarkerFontWeight: Int? = null
-  var olMarkerColor: Int? = null
+  override var olGapWidth: Int = 16
+  override var olMarginLeft: Int = 24
+  override var olMarkerFontWeight: Int? = null
+  override var olMarkerColor: Int? = null
 
-  var ulGapWidth: Int = 16
-  var ulMarginLeft: Int = 24
-  var ulBulletSize: Int = 8
-  var ulBulletColor: Int = Color.BLACK
+  override var ulGapWidth: Int = 16
+  override var ulMarginLeft: Int = 24
+  override var ulBulletSize: Int = 8
+  override var ulBulletColor: Int = Color.BLACK
 
-  var aColor: Int = Color.BLACK
-  var aUnderline: Boolean = true
+  override var ulCheckboxBoxSize: Int = 50
+  override var ulCheckboxGapWidth: Int = 16
+  override var ulCheckboxMarginLeft: Int = 24
+  override var ulCheckboxBoxColor: Int = Color.BLACK
 
-  var codeBlockColor: Int = Color.BLACK
-  var codeBlockBackgroundColor: Int = Color.BLACK
-  var codeBlockRadius: Float = 4f
+  override var aColor: Int = Color.BLACK
+  override var aUnderline: Boolean = true
 
-  var inlineCodeColor: Int = Color.BLACK
-  var inlineCodeBackgroundColor: Int = Color.BLACK
+  override var codeBlockColor: Int = Color.BLACK
+  override var codeBlockBackgroundColor: Int = Color.BLACK
+  override var codeBlockRadius: Float = 4f
 
-  var mentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
+  override var inlineCodeColor: Int = Color.BLACK
+  override var inlineCodeBackgroundColor: Int = Color.BLACK
+
+  override var mentionsStyle: MutableMap<String, MentionStyle> = mutableMapOf()
 
   constructor(view: EnrichedTextInputView?, style: ReadableMap?) {
     this.view = view
@@ -117,6 +124,12 @@ class HtmlStyle {
     ulGapWidth = parseFloat(ulStyle, "gapWidth").toInt()
     ulMarginLeft = parseFloat(ulStyle, "marginLeft").toInt()
     ulBulletSize = parseFloat(ulStyle, "bulletSize").toInt()
+
+    val ulCheckboxStyle = style.getMap("ulCheckbox")
+    ulCheckboxBoxSize = parseFloat(ulCheckboxStyle, "boxSize").toInt()
+    ulCheckboxGapWidth = parseFloat(ulCheckboxStyle, "gapWidth").toInt()
+    ulCheckboxMarginLeft = parseFloat(ulCheckboxStyle, "marginLeft").toInt()
+    ulCheckboxBoxColor = parseColor(ulCheckboxStyle, "boxColor")
 
     val aStyle = style.getMap("a")
     aColor = parseColor(aStyle, "color")
@@ -290,6 +303,11 @@ class HtmlStyle {
       ulBulletSize == other.ulBulletSize &&
       ulBulletColor == other.ulBulletColor &&
 
+      ulCheckboxBoxSize == other.ulCheckboxBoxSize &&
+      ulCheckboxGapWidth == other.ulCheckboxGapWidth &&
+      ulCheckboxMarginLeft == other.ulCheckboxMarginLeft &&
+      ulCheckboxBoxColor == other.ulCheckboxBoxColor &&
+
       aColor == other.aColor &&
       aUnderline == other.aUnderline &&
 
@@ -332,6 +350,11 @@ class HtmlStyle {
     result = 31 * result + ulBulletSize.hashCode()
     result = 31 * result + ulBulletColor.hashCode()
 
+    result = 31 * result + ulCheckboxBoxSize.hashCode()
+    result = 31 * result + ulCheckboxGapWidth.hashCode()
+    result = 31 * result + ulCheckboxMarginLeft.hashCode()
+    result = 31 * result + ulCheckboxBoxColor.hashCode()
+
     result = 31 * result + aColor.hashCode()
     result = 31 * result + aUnderline.hashCode()
 
@@ -345,13 +368,5 @@ class HtmlStyle {
     result = 31 * result + mentionsStyle.hashCode()
 
     return result
-  }
-
-  companion object {
-    data class MentionStyle(
-      val color: Int,
-      val backgroundColor: Int,
-      val underline: Boolean,
-    )
   }
 }

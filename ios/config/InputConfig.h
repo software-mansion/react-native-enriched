@@ -88,4 +88,14 @@
 - (NSRegularExpression *)parsedLinkRegex;
 - (void)invalidateFonts;
 - (NSNumber *)scaledPrimaryFontSize;
+- (CGFloat)checkboxListBoxSize;
+- (void)setCheckboxListBoxSize:(CGFloat)newValue;
+- (CGFloat)checkboxListGapWidth;
+- (void)setCheckboxListGapWidth:(CGFloat)newValue;
+- (CGFloat)checkboxListMarginLeft;
+- (void)setCheckboxListMarginLeft:(CGFloat)newValue;
+- (UIColor *)checkboxListBoxColor;
+- (void)setCheckboxListBoxColor:(UIColor *)newValue;
+- (UIImage *)checkboxCheckedImage;
+- (UIImage *)checkboxUncheckedImage;
 @end

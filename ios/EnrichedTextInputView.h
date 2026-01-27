@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   BOOL blockEmitting;
 }
-- (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
                           range:(NSRange)range;
@@ -41,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
                                             range:(NSRange)range;
+- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth;
+- (void)commitSize:(CGSize)size;
 @end
 
 NS_ASSUME_NONNULL_END

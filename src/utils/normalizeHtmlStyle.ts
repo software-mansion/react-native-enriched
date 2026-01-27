@@ -1,9 +1,6 @@
-import type { HtmlStyle } from '../EnrichedTextInput';
 import { type ColorValue, processColor } from 'react-native';
-import type {
-  MentionStyleProperties,
-  HtmlStyleInternal,
-} from '../spec/EnrichedTextInputNativeComponent';
+import type { HtmlStyleInternal } from '../spec/EnrichedTextInputNativeComponent';
+import type { HtmlStyle, MentionStyleProperties } from '../types';
 
 const defaultStyle: Required<HtmlStyle> = {
   h1: {
@@ -65,6 +62,12 @@ const defaultStyle: Required<HtmlStyle> = {
     bulletSize: 8,
     marginLeft: 16,
     gapWidth: 16,
+  },
+  ulCheckbox: {
+    boxSize: 24,
+    gapWidth: 16,
+    marginLeft: 16,
+    boxColor: 'blue',
   },
 };
 

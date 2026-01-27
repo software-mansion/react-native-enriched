@@ -33,33 +33,34 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.events.PastedImage
-import com.swmansion.enriched.textinput.spans.EnrichedH1Span
-import com.swmansion.enriched.textinput.spans.EnrichedH2Span
-import com.swmansion.enriched.textinput.spans.EnrichedH3Span
-import com.swmansion.enriched.textinput.spans.EnrichedH4Span
-import com.swmansion.enriched.textinput.spans.EnrichedH5Span
-import com.swmansion.enriched.textinput.spans.EnrichedH6Span
-import com.swmansion.enriched.textinput.spans.EnrichedImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputH1Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH2Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH3Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedSpan
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import com.swmansion.enriched.textinput.styles.InlineStyles
 import com.swmansion.enriched.textinput.styles.ListStyles
 import com.swmansion.enriched.textinput.styles.ParagraphStyles
 import com.swmansion.enriched.textinput.styles.ParametrizedStyles
-import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
-import com.swmansion.enriched.textinput.utils.EnrichedParser
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.mergeSpannables
+import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.textinput.watchers.EnrichedTextWatcher
 import java.util.regex.Pattern
@@ -108,6 +109,7 @@ class EnrichedTextInputView : AppCompatEditText {
   private var defaultValueDirty: Boolean = false
 
   private var inputMethodManager: InputMethodManager? = null
+  private val spannableFactory = EnrichedTextInputSpannableFactory()
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -166,9 +168,12 @@ class EnrichedTextInputView : AppCompatEditText {
     // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
     val spanWatcher = EnrichedSpanWatcher(this)
     this.spanWatcher = spanWatcher
-    setEditableFactory(EnrichedEditableFactory(spanWatcher))
 
+    setEditableFactory(EnrichedEditableFactory(spanWatcher))
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    // Handle checkbox list item clicks
+    this.setCheckboxClickListener()
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -294,7 +299,7 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isHtml) return text
 
     try {
-      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, null)
+      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
       return withoutLastNewLine
     } catch (e: Exception) {
@@ -355,7 +360,7 @@ class EnrichedTextInputView : AppCompatEditText {
   private fun observeAsyncImages() {
     val liveText = text ?: return
 
-    val spans = liveText.getSpans(0, liveText.length, EnrichedImageSpan::class.java)
+    val spans = liveText.getSpans(0, liveText.length, EnrichedInputImageSpan::class.java)
 
     for (span in spans) {
       span.observeAsyncDrawableLoaded(liveText)
@@ -546,6 +551,7 @@ class EnrichedTextInputView : AppCompatEditText {
       EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.toggleStyle(EnrichedSpans.BLOCK_QUOTE)
       EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
       EnrichedSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.UNORDERED_LIST)
+      EnrichedSpans.CHECKBOX_LIST -> listStyles?.toggleStyle(EnrichedSpans.CHECKBOX_LIST)
       else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
     }
 
@@ -574,6 +580,7 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.removeStyle(EnrichedSpans.BLOCK_QUOTE, start, end)
         EnrichedSpans.ORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.ORDERED_LIST, start, end)
         EnrichedSpans.UNORDERED_LIST -> listStyles?.removeStyle(EnrichedSpans.UNORDERED_LIST, start, end)
+        EnrichedSpans.CHECKBOX_LIST -> listStyles?.removeStyle(EnrichedSpans.CHECKBOX_LIST, start, end)
         EnrichedSpans.LINK -> parametrizedStyles?.removeStyle(EnrichedSpans.LINK, start, end)
         EnrichedSpans.IMAGE -> parametrizedStyles?.removeStyle(EnrichedSpans.IMAGE, start, end)
         EnrichedSpans.MENTION -> parametrizedStyles?.removeStyle(EnrichedSpans.MENTION, start, end)
@@ -601,6 +608,7 @@ class EnrichedTextInputView : AppCompatEditText {
         EnrichedSpans.BLOCK_QUOTE -> paragraphStyles?.getStyleRange()
         EnrichedSpans.ORDERED_LIST -> listStyles?.getStyleRange()
         EnrichedSpans.UNORDERED_LIST -> listStyles?.getStyleRange()
+        EnrichedSpans.CHECKBOX_LIST -> listStyles?.getStyleRange()
         EnrichedSpans.LINK -> parametrizedStyles?.getStyleRange()
         EnrichedSpans.IMAGE -> parametrizedStyles?.getStyleRange()
         EnrichedSpans.MENTION -> parametrizedStyles?.getStyleRange()
@@ -658,6 +666,13 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     toggleStyle(name)
+  }
+
+  fun toggleCheckboxListItem(checked: Boolean) {
+    val isValid = verifyStyle(EnrichedSpans.CHECKBOX_LIST)
+    if (!isValid) return
+
+    listStyles?.toggleCheckboxListStyle(checked)
   }
 
   fun addLink(
@@ -757,20 +772,20 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private fun isHeadingBold(
     style: HtmlStyle,
-    span: EnrichedSpan,
+    span: EnrichedInputSpan,
   ): Boolean =
     when (span) {
-      is EnrichedH1Span -> style.h1Bold
-      is EnrichedH2Span -> style.h2Bold
-      is EnrichedH3Span -> style.h3Bold
-      is EnrichedH4Span -> style.h4Bold
-      is EnrichedH5Span -> style.h5Bold
-      is EnrichedH6Span -> style.h6Bold
+      is EnrichedInputH1Span -> style.h1Bold
+      is EnrichedInputH2Span -> style.h2Bold
+      is EnrichedInputH3Span -> style.h3Bold
+      is EnrichedInputH4Span -> style.h4Bold
+      is EnrichedInputH5Span -> style.h5Bold
+      is EnrichedInputH6Span -> style.h6Bold
       else -> false
     }
 
   private fun shouldRemoveBoldFromHeading(
-    span: EnrichedSpan,
+    span: EnrichedInputSpan,
     prevStyle: HtmlStyle,
     nextStyle: HtmlStyle,
   ): Boolean {
@@ -790,7 +805,7 @@ class EnrichedTextInputView : AppCompatEditText {
     var shouldEmitStateChange = false
 
     runAsATransaction {
-      val spans = spannable.getSpans(0, spannable.length, EnrichedSpan::class.java)
+      val spans = spannable.getSpans(0, spannable.length, EnrichedInputSpan::class.java)
       for (span in spans) {
         if (!span.dependsOnHtmlStyle) continue
 

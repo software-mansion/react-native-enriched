@@ -91,6 +91,17 @@
                       replacementText:(NSString *)text;
 @end
 
+@interface CheckboxListStyle : NSObject <BaseStyleProtocol>
+- (void)applyStyleWithCheckedValue:(BOOL)checked inRange:(NSRange)range;
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)getCheckboxStateAt:(NSUInteger)location;
+- (void)toggleCheckedAt:(NSUInteger)location;
+- (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
+- (void)addAttributesWithCheckedValue:(BOOL)checked
+                              inRange:(NSRange)range
+                       withTypingAttr:(BOOL)withTypingAttr;
+@end
+
 @interface BlockQuoteStyle : NSObject <BaseStyleProtocol>
 - (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 - (void)manageBlockquoteColor;
