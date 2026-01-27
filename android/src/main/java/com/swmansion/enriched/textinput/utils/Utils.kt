@@ -7,7 +7,7 @@ import android.text.Spanned
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.TextView
-import com.swmansion.enriched.textinput.spans.EnrichedCheckboxListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import org.json.JSONObject
 
 fun jsonStringToStringMap(json: String): Map<String, String> {
@@ -48,7 +48,7 @@ fun TextView.setCheckboxClickListener() {
     val lineStart = layout.getLineStart(line)
 
     // Find spans for specific line
-    val spans = spannable.getSpans(lineStart, lineStart, EnrichedCheckboxListSpan::class.java)
+    val spans = spannable.getSpans(lineStart, lineStart, EnrichedInputCheckboxListSpan::class.java)
     if (spans.isEmpty()) return@setOnTouchListener false
 
     // There should be only one span per line as we don't support nested lists

@@ -57,37 +57,37 @@ object EnrichedSpans {
 
   val inlineSpans: Map<String, BaseSpanConfig> =
     mapOf(
-      BOLD to BaseSpanConfig(EnrichedBoldSpan::class.java),
-      ITALIC to BaseSpanConfig(EnrichedItalicSpan::class.java),
-      UNDERLINE to BaseSpanConfig(EnrichedUnderlineSpan::class.java),
-      STRIKETHROUGH to BaseSpanConfig(EnrichedStrikeThroughSpan::class.java),
-      INLINE_CODE to BaseSpanConfig(EnrichedInlineCodeSpan::class.java),
+      BOLD to BaseSpanConfig(EnrichedInputBoldSpan::class.java),
+      ITALIC to BaseSpanConfig(EnrichedInputItalicSpan::class.java),
+      UNDERLINE to BaseSpanConfig(EnrichedInputUnderlineSpan::class.java),
+      STRIKETHROUGH to BaseSpanConfig(EnrichedInputStrikeThroughSpan::class.java),
+      INLINE_CODE to BaseSpanConfig(EnrichedInputInlineCodeSpan::class.java),
     )
 
   val paragraphSpans: Map<String, ParagraphSpanConfig> =
     mapOf(
-      H1 to ParagraphSpanConfig(EnrichedH1Span::class.java, false),
-      H2 to ParagraphSpanConfig(EnrichedH2Span::class.java, false),
-      H3 to ParagraphSpanConfig(EnrichedH3Span::class.java, false),
-      H4 to ParagraphSpanConfig(EnrichedH4Span::class.java, false),
-      H5 to ParagraphSpanConfig(EnrichedH5Span::class.java, false),
-      H6 to ParagraphSpanConfig(EnrichedH6Span::class.java, false),
-      BLOCK_QUOTE to ParagraphSpanConfig(EnrichedBlockQuoteSpan::class.java, true),
-      CODE_BLOCK to ParagraphSpanConfig(EnrichedCodeBlockSpan::class.java, true),
+      H1 to ParagraphSpanConfig(EnrichedInputH1Span::class.java, false),
+      H2 to ParagraphSpanConfig(EnrichedInputH2Span::class.java, false),
+      H3 to ParagraphSpanConfig(EnrichedInputH3Span::class.java, false),
+      H4 to ParagraphSpanConfig(EnrichedInputH4Span::class.java, false),
+      H5 to ParagraphSpanConfig(EnrichedInputH5Span::class.java, false),
+      H6 to ParagraphSpanConfig(EnrichedInputH6Span::class.java, false),
+      BLOCK_QUOTE to ParagraphSpanConfig(EnrichedInputBlockQuoteSpan::class.java, true),
+      CODE_BLOCK to ParagraphSpanConfig(EnrichedInputCodeBlockSpan::class.java, true),
     )
 
   val listSpans: Map<String, ListSpanConfig> =
     mapOf(
-      UNORDERED_LIST to ListSpanConfig(EnrichedUnorderedListSpan::class.java, "- "),
-      ORDERED_LIST to ListSpanConfig(EnrichedOrderedListSpan::class.java, "1. "),
-      CHECKBOX_LIST to ListSpanConfig(EnrichedCheckboxListSpan::class.java, null),
+      UNORDERED_LIST to ListSpanConfig(EnrichedInputUnorderedListSpan::class.java, "- "),
+      ORDERED_LIST to ListSpanConfig(EnrichedInputOrderedListSpan::class.java, "1. "),
+      CHECKBOX_LIST to ListSpanConfig(EnrichedInputCheckboxListSpan::class.java, null),
     )
 
   val parametrizedStyles: Map<String, BaseSpanConfig> =
     mapOf(
-      LINK to BaseSpanConfig(EnrichedLinkSpan::class.java),
-      IMAGE to BaseSpanConfig(EnrichedImageSpan::class.java),
-      MENTION to BaseSpanConfig(EnrichedMentionSpan::class.java),
+      LINK to BaseSpanConfig(EnrichedInputLinkSpan::class.java),
+      IMAGE to BaseSpanConfig(EnrichedInputImageSpan::class.java),
+      MENTION to BaseSpanConfig(EnrichedInputMentionSpan::class.java),
     )
 
   val allSpans: Map<String, ISpanConfig> = inlineSpans + paragraphSpans + listSpans + parametrizedStyles

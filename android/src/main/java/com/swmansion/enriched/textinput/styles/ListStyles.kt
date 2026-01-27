@@ -4,12 +4,12 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
-import com.swmansion.enriched.textinput.spans.EnrichedCheckboxListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedOrderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
-import com.swmansion.enriched.textinput.spans.EnrichedUnorderedListSpan
-import com.swmansion.enriched.textinput.utils.EnrichedConstants
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.removeZWS
@@ -48,8 +48,8 @@ class ListStyles(
     spannable: Spannable,
     s: Int,
   ): Int {
-    val span = getPreviousParagraphSpan(spannable, s, EnrichedOrderedListSpan::class.java)
-    val index = span?.getIndex() ?: 0
+    val span = getPreviousParagraphSpan(spannable, s, EnrichedInputOrderedListSpan::class.java)
+    val index = span?.getListIndex() ?: 0
     return index + 1
   }
 
@@ -64,18 +64,18 @@ class ListStyles(
 
     when (name) {
       EnrichedSpans.UNORDERED_LIST -> {
-        val span = EnrichedUnorderedListSpan(view.htmlStyle)
+        val span = EnrichedInputUnorderedListSpan(view.htmlStyle)
         spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       }
 
       EnrichedSpans.ORDERED_LIST -> {
         val index = getOrderedListIndex(spannable, safeStart)
-        val span = EnrichedOrderedListSpan(index, view.htmlStyle)
+        val span = EnrichedInputOrderedListSpan(index, view.htmlStyle)
         spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       }
 
       EnrichedSpans.CHECKBOX_LIST -> {
-        val span = EnrichedCheckboxListSpan(isChecked ?: false, view.htmlStyle)
+        val span = EnrichedInputCheckboxListSpan(isChecked ?: false, view.htmlStyle)
         spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
         // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
@@ -106,12 +106,12 @@ class ListStyles(
     text: Spannable,
     position: Int,
   ) {
-    val spans = text.getSpans(position + 1, text.length, EnrichedOrderedListSpan::class.java)
+    val spans = text.getSpans(position + 1, text.length, EnrichedInputOrderedListSpan::class.java)
     val sortedSpans = spans.sortedBy { text.getSpanStart(it) }
     for (span in sortedSpans) {
       val spanStart = text.getSpanStart(span)
       val index = getOrderedListIndex(text, spanStart)
-      span.setIndex(index)
+      span.setListIndex(index)
     }
   }
 
@@ -204,7 +204,7 @@ class ListStyles(
 
     if (name === EnrichedSpans.CHECKBOX_LIST) {
       if (spans.isNotEmpty()) {
-        val previousSpan = spans[0] as EnrichedCheckboxListSpan
+        val previousSpan = spans[0] as EnrichedInputCheckboxListSpan
         val isChecked = previousSpan.isChecked
 
         for (span in spans) {
