@@ -191,6 +191,10 @@ export interface OnKeyPressEvent {
   key: string;
 }
 
+interface TargetedEvent {
+  target: Int32;
+}
+
 type Heading = {
   fontSize?: Float;
   bold?: boolean;
@@ -261,8 +265,8 @@ export interface NativeProps extends ViewProps {
   linkRegex?: LinkNativeRegex;
 
   // event callbacks
-  onInputFocus?: DirectEventHandler<null>;
-  onInputBlur?: DirectEventHandler<null>;
+  onInputFocus?: DirectEventHandler<TargetedEvent>;
+  onInputBlur?: DirectEventHandler<TargetedEvent>;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
