@@ -112,8 +112,7 @@ class RichContentReceiver(
       }
 
       // Decode Dimensions
-      val options = BitmapFactory.Options()
-      options.inJustDecodeBounds = true
+      val options = BitmapFactory.Options().apply { inJustDecodeBounds = true}
       BitmapFactory.decodeFile(file.absolutePath, options)
 
       PastedImage(
