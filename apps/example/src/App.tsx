@@ -304,13 +304,13 @@ export default function App() {
   const handlePasteImagesEvent = (e: OnPasteImagesEvent) => {
     console.log('Pasted images:', e.images);
 
-    for (let image of e.images) {
+    e.images.forEach((image) => {
       const { finalWidth, finalHeight } = prepareImageDimensions(
         image.width,
         image.height
       );
       ref.current?.setImage(image.uri, finalWidth, finalHeight);
-    }
+    });
   };
 
   return (

@@ -8,16 +8,15 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.webkit.MimeTypeMap
 import androidx.core.view.ContentInfoCompat
 import androidx.core.view.OnReceiveContentListener
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
-import com.swmansion.enriched.textinput.events.PastedImage
 import java.io.File
 import java.io.FileOutputStream
-import java.util.UUID
 import kotlin.io.copyTo
 
 class RichContentReceiver(
@@ -47,13 +46,12 @@ class RichContentReceiver(
 
   private fun processClipDataInBackground(clip: ClipData) {
     Thread {
-      val results = mutableListOf<PastedImage>()
+      val results = mutableListOf<OnPasteImagesEvent.Companion.PastedImage>()
 
       for (i in 0 until clip.itemCount) {
         val item = clip.getItemAt(i)
         val uri = item.uri ?: continue
-
-        val mimeType = getMimeTypeFromUri(uri)
+        val mimeType = getMimeTypeFromUri(uri) ?: continue
 
         if (mimeType.startsWith("image/")) {
           val result = saveUriToTempFile(context, uri, mimeType)
@@ -71,7 +69,7 @@ class RichContentReceiver(
     }.start()
   }
 
-  private fun emitOnPasteImageEvent(images: List<PastedImage>) {
+  private fun emitOnPasteImageEvent(images: List<OnPasteImagesEvent.Companion.PastedImage>) {
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
     dispatcher?.dispatchEvent(OnPasteImagesEvent(surfaceId, view.id, images, false))
@@ -81,24 +79,11 @@ class RichContentReceiver(
     context: Context,
     uri: Uri,
     mimeType: String,
-  ): PastedImage? {
+  ): OnPasteImagesEvent.Companion.PastedImage? {
     return try {
       val resolver = context.contentResolver
-
-      // Guess Extension
-      val ext =
-        when {
-          mimeType.contains("gif") -> "gif"
-          mimeType.contains("png") -> "png"
-          mimeType.contains("webp") -> "webp"
-          mimeType.contains("heic") -> "heic"
-          mimeType.contains("tiff") -> "tiff"
-          else -> "jpg"
-        }
-
-      // Create Temp File
-      val fileName = "${UUID.randomUUID()}.$ext"
-      val file = File(context.cacheDir, fileName)
+      val ext = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+      val file = File.createTempFile("temp", ".$ext", context.cacheDir)
 
       // Copy Stream
       resolver.openInputStream(uri).use { input ->
@@ -109,10 +94,10 @@ class RichContentReceiver(
       }
 
       // Decode Dimensions
-      val options = BitmapFactory.Options().apply { inJustDecodeBounds = true}
+      val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
       BitmapFactory.decodeFile(file.absolutePath, options)
 
-      PastedImage(
+      OnPasteImagesEvent.Companion.PastedImage(
         uri = "file://${file.absolutePath}",
         type = mimeType,
         width = options.outWidth.toDouble(),
@@ -124,20 +109,13 @@ class RichContentReceiver(
     }
   }
 
-  private fun getMimeTypeFromUri(uri: Uri): String {
+  private fun getMimeTypeFromUri(uri: Uri): String? {
     var mimeType = context.contentResolver.getType(uri)
 
     if (mimeType == null) {
-      val str = uri.toString().lowercase()
-      mimeType =
-        when {
-          str.contains("png") -> "image/png"
-          str.contains("gif") -> "image/gif"
-          str.contains("webp") -> "image/webp"
-          str.contains("heic") -> "image/heic"
-          str.contains("tiff") -> "image/tiff"
-          else -> "image/jpeg"
-        }
+      val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+
+      mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
     }
 
     return mimeType

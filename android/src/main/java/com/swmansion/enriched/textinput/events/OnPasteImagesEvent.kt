@@ -5,13 +5,6 @@ import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-data class PastedImage(
-  val uri: String,
-  val type: String,
-  val width: Double,
-  val height: Double,
-)
-
 class OnPasteImagesEvent(
   surfaceId: Int,
   viewId: Int,
@@ -43,5 +36,12 @@ class OnPasteImagesEvent(
 
   companion object {
     const val EVENT_NAME: String = "onPasteImages"
+
+    data class PastedImage(
+      val uri: String,
+      val type: String,
+      val width: Double,
+      val height: Double,
+    )
   }
 }
