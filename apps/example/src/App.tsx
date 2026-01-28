@@ -10,6 +10,7 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  type OnSubmitEditing,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -290,6 +291,10 @@ export default function App() {
     console.log('Key pressed:', e.key);
   };
 
+  const handleSubmitEditing = ({ text }: OnSubmitEditing) => {
+    console.log('Text submitted with:', text);
+  };
+
   const handleLinkDetected = (state: CurrentLinkState) => {
     console.log(state);
     setCurrentLink(state);
@@ -321,6 +326,7 @@ export default function App() {
             onChangeText={(e) => handleChangeText(e.nativeEvent)}
             onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            onSubmitEditing={(e) => handleSubmitEditing(e.nativeEvent)}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
