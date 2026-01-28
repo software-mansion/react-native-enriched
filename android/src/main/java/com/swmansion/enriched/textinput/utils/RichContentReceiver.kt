@@ -51,11 +51,8 @@ class RichContentReceiver(
 
       for (i in 0 until clip.itemCount) {
         val item = clip.getItemAt(i)
-        val uri = item.uri
+        val uri = item.uri ?: continue
 
-        if (uri == null) {
-          continue
-        }
         val mimeType = getMimeTypeFromUri(uri)
 
         if (mimeType.startsWith("image/")) {
