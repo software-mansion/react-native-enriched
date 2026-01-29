@@ -1680,7 +1680,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     alignment = NSTextAlignmentJustified;
   }
 
-  [self setAlignment:alignment];
+  [self setAlignment:alignment forRange:textView.selectedRange];
 }
 
 - (NSRange)expandRangeToContiguousList:(NSRange)range {
@@ -1763,11 +1763,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return expandedRange;
 }
 
-- (void)setAlignment:(NSTextAlignment)alignment {
-  NSRange selectedRange = textView.selectedRange;
-
+- (void)setAlignment:(NSTextAlignment)alignment forRange:(NSRange)forRange {
   // Expand the range if we are inside a List
-  NSRange targetRange = [self expandRangeToContiguousList:selectedRange];
+  NSRange targetRange = [self expandRangeToContiguousList:forRange];
   NSArray *paragraphs =
       [ParagraphsUtils getSeparateParagraphsRangesIn:textView
                                                range:targetRange];

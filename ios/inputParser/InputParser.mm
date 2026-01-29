@@ -1,4 +1,5 @@
 #import "InputParser.h"
+#import "AlignmentEntry.h"
 #import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -612,6 +613,7 @@
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // reset the text first and reset typing attributes
   _input->textView.text = @"";
@@ -624,12 +626,14 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:0
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:0];
 }
 
 - (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // we can use ready replace util
   [TextInsertionUtils replaceText:plainText
@@ -641,12 +645,14 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:range.location
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:range.location];
 }
 
 - (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // same here, insertion utils got our back
   [TextInsertionUtils insertText:plainText
@@ -658,6 +664,7 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:location
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:location];
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles
@@ -1074,6 +1081,8 @@
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
   NSMutableDictionary *checkboxStates = [[NSMutableDictionary alloc] init];
+  NSMutableArray<AlignmentEntry *> *foundAlignments =
+      [[NSMutableArray alloc] init];
   BOOL insideCheckboxList = NO;
   _precedingImageCount = 0;
   BOOL insideTag = NO;
@@ -1114,8 +1123,7 @@
         isSelfClosing = YES;
       }
 
-      if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"]) {
+      if ([currentTagName isEqualToString:@"br"]) {
         // do nothing, we don't include these tags in styles
       } else if ([currentTagName isEqualToString:@"li"]) {
         // Only track checkbox state if we're inside a checkbox list
@@ -1124,6 +1132,13 @@
           checkboxStates[@(plainText.length)] = @(isChecked);
         }
       } else if (!closingTag) {
+        BOOL isPlainParagraph =
+            [currentTagName isEqualToString:@"p"] &&
+            (!currentTagParams || [currentTagParams length] == 0);
+
+        if (isPlainParagraph) {
+          continue;
+        }
         // we finish opening tag - get its location and optionally params and
         // put them under tag name key in ongoingTags
         NSMutableArray *tagArr = [[NSMutableArray alloc] init];
@@ -1175,6 +1190,9 @@
               mutableCopy];
         }
 
+        [self checkForAlignments:ongoingTags[currentTagName]
+                       plainText:plainText
+                 foundAlignments:foundAlignments];
         [self finalizeTagEntry:currentTagName
                        ongoingTags:ongoingTags
             initiallyProcessedTags:initiallyProcessedTags
@@ -1401,7 +1419,7 @@
     [processedStyles addObject:styleArr];
   }
 
-  return @[ plainText, processedStyles ];
+  return @[ plainText, processedStyles, foundAlignments ];
 }
 
 - (BOOL)isUlCheckboxList:(NSString *)params {
@@ -1454,6 +1472,79 @@
   }
 
   return @"";
+}
+
+- (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
+  if (!params)
+    return NSTextAlignmentNatural;
+
+  NSString *pattern = @"text-align\\s*:\\s*(left|center|right|justify)";
+
+  NSRegularExpression *regex = [NSRegularExpression
+      regularExpressionWithPattern:pattern
+                           options:NSRegularExpressionCaseInsensitive
+                             error:nil];
+
+  NSTextCheckingResult *match =
+      [regex firstMatchInString:params
+                        options:0
+                          range:NSMakeRange(0, params.length)];
+
+  if (match) {
+    // rangeAtIndex:1 corresponds to the capture group
+    // (left|center|right|justify)
+    NSString *value =
+        [[params substringWithRange:[match rangeAtIndex:1]] lowercaseString];
+
+    if ([value isEqualToString:@"center"])
+      return NSTextAlignmentCenter;
+    if ([value isEqualToString:@"right"])
+      return NSTextAlignmentRight;
+    if ([value isEqualToString:@"justify"])
+      return NSTextAlignmentJustified;
+    if ([value isEqualToString:@"left"])
+      return NSTextAlignmentLeft;
+  }
+
+  return NSTextAlignmentNatural;
+}
+
+- (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
+                 offset:(NSInteger)offset {
+  for (AlignmentEntry *entry in alignments) {
+    // Offset the range (e.g. if inserting into the middle of text)
+    NSRange finalRange =
+        NSMakeRange(offset + entry.range.location, entry.range.length);
+
+    // Call your existing helper
+    [_input setAlignment:entry.alignment forRange:finalRange];
+  }
+}
+
+- (void)checkForAlignments:(NSArray *)tagData
+                 plainText:(NSString *)plainText
+           foundAlignments:(NSMutableArray<AlignmentEntry *> *)foundAlignments {
+  if (tagData == nil) {
+    return;
+  }
+
+  // We look at the params stored in ongoingTags
+  NSString *storedParams = (tagData.count > 1) ? tagData[1] : nil;
+  NSTextAlignment align = [self alignmentFromStyleParams:storedParams];
+
+  if (align != NSTextAlignmentNatural) {
+    NSInteger startLoc = [tagData[0] integerValue];
+    // Calculate range relative to plainText
+    NSInteger actualStart = startLoc + _precedingImageCount;
+    NSInteger length = plainText.length - startLoc;
+
+    if (length > 0) {
+      AlignmentEntry *entry = [[AlignmentEntry alloc] init];
+      entry.alignment = align;
+      entry.range = NSMakeRange(actualStart, length);
+      [foundAlignments addObject:entry];
+    }
+  }
 }
 
 @end
