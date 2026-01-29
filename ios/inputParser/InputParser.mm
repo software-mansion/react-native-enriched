@@ -1,5 +1,6 @@
 #import "InputParser.h"
 #import "AlignmentEntry.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -1516,8 +1517,9 @@
     NSRange finalRange =
         NSMakeRange(offset + entry.range.location, entry.range.length);
 
-    // Call your existing helper
-    [_input setAlignment:entry.alignment forRange:finalRange];
+    [AlignmentUtils setAlignment:entry.alignment
+                        forRange:finalRange
+                         inInput:_input];
   }
 }
 

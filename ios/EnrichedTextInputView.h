@@ -41,7 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
                                             range:(NSRange)range;
 - (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth;
 - (void)commitSize:(CGSize)size;
-- (void)setAlignment:(NSTextAlignment)alignment forRange:(NSRange)forRange;
 @end
 
 NS_ASSUME_NONNULL_END
