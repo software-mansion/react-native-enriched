@@ -114,14 +114,14 @@ export const EnrichedTextInput = ({
             toggleHeading:
               (attributes) =>
               ({ chain, editor: _editor }) => {
-                const newChain = chain();
-                // Remove blockquote if active
-                if (_editor.isActive('blockquote')) {
-                  newChain.lift('blockquote');
+                if (!_editor.isActive('heading', attributes)) {
+                  return chain()
+                    .clearNodes()
+                    .toggleNode('heading', 'paragraph', attributes)
+                    .run();
                 }
-
-                return newChain
-                  .toggleNode(this.name, 'paragraph', attributes)
+                return chain()
+                  .toggleNode('heading', 'paragraph', attributes)
                   .run();
               },
           };
@@ -152,17 +152,10 @@ export const EnrichedTextInput = ({
             toggleBlockquote:
               () =>
               ({ chain, editor: _editor }) => {
-                const newChain = chain();
-                // If we are toggling blockquote ON, first disable any active heading
                 if (!_editor.isActive('blockquote')) {
-                  for (let level = 1; level <= 6; level++) {
-                    if (_editor.isActive('heading', { level })) {
-                      newChain.toggleNode('heading', 'paragraph', { level });
-                      break;
-                    }
-                  }
+                  return chain().clearNodes().toggleWrap('blockquote').run();
                 }
-                return newChain.toggleWrap('blockquote').run();
+                return chain().toggleWrap('blockquote').run();
               },
           };
         },

@@ -147,4 +147,63 @@ test.describe('EnrichedTextInput Interactions', () => {
       await expect(btn).not.toHaveClass(/conflicting/);
     }
   });
+
+  test('selecting multiple lines with different styles and applying Header results in conflicting styles removed', async ({
+    page,
+  }) => {
+    const editor = page.locator('.ProseMirror');
+
+    // 1. Line 1: Bold Text
+    // Use toggle-type-toggle pattern to avoid selection issues
+    await page.getByRole('button', { name: 'B', exact: true }).click();
+    await editor.pressSequentially('Bold Text');
+    // Toggle off bold so next lines aren't bold by default (though we clear styles with H1 later)
+    await page.getByRole('button', { name: 'B', exact: true }).click();
+    await editor.press('Enter');
+
+    // 2. Line 2: Inline Code Text
+    await page.getByRole('button', { name: 'IC', exact: true }).click();
+    await editor.pressSequentially('Code Text');
+    await page.getByRole('button', { name: 'IC', exact: true }).click();
+    await editor.press('Enter');
+
+    // 3. Line 3: Heading 3 Text
+    await editor.pressSequentially('Heading Text');
+    await page.getByRole('button', { name: 'H3', exact: true }).click();
+    await editor.press('Enter');
+
+    // 4. Line 4: Quote Text
+    await editor.pressSequentially('Quote Text');
+    await page.getByRole('button', { name: 'Quote', exact: true }).click();
+
+    // 5. Select All
+    await editor.press('Meta+A');
+
+    // 6. Apply Header 1 (which conflicts with Bold and Quote but supports Code)
+    const h1Btn = page.getByRole('button', { name: 'H1', exact: true });
+    await h1Btn.click();
+
+    // Verification
+    // All 4 lines should now be H1
+    await expect(editor.locator('h1')).toHaveCount(4);
+
+    // Line 1: Bold should be removed
+    const boldLine = editor.locator('h1').filter({ hasText: 'Bold Text' });
+    await expect(boldLine.locator('b')).toBeHidden();
+
+    // Line 2: Code should be preserved
+    const codeLine = editor.locator('h1').filter({ hasText: 'Code Text' });
+    await expect(codeLine.locator('code')).toBeVisible();
+
+    // Line 3: Should be H1 (verified by count and filter)
+    const headingLine = editor
+      .locator('h1')
+      .filter({ hasText: 'Heading Text' });
+    await expect(headingLine).toBeVisible();
+
+    // Line 4: Quote should be converted to H1 (no blockquote)
+    const quoteLine = editor.locator('h1').filter({ hasText: 'Quote Text' });
+    await expect(quoteLine).toBeVisible();
+    await expect(editor.locator('blockquote')).toBeHidden();
+  });
 });
