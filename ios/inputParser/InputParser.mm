@@ -217,19 +217,24 @@
           [result appendString:@"\n</ul>"];
         }
 
+        NSString *styleAttr = [self prepareStyleAttrStr:currentRange.location
+                                           isOpeningTag:YES];
+
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
                 containsObject:@([UnorderedListStyle getStyleType])]) {
           inUnorderedList = YES;
-          [result appendString:@"\n<ul>"];
+          [result
+              appendString:[NSString stringWithFormat:@"\n<ul%@>", styleAttr]];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getStyleType])]) {
           inOrderedList = YES;
-          [result appendString:@"\n<ol>"];
+          [result
+              appendString:[NSString stringWithFormat:@"\n<ol%@>", styleAttr]];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
@@ -250,7 +255,9 @@
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           inCheckboxList = YES;
-          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+          [result appendString:[NSString stringWithFormat:
+                                             @"\n<ul data-type=\"checkbox\"%@>",
+                                             styleAttr]];
         }
 
         // don't add the <p> tag if some paragraph styles are present
@@ -272,7 +279,7 @@
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:@"\n<p>"];
+          [result appendString:[NSString stringWithFormat:@"<p%@>", styleAttr]];
         }
       }
 
@@ -467,7 +474,7 @@
                                range:NSMakeRange(0, result.length)];
 
   // remove zero width spaces in the very end
-  [result replaceOccurrencesOfString:@"\u200B"
+  [result replaceOccurrencesOfString:@"\u200A"
                           withString:@""
                              options:0
                                range:NSMakeRange(0, result.length)];
@@ -484,6 +491,9 @@
 - (NSString *)tagContentForStyle:(NSNumber *)style
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location {
+  NSString *styleAttr = [self prepareStyleAttrStr:location
+                                     isOpeningTag:openingTag];
+
   if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getStyleType])]) {
@@ -563,17 +573,17 @@
       return @"mention";
     }
   } else if ([style isEqualToNumber:@([H1Style getStyleType])]) {
-    return @"h1";
+    return [NSString stringWithFormat:@"h1%@", styleAttr];
   } else if ([style isEqualToNumber:@([H2Style getStyleType])]) {
-    return @"h2";
+    return [NSString stringWithFormat:@"h2%@", styleAttr];
   } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
-    return @"h3";
+    return [NSString stringWithFormat:@"h3%@", styleAttr];
   } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
-    return @"h4";
+    return [NSString stringWithFormat:@"h4%@", styleAttr];
   } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
-    return @"h5";
+    return [NSString stringWithFormat:@"h5%@", styleAttr];
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
-    return @"h6";
+    return [NSString stringWithFormat:@"h6%@", styleAttr];
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
@@ -593,8 +603,7 @@
     }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
-    // blockquotes and codeblock use <p> tags the same way lists use <li>
-    return @"p";
+    return [NSString stringWithFormat:@"p%@", styleAttr];
   }
   return @"";
 }
@@ -897,10 +906,10 @@
     // space so we do that manually here
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
-                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+                                  withString:@"<p>\u200A</p>\n</blockquote>"];
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
-                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+                                  withString:@"<p>\u200A</p>\n</codeblock>"];
 
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
     // handle last <br> in html
@@ -1413,6 +1422,38 @@
   }
 
   return statesInRange;
+}
+
+- (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
+  switch (alignment) {
+  case NSTextAlignmentCenter:
+    return @"center";
+  case NSTextAlignmentRight:
+    return @"right";
+  case NSTextAlignmentJustified:
+    return @"justify";
+  default:
+    return nil;
+  }
+}
+
+- (NSString *)prepareStyleAttrStr:(NSInteger)location
+                     isOpeningTag:(BOOL)isOpeningTag {
+  if (!isOpeningTag) {
+    return @"";
+  }
+
+  NSParagraphStyle *pStyle =
+      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                      atIndex:location
+                               effectiveRange:nil];
+  NSString *alignStr = [self cssValueForAlignment:pStyle.alignment];
+
+  if (alignStr) {
+    return [NSString stringWithFormat:@" style=\"text-align: %@\"", alignStr];
+  }
+
+  return @"";
 }
 
 @end

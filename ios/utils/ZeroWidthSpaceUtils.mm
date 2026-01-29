@@ -21,7 +21,7 @@
 
   for (int i = 0; i < input->textView.textStorage.string.length; i++) {
     unichar character = [input->textView.textStorage.string characterAtIndex:i];
-    if (character == 0x200B) {
+    if (character == 0x200A) {
       NSRange characterRange = NSMakeRange(i, 1);
 
       NSRange paragraphRange = [input->textView.textStorage.string
@@ -135,7 +135,7 @@
   NSInteger postAddLengthOffset = 0;
   for (NSNumber *index in indexesToBeInserted) {
     NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
-    [TextInsertionUtils replaceText:@"\u200B\n"
+    [TextInsertionUtils replaceText:@"\u200A\n"
                                  at:replaceRange
                additionalAttributes:nullptr
                               input:input
@@ -158,7 +158,7 @@
       ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] ||
        [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange] ||
        [cbLStyle detectStyle:lastRange])) {
-    [TextInsertionUtils insertText:@"\u200B"
+    [TextInsertionUtils insertText:@"\u200A"
                                 at:lastRange.location
               additionalAttributes:nullptr
                              input:input
@@ -187,7 +187,7 @@
   unichar character =
       [typedInput->textView.textStorage.string characterAtIndex:range.location];
   // zero-width space got backspaced
-  if (character == 0x200B) {
+  if (character == 0x200A) {
     // in such case: remove the whole line without the endline if there is one
 
     NSRange paragraphRange =

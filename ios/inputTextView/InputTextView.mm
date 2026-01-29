@@ -36,7 +36,7 @@
   NSString *plainText = [typedInput->textView.textStorage.string
       substringWithRange:typedInput->textView.selectedRange];
   NSString *fixedPlainText =
-      [plainText stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
+      [plainText stringByReplacingOccurrencesOfString:@"\u200A" withString:@""];
 
   NSString *parsedHtml = [typedInput->parser
       parseToHtmlFromRange:typedInput->textView.selectedRange];
@@ -45,7 +45,7 @@
       attributedSubstringFromRange:typedInput->textView.selectedRange]
       mutableCopy];
   NSRange fullAttrStrRange = NSMakeRange(0, attrStr.length);
-  [attrStr.mutableString replaceOccurrencesOfString:@"\u200B"
+  [attrStr.mutableString replaceOccurrencesOfString:@"\u200A"
                                          withString:@""
                                             options:0
                                               range:fullAttrStrRange];
