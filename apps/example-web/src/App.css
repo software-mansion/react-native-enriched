@@ -15,7 +15,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.editor > div:last-child {
+.output {
+  min-height: 200px;
+  padding: 16px;
+  background-color: #fafafa;
+}
+.htmlInput {
   min-height: 200px;
   padding: 16px;
   background-color: #fafafa;

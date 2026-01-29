@@ -206,4 +206,30 @@ test.describe('EnrichedTextInput Interactions', () => {
     await expect(quoteLine).toBeVisible();
     await expect(editor.locator('blockquote')).toBeHidden();
   });
+
+  test('setting invalid html via setValue results in corrected structure (no nested header in blockquote)', async ({
+    page,
+  }) => {
+    const editor = page.locator('.ProseMirror');
+    const customHtmlInput = page.getByTestId('custom-html-input');
+    const setHtmlBtn = page.getByRole('button', { name: 'Set HTML' });
+
+    // 1. Enter invalid HTML
+    const invalidHtml =
+      '<html><blockquote><h3>Header3 in blockquote</h3></blockquote></html>';
+    await customHtmlInput.fill(invalidHtml);
+
+    // 2. Click Set HTML
+    await setHtmlBtn.click();
+
+    // 3. Verify Correction
+    // Expectation: No h3 nested inside blockquote.
+    await expect(editor.locator('blockquote h3')).toHaveCount(0);
+
+    // Expectation: The content "Header3 in blockquote" is present
+    await expect(editor).toContainText('Header3 in blockquote');
+
+    // Check that there is NO nested h3 in blockquote specifically
+    await expect(editor.locator('blockquote > h3')).toBeHidden();
+  });
 });

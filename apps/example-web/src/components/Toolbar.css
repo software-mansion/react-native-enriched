@@ -41,10 +41,10 @@
 }
 
 .toolbar-button.conflicting {
-  background-color: #ffebee;
-  border-color: #ef5350;
+  background-color: #fff3e0;
+  border-color: #ff9800;
 }
 
 .toolbar-button.conflicting:hover:not(:disabled) {
-  background-color: #ffcdd2;
+  background-color: #ffe0b2;
 }

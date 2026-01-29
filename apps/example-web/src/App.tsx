@@ -41,6 +41,7 @@ function App() {
   const [stylesState, setStylesState] =
     useState<OnChangeStateEvent>(DEFAULT_STYLES);
   const [html, setHtml] = useState('');
+  const [customHtml, setCustomHtml] = useState('');
 
   const handleChangeState = (state: OnChangeStateEvent) => {
     setStylesState(state);
@@ -99,9 +100,23 @@ function App() {
             console.log('keypress event, key:', key);
           }}
         />
-        <div>
+        <div className="output">
           <h3>HTML Output:</h3>
           <div>{html}</div>
+        </div>
+        <div className="htmlInput">
+          <h3>Set Custom HTML</h3>
+          <textarea
+            data-testid="custom-html-input"
+            value={customHtml}
+            onChange={(e) => {
+              setCustomHtml(e.target.value);
+            }}
+            style={{ width: '100%', height: 100 }}
+          />
+          <button onClick={() => ref.current?.setValue(customHtml)}>
+            Set HTML
+          </button>
         </div>
       </div>
     </div>

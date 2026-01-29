@@ -146,6 +146,7 @@ export const EnrichedTextInput = ({
         placeholder: placeholder || '',
       }),
       Blockquote.extend({
+        content: 'paragraph+',
         addCommands() {
           return {
             ...this.parent?.(),

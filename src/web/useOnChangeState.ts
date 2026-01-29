@@ -50,77 +50,47 @@ export const useOnChangeState = (
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 1 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 1 })
-            .run(),
+          isBlocking: false,
         },
         h2: {
           isActive: editor.isActive('heading', { level: 2 }),
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 2 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 2 })
-            .run(),
+          isBlocking: false,
         },
         h3: {
           isActive: editor.isActive('heading', { level: 3 }),
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 3 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 3 })
-            .run(),
+          isBlocking: false,
         },
         h4: {
           isActive: editor.isActive('heading', { level: 4 }),
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 4 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 4 })
-            .run(),
+          isBlocking: false,
         },
         h5: {
           isActive: editor.isActive('heading', { level: 5 }),
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 5 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 5 })
-            .run(),
+          isBlocking: false,
         },
         h6: {
           isActive: editor.isActive('heading', { level: 6 }),
           isConflicting:
             (isAnyHeadingActive() || editor.isActive('blockquote')) &&
             !editor.isActive('heading', { level: 6 }),
-          isBlocking: !editor
-            .can()
-            .chain()
-            .focus()
-            .toggleHeading({ level: 6 })
-            .run(),
+          isBlocking: false,
         },
         blockQuote: {
           isActive: editor.isActive('blockquote'),
           isConflicting: isAnyHeadingActive(),
-          isBlocking: !editor.can().chain().focus().toggleBlockquote().run(),
+          isBlocking: false,
         },
         codeBlock: {
           isActive: editor.isActive('codeBlock'),
