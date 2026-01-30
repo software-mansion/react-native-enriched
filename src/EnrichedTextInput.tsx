@@ -359,6 +359,8 @@ export const EnrichedTextInput = ({
   const onChangeStateWithDeprecated = (
     e: NativeSyntheticEvent<OnChangeStateEvent>
   ) => {
+    onChangeState?.(e);
+    // TODO: remove in 0.5.0 release
     onChangeStateDeprecated?.({
       ...e,
       nativeEvent: {
@@ -383,7 +385,6 @@ export const EnrichedTextInput = ({
         isMention: e.nativeEvent.mention.isActive,
       },
     });
-    onChangeState?.(e);
   };
 
   return (
