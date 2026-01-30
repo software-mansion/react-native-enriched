@@ -350,6 +350,24 @@ export default function App() {
           onPress={openValueModal}
           style={styles.valueButton}
         />
+        <Text style={styles.alignmentLabel}>Set text alignment to:</Text>
+        <View style={styles.buttonStack}>
+          <Button
+            title="Left"
+            onPress={() => ref.current?.setTextAlignment('left')}
+            style={styles.alignmentButton}
+          />
+          <Button
+            title="Center"
+            onPress={() => ref.current?.setTextAlignment('center')}
+            style={styles.alignmentButton}
+          />
+          <Button
+            title="Right"
+            onPress={() => ref.current?.setTextAlignment('right')}
+            style={styles.alignmentButton}
+          />
+        </View>
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
       </ScrollView>
@@ -492,6 +510,16 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '45%',
+  },
+  alignmentLabel: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'rgb(0, 26, 114)',
+  },
+  alignmentButton: {
+    width: '25%',
   },
   valueButton: {
     width: '100%',
