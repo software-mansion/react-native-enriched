@@ -1,5 +1,6 @@
 import { codegenNativeComponent, codegenNativeCommands } from 'react-native';
 import type {
+  BubblingEventHandler,
   DirectEventHandler,
   Float,
   Int32,
@@ -181,6 +182,10 @@ export interface OnRequestHtmlResultEvent {
   html: UnsafeMixed;
 }
 
+export interface OnSubmitEditing {
+  text: string;
+}
+
 export interface OnKeyPressEvent {
   key: string;
 }
@@ -257,6 +262,9 @@ export interface NativeProps extends ViewProps {
   htmlStyle?: HtmlStyleInternal;
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
+  returnKeyType?: string;
+  returnKeyLabel?: string;
+  submitBehavior?: string;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<TargetedEvent>;
@@ -270,6 +278,7 @@ export interface NativeProps extends ViewProps {
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
+  onSubmitEditing?: BubblingEventHandler<OnSubmitEditing>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

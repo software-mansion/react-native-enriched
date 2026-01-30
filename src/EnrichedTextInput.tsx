@@ -20,6 +20,7 @@ import EnrichedTextInputNativeComponent, {
   type OnRequestHtmlResultEvent,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
+  type OnSubmitEditing,
 } from './spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -29,6 +30,7 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  ReturnKeyTypeOptions,
   TargetedEvent,
   TextStyle,
   ViewProps,
@@ -97,6 +99,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
+  returnKeyType?: ReturnKeyTypeOptions;
+  returnKeyLabel?: string;
+  submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
   onFocus?: (e: FocusEvent) => void;
   onBlur?: (e: BlurEvent) => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -115,6 +120,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -165,6 +171,7 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   onKeyPress,
+  onSubmitEditing,
   androidExperimentalSynchronousEvents = false,
   scrollEnabled = true,
   ...rest
@@ -415,6 +422,7 @@ export const EnrichedTextInput = ({
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
+      onSubmitEditing={onSubmitEditing}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
