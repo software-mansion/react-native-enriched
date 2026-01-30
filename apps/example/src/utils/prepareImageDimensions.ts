@@ -1,15 +1,14 @@
-import type { Asset } from 'react-native-image-picker';
-
 export const DEFAULT_IMAGE_WIDTH = 80;
 export const DEFAULT_IMAGE_HEIGHT = 80;
 
 export const prepareImageDimensions = (
-  asset: Asset,
-  width: number | undefined,
-  height: number | undefined
+  assetWidth: number | undefined,
+  assetHeight: number | undefined,
+  width?: number,
+  height?: number
 ) => {
-  const imgWidth = asset.width;
-  const imgHeight = asset.height;
+  const imgWidth = assetWidth;
+  const imgHeight = assetHeight;
 
   const ratio = imgWidth && imgHeight ? imgWidth / imgHeight : 1;
 
