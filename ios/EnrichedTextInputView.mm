@@ -1156,6 +1156,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"insertValue"]) {
+    NSString *text = (NSString *)args[0];
+    NSInteger start = [((NSNumber *)args[1]) integerValue];
+    NSInteger end = [((NSNumber *)args[2]) integerValue];
+
+    [self insertValue:text start:start end:end];
   }
 }
 
@@ -1200,6 +1206,41 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSUInteger actualEnd = [self getActualIndex:visibleEnd text:text];
 
   textView.selectedRange = NSMakeRange(actualStart, actualEnd - actualStart);
+}
+
+- (void)insertValue:(NSString *)value
+              start:(NSInteger)visibleStart
+                end:(NSInteger)visibleEnd {
+  if (textView.text.length == 0) {
+    [self setValue:value];
+
+    return;
+  }
+
+  if (textView.text.length < visibleStart) {
+    visibleStart = textView.text.length;
+  }
+
+  if (textView.text.length < visibleEnd) {
+    visibleEnd = textView.text.length;
+  }
+
+  NSRange range = NSMakeRange(visibleStart, visibleEnd - visibleStart);
+
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
+  if (initiallyProcessedHtml == nullptr) {
+    // just plain text
+    [textView.textStorage replaceCharactersInRange:range withString:value];
+
+    recentlyChangedRange = range;
+    textView.selectedRange = NSRange(range.location + value.length, 0);
+  } else {
+    // we've got some seemingly proper html
+    [parser replaceFromHtml:initiallyProcessedHtml range:range];
+  }
+
+  // set recentlyChangedRange and check for changes
+  [self anyTextMayHaveBeenModified];
 }
 
 // Helper: Walks through the string skipping ZWSPs to find the Nth visible
