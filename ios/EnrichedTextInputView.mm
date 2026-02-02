@@ -5,6 +5,7 @@
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "TextBlockTapGestureRecognizer.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -26,7 +27,8 @@
 using namespace facebook::react;
 
 @interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol,
-                                     UITextViewDelegate, NSObject>
+                                     UITextViewDelegate,
+                                     UIGestureRecognizerDelegate, NSObject>
 
 @end
 
@@ -72,8 +74,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
-    [self setupPlaceholderLabel];
-    self.contentView = textView;
+    [self addSubview:textView];
   }
   return self;
 }
@@ -116,6 +117,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getStyleType]) :
         [[OrderedListStyle alloc] initWithInput:self],
+    @([CheckboxListStyle getStyleType]) :
+        [[CheckboxListStyle alloc] initWithInput:self],
     @([BlockQuoteStyle getStyleType]) :
         [[BlockQuoteStyle alloc] initWithInput:self],
     @([CodeBlockStyle getStyleType]) :
@@ -141,63 +144,70 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H2Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H3Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H3Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H4Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H4Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H5Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H5Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([H6Style getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([UnorderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([OrderedListStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
+    ],
+    @([CheckboxListStyle getStyleType]) : @[
+      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
+      @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])
     ],
     @([BlockQuoteStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
       @([H3Style getStyleType]), @([H4Style getStyleType]),
       @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
-      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
     ],
     @([CodeBlockStyle getStyleType]) : @[
       @([H1Style getStyleType]), @([H2Style getStyleType]),
@@ -207,7 +217,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]),
       @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
       @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]),
-      @([MentionStyle getStyleType]), @([LinkStyle getStyleType])
+      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
+      @([CheckboxListStyle getStyleType])
     ],
     @([ImageStyle getStyleType]) :
         @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
@@ -233,6 +244,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H6Style getStyleType]) : @[],
     @([UnorderedListStyle getStyleType]) : @[],
     @([OrderedListStyle getStyleType]) : @[],
+    @([CheckboxListStyle getStyleType]) : @[],
     @([BlockQuoteStyle getStyleType]) : @[],
     @([CodeBlockStyle getStyleType]) : @[],
     @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
@@ -249,26 +261,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
+  textView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   textView.adjustsFontForContentSizeCategory = YES;
-}
-
-- (void)setupPlaceholderLabel {
-  _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  _placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  [textView addSubview:_placeholderLabel];
-  [NSLayoutConstraint activateConstraints:@[
-    [_placeholderLabel.leadingAnchor
-        constraintEqualToAnchor:textView.leadingAnchor],
-    [_placeholderLabel.widthAnchor
-        constraintEqualToAnchor:textView.widthAnchor],
-    [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor],
-    [_placeholderLabel.bottomAnchor
-        constraintEqualToAnchor:textView.bottomAnchor]
-  ]];
-  _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-  _placeholderLabel.text = @"";
-  _placeholderLabel.hidden = YES;
-  _placeholderLabel.adjustsFontForContentSizeCategory = YES;
+  [textView addGestureRecognizer:[[TextBlockTapGestureRecognizer alloc]
+                                     initWithInput:self
+                                            action:@selector(onTextBlockTap:)]];
 }
 
 // MARK: - Props
@@ -596,6 +594,37 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     stylePropChanged = YES;
   }
 
+  if (newViewProps.htmlStyle.ulCheckbox.boxSize !=
+      oldViewProps.htmlStyle.ulCheckbox.boxSize) {
+    [newConfig
+        setCheckboxListBoxSize:newViewProps.htmlStyle.ulCheckbox.boxSize];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.gapWidth !=
+      oldViewProps.htmlStyle.ulCheckbox.gapWidth) {
+    [newConfig
+        setCheckboxListGapWidth:newViewProps.htmlStyle.ulCheckbox.gapWidth];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.marginLeft !=
+      oldViewProps.htmlStyle.ulCheckbox.marginLeft) {
+    [newConfig
+        setCheckboxListMarginLeft:newViewProps.htmlStyle.ulCheckbox.marginLeft];
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.htmlStyle.ulCheckbox.boxColor !=
+      oldViewProps.htmlStyle.ulCheckbox.boxColor) {
+    if (isColorMeaningful(newViewProps.htmlStyle.ulCheckbox.boxColor)) {
+      [newConfig setCheckboxListBoxColor:RCTUIColorFromSharedColor(
+                                             newViewProps.htmlStyle.ulCheckbox
+                                                 .boxColor)];
+      stylePropChanged = YES;
+    }
+  }
+
   if (newViewProps.htmlStyle.a.textDecorationLine !=
       oldViewProps.htmlStyle.a.textDecorationLine) {
     NSString *objcString =
@@ -685,9 +714,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
-
-    // update the placeholder as well
-    [self refreshPlaceholderLabelStyles];
   }
 
   // editable
@@ -715,24 +741,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // placeholderTextColor
   if (newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor) {
-    // some real color
-    if (isColorMeaningful(newViewProps.placeholderTextColor)) {
-      _placeholderColor =
-          RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
-    } else {
-      _placeholderColor = nullptr;
-    }
-    [self refreshPlaceholderLabelStyles];
+    textView.placeholderColor =
+        RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
   }
 
   // placeholder
   if (newViewProps.placeholder != oldViewProps.placeholder) {
-    _placeholderLabel.text = [NSString fromCppString:newViewProps.placeholder];
-    [self refreshPlaceholderLabelStyles];
-    // additionally show placeholder on first mount if it should be there
-    if (isFirstMount && textView.text.length == 0) {
-      [self setPlaceholderLabelShown:YES];
-    }
+    [textView
+        setPlaceholderText:[NSString fromCppString:newViewProps.placeholder]];
   }
 
   // mention indicators
@@ -808,75 +824,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
+  [textView updatePlaceholderVisibility];
 }
 
-- (void)setPlaceholderLabelShown:(BOOL)shown {
-  if (shown) {
-    [self refreshPlaceholderLabelStyles];
-    _placeholderLabel.hidden = NO;
-  } else {
-    _placeholderLabel.hidden = YES;
-  }
-}
+- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
+           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics {
+  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
-- (void)refreshPlaceholderLabelStyles {
-  NSMutableDictionary *newAttrs = [defaultTypingAttributes mutableCopy];
-  if (_placeholderColor != nullptr) {
-    newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
-  }
-  NSAttributedString *newAttrStr =
-      [[NSAttributedString alloc] initWithString:_placeholderLabel.text
-                                      attributes:newAttrs];
-  _placeholderLabel.attributedText = newAttrStr;
-}
-
-// MARK: - Measuring and states
-
-- (CGSize)measureSize:(CGFloat)maxWidth {
-  // copy the the whole attributed string
-  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc]
-      initWithAttributedString:textView.textStorage];
-
-  // edge case: empty input should still be of a height of a single line, so we
-  // add a mock "I" character
-  if ([currentStr length] == 0) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
-
-  // edge case: input with only a zero width space should still be of a height
-  // of a single line, so we add a mock "I" character
-  if ([currentStr length] == 1 &&
-      [[currentStr.string substringWithRange:NSMakeRange(0, 1)]
-          isEqualToString:@"\u200B"]) {
-    [currentStr
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@"I"
-                                       attributes:textView.typingAttributes]];
-  }
-
-  // edge case: trailing newlines aren't counted towards height calculations, so
-  // we add a mock "I" character
-  if (currentStr.length > 0) {
-    unichar lastChar =
-        [currentStr.string characterAtIndex:currentStr.length - 1];
-    if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
-      [currentStr
-          appendAttributedString:[[NSAttributedString alloc]
-                                     initWithString:@"I"
-                                         attributes:defaultTypingAttributes]];
-    }
-  }
-
-  CGRect boundingBox =
-      [currentStr boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                               options:NSStringDrawingUsesLineFragmentOrigin |
-                                       NSStringDrawingUsesFontLeading
-                               context:nullptr];
-
-  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
+  textView.frame = UIEdgeInsetsInsetRect(
+      self.bounds, RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.borderWidth));
+  textView.textContainerInset = RCTUIEdgeInsetsFromEdgeInsets(
+      layoutMetrics.contentInsets - layoutMetrics.borderWidth);
 }
 
 // make sure the newest state is kept in _state property
@@ -889,18 +847,42 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // componentView) so we need to run a single height calculation for any
   // initial values
   if (oldState == nullptr) {
-    [self tryUpdatingHeight];
+    [self commitSize:textView.textContainer.size];
   }
 }
 
-- (void)tryUpdatingHeight {
+- (void)commitSize:(CGSize)size {
   if (_state == nullptr) {
     return;
   }
-  _componentViewHeightUpdateCounter++;
+
   auto selfRef = wrapManagedObjectWeakly(self);
+  facebook::react::Size newSize{.width = size.width, .height = size.height};
   _state->updateState(
-      EnrichedTextInputViewState(_componentViewHeightUpdateCounter, selfRef));
+      facebook::react::EnrichedTextInputViewState(newSize, selfRef));
+}
+
+- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth {
+  NSTextContainer *container = textView.textContainer;
+  NSLayoutManager *layoutManager = textView.layoutManager;
+
+  container.size = CGSizeMake(maxWidth, CGFLOAT_MAX);
+
+  [layoutManager ensureLayoutForTextContainer:container];
+
+  CGRect used = [layoutManager usedRectForTextContainer:container];
+  CGFloat height = ceil(used.size.height);
+
+  // Empty text fallback
+  if (textView.textStorage.length == 0) {
+    UIFont *font =
+        textView.typingAttributes[NSFontAttributeName] ?: textView.font;
+    if (font) {
+      height = ceil(font.lineHeight);
+    }
+  }
+
+  return CGSizeMake(maxWidth, height);
 }
 
 // MARK: - Active styles
@@ -1024,28 +1006,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeStateDeprecated({
-          .isBold = [self isStyleActive:[BoldStyle getStyleType]],
-          .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
-          .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
-          .isStrikeThrough =
-              [self isStyleActive:[StrikethroughStyle getStyleType]],
-          .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
-          .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-          .isMention = [self isStyleActive:[MentionStyle getStyleType]],
-          .isH1 = [self isStyleActive:[H1Style getStyleType]],
-          .isH2 = [self isStyleActive:[H2Style getStyleType]],
-          .isH3 = [self isStyleActive:[H3Style getStyleType]],
-          .isH4 = [self isStyleActive:[H4Style getStyleType]],
-          .isH5 = [self isStyleActive:[H5Style getStyleType]],
-          .isH6 = [self isStyleActive:[H6Style getStyleType]],
-          .isUnorderedList =
-              [self isStyleActive:[UnorderedListStyle getStyleType]],
-          .isOrderedList = [self isStyleActive:[OrderedListStyle getStyleType]],
-          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
-          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
-          .isImage = [self isStyleActive:[ImageStyle getStyleType]],
-      });
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
            .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
@@ -1064,7 +1024,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
-           .image = GET_STYLE_STATE([ImageStyle getStyleType])});
+           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType])});
     }
   }
 
@@ -1175,6 +1136,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
+  } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
+    BOOL checked = [args[0] boolValue];
+    [self toggleCheckboxList:checked];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
@@ -1365,6 +1329,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if ([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
     [styleClass applyStyle:paragraphRange];
+    [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)toggleCheckboxList:(BOOL)checked {
+  CheckboxListStyle *checkboxListStyleClass =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+  if (checkboxListStyleClass == nullptr) {
+    return;
+  }
+  // we always pass whole paragraph/s range to these styles
+  NSRange paragraphRange = [textView.textStorage.string
+      paragraphRangeForRange:textView.selectedRange];
+
+  if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getStyleType]
+                                    range:paragraphRange]) {
+    [checkboxListStyleClass applyStyleWithCheckedValue:checked
+                                               inRange:paragraphRange];
     [self anyTextMayHaveBeenModified];
   }
 }
@@ -1617,12 +1599,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // placholder management
-  if (!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
-    [self setPlaceholderLabelShown:NO];
-  } else if (textView.textStorage.string.length == 0 &&
-             _placeholderLabel.hidden) {
-    [self setPlaceholderLabelShown:YES];
-  }
+  [textView updatePlaceholderVisibility];
 
   if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // modified words handling
@@ -1658,56 +1635,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
-  // update height on each character change
-  [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
-  // update drawing - schedule debounced relayout
-  [self scheduleRelayoutIfNeeded];
-}
-
-// Debounced relayout helper - coalesces multiple requests into one per runloop
-// tick
-- (void)scheduleRelayoutIfNeeded {
-  // Cancel any previously scheduled invocation to debounce
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(_performRelayout)
-                                             object:nil];
-  // Schedule on next runloop cycle
-  [self performSelector:@selector(_performRelayout)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)_performRelayout {
-  if (!textView) {
-    return;
-  }
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSRange wholeRange =
-        NSMakeRange(0, self->textView.textStorage.string.length);
-    NSRange actualRange = NSMakeRange(0, 0);
-    [self->textView.layoutManager
-        invalidateLayoutForCharacterRange:wholeRange
-                     actualCharacterRange:&actualRange];
-    [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
-    [self->textView.layoutManager
-        invalidateDisplayForCharacterRange:wholeRange];
-
-    // We have to explicitly set contentSize
-    // That way textView knows if content overflows and if should be scrollable
-    // We recall measureSize here because value returned from previous
-    // measureSize may not be up-to date at that point
-    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
-    self->textView.contentSize = measuredSize;
-  });
-}
-
-- (void)didMoveToWindow {
-  [super didMoveToWindow];
-  // used to run all lifecycle callbacks
-  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - UITextView delegate methods
@@ -1768,6 +1697,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+  CheckboxListStyle *cbLStyle = stylesDict[@([CheckboxListStyle getStyleType])];
   BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
   CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle getStyleType])];
   LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
@@ -1787,6 +1717,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle handleBackspaceInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [cbLStyle handleBackspaceInRange:range replacementText:text] ||
+      [cbLStyle handleNewlinesInRange:range replacementText:text] ||
       [bqStyle handleBackspaceInRange:range replacementText:text] ||
       [cbStyle handleBackspaceInRange:range replacementText:text] ||
       [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
@@ -1874,7 +1806,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes = newTypingAttrs;
     textView.typingAttributes = defaultTypingAttributes;
 
-    [self refreshPlaceholderLabelStyles];
+    [textView refreshPlaceholder];
 
     NSRange prevSelectedRange = textView.selectedRange;
 
@@ -1887,6 +1819,51 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     textView.selectedRange = prevSelectedRange;
     [self anyTextMayHaveBeenModified];
+  }
+}
+
+- (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {
+  if (gr.state != UIGestureRecognizerStateEnded)
+    return;
+  if (![self->textView isFirstResponder]) {
+    [self->textView becomeFirstResponder];
+  }
+
+  switch (gr.tapKind) {
+
+  case TextBlockTapKindCheckbox: {
+    CheckboxListStyle *checkboxStyle =
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+
+    if (checkboxStyle) {
+      NSUInteger charIndex = (NSUInteger)gr.characterIndex;
+      [checkboxStyle toggleCheckedAt:charIndex];
+      [self anyTextMayHaveBeenModified];
+
+      NSString *fullText = textView.textStorage.string;
+      NSRange paragraphRange =
+          [fullText paragraphRangeForRange:NSMakeRange(charIndex, 0)];
+      NSUInteger endOfLineIndex = NSMaxRange(paragraphRange);
+
+      // If the paragraph ends with a newline, step back by 1 so the cursor
+      // stays on the current line instead of jumping to the next one.
+      if (endOfLineIndex > 0 && endOfLineIndex <= fullText.length) {
+        unichar lastChar = [fullText characterAtIndex:endOfLineIndex - 1];
+        if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
+          endOfLineIndex--;
+        }
+      }
+
+      // Move the cursor to the end of the currently tapped checkbox line.
+      // Without this, the cursor may remain at its previous position,
+      // potentially inside a different checkbox line.
+      textView.selectedRange = NSMakeRange(endOfLineIndex, 0);
+    }
+    break;
+  }
+
+  default:
+    break;
   }
 }
 

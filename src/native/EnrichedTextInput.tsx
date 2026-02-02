@@ -18,7 +18,6 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-  type MentionStyleProperties,
   type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
 } from '../spec/EnrichedTextInputNativeComponent';
@@ -30,12 +29,18 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  TargetedEvent,
   TextStyle,
   ViewProps,
   ViewStyle,
 } from 'react-native';
 import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from '../utils/regexParser';
+import { nullthrows } from '../utils/nullthrows';
+import type { HtmlStyle } from '../types';
+
+export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
+export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
 
 export interface EnrichedTextInputInstance extends NativeMethods {
   // General commands
@@ -61,6 +66,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
+  toggleCheckboxList: (checked: boolean) => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;
@@ -74,52 +80,6 @@ export interface EnrichedTextInputInstance extends NativeMethods {
 export interface OnChangeMentionEvent {
   indicator: string;
   text: string;
-}
-
-type HeadingStyle = {
-  fontSize?: number;
-  bold?: boolean;
-};
-
-export interface HtmlStyle {
-  h1?: HeadingStyle;
-  h2?: HeadingStyle;
-  h3?: HeadingStyle;
-  h4?: HeadingStyle;
-  h5?: HeadingStyle;
-  h6?: HeadingStyle;
-  blockquote?: {
-    borderColor?: ColorValue;
-    borderWidth?: number;
-    gapWidth?: number;
-    color?: ColorValue;
-  };
-  codeblock?: {
-    color?: ColorValue;
-    borderRadius?: number;
-    backgroundColor?: ColorValue;
-  };
-  code?: {
-    color?: ColorValue;
-    backgroundColor?: ColorValue;
-  };
-  a?: {
-    color?: ColorValue;
-    textDecorationLine?: 'underline' | 'none';
-  };
-  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  ol?: {
-    gapWidth?: number;
-    marginLeft?: number;
-    markerFontWeight?: TextStyle['fontWeight'];
-    markerColor?: ColorValue;
-  };
-  ul?: {
-    bulletColor?: ColorValue;
-    bulletSize?: number;
-    marginLeft?: number;
-    gapWidth?: number;
-  };
 }
 
 export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
@@ -137,8 +97,8 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
-  onFocus?: () => void;
-  onBlur?: () => void;
+  onFocus?: (e: FocusEvent) => void;
+  onBlur?: (e: BlurEvent) => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
@@ -164,14 +124,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    */
   androidExperimentalSynchronousEvents?: boolean;
 }
-
-const nullthrows = <T,>(value: T | null | undefined): T => {
-  if (value == null) {
-    throw new Error('Unexpected null or undefined value');
-  }
-
-  return value;
-};
 
 const warnAboutMissconfiguredMentions = (indicator: string) => {
   console.warn(
@@ -324,6 +276,9 @@ export const EnrichedTextInput = ({
     toggleUnorderedList: () => {
       Commands.toggleUnorderedList(nullthrows(nativeRef.current));
     },
+    toggleCheckboxList: (checked: boolean) => {
+      Commands.toggleCheckboxList(nullthrows(nativeRef.current), checked);
+    },
     setLink: (start: number, end: number, text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);
     },
@@ -401,6 +356,37 @@ export const EnrichedTextInput = ({
     pendingHtmlRequests.current.delete(requestId);
   };
 
+  const onChangeStateWithDeprecated = (
+    e: NativeSyntheticEvent<OnChangeStateEvent>
+  ) => {
+    onChangeState?.(e);
+    // TODO: remove in 0.5.0 release
+    onChangeStateDeprecated?.({
+      ...e,
+      nativeEvent: {
+        isBold: e.nativeEvent.bold.isActive,
+        isItalic: e.nativeEvent.italic.isActive,
+        isUnderline: e.nativeEvent.underline.isActive,
+        isStrikeThrough: e.nativeEvent.strikeThrough.isActive,
+        isInlineCode: e.nativeEvent.inlineCode.isActive,
+        isH1: e.nativeEvent.h1.isActive,
+        isH2: e.nativeEvent.h2.isActive,
+        isH3: e.nativeEvent.h3.isActive,
+        isH4: e.nativeEvent.h4.isActive,
+        isH5: e.nativeEvent.h5.isActive,
+        isH6: e.nativeEvent.h6.isActive,
+        isCodeBlock: e.nativeEvent.codeBlock.isActive,
+        isBlockQuote: e.nativeEvent.blockQuote.isActive,
+        isOrderedList: e.nativeEvent.orderedList.isActive,
+        isUnorderedList: e.nativeEvent.unorderedList.isActive,
+        isCheckboxList: e.nativeEvent.checkboxList.isActive,
+        isLink: e.nativeEvent.link.isActive,
+        isImage: e.nativeEvent.image.isActive,
+        isMention: e.nativeEvent.mention.isActive,
+      },
+    });
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -422,8 +408,7 @@ export const EnrichedTextInput = ({
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeState}
-      onChangeStateDeprecated={onChangeStateDeprecated}
+      onChangeState={onChangeStateWithDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
