@@ -71,6 +71,12 @@ export interface HtmlStyle {
     marginLeft?: number;
     gapWidth?: number;
   };
+  ulCheckbox?: {
+    boxSize?: number;
+    gapWidth?: number;
+    marginLeft?: number;
+    boxColor?: string;
+  };
 }
 
 export interface EnrichedTextInputProps {
@@ -156,6 +162,7 @@ export const EnrichedTextInput = ({
     toggleBlockQuote: () => {},
     toggleOrderedList: () => {},
     toggleUnorderedList: () => {},
+    toggleCheckboxList: () => {},
     setLink: () => {},
     setImage: () => {},
     startMention: () => {},

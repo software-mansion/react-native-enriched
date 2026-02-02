@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/b010571e-e4a3-4d92-a409-4f9fe614025d" alt="react-native-enriched by Software Mansion" width="100%">
+<img src="https://github.com/user-attachments/assets/6963e203-38c8-4209-b1b2-1ff65f6765f9" alt="react-native-enriched by Software Mansion" width="100%">
 
 # react-native-enriched
 
@@ -152,6 +152,7 @@ Supported styles:
 - blockquote
 - ordered list
 - unordered list
+- checkbox list
 
 Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
 

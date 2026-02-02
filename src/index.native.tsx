@@ -10,3 +10,4 @@ export type {
   OnLinkDetected,
   OnMentionDetected,
 } from './common/types';
+export type { HtmlStyle, MentionStyleProperties } from './native/types';
