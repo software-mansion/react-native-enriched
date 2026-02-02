@@ -264,7 +264,6 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onChangeStateDeprecated?: DirectEventHandler<OnChangeStateDeprecatedEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetected>;
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;

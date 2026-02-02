@@ -1343,7 +1343,7 @@
       [styleArr addObject:@([MentionStyle getStyleType])];
       // extract html expression into dict using some regex
       NSMutableDictionary *paramsDict = [[NSMutableDictionary alloc] init];
-      NSString *pattern = @"(\\w+)=\"([^\"]*)\"";
+      NSString *pattern = @"(\\w+)=(['\"])(.*?)\\2";
       NSRegularExpression *regex =
           [NSRegularExpression regularExpressionWithPattern:pattern
                                                     options:0
@@ -1355,11 +1355,11 @@
                            usingBlock:^(NSTextCheckingResult *_Nullable result,
                                         NSMatchingFlags flags,
                                         BOOL *_Nonnull stop) {
-                             if (result.numberOfRanges == 3) {
+                             if (result.numberOfRanges == 4) {
                                NSString *key = [params
                                    substringWithRange:[result rangeAtIndex:1]];
                                NSString *value = [params
-                                   substringWithRange:[result rangeAtIndex:2]];
+                                   substringWithRange:[result rangeAtIndex:3]];
                                paramsDict[key] = value;
                              }
                            }];

@@ -1008,30 +1008,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeStateDeprecated(
-          {.isBold = [self isStyleActive:[BoldStyle getStyleType]],
-           .isItalic = [self isStyleActive:[ItalicStyle getStyleType]],
-           .isUnderline = [self isStyleActive:[UnderlineStyle getStyleType]],
-           .isStrikeThrough =
-               [self isStyleActive:[StrikethroughStyle getStyleType]],
-           .isInlineCode = [self isStyleActive:[InlineCodeStyle getStyleType]],
-           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-           .isMention = [self isStyleActive:[MentionStyle getStyleType]],
-           .isH1 = [self isStyleActive:[H1Style getStyleType]],
-           .isH2 = [self isStyleActive:[H2Style getStyleType]],
-           .isH3 = [self isStyleActive:[H3Style getStyleType]],
-           .isH4 = [self isStyleActive:[H4Style getStyleType]],
-           .isH5 = [self isStyleActive:[H5Style getStyleType]],
-           .isH6 = [self isStyleActive:[H6Style getStyleType]],
-           .isUnorderedList =
-               [self isStyleActive:[UnorderedListStyle getStyleType]],
-           .isOrderedList =
-               [self isStyleActive:[OrderedListStyle getStyleType]],
-           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getStyleType]],
-           .isCodeBlock = [self isStyleActive:[CodeBlockStyle getStyleType]],
-           .isImage = [self isStyleActive:[ImageStyle getStyleType]],
-           .isCheckboxList =
-               [self isStyleActive:[CheckboxListStyle getStyleType]]});
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
            .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),

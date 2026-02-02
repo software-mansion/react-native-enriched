@@ -364,6 +364,37 @@ export const EnrichedTextInput = ({
     pendingHtmlRequests.current.delete(requestId);
   };
 
+  const onChangeStateWithDeprecated = (
+    e: NativeSyntheticEvent<OnChangeStateEvent>
+  ) => {
+    onChangeState?.(e);
+    // TODO: remove in 0.5.0 release
+    onChangeStateDeprecated?.({
+      ...e,
+      nativeEvent: {
+        isBold: e.nativeEvent.bold.isActive,
+        isItalic: e.nativeEvent.italic.isActive,
+        isUnderline: e.nativeEvent.underline.isActive,
+        isStrikeThrough: e.nativeEvent.strikeThrough.isActive,
+        isInlineCode: e.nativeEvent.inlineCode.isActive,
+        isH1: e.nativeEvent.h1.isActive,
+        isH2: e.nativeEvent.h2.isActive,
+        isH3: e.nativeEvent.h3.isActive,
+        isH4: e.nativeEvent.h4.isActive,
+        isH5: e.nativeEvent.h5.isActive,
+        isH6: e.nativeEvent.h6.isActive,
+        isCodeBlock: e.nativeEvent.codeBlock.isActive,
+        isBlockQuote: e.nativeEvent.blockQuote.isActive,
+        isOrderedList: e.nativeEvent.orderedList.isActive,
+        isUnorderedList: e.nativeEvent.unorderedList.isActive,
+        isCheckboxList: e.nativeEvent.checkboxList.isActive,
+        isLink: e.nativeEvent.link.isActive,
+        isImage: e.nativeEvent.image.isActive,
+        isMention: e.nativeEvent.mention.isActive,
+      },
+    });
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -385,8 +416,7 @@ export const EnrichedTextInput = ({
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeState}
-      onChangeStateDeprecated={onChangeStateDeprecated}
+      onChangeState={onChangeStateWithDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
