@@ -6,7 +6,6 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.swmansion.enriched.textinput.EnrichedTextInputView
-import com.swmansion.enriched.textinput.events.OnChangeStateDeprecatedEvent
 import com.swmansion.enriched.textinput.events.OnChangeStateEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 
@@ -14,7 +13,6 @@ class EnrichedSpanState(
   private val view: EnrichedTextInputView,
 ) {
   private var previousPayload: WritableMap? = null
-  private var previousDeprecatedPayload: WritableMap? = null
 
   var boldStart: Int? = null
     private set
@@ -45,6 +43,8 @@ class EnrichedSpanState(
   var orderedListStart: Int? = null
     private set
   var unorderedListStart: Int? = null
+    private set
+  var checkboxListStart: Int? = null
     private set
   var linkStart: Int? = null
     private set
@@ -128,6 +128,11 @@ class EnrichedSpanState(
     emitStateChangeEvent()
   }
 
+  fun setCheckboxListStart(start: Int?) {
+    this.checkboxListStart = start
+    emitStateChangeEvent()
+  }
+
   fun setLinkStart(start: Int?) {
     this.linkStart = start
     emitStateChangeEvent()
@@ -161,6 +166,7 @@ class EnrichedSpanState(
         EnrichedSpans.BLOCK_QUOTE -> blockQuoteStart
         EnrichedSpans.ORDERED_LIST -> orderedListStart
         EnrichedSpans.UNORDERED_LIST -> unorderedListStart
+        EnrichedSpans.CHECKBOX_LIST -> checkboxListStart
         EnrichedSpans.LINK -> linkStart
         EnrichedSpans.IMAGE -> imageStart
         EnrichedSpans.MENTION -> mentionStart
@@ -190,6 +196,7 @@ class EnrichedSpanState(
       EnrichedSpans.BLOCK_QUOTE -> setBlockQuoteStart(start)
       EnrichedSpans.ORDERED_LIST -> setOrderedListStart(start)
       EnrichedSpans.UNORDERED_LIST -> setUnorderedListStart(start)
+      EnrichedSpans.CHECKBOX_LIST -> setCheckboxListStart(start)
       EnrichedSpans.LINK -> setLinkStart(start)
       EnrichedSpans.IMAGE -> setImageStart(start)
       EnrichedSpans.MENTION -> setMentionStart(start)
@@ -201,51 +208,7 @@ class EnrichedSpanState(
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
 
-    dispatchDeprecatedPayload(dispatcher, surfaceId)
     dispatchPayload(dispatcher, surfaceId)
-  }
-
-  private fun dispatchDeprecatedPayload(
-    dispatcher: EventDispatcher?,
-    surfaceId: Int,
-  ) {
-    val deprecatedPayload = Arguments.createMap()
-    deprecatedPayload.putBoolean("isBold", boldStart != null)
-    deprecatedPayload.putBoolean("isItalic", italicStart != null)
-    deprecatedPayload.putBoolean("isUnderline", underlineStart != null)
-    deprecatedPayload.putBoolean("isStrikeThrough", strikethroughStart != null)
-    deprecatedPayload.putBoolean("isInlineCode", inlineCodeStart != null)
-    deprecatedPayload.putBoolean("isH1", h1Start != null)
-    deprecatedPayload.putBoolean("isH2", h2Start != null)
-    deprecatedPayload.putBoolean("isH3", h3Start != null)
-    deprecatedPayload.putBoolean("isH4", h4Start != null)
-    deprecatedPayload.putBoolean("isH5", h5Start != null)
-    deprecatedPayload.putBoolean("isH6", h6Start != null)
-    deprecatedPayload.putBoolean("isCodeBlock", codeBlockStart != null)
-    deprecatedPayload.putBoolean("isBlockQuote", blockQuoteStart != null)
-    deprecatedPayload.putBoolean("isOrderedList", orderedListStart != null)
-    deprecatedPayload.putBoolean("isUnorderedList", unorderedListStart != null)
-    deprecatedPayload.putBoolean("isLink", linkStart != null)
-    deprecatedPayload.putBoolean("isImage", imageStart != null)
-    deprecatedPayload.putBoolean("isMention", mentionStart != null)
-
-    if (previousDeprecatedPayload == deprecatedPayload) {
-      return
-    }
-
-    previousDeprecatedPayload =
-      Arguments.createMap().apply {
-        merge(deprecatedPayload)
-      }
-
-    dispatcher?.dispatchEvent(
-      OnChangeStateDeprecatedEvent(
-        surfaceId,
-        view.id,
-        deprecatedPayload,
-        view.experimentalSynchronousEvents,
-      ),
-    )
   }
 
   private fun dispatchPayload(
@@ -269,6 +232,7 @@ class EnrichedSpanState(
         if (blockQuoteStart != null) EnrichedSpans.BLOCK_QUOTE else null,
         if (orderedListStart != null) EnrichedSpans.ORDERED_LIST else null,
         if (unorderedListStart != null) EnrichedSpans.UNORDERED_LIST else null,
+        if (checkboxListStart != null) EnrichedSpans.CHECKBOX_LIST else null,
         if (linkStart != null) EnrichedSpans.LINK else null,
         if (imageStart != null) EnrichedSpans.IMAGE else null,
         if (mentionStart != null) EnrichedSpans.MENTION else null,
@@ -292,6 +256,7 @@ class EnrichedSpanState(
     payload.putMap("link", getStyleState(activeStyles, EnrichedSpans.LINK))
     payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
     payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
+    payload.putMap("checkboxList", getStyleState(activeStyles, EnrichedSpans.CHECKBOX_LIST))
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {

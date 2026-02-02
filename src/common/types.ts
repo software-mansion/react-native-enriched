@@ -55,6 +55,7 @@ export interface EnrichedTextInputInstanceBase {
   toggleBlockQuote: () => void;
   toggleOrderedList: () => void;
   toggleUnorderedList: () => void;
+  toggleCheckboxList: (checked: boolean) => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
   setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;

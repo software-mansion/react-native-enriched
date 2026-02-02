@@ -117,6 +117,11 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  checkboxList: {
+    isActive: boolean;
+    isConflicting: boolean;
+    isBlocking: boolean;
+  };
 }
 
 export interface OnChangeStateDeprecatedEvent {
@@ -135,6 +140,7 @@ export interface OnChangeStateDeprecatedEvent {
   isBlockQuote: boolean;
   isOrderedList: boolean;
   isUnorderedList: boolean;
+  isCheckboxList: boolean;
   isLink: boolean;
   isImage: boolean;
   isMention: boolean;
@@ -172,10 +178,12 @@ export interface OnRequestHtmlResultEvent {
   html: UnsafeMixed;
 }
 
-export interface MentionStyleProperties {
-  color?: ColorValue;
-  backgroundColor?: ColorValue;
-  textDecorationLine?: 'underline' | 'none';
+export interface OnKeyPressEvent {
+  key: string;
+}
+
+interface TargetedEvent {
+  target: Int32;
 }
 
 type Heading = {
@@ -224,6 +232,12 @@ export interface HtmlStyleInternal {
     marginLeft?: Float;
     gapWidth?: Float;
   };
+  ulCheckbox?: {
+    gapWidth?: Float;
+    boxSize?: Float;
+    marginLeft?: Float;
+    boxColor?: ColorValue;
+  };
 }
 
 export interface NativeProps extends ViewProps {
@@ -242,12 +256,11 @@ export interface NativeProps extends ViewProps {
   linkRegex?: LinkNativeRegex;
 
   // event callbacks
-  onInputFocus?: DirectEventHandler<null>;
-  onInputBlur?: DirectEventHandler<null>;
+  onInputFocus?: DirectEventHandler<TargetedEvent>;
+  onInputBlur?: DirectEventHandler<TargetedEvent>;
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onChangeStateDeprecated?: DirectEventHandler<OnChangeStateDeprecatedEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetectedNativeEvent>;
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
@@ -301,6 +314,10 @@ interface NativeCommands {
   toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
   toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleCheckboxList: (
+    viewRef: React.ElementRef<ComponentType>,
+    checked: boolean
+  ) => void;
   addLink: (
     viewRef: React.ElementRef<ComponentType>,
     start: Int32,
@@ -354,6 +371,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleBlockQuote',
     'toggleOrderedList',
     'toggleUnorderedList',
+    'toggleCheckboxList',
     'addLink',
     'addImage',
     'startMention',

@@ -50,6 +50,12 @@ export interface HtmlStyle {
     marginLeft?: number;
     gapWidth?: number;
   };
+  ulCheckbox?: {
+    gapWidth?: number;
+    boxSize?: number;
+    marginLeft?: number;
+    boxColor?: string;
+  };
 }
 
 type HeadingKey = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';

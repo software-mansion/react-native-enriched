@@ -20,6 +20,7 @@ const STYLE_ITEMS = [
   { name: 'code-block', label: 'Code' },
   { name: 'unordered-list', label: 'UL' },
   { name: 'ordered-list', label: 'OL' },
+  { name: 'checkbox-list', label: 'CB' },
   { name: 'link', label: 'Link' },
   { name: 'image', label: 'Image' },
 ] as const;
@@ -90,6 +91,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       case 'ordered-list':
         currentRef.toggleOrderedList();
         break;
+      case 'checkbox-list':
+        currentRef.toggleCheckboxList(false);
+        break;
       case 'link':
         onOpenLinkModal();
         break;
@@ -131,6 +135,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.unorderedList.isBlocking;
       case 'ordered-list':
         return stylesState.orderedList.isBlocking;
+      case 'checkbox-list':
+        return stylesState.checkboxList.isBlocking;
       case 'link':
         return stylesState.link.isBlocking;
       case 'image':
@@ -172,6 +178,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.unorderedList.isActive;
       case 'ordered-list':
         return stylesState.orderedList.isActive;
+      case 'checkbox-list':
+        return stylesState.checkboxList.isActive;
       case 'link':
         return stylesState.link.isActive;
       case 'image':
@@ -213,6 +221,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         return stylesState.unorderedList.isConflicting;
       case 'ordered-list':
         return stylesState.orderedList.isConflicting;
+      case 'checkbox-list':
+        return stylesState.checkboxList.isConflicting;
       case 'link':
         return stylesState.link.isConflicting;
       case 'image':

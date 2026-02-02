@@ -31,6 +31,7 @@ const DEFAULT_STYLES: OnChangeStateEvent = {
   codeBlock: DEFAULT_STYLE_STATE,
   orderedList: DEFAULT_STYLE_STATE,
   unorderedList: DEFAULT_STYLE_STATE,
+  checkboxList: DEFAULT_STYLE_STATE,
   link: DEFAULT_STYLE_STATE,
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,

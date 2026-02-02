@@ -268,6 +268,7 @@ export const EnrichedTextInput = ({
       },
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
+      toggleCheckboxList: (_checked: boolean) => {},
       setLink: () => {},
       setImage: () => {},
       startMention: () => {},

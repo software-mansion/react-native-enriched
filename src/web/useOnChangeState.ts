@@ -107,6 +107,11 @@ export const useOnChangeState = (
           isConflicting: editor.isActive('orderedList'),
           isBlocking: false,
         },
+        checkboxList: {
+          isActive: false,
+          isConflicting: false,
+          isBlocking: false,
+        },
         link: {
           isActive: false,
           isConflicting: false,
