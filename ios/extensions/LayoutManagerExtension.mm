@@ -1,7 +1,7 @@
 #import "LayoutManagerExtension.h"
 #import "ColorExtension.h"
 #import "EnrichedTextInputView.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import <objc/runtime.h>
 
@@ -86,8 +86,8 @@ static void const *kInputKey = &kInputKey;
       continue;
 
     NSArray *paragraphs =
-        [ParagraphsUtils getSeparateParagraphsRangesIn:typedInput->textView
-                                                 range:blockCharacterRange];
+        [RangeUtils getSeparateParagraphsRangesIn:typedInput->textView
+                                            range:blockCharacterRange];
     if (paragraphs.count == 0)
       continue;
 
@@ -246,7 +246,7 @@ static void const *kInputKey = &kInputKey;
               origin:(CGPoint)origin
     visibleCharRange:(NSRange)visibleCharRange {
   UnorderedListStyle *ulStyle =
-      typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
+      typedInput->stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *olStyle =
       typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   CheckboxListStyle *cbStyle =
@@ -256,7 +256,7 @@ static void const *kInputKey = &kInputKey;
   }
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
+  [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
   [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
   [allLists addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
 
@@ -268,9 +268,9 @@ static void const *kInputKey = &kInputKey;
           [typedInput->config orderedListMarkerColor]
     };
 
-    NSArray *paragraphs = [ParagraphsUtils
-        getSeparateParagraphsRangesIn:typedInput->textView
-                                range:[pair.rangeValue rangeValue]];
+    NSArray *paragraphs =
+        [RangeUtils getSeparateParagraphsRangesIn:typedInput->textView
+                                            range:[pair.rangeValue rangeValue]];
 
     for (NSValue *paragraph in paragraphs) {
       NSRange paragraphGlyphRange =
@@ -301,8 +301,9 @@ static void const *kInputKey = &kInputKey;
                                            markerAttributes:markerAttributes
                                                      origin:origin
                                                    usedRect:usedRect];
-                                     } else if (markerFormat ==
-                                                NSTextListMarkerDisc) {
+                                     } else if ([markerFormat
+                                                    isEqualToString:
+                                                        @"UnorderedList"]) {
                                        [self drawBullet:typedInput
                                                  origin:origin
                                                usedRect:usedRect];

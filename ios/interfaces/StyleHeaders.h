@@ -3,17 +3,18 @@
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
+#import "StyleBase.h"
 
 @interface BoldStyle : NSObject <BaseStyleProtocol>
 @end
 
-@interface ItalicStyle : NSObject <BaseStyleProtocol>
+@interface ItalicStyle : StyleBase
 @end
 
 @interface UnderlineStyle : NSObject <BaseStyleProtocol>
 @end
 
-@interface StrikethroughStyle : NSObject <BaseStyleProtocol>
+@interface StrikethroughStyle : StyleBase
 @end
 
 @interface InlineCodeStyle : NSObject <BaseStyleProtocol>
@@ -79,10 +80,11 @@
 @interface H6Style : HeadingStyleBase
 @end
 
-@interface UnorderedListStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
-                      replacementText:(NSString *)text;
+@interface UnorderedListStyle : StyleBase
+//- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString
+//*)text;
+//- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
+//                      replacementText:(NSString *)text;
 @end
 
 @interface OrderedListStyle : NSObject <BaseStyleProtocol>

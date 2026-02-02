@@ -2,7 +2,7 @@
 #import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
@@ -40,8 +40,7 @@
   NSTextList *codeBlockList =
       [[NSTextList alloc] initWithMarkerFormat:@"codeblock" options:0];
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
   // if we fill empty lines with zero width spaces, we need to offset later
   // ranges
   NSInteger offset = 0;
@@ -117,8 +116,7 @@
 
 - (void)removeAttributes:(NSRange)range {
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
 
   [_input->textView.textStorage beginEditing];
 
@@ -230,8 +228,8 @@
   NSRange wholeRange =
       NSMakeRange(0, _input->textView.textStorage.string.length);
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:wholeRange];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView
+                                          range:wholeRange];
 
   for (NSValue *pValue in paragraphs) {
     NSRange paragraphRange = [pValue rangeValue];

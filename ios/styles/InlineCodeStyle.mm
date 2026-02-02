@@ -2,7 +2,7 @@
 #import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 
 @implementation InlineCodeStyle {
@@ -35,8 +35,8 @@
 
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
   // we don't want to apply inline code to newline characters, it looks bad
-  NSArray *nonNewlineRanges =
-      [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:range];
+  NSArray *nonNewlineRanges = [RangeUtils getNonNewlineRangesIn:_input->textView
+                                                          range:range];
 
   for (NSValue *value in nonNewlineRanges) {
     NSRange currentRange = [value rangeValue];
@@ -192,7 +192,7 @@
   if (range.length >= 1) {
     // detect only in non-newline characters
     NSArray *nonNewlineRanges =
-        [ParagraphsUtils getNonNewlineRangesIn:_input->textView range:range];
+        [RangeUtils getNonNewlineRangesIn:_input->textView range:range];
     if (nonNewlineRanges.count == 0) {
       return NO;
     }

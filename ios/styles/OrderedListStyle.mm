@@ -1,7 +1,7 @@
 #import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
@@ -46,8 +46,7 @@
       [[NSTextList alloc] initWithMarkerFormat:NSTextListMarkerDecimal
                                        options:0];
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
   // if we fill empty lines with zero width spaces, we need to offset later
   // ranges
   NSInteger offset = 0;
@@ -130,8 +129,7 @@
 
 - (void)removeAttributes:(NSRange)range {
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
 
   [_input->textView.textStorage beginEditing];
 

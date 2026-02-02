@@ -44,7 +44,7 @@
       }
 
       UnorderedListStyle *ulStyle =
-          input->stylesDict[@([UnorderedListStyle getStyleType])];
+          input->stylesDict[@([UnorderedListStyle getType])];
       OrderedListStyle *olStyle =
           input->stylesDict[@([OrderedListStyle getStyleType])];
       BlockQuoteStyle *bqStyle =
@@ -56,7 +56,7 @@
 
       // zero width spaces with no lists/blockquotes/codeblocks on them get
       // removed
-      if (![ulStyle detectStyle:characterRange] &&
+      if (![ulStyle detect:characterRange] &&
           ![olStyle detectStyle:characterRange] &&
           ![bqStyle detectStyle:characterRange] &&
           ![cbStyle detectStyle:characterRange] &&
@@ -97,7 +97,7 @@
 
 + (void)addSpacesIfNeededinInput:(EnrichedTextInputView *)input {
   UnorderedListStyle *ulStyle =
-      input->stylesDict[@([UnorderedListStyle getStyleType])];
+      input->stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *olStyle =
       input->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle =
@@ -117,7 +117,7 @@
           paragraphRangeForRange:characterRange];
 
       if (paragraphRange.length == 1) {
-        if ([ulStyle detectStyle:characterRange] ||
+        if ([ulStyle detect:characterRange] ||
             [olStyle detectStyle:characterRange] ||
             [bqStyle detectStyle:characterRange] ||
             [cbStyle detectStyle:characterRange] ||
@@ -155,7 +155,7 @@
   NSRange lastParagraphRange =
       [input->textView.textStorage.string paragraphRangeForRange:lastRange];
   if (lastParagraphRange.length == 0 &&
-      ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] ||
+      ([ulStyle detect:lastRange] || [olStyle detectStyle:lastRange] ||
        [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange] ||
        [cbLStyle detectStyle:lastRange])) {
     [TextInsertionUtils insertText:@"\u200B"
@@ -210,7 +210,7 @@
     // and then remove associated styling
 
     UnorderedListStyle *ulStyle =
-        typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
+        typedInput->stylesDict[@([UnorderedListStyle getType])];
     OrderedListStyle *olStyle =
         typedInput->stylesDict[@([OrderedListStyle getStyleType])];
     BlockQuoteStyle *bqStyle =
@@ -241,8 +241,8 @@
                               input:typedInput
                       withSelection:YES];
 
-    if ([ulStyle detectStyle:styleRemovalRange]) {
-      [ulStyle removeAttributes:styleRemovalRange];
+    if ([ulStyle detect:styleRemovalRange]) {
+      [ulStyle remove:styleRemovalRange];
     } else if ([olStyle detectStyle:styleRemovalRange]) {
       [olStyle removeAttributes:styleRemovalRange];
     } else if ([bqStyle detectStyle:styleRemovalRange]) {

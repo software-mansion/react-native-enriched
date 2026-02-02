@@ -1,7 +1,7 @@
 #import "EnrichedTextInputView.h"
 #import "FontExtension.h"
 #import "OccurenceUtils.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
@@ -63,8 +63,7 @@
 
 - (void)removeAttributes:(NSRange)range {
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
 
   [_input->textView.textStorage beginEditing];
 
@@ -177,8 +176,7 @@
   NSTextList *checkboxMarker =
       [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0];
   NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:_input->textView
-                                               range:range];
+      [RangeUtils getSeparateParagraphsRangesIn:_input->textView range:range];
   // if we fill empty lines with zero width spaces, we need to offset later
   // ranges
   NSInteger offset = 0;
@@ -254,7 +252,7 @@
   }
 }
 
-- (BOOL)styleCondition:(id _Nullable)value:(NSRange)range {
+- (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   NSParagraphStyle *paragraph = (NSParagraphStyle *)value;
   return paragraph != nullptr && paragraph.textLists.count == 1 &&
          [paragraph.textLists.firstObject.markerFormat hasPrefix:@"{checkbox"];
@@ -266,7 +264,7 @@
                         withInput:_input
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:NSParagraphStyleAttributeName
@@ -274,7 +272,7 @@
                           atIndex:range.location
                     checkPrevious:YES
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value:range];
+                      return [self styleCondition:value range:range];
                     }];
   }
 }
@@ -284,7 +282,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 
@@ -293,7 +291,7 @@
                    withInput:_input
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value:range];
+                 return [self styleCondition:value range:range];
                }];
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#import "AttributesManager.h"
 #import "BaseStyleProtocol.h"
 #import "InputConfig.h"
 #import "InputParser.h"
@@ -23,13 +24,17 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   InputParser *parser;
 @public
+  AttributesManager *attributesManager;
+@public
   NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
 @public
-  NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
+  NSDictionary<NSNumber *, id> *stylesDict;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
+@public
+  NSValue *dotReplacementRange;
 }
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url

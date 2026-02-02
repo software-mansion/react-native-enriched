@@ -45,8 +45,8 @@
 
     // check each existing style existence
     for (NSNumber *type in _input->stylesDict) {
-      id<BaseStyleProtocol> style = _input->stylesDict[type];
-      if ([style detectStyle:currentRange]) {
+      StyleBase *style = _input->stylesDict[type];
+      if ([style detect:currentRange]) {
         [currentActiveStyles addObject:type];
 
         if (![previousActiveStyles member:type]) {
@@ -80,8 +80,7 @@
           }
         } else if (inUnorderedList) {
           UnorderedListStyle *uStyle = _input->stylesDict[@(UnorderedList)];
-          BOOL detected =
-              [uStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          BOOL detected = [uStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<li></li>"];
           } else {
@@ -149,7 +148,7 @@
 
         // append closing paragraph tag
         if ([previousActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])] ||
+                containsObject:@([UnorderedListStyle getType])] ||
             [previousActiveStyles
                 containsObject:@([OrderedListStyle getStyleType])] ||
             [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
@@ -184,7 +183,7 @@
         // handle ending unordered list
         if (inUnorderedList &&
             ![currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])]) {
+                containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = NO;
           [result appendString:@"\n</ul>"];
         }
@@ -220,7 +219,7 @@
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])]) {
+                containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = YES;
           [result appendString:@"\n<ul>"];
         }
@@ -255,7 +254,7 @@
 
         // don't add the <p> tag if some paragraph styles are present
         if ([currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])] ||
+                containsObject:@([UnorderedListStyle getType])] ||
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getStyleType])] ||
             [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
@@ -403,8 +402,7 @@
 
     // finish the paragraph
     // handle ending of some paragraph styles
-    if ([previousActiveStyles
-            containsObject:@([UnorderedListStyle getStyleType])]) {
+    if ([previousActiveStyles containsObject:@([UnorderedListStyle getType])]) {
       [result appendString:@"\n</ul>"];
     } else if ([previousActiveStyles
                    containsObject:@([OrderedListStyle getStyleType])]) {
@@ -486,7 +484,7 @@
                         location:(NSInteger)location {
   if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
     return @"b";
-  } else if ([style isEqualToNumber:@([ItalicStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
     return @"i";
   } else if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
     if (openingTag) {
@@ -506,7 +504,7 @@
     }
   } else if ([style isEqualToNumber:@([UnderlineStyle getStyleType])]) {
     return @"u";
-  } else if ([style isEqualToNumber:@([StrikethroughStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([StrikethroughStyle getType])]) {
     return @"s";
   } else if ([style isEqualToNumber:@([InlineCodeStyle getStyleType])]) {
     return @"code";
@@ -574,7 +572,7 @@
     return @"h5";
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
     return @"h6";
-  } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
+  } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
   } else if ([style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
@@ -1228,7 +1226,7 @@
     if ([tagName isEqualToString:@"b"]) {
       [styleArr addObject:@([BoldStyle getStyleType])];
     } else if ([tagName isEqualToString:@"i"]) {
-      [styleArr addObject:@([ItalicStyle getStyleType])];
+      [styleArr addObject:@([ItalicStyle getType])];
     } else if ([tagName isEqualToString:@"img"]) {
       NSRegularExpression *srcRegex =
           [NSRegularExpression regularExpressionWithPattern:@"src=\"([^\"]+)\""
@@ -1286,7 +1284,7 @@
     } else if ([tagName isEqualToString:@"u"]) {
       [styleArr addObject:@([UnderlineStyle getStyleType])];
     } else if ([tagName isEqualToString:@"s"]) {
-      [styleArr addObject:@([StrikethroughStyle getStyleType])];
+      [styleArr addObject:@([StrikethroughStyle getType])];
     } else if ([tagName isEqualToString:@"code"]) {
       [styleArr addObject:@([InlineCodeStyle getStyleType])];
     } else if ([tagName isEqualToString:@"a"]) {
@@ -1373,7 +1371,7 @@
             [self prepareCheckboxListStyleValue:tagRangeValue
                                  checkboxStates:checkboxStates];
       } else {
-        [styleArr addObject:@([UnorderedListStyle getStyleType])];
+        [styleArr addObject:@([UnorderedListStyle getType])];
       }
     } else if ([tagName isEqualToString:@"ol"]) {
       [styleArr addObject:@([OrderedListStyle getStyleType])];

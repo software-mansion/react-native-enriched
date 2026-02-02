@@ -1,6 +1,6 @@
 #import "ParagraphAttributesUtils.h"
 #import "EnrichedTextInputView.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
@@ -15,7 +15,7 @@
                          input:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   UnorderedListStyle *ulStyle =
-      typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
+      typedInput->stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *olStyle =
       typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   BlockQuoteStyle *bqStyle =
@@ -39,9 +39,8 @@
   NSRange paragraphRange =
       [typedInput->textView.textStorage.string paragraphRangeForRange:range];
 
-  NSArray *paragraphs =
-      [ParagraphsUtils getNonNewlineRangesIn:typedInput->textView
-                                       range:paragraphRange];
+  NSArray *paragraphs = [RangeUtils getNonNewlineRangesIn:typedInput->textView
+                                                    range:paragraphRange];
   if (paragraphs.count == 0) {
     return NO;
   }
