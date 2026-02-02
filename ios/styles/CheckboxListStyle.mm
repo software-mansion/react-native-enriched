@@ -167,7 +167,7 @@
 
   [self addAttributesWithCheckedValue:!isCurrentlyChecked
                               inRange:paragraphRange
-                       withTypingAttr:YES];
+                       withTypingAttr:NO];
 }
 
 - (void)addAttributesWithCheckedValue:(BOOL)checked
