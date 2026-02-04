@@ -2,11 +2,17 @@
   "name": "react-native-enriched",
   "version": "0.3.0",
   "description": "Rich Text Editor component for React Native",
-  "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
+  "react-native": "./lib/module/index.native.js",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "react-native": {
+        "types": "./lib/typescript/src/index.native.d.ts",
+        "default": "./lib/module/index.native.js"
+      },
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -35,7 +41,10 @@
     "example": "yarn workspace react-native-enriched-example",
     "example-web": "yarn workspace react-native-enriched-web-example",
     "test": "jest --passWithNoTests",
-    "typecheck": "tsc",
+    "typecheck": "tsc -p tsconfig.build.json",
+    "typecheck:example": "tsc -p apps/example/tsconfig.json",
+    "typecheck:example-web": "tsc -p apps/example-web/tsconfig.json",
+    "typecheck:all": "yarn typecheck && yarn typecheck:example && yarn typecheck:example-web",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "lint:android": "cd apps/example/android && ./gradlew lintVerify",
     "lint:android:fix": "cd apps/example/android && ./gradlew lintFormat",

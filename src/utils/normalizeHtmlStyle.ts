@@ -1,6 +1,6 @@
 import { type ColorValue, processColor } from 'react-native';
 import type { HtmlStyleInternal } from '../spec/EnrichedTextInputNativeComponent';
-import type { HtmlStyle, MentionStyleProperties } from '../types';
+import type { HtmlStyle, MentionStyleProperties } from '../native/types';
 
 const defaultStyle: Required<HtmlStyle> = {
   h1: {

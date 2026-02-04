@@ -1,4 +1,4 @@
-export * from './web/EnrichedTextInput';
+export * from './native/EnrichedTextInput';
 export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
@@ -10,3 +10,4 @@ export type {
   OnLinkDetected,
   OnMentionDetected,
 } from './common/types';
+export type { HtmlStyle, MentionStyleProperties } from './native/types';

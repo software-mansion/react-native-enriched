@@ -318,9 +318,9 @@ export default function App() {
             cursorColor="dodgerblue"
             autoCapitalize="sentences"
             linkRegex={LINK_REGEX}
-            onChangeText={(e) => handleChangeText(e.nativeEvent)}
-            onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
-            onChangeState={(e) => handleChangeState(e.nativeEvent)}
+            onChangeText={handleChangeText}
+            onChangeHtml={handleChangeHtml}
+            onChangeState={handleChangeState}
             onLinkDetected={handleLinkDetected}
             onMentionDetected={console.log}
             onStartMention={handleStartMention}
@@ -328,8 +328,8 @@ export default function App() {
             onEndMention={handleEndMention}
             onFocus={handleFocusEvent}
             onBlur={handleBlurEvent}
-            onChangeSelection={(e) => handleSelectionChangeEvent(e.nativeEvent)}
-            onKeyPress={(e) => handleKeyPress(e.nativeEvent)}
+            onChangeSelection={handleSelectionChangeEvent}
+            onKeyPress={handleKeyPress}
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }

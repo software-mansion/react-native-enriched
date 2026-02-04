@@ -146,7 +146,11 @@ export interface OnChangeStateDeprecatedEvent {
   isMention: boolean;
 }
 
-export interface OnLinkDetected {
+export interface OnKeyPressEvent {
+  key: string;
+}
+
+export interface OnLinkDetectedNativeEvent {
   text: string;
   url: string;
   start: Int32;
@@ -158,19 +162,12 @@ export interface OnMentionDetectedInternal {
   indicator: string;
   payload: string;
 }
-
-export interface OnMentionDetected {
-  text: string;
-  indicator: string;
-  attributes: Record<string, string>;
-}
-
 export interface OnMentionEvent {
   indicator: string;
   text: UnsafeMixed;
 }
 
-export interface OnChangeSelectionEvent {
+export interface OnChangeSelectionNativeEvent {
   start: Int32;
   end: Int32;
   text: string;
@@ -179,10 +176,6 @@ export interface OnChangeSelectionEvent {
 export interface OnRequestHtmlResultEvent {
   requestId: Int32;
   html: UnsafeMixed;
-}
-
-export interface OnKeyPressEvent {
-  key: string;
 }
 
 interface TargetedEvent {
@@ -264,10 +257,10 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onLinkDetected?: DirectEventHandler<OnLinkDetected>;
+  onLinkDetected?: DirectEventHandler<OnLinkDetectedNativeEvent>;
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
-  onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
+  onChangeSelection?: DirectEventHandler<OnChangeSelectionNativeEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
 
