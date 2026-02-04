@@ -1,9 +1,25 @@
 import {
   useImperativeHandle,
-  useRef,
+  useEffect,
+  useMemo,
   type CSSProperties,
   type RefObject,
 } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import { Placeholder } from '@tiptap/extensions';
+import Document from '@tiptap/extension-document';
+import HardBreak from '@tiptap/extension-hard-break';
+import Text from '@tiptap/extension-text';
+import Paragraph from '@tiptap/extension-paragraph';
+import Heading from '@tiptap/extension-heading';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Strike from '@tiptap/extension-strike';
+import Underline from '@tiptap/extension-underline';
+import Code from '@tiptap/extension-code';
+import Blockquote from '@tiptap/extension-blockquote';
+
+import './EnrichedTextInput.css';
 
 import type {
   EnrichedTextInputInstanceBase,
@@ -18,66 +34,16 @@ import type {
   OnKeyPressEvent,
 } from '../common/types';
 import { ENRICHED_TEXT_INPUT_DEFAULTS } from '../common/defaultProps';
+import { useOnChangeState } from './useOnChangeState';
+import { useOnChangeHtml } from './useOnChangeHtml';
+import {
+  buildStyleVars,
+  type HtmlStyle,
+  type MentionStyleProperties,
+} from './buildStyleVars';
 
+export type { HtmlStyle, MentionStyleProperties };
 export type EnrichedTextInputInstance = EnrichedTextInputInstanceBase;
-
-export interface MentionStyleProperties {
-  color?: string;
-  backgroundColor?: string;
-  textDecorationLine?: 'underline' | 'none';
-}
-
-type HeadingStyle = {
-  fontSize?: number;
-  bold?: boolean;
-};
-
-export interface HtmlStyle {
-  h1?: HeadingStyle;
-  h2?: HeadingStyle;
-  h3?: HeadingStyle;
-  h4?: HeadingStyle;
-  h5?: HeadingStyle;
-  h6?: HeadingStyle;
-  blockquote?: {
-    borderColor?: string;
-    borderWidth?: number;
-    gapWidth?: number;
-    color?: string;
-  };
-  codeblock?: {
-    color?: string;
-    borderRadius?: number;
-    backgroundColor?: string;
-  };
-  code?: {
-    color?: string;
-    backgroundColor?: string;
-  };
-  a?: {
-    color?: string;
-    textDecorationLine?: 'underline' | 'none';
-  };
-  mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
-  ol?: {
-    gapWidth?: number;
-    marginLeft?: number;
-    markerFontWeight?: string | number;
-    markerColor?: string;
-  };
-  ul?: {
-    bulletColor?: string;
-    bulletSize?: number;
-    marginLeft?: number;
-    gapWidth?: number;
-  };
-  ulCheckbox?: {
-    boxSize?: number;
-    gapWidth?: number;
-    marginLeft?: number;
-    boxColor?: string;
-  };
-}
 
 export interface EnrichedTextInputProps {
   ref?: RefObject<EnrichedTextInputInstance | null>;
@@ -122,62 +88,209 @@ export const EnrichedTextInput = ({
   editable = ENRICHED_TEXT_INPUT_DEFAULTS.editable,
   defaultValue,
   placeholder,
+  placeholderTextColor,
+  selectionColor,
+  cursorColor,
   style,
+  htmlStyle,
+  onFocus,
+  onBlur,
+  onChangeSelection,
+  onKeyPress,
+  onChangeState,
+  onChangeHtml,
 }: EnrichedTextInputProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useImperativeHandle(ref, () => ({
-    // General commands
-    focus: () => {
-      inputRef.current?.focus();
-    },
-    blur: () => {
-      inputRef.current?.blur();
-    },
-    setValue: (value: string) => {
-      if (inputRef.current) {
-        inputRef.current.value = value;
+  const editor = useEditor({
+    extensions: [
+      Document,
+      HardBreak,
+      Text,
+      Paragraph,
+      Heading.extend({
+        marks: 'italic underline strike code',
+        addCommands() {
+          return {
+            ...this.parent?.(),
+            toggleHeading:
+              (attributes) =>
+              ({ chain, editor: _editor }) => {
+                if (!_editor.isActive('heading', attributes)) {
+                  return chain()
+                    .clearNodes()
+                    .toggleNode('heading', 'paragraph', attributes)
+                    .run();
+                }
+                return chain()
+                  .toggleNode('heading', 'paragraph', attributes)
+                  .run();
+              },
+          };
+        },
+      }),
+      Bold.extend({
+        renderHTML({ HTMLAttributes }) {
+          return ['b', HTMLAttributes, 0];
+        },
+      }),
+      Italic.extend({
+        renderHTML({ HTMLAttributes }) {
+          return ['i', HTMLAttributes, 0];
+        },
+      }),
+      Strike,
+      Underline,
+      Code.extend({
+        excludes: '',
+      }),
+      Placeholder.configure({
+        placeholder: placeholder || '',
+      }),
+      Blockquote.extend({
+        content: 'paragraph+',
+        addCommands() {
+          return {
+            ...this.parent?.(),
+            toggleBlockquote:
+              () =>
+              ({ chain, editor: _editor }) => {
+                if (!_editor.isActive('blockquote')) {
+                  return chain().clearNodes().toggleWrap('blockquote').run();
+                }
+                return chain().toggleWrap('blockquote').run();
+              },
+          };
+        },
+      }),
+    ],
+    content: defaultValue,
+    editable: editable,
+    autofocus: autoFocus,
+    onFocus: onFocus,
+    onBlur: onBlur,
+    onSelectionUpdate: ({ editor: _editor }) => {
+      if (onChangeSelection) {
+        const { from, to } = _editor.state.selection;
+        // TipTap's positions are 1-based, adjust to 0-based
+        onChangeSelection({
+          start: from - 1,
+          end: to - 1,
+          text: _editor.state.doc.textBetween(from, to),
+        });
       }
     },
-    setSelection: (start: number, end: number) => {
-      inputRef.current?.setSelectionRange(start, end);
+    editorProps: {
+      attributes: {
+        style: 'outline: none;',
+      },
+      handleKeyDown: (_, event) => {
+        if (onKeyPress) {
+          onKeyPress({
+            key: event.key,
+          });
+        }
+        // returning false allows the event to be processed further by TipTap
+        return false;
+      },
     },
-    getHTML: () => {
-      return Promise.resolve('');
-    },
+  });
 
-    // Text formatting commands
-    toggleBold: () => {},
-    toggleItalic: () => {},
-    toggleUnderline: () => {},
-    toggleStrikeThrough: () => {},
-    toggleInlineCode: () => {},
-    toggleH1: () => {},
-    toggleH2: () => {},
-    toggleH3: () => {},
-    toggleH4: () => {},
-    toggleH5: () => {},
-    toggleH6: () => {},
-    toggleCodeBlock: () => {},
-    toggleBlockQuote: () => {},
-    toggleOrderedList: () => {},
-    toggleUnorderedList: () => {},
-    toggleCheckboxList: () => {},
-    setLink: () => {},
-    setImage: () => {},
-    startMention: () => {},
-    setMention: () => {},
-  }));
+  useOnChangeState(editor, onChangeState);
+  useOnChangeHtml(editor, onChangeHtml);
+
+  useEffect(() => {
+    if (editor && editable !== undefined) {
+      editor.setEditable(editable);
+    }
+  }, [editable, editor]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      // General commands
+      focus: () => {
+        editor?.commands.focus();
+      },
+      blur: () => {
+        editor?.commands.blur();
+      },
+      setValue: (value: string) => {
+        editor?.commands.setContent(value);
+      },
+      setSelection: (start: number, end: number) => {
+        // Convert from 0-based (React Native) to 1-based (TipTap)
+        editor
+          ?.chain()
+          .focus()
+          .setTextSelection({ from: start + 1, to: end + 1 })
+          .run();
+      },
+      getHTML: () => {
+        return Promise.resolve(editor?.getHTML() || '');
+      },
+
+      // Text formatting commands
+      toggleBold: () => {
+        editor?.chain().focus().toggleBold().run();
+      },
+      toggleItalic: () => {
+        editor?.chain().focus().toggleItalic().run();
+      },
+      toggleUnderline: () => {
+        editor?.chain().focus().toggleUnderline().run();
+      },
+      toggleStrikeThrough: () => {
+        editor?.chain().focus().toggleStrike().run();
+      },
+      toggleInlineCode: () => {
+        editor?.chain().focus().toggleCode().run();
+      },
+      toggleH1: () => {
+        editor?.chain().focus().toggleHeading({ level: 1 }).run();
+      },
+      toggleH2: () => {
+        editor?.chain().focus().toggleHeading({ level: 2 }).run();
+      },
+      toggleH3: () => {
+        editor?.chain().focus().toggleHeading({ level: 3 }).run();
+      },
+      toggleH4: () => {
+        editor?.chain().focus().toggleHeading({ level: 4 }).run();
+      },
+      toggleH5: () => {
+        editor?.chain().focus().toggleHeading({ level: 5 }).run();
+      },
+      toggleH6: () => {
+        editor?.chain().focus().toggleHeading({ level: 6 }).run();
+      },
+      toggleCodeBlock: () => {},
+      toggleBlockQuote: () => {
+        editor?.chain().focus().toggleBlockquote().run();
+      },
+      toggleOrderedList: () => {},
+      toggleUnorderedList: () => {},
+      toggleCheckboxList: (_checked: boolean) => {},
+      setLink: () => {},
+      setImage: () => {},
+      startMention: () => {},
+      setMention: () => {},
+    }),
+    [editor]
+  );
+
+  const editorStyle = useMemo(
+    () => ({
+      ...style,
+      ...buildStyleVars(
+        htmlStyle,
+        placeholderTextColor,
+        selectionColor,
+        cursorColor
+      ),
+    }),
+    [style, htmlStyle, placeholderTextColor, selectionColor, cursorColor]
+  );
 
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      autoFocus={autoFocus}
-      disabled={!editable}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      style={style}
-    />
+    <EditorContent editor={editor} className="eti-editor" style={editorStyle} />
   );
 };

@@ -88,3 +88,7 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# Playwright
+playwright-report/
+test-results/
