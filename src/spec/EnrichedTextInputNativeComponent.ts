@@ -178,10 +178,6 @@ export interface OnRequestHtmlResultEvent {
   html: UnsafeMixed;
 }
 
-export interface OnKeyPressEvent {
-  key: string;
-}
-
 interface TargetedEvent {
   target: Int32;
 }
