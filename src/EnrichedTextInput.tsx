@@ -125,9 +125,15 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   androidExperimentalSynchronousEvents?: boolean;
 }
 
-const warnAboutMissconfiguredMentions = (indicator: string) => {
+const warnMentionIndicators = (indicator: string) => {
   console.warn(
     `Looks like you are trying to set a "${indicator}" but it's not in the mentionIndicators prop`
+  );
+};
+
+const warnConflictingFontSize = () => {
+  console.warn(
+    'Using the same fontSize for the editor and for heading styles may lead to unexpected behavior. Please consider using different font sizes.'
   );
 };
 
@@ -193,6 +199,28 @@ export const EnrichedTextInput = ({
     () => toNativeRegexConfig(_linkRegex),
     [_linkRegex]
   );
+
+  if (__DEV__) {
+    const fontSize = (style as TextStyle | undefined)?.fontSize;
+    // That's not breaking the rules of hooks because it's conditional on __DEV__ which is a compile time constant
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(() => {
+      if (!fontSize) return;
+
+      const fontSizes = [
+        normalizedHtmlStyle.h1?.fontSize,
+        normalizedHtmlStyle.h2?.fontSize,
+        normalizedHtmlStyle.h3?.fontSize,
+        normalizedHtmlStyle.h4?.fontSize,
+        normalizedHtmlStyle.h5?.fontSize,
+        normalizedHtmlStyle.h6?.fontSize,
+      ];
+
+      if (fontSizes.includes(fontSize)) {
+        warnConflictingFontSize();
+      }
+    }, [normalizedHtmlStyle, fontSize]);
+  }
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -302,7 +330,7 @@ export const EnrichedTextInput = ({
     },
     startMention: (indicator: string) => {
       if (!mentionIndicators?.includes(indicator)) {
-        warnAboutMissconfiguredMentions(indicator);
+        warnMentionIndicators(indicator);
       }
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
