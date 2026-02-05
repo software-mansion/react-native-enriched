@@ -8,7 +8,6 @@ import {
   type OnChangeHtmlEvent,
   type OnChangeStateEvent,
   type OnChangeSelectionEvent,
-  type HtmlStyle,
   type OnKeyPressEvent,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
@@ -27,6 +26,8 @@ import {
   DEFAULT_IMAGE_WIDTH,
   prepareImageDimensions,
 } from './utils/prepareImageDimensions';
+import { htmlStyle } from './constants/htmlStyle';
+import { TextRenderer } from './components/TextRenderer';
 
 type StylesState = OnChangeStateEvent;
 
@@ -76,8 +77,6 @@ const DEFAULT_LINK_STATE = {
 const LINK_REGEX =
   /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
 
-const DEBUG_SCROLLABLE = false;
-
 // Enabling this prop fixes input flickering while auto growing.
 // However, it's still experimental and not tested well.
 // Disabled for now, as it's causing some strange issues.
@@ -96,6 +95,7 @@ export default function App() {
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
+  const [textNodes, setTextNodes] = useState<Array<string>>([]);
 
   const ref = useRef<EnrichedTextInputInstance>(null);
 
@@ -121,14 +121,6 @@ export default function App() {
 
   const handleChangeState = (state: OnChangeStateEvent) => {
     setStylesState(state);
-  };
-
-  const handleFocus = () => {
-    ref.current?.focus();
-  };
-
-  const handleBlur = () => {
-    ref.current?.blur();
   };
 
   const openLinkModal = () => {
@@ -299,6 +291,15 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handlePushTextNode = async () => {
+    const currentText = await ref.current?.getHTML();
+    if (currentText) {
+      setTextNodes((prevTextNodes) => [...prevTextNodes, currentText]);
+    }
+
+    ref.current?.setValue('');
+  };
+
   return (
     <>
       <ScrollView
@@ -341,17 +342,20 @@ export default function App() {
             onSelectImage={openImageModal}
           />
         </View>
-        <View style={styles.buttonStack}>
-          <Button title="Focus" onPress={handleFocus} style={styles.button} />
-          <Button title="Blur" onPress={handleBlur} style={styles.button} />
-        </View>
-        <Button
-          title="Set input's value"
-          onPress={openValueModal}
-          style={styles.valueButton}
-        />
         <HtmlSection currentHtml={currentHtml} />
-        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+        <View style={styles.buttonStack}>
+          <Button
+            title="Set input's value"
+            onPress={openValueModal}
+            style={styles.button}
+          />
+          <Button
+            title="Push text"
+            onPress={handlePushTextNode}
+            style={styles.button}
+          />
+        </View>
+        <TextRenderer nodes={textNodes} />
       </ScrollView>
       <LinkModal
         isOpen={isLinkModalOpen}
@@ -388,82 +392,6 @@ export default function App() {
   );
 }
 
-const htmlStyle: HtmlStyle = {
-  h1: {
-    fontSize: 72,
-    bold: true,
-  },
-  h2: {
-    fontSize: 60,
-    bold: true,
-  },
-  h3: {
-    fontSize: 50,
-    bold: true,
-  },
-  h4: {
-    fontSize: 40,
-    bold: true,
-  },
-  h5: {
-    fontSize: 30,
-    bold: true,
-  },
-  h6: {
-    fontSize: 24,
-    bold: true,
-  },
-  blockquote: {
-    borderColor: 'navy',
-    borderWidth: 4,
-    gapWidth: 16,
-    color: 'navy',
-  },
-  codeblock: {
-    color: 'green',
-    borderRadius: 8,
-    backgroundColor: 'aquamarine',
-  },
-  code: {
-    color: 'purple',
-    backgroundColor: 'yellow',
-  },
-  a: {
-    color: 'green',
-    textDecorationLine: 'underline',
-  },
-  mention: {
-    '#': {
-      color: 'blue',
-      backgroundColor: 'lightblue',
-      textDecorationLine: 'underline',
-    },
-    '@': {
-      color: 'green',
-      backgroundColor: 'lightgreen',
-      textDecorationLine: 'none',
-    },
-  },
-  ol: {
-    gapWidth: 16,
-    marginLeft: 24,
-    markerColor: 'navy',
-    markerFontWeight: 'bold',
-  },
-  ul: {
-    bulletColor: 'aquamarine',
-    bulletSize: 8,
-    marginLeft: 24,
-    gapWidth: 16,
-  },
-  ulCheckbox: {
-    boxSize: 24,
-    gapWidth: 16,
-    marginLeft: 24,
-    boxColor: 'rgb(0, 26, 114)',
-  },
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -492,9 +420,6 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '45%',
-  },
-  valueButton: {
-    width: '100%',
   },
   editorInput: {
     marginTop: 24,
