@@ -1,4 +1,6 @@
 #import "InputParser.h"
+#import "AlignmentEntry.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -217,19 +219,24 @@
           [result appendString:@"\n</ul>"];
         }
 
+        NSString *styleAttr = [self prepareStyleAttrStr:currentRange.location
+                                           isOpeningTag:YES];
+
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
                 containsObject:@([UnorderedListStyle getStyleType])]) {
           inUnorderedList = YES;
-          [result appendString:@"\n<ul>"];
+          [result
+              appendString:[NSString stringWithFormat:@"\n<ul%@>", styleAttr]];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getStyleType])]) {
           inOrderedList = YES;
-          [result appendString:@"\n<ol>"];
+          [result
+              appendString:[NSString stringWithFormat:@"\n<ol%@>", styleAttr]];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
@@ -250,7 +257,9 @@
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           inCheckboxList = YES;
-          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+          [result appendString:[NSString stringWithFormat:
+                                             @"\n<ul data-type=\"checkbox\"%@>",
+                                             styleAttr]];
         }
 
         // don't add the <p> tag if some paragraph styles are present
@@ -272,7 +281,7 @@
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:@"\n<p>"];
+          [result appendString:[NSString stringWithFormat:@"<p%@>", styleAttr]];
         }
       }
 
@@ -467,7 +476,7 @@
                                range:NSMakeRange(0, result.length)];
 
   // remove zero width spaces in the very end
-  [result replaceOccurrencesOfString:@"\u200B"
+  [result replaceOccurrencesOfString:@"\u200A"
                           withString:@""
                              options:0
                                range:NSMakeRange(0, result.length)];
@@ -484,6 +493,9 @@
 - (NSString *)tagContentForStyle:(NSNumber *)style
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location {
+  NSString *styleAttr = [self prepareStyleAttrStr:location
+                                     isOpeningTag:openingTag];
+
   if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getStyleType])]) {
@@ -563,17 +575,17 @@
       return @"mention";
     }
   } else if ([style isEqualToNumber:@([H1Style getStyleType])]) {
-    return @"h1";
+    return [NSString stringWithFormat:@"h1%@", styleAttr];
   } else if ([style isEqualToNumber:@([H2Style getStyleType])]) {
-    return @"h2";
+    return [NSString stringWithFormat:@"h2%@", styleAttr];
   } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
-    return @"h3";
+    return [NSString stringWithFormat:@"h3%@", styleAttr];
   } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
-    return @"h4";
+    return [NSString stringWithFormat:@"h4%@", styleAttr];
   } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
-    return @"h5";
+    return [NSString stringWithFormat:@"h5%@", styleAttr];
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
-    return @"h6";
+    return [NSString stringWithFormat:@"h6%@", styleAttr];
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
@@ -593,8 +605,7 @@
     }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
-    // blockquotes and codeblock use <p> tags the same way lists use <li>
-    return @"p";
+    return [NSString stringWithFormat:@"p%@", styleAttr];
   }
   return @"";
 }
@@ -603,6 +614,7 @@
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // reset the text first and reset typing attributes
   _input->textView.text = @"";
@@ -615,12 +627,14 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:0
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:0];
 }
 
 - (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // we can use ready replace util
   [TextInsertionUtils replaceText:plainText
@@ -632,12 +646,14 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:range.location
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:range.location];
 }
 
 - (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
   NSArray *stylesInfo = (NSArray *)processingResult[1];
+  NSArray *alignments = (NSArray *)processingResult[2];
 
   // same here, insertion utils got our back
   [TextInsertionUtils insertText:plainText
@@ -649,6 +665,7 @@
   [self applyProcessedStyles:stylesInfo
          offsetFromBeginning:location
              plainTextLength:plainText.length];
+  [self applyAlignments:alignments offset:location];
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles
@@ -897,10 +914,10 @@
     // space so we do that manually here
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
-                                  withString:@"<p>\u200B</p>\n</blockquote>"];
+                                  withString:@"<p>\u200A</p>\n</blockquote>"];
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
-                                  withString:@"<p>\u200B</p>\n</codeblock>"];
+                                  withString:@"<p>\u200A</p>\n</codeblock>"];
 
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
     // handle last <br> in html
@@ -1065,6 +1082,8 @@
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
   NSMutableDictionary *checkboxStates = [[NSMutableDictionary alloc] init];
+  NSMutableArray<AlignmentEntry *> *foundAlignments =
+      [[NSMutableArray alloc] init];
   BOOL insideCheckboxList = NO;
   _precedingImageCount = 0;
   BOOL insideTag = NO;
@@ -1105,8 +1124,7 @@
         isSelfClosing = YES;
       }
 
-      if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"]) {
+      if ([currentTagName isEqualToString:@"br"]) {
         // do nothing, we don't include these tags in styles
       } else if ([currentTagName isEqualToString:@"li"]) {
         // Only track checkbox state if we're inside a checkbox list
@@ -1115,6 +1133,13 @@
           checkboxStates[@(plainText.length)] = @(isChecked);
         }
       } else if (!closingTag) {
+        BOOL isPlainParagraph =
+            [currentTagName isEqualToString:@"p"] &&
+            (!currentTagParams || [currentTagParams length] == 0);
+
+        if (isPlainParagraph) {
+          continue;
+        }
         // we finish opening tag - get its location and optionally params and
         // put them under tag name key in ongoingTags
         NSMutableArray *tagArr = [[NSMutableArray alloc] init];
@@ -1166,6 +1191,9 @@
               mutableCopy];
         }
 
+        [self checkForAlignments:ongoingTags[currentTagName]
+                       plainText:plainText
+                 foundAlignments:foundAlignments];
         [self finalizeTagEntry:currentTagName
                        ongoingTags:ongoingTags
             initiallyProcessedTags:initiallyProcessedTags
@@ -1392,7 +1420,7 @@
     [processedStyles addObject:styleArr];
   }
 
-  return @[ plainText, processedStyles ];
+  return @[ plainText, processedStyles, foundAlignments ];
 }
 
 - (BOOL)isUlCheckboxList:(NSString *)params {
@@ -1413,6 +1441,112 @@
   }
 
   return statesInRange;
+}
+
+- (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
+  switch (alignment) {
+  case NSTextAlignmentCenter:
+    return @"center";
+  case NSTextAlignmentRight:
+    return @"right";
+  case NSTextAlignmentJustified:
+    return @"justify";
+  default:
+    return nil;
+  }
+}
+
+- (NSString *)prepareStyleAttrStr:(NSInteger)location
+                     isOpeningTag:(BOOL)isOpeningTag {
+  if (!isOpeningTag) {
+    return @"";
+  }
+
+  NSParagraphStyle *pStyle =
+      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                      atIndex:location
+                               effectiveRange:nil];
+  NSString *alignStr = [self cssValueForAlignment:pStyle.alignment];
+
+  if (alignStr) {
+    return [NSString stringWithFormat:@" style=\"text-align: %@\"", alignStr];
+  }
+
+  return @"";
+}
+
+- (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
+  if (!params)
+    return NSTextAlignmentNatural;
+
+  NSString *pattern = @"text-align\\s*:\\s*(left|center|right|justify)";
+
+  NSRegularExpression *regex = [NSRegularExpression
+      regularExpressionWithPattern:pattern
+                           options:NSRegularExpressionCaseInsensitive
+                             error:nil];
+
+  NSTextCheckingResult *match =
+      [regex firstMatchInString:params
+                        options:0
+                          range:NSMakeRange(0, params.length)];
+
+  if (match) {
+    // rangeAtIndex:1 corresponds to the capture group
+    // (left|center|right|justify)
+    NSString *value =
+        [[params substringWithRange:[match rangeAtIndex:1]] lowercaseString];
+
+    if ([value isEqualToString:@"center"])
+      return NSTextAlignmentCenter;
+    if ([value isEqualToString:@"right"])
+      return NSTextAlignmentRight;
+    if ([value isEqualToString:@"justify"])
+      return NSTextAlignmentJustified;
+    if ([value isEqualToString:@"left"])
+      return NSTextAlignmentLeft;
+  }
+
+  return NSTextAlignmentNatural;
+}
+
+- (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
+                 offset:(NSInteger)offset {
+  for (AlignmentEntry *entry in alignments) {
+    // Offset the range (e.g. if inserting into the middle of text)
+    NSRange finalRange =
+        NSMakeRange(offset + entry.range.location, entry.range.length);
+
+    [AlignmentUtils setAlignment:entry.alignment
+                        forRange:finalRange
+                         inInput:_input];
+  }
+}
+
+- (void)checkForAlignments:(NSArray *)tagData
+                 plainText:(NSString *)plainText
+           foundAlignments:(NSMutableArray<AlignmentEntry *> *)foundAlignments {
+  if (tagData == nil) {
+    return;
+  }
+
+  // We look at the params stored in ongoingTags
+  NSString *storedParams = (tagData.count > 1) ? tagData[1] : nil;
+  NSTextAlignment align = [self alignmentFromStyleParams:storedParams];
+
+  if (align != NSTextAlignmentNatural) {
+    NSInteger startLoc = [tagData[0] integerValue];
+    // Calculate range relative to plainText
+    NSInteger actualStart = startLoc + _precedingImageCount;
+    NSInteger length = plainText.length - startLoc;
+
+    if (length > 0) {
+      AlignmentEntry *entry = [[AlignmentEntry alloc] init];
+      entry.alignment = align;
+      entry.range = NSMakeRange(actualStart, length);
+      [foundAlignments addObject:entry];
+    }
+  }
 }
 
 @end

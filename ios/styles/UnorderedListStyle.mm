@@ -68,7 +68,7 @@
          [[NSCharacterSet newlineCharacterSet]
              characterIsMember:[_input->textView.textStorage.string
                                    characterAtIndex:fixedRange.location]])) {
-      [TextInsertionUtils insertText:@"\u200B"
+      [TextInsertionUtils insertText:@"\u200A"
                                   at:fixedRange.location
                 additionalAttributes:nullptr
                                input:_input

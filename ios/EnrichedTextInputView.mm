@@ -1,7 +1,9 @@
 #import "EnrichedTextInputView.h"
+#import "AlignmentUtils.h"
 #import "CoreText/CoreText.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
+#import "ParagraphsUtils.h"
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -1156,6 +1158,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"setTextAlignment"]) {
+    NSString *alignmentString = (NSString *)args[0];
+    [AlignmentUtils applyAlignmentFromString:alignmentString toInput:self];
   }
 }
 
@@ -1215,7 +1220,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // If the current char is not a hidden space, it counts towards our visible
     // index.
-    if ([text characterAtIndex:actualIndex] != 0x200B) {
+    if ([text characterAtIndex:actualIndex] != 0x200A) {
       currentVisibleCount++;
     }
 
@@ -1628,7 +1633,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
       // emit string without zero width spaces
       NSString *stringToBeEmitted = [[textView.textStorage.string
-          stringByReplacingOccurrencesOfString:@"\u200B"
+          stringByReplacingOccurrencesOfString:@"\u200A"
                                     withString:@""] copy];
 
       emitter->onChangeText({.value = [stringToBeEmitted toCppString]});
