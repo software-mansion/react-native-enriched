@@ -306,7 +306,8 @@ static void const *kInputKey = &kInputKey;
                                        [self drawBullet:typedInput
                                                  origin:origin
                                                usedRect:usedRect];
-                                     } else {
+                                     } else if ([markerFormat
+                                                    hasPrefix:@"{checkbox"]) {
                                        [self drawCheckbox:typedInput
                                              markerFormat:markerFormat
                                                    origin:origin

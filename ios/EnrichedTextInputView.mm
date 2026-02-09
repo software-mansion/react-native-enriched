@@ -1569,27 +1569,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [codeBlockStyle manageCodeBlockFontAndColor];
   }
 
-  // improper headings fix
-  H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
-  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
-  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
-  H4Style *h4Style = stylesDict[@([H4Style getStyleType])];
-  H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
-  H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
-
-  bool headingStylesDefined = h1Style != nullptr && h2Style != nullptr &&
-                              h3Style != nullptr && h4Style != nullptr &&
-                              h5Style != nullptr && h6Style != nullptr;
-
-  if (headingStylesDefined) {
-    [h1Style handleImproperHeadings];
-    [h2Style handleImproperHeadings];
-    [h3Style handleImproperHeadings];
-    [h4Style handleImproperHeadings];
-    [h5Style handleImproperHeadings];
-    [h6Style handleImproperHeadings];
-  }
-
   // mentions management: removal and editing
   MentionStyle *mentionStyleClass =
       (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
@@ -1730,6 +1709,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [h4Style handleNewlinesInRange:range replacementText:text] ||
       [h5Style handleNewlinesInRange:range replacementText:text] ||
       [h6Style handleNewlinesInRange:range replacementText:text] ||
+      [h1Style handleBackspaceInRange:range replacementText:text] ||
+      [h2Style handleBackspaceInRange:range replacementText:text] ||
+      [h3Style handleBackspaceInRange:range replacementText:text] ||
+      [h4Style handleBackspaceInRange:range replacementText:text] ||
+      [h5Style handleBackspaceInRange:range replacementText:text] ||
+      [h6Style handleBackspaceInRange:range replacementText:text] ||
       [ZeroWidthSpaceUtils handleBackspaceInRange:range
                                   replacementText:text
                                             input:self] ||
