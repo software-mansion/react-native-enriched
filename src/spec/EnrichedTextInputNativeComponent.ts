@@ -189,6 +189,13 @@ interface TargetedEvent {
   target: Int32;
 }
 
+export interface PastedImage {
+  uri: string;
+  type: string;
+  width: Float;
+  height: Float;
+}
+
 export interface OnPasteImagesEvent {
   images: {
     uri: string;

@@ -1,4 +1,4 @@
-#import "UIImage+animatedGIF.h"
+#import "ImageExtension.h"
 #import <ImageIO/ImageIO.h>
 #include <cmath>
 #include <vector>
@@ -13,7 +13,7 @@
 
 // implementation from:
 // https://github.com/mayoff/uiimage-from-animated-gif/blob/master/uiimage-from-animated-gif/UIImage%2BanimatedGIF.m
-@implementation UIImage (animatedGIF)
+@implementation UIImage (ImageExtension)
 
 static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source,
                                             size_t const i) {

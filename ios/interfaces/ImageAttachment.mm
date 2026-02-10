@@ -1,5 +1,5 @@
 #import "ImageAttachment.h"
-#import "UIImage+animatedGIF.h"
+#import "ImageExtension.h"
 
 @implementation ImageAttachment
 

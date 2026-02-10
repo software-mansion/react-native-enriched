@@ -75,6 +75,9 @@
   NSArray<NSString *> *pasteboardTypes = pasteboard.pasteboardTypes;
   NSRange currentRange = typedInput->textView.selectedRange;
 
+  // Check the pasteboard for supported image formats. If found, save them to
+  // temporary storage then emit the 'onPasteImages' event and stop processing
+  // further (ignoring any HTML/Text).
   NSMutableArray<NSDictionary *> *foundImages = [NSMutableArray new];
 
   for (NSDictionary<NSString *, id> *item in pasteboard.items) {
