@@ -131,9 +131,15 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   androidExperimentalSynchronousEvents?: boolean;
 }
 
-const warnAboutMissconfiguredMentions = (indicator: string) => {
+const warnMentionIndicators = (indicator: string) => {
   console.warn(
     `Looks like you are trying to set a "${indicator}" but it's not in the mentionIndicators prop`
+  );
+};
+
+const warnConflictingFontSize = () => {
+  console.warn(
+    'Using the same fontSize for the editor and for heading styles may lead to unexpected behavior. Please consider using different font sizes.'
   );
 };
 
@@ -200,6 +206,28 @@ export const EnrichedTextInput = ({
     () => toNativeRegexConfig(_linkRegex),
     [_linkRegex]
   );
+
+  if (__DEV__) {
+    const fontSize = (style as TextStyle | undefined)?.fontSize;
+    // That's not breaking the rules of hooks because it's conditional on __DEV__ which is a compile time constant
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(() => {
+      if (!fontSize) return;
+
+      const fontSizes = [
+        normalizedHtmlStyle.h1?.fontSize,
+        normalizedHtmlStyle.h2?.fontSize,
+        normalizedHtmlStyle.h3?.fontSize,
+        normalizedHtmlStyle.h4?.fontSize,
+        normalizedHtmlStyle.h5?.fontSize,
+        normalizedHtmlStyle.h6?.fontSize,
+      ];
+
+      if (fontSizes.includes(fontSize)) {
+        warnConflictingFontSize();
+      }
+    }, [normalizedHtmlStyle, fontSize]);
+  }
 
   useImperativeHandle(ref, () => ({
     measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => {
@@ -309,7 +337,7 @@ export const EnrichedTextInput = ({
     },
     startMention: (indicator: string) => {
       if (!mentionIndicators?.includes(indicator)) {
-        warnAboutMissconfiguredMentions(indicator);
+        warnMentionIndicators(indicator);
       }
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
@@ -363,6 +391,37 @@ export const EnrichedTextInput = ({
     pendingHtmlRequests.current.delete(requestId);
   };
 
+  const onChangeStateWithDeprecated = (
+    e: NativeSyntheticEvent<OnChangeStateEvent>
+  ) => {
+    onChangeState?.(e);
+    // TODO: remove in 0.5.0 release
+    onChangeStateDeprecated?.({
+      ...e,
+      nativeEvent: {
+        isBold: e.nativeEvent.bold.isActive,
+        isItalic: e.nativeEvent.italic.isActive,
+        isUnderline: e.nativeEvent.underline.isActive,
+        isStrikeThrough: e.nativeEvent.strikeThrough.isActive,
+        isInlineCode: e.nativeEvent.inlineCode.isActive,
+        isH1: e.nativeEvent.h1.isActive,
+        isH2: e.nativeEvent.h2.isActive,
+        isH3: e.nativeEvent.h3.isActive,
+        isH4: e.nativeEvent.h4.isActive,
+        isH5: e.nativeEvent.h5.isActive,
+        isH6: e.nativeEvent.h6.isActive,
+        isCodeBlock: e.nativeEvent.codeBlock.isActive,
+        isBlockQuote: e.nativeEvent.blockQuote.isActive,
+        isOrderedList: e.nativeEvent.orderedList.isActive,
+        isUnorderedList: e.nativeEvent.unorderedList.isActive,
+        isCheckboxList: e.nativeEvent.checkboxList.isActive,
+        isLink: e.nativeEvent.link.isActive,
+        isImage: e.nativeEvent.image.isActive,
+        isMention: e.nativeEvent.mention.isActive,
+      },
+    });
+  };
+
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -384,8 +443,7 @@ export const EnrichedTextInput = ({
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeState}
-      onChangeStateDeprecated={onChangeStateDeprecated}
+      onChangeState={onChangeStateWithDeprecated}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
