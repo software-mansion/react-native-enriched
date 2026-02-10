@@ -342,7 +342,17 @@ class EnrichedTextInputView : AppCompatEditText {
 
     if (currentText.isEmpty()) {
       setValue(value)
+      return
+    }
 
+    var safeStart = start.coerceAtLeast(0)
+    var safeEnd = end.coerceAtLeast(0)
+
+    val textLength = currentText.length
+    safeStart = safeStart.coerceAtMost(textLength)
+    safeEnd = safeEnd.coerceAtMost(textLength)
+
+    if (safeEnd < safeStart) {
       return
     }
 
@@ -350,15 +360,16 @@ class EnrichedTextInputView : AppCompatEditText {
       val newText = parseText(value)
 
       currentText.replace(
-        if (currentText.length < start) currentText.length else start,
-        if (currentText.length < end) currentText.length else end,
+        safeStart,
+        safeEnd,
         newText,
       )
 
       observeAsyncImages()
 
       // Scroll to the last char of inserted text
-      setSelection(start + newText.length)
+      val newCursorPos = (safeStart + newText.length).coerceAtMost(currentText.length)
+      setSelection(newCursorPos)
     }
   }
 
