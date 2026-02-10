@@ -1211,18 +1211,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)insertValue:(NSString *)value
               start:(NSInteger)visibleStart
                 end:(NSInteger)visibleEnd {
-  if (textView.text.length == 0) {
+  if (value == nil) {
+    return;
+  }
+
+  NSString *currentText = textView.text;
+  NSInteger textLength = currentText.length;
+
+  if (textLength == 0) {
     [self setValue:value];
 
     return;
   }
 
-  if (textView.text.length < visibleStart) {
-    visibleStart = textView.text.length;
+  if (visibleStart < 0) {
+    visibleStart = 0;
+  }
+  if (visibleEnd < 0) {
+    visibleEnd = 0;
   }
 
-  if (textView.text.length < visibleEnd) {
-    visibleEnd = textView.text.length;
+  if (visibleStart > textLength) {
+    visibleStart = textLength;
+  }
+  if (visibleEnd > textLength) {
+    visibleEnd = textLength;
+  }
+
+  if (visibleEnd < visibleStart) {
+    return;
   }
 
   NSRange range = NSMakeRange(visibleStart, visibleEnd - visibleStart);
