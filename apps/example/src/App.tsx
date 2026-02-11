@@ -10,6 +10,7 @@ import {
   type OnChangeSelectionEvent,
   type HtmlStyle,
   type OnKeyPressEvent,
+  type OnPasteImagesEvent,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { Button } from './components/Button';
@@ -247,7 +248,8 @@ export default function App() {
 
     if (imageUri) {
       const { finalWidth, finalHeight } = prepareImageDimensions(
-        asset,
+        asset.width,
+        asset.height,
         width,
         height
       );
@@ -299,6 +301,18 @@ export default function App() {
     setSelection(sel);
   };
 
+  const handlePasteImagesEvent = (e: OnPasteImagesEvent) => {
+    console.log('Pasted images:', e.images);
+
+    e.images.forEach((image) => {
+      const { finalWidth, finalHeight } = prepareImageDimensions(
+        image.width,
+        image.height
+      );
+      ref.current?.setImage(image.uri, finalWidth, finalHeight);
+    });
+  };
+
   return (
     <>
       <ScrollView
@@ -333,6 +347,7 @@ export default function App() {
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }
+            onPasteImages={(e) => handlePasteImagesEvent(e.nativeEvent)}
           />
           <Toolbar
             stylesState={stylesState}

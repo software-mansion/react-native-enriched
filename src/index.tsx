@@ -8,5 +8,6 @@ export type {
   OnMentionDetected,
   OnChangeSelectionEvent,
   OnKeyPressEvent,
+  OnPasteImagesEvent,
 } from './spec/EnrichedTextInputNativeComponent';
 export type { HtmlStyle, MentionStyleProperties } from './types';

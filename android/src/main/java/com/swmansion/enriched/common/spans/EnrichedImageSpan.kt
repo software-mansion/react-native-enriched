@@ -3,9 +3,11 @@ package com.swmansion.enriched.common.spans
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.ImageDecoder
 import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.text.Editable
 import android.text.Spannable
 import android.text.style.ImageSpan
@@ -17,6 +19,7 @@ import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ForceRedrawSpan
 import com.swmansion.enriched.common.ResourceManager
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
+import java.io.File
 
 open class EnrichedImageSpan :
   ImageSpan,
@@ -126,7 +129,11 @@ open class EnrichedImageSpan :
   fun getHeight(): Int = height
 
   companion object {
-    fun prepareDrawableForImage(src: String): Drawable? {
+    fun prepareDrawableForImage(
+      src: String,
+      width: Int,
+      height: Int,
+    ): Drawable? {
       var cleanPath = src
 
       if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
@@ -137,22 +144,41 @@ open class EnrichedImageSpan :
         cleanPath = cleanPath.substring(7)
       }
 
-      var drawable: BitmapDrawable? = null
-
-      try {
-        val bitmap = BitmapFactory.decodeFile(cleanPath)
-        if (bitmap != null) {
-          drawable = bitmap.toDrawable(Resources.getSystem())
-          // set bounds so it knows how big it is naturally,
-          // though EnrichedImageSpan will override this with the HTML width/height later.
-          drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight())
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        return try {
+          val bitmap = BitmapFactory.decodeFile(cleanPath) ?: return null
+          val drawable = bitmap.toDrawable(Resources.getSystem())
+          drawable.setBounds(0, 0, bitmap.width, bitmap.height)
+          return drawable
+        } catch (e: Exception) {
+          Log.e("EnrichedImageSpan", "Failed to load legacy image: $cleanPath", e)
+          null
         }
-      } catch (e: Exception) {
-        // Failed to load file
-        Log.e("EnrichedImageSpan", "Failed to load image from path: $cleanPath", e)
       }
 
-      return drawable
+      return try {
+        val file = File(cleanPath)
+        val source = ImageDecoder.createSource(file)
+
+        val density = Resources.getSystem().displayMetrics.density
+        val targetWidthPx = (width * density).toInt()
+        val targetHeightPx = (height * density).toInt()
+
+        val drawable =
+          ImageDecoder.decodeDrawable(source) { decoder, info, source ->
+            decoder.setTargetSize(targetWidthPx, targetHeightPx)
+          }
+
+        if (drawable is AnimatedImageDrawable) {
+          drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+          drawable.repeatCount = AnimatedImageDrawable.REPEAT_INFINITE
+          drawable.start()
+        }
+        drawable
+      } catch (e: Exception) {
+        Log.e("EnrichedImageSpan", "Failed to load image: $cleanPath", e)
+        null
+      }
     }
   }
 }

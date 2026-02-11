@@ -1,4 +1,5 @@
 #import "ImageAttachment.h"
+#import "ImageExtension.h"
 
 @implementation ImageAttachment
 
@@ -8,6 +9,10 @@
     return nil;
 
   _imageData = data;
+
+  // Assign an empty image to reserve layout space within the text system.
+  // The actual image is not drawn here; it is rendered and overlaid by a
+  // separate ImageView.
   self.image = [UIImage new];
 
   [self loadAsync];
@@ -17,17 +22,22 @@
 - (void)loadAsync {
   NSURL *url = [NSURL URLWithString:self.uri];
   if (!url) {
-    self.image = [UIImage systemImageNamed:@"file"];
+    self.storedAnimatedImage = [UIImage systemImageNamed:@"photo"];
     return;
   }
 
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
     NSData *bytes = [NSData dataWithContentsOfURL:url];
-    UIImage *img = bytes ? [UIImage imageWithData:bytes]
-                         : [UIImage systemImageNamed:@"file"];
+
+    // We pass all image data (including static formats like PNG or JPEG)
+    // through the GIF parser. It safely acts as a universal parser, returning
+    // a single-frame UIImage for static formats and an animated UIImage for
+    // GIFs.
+    UIImage *img = bytes ? [UIImage animatedImageWithAnimatedGIFData:bytes]
+                         : [UIImage systemImageNamed:@"photo"];
 
     dispatch_async(dispatch_get_main_queue(), ^{
-      self.image = img;
+      self.storedAnimatedImage = img;
       [self notifyUpdate];
     });
   });

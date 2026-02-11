@@ -413,6 +413,27 @@ export interface OnKeyPressEvent {
 |----------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
 
+### `OnPasteImages`
+
+Callback invoked when the user pastes one or more images or GIFs into the input.
+
+- `images` - is an array of objects containing the details (URI, MIME type, and dimensions) for each pasted image/GIF.
+
+```ts
+export interface OnPasteImagesEvent {
+  images: {
+    uri: string;
+    type: string;
+    width: Float;
+    height: Float;
+  }[];
+}
+```
+
+| Type                                                        | Platform |
+| ----------------------------------------------------------- | -------- |
+| `(event: NativeSyntheticEvent<OnPasteImagesEvent>) => void` | Both     |
+
 ### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
