@@ -136,63 +136,73 @@
     return NO;
   }
 
-  if (text.length == 0) {
-    NSRange leftRange = [typedInput->textView.textStorage.string
-        paragraphRangeForRange:NSMakeRange(range.location, 0)];
-
-    id<BaseStyleProtocol> leftParagraphStyle = nullptr;
-    for (NSNumber *key in typedInput->stylesDict) {
-      id<BaseStyleProtocol> style = typedInput->stylesDict[key];
-      if ([[style class] isParagraphStyle] && [style detectStyle:leftRange]) {
-        leftParagraphStyle = style;
-      }
-    }
-
-    if (leftParagraphStyle == nullptr) {
-      return NO;
-    }
-
-    // index out of bounds
-    NSUInteger rightRangeStart = range.location + range.length;
-    if (rightRangeStart >= typedInput->textView.textStorage.string.length) {
-      return NO;
-    }
-
-    NSRange rightRange = [typedInput->textView.textStorage.string
-        paragraphRangeForRange:NSMakeRange(rightRangeStart, 1)];
-
-    StyleType type = [[leftParagraphStyle class] getStyleType];
-
-    NSArray *conflictingStyles = [typedInput
-        getPresentStyleTypesFrom:typedInput->conflictingStyles[@(type)]
-                           range:rightRange];
-    NSArray *blockingStyles =
-        [typedInput getPresentStyleTypesFrom:typedInput->blockingStyles[@(type)]
-                                       range:rightRange];
-    NSArray *allToBeRemoved =
-        [conflictingStyles arrayByAddingObjectsFromArray:blockingStyles];
-
-    for (NSNumber *style in allToBeRemoved) {
-      id<BaseStyleProtocol> styleClass = typedInput->stylesDict[style];
-
-      // for ranges, we need to remove each occurence
-      NSArray<StylePair *> *allOccurences =
-          [styleClass findAllOccurences:rightRange];
-
-      for (StylePair *pair in allOccurences) {
-        [styleClass removeAttributes:[pair.rangeValue rangeValue]];
-      }
-    }
-
-    [TextInsertionUtils replaceText:text
-                                 at:range
-               additionalAttributes:nullptr
-                              input:typedInput
-                      withSelection:YES];
-    return YES;
+  // Must be a backspace.
+  if (text.length > 0) {
+    return NO;
   }
 
-  return NO;
+  // Backspace must have removed a newline character.
+  NSString *removedString =
+      [typedInput->textView.textStorage.string substringWithRange:range];
+  if ([removedString
+          rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]]
+          .location == NSNotFound) {
+    return NO;
+  }
+
+  NSRange leftRange = [typedInput->textView.textStorage.string
+      paragraphRangeForRange:NSMakeRange(range.location, 0)];
+
+  id<BaseStyleProtocol> leftParagraphStyle = nullptr;
+  for (NSNumber *key in typedInput->stylesDict) {
+    id<BaseStyleProtocol> style = typedInput->stylesDict[key];
+    if ([[style class] isParagraphStyle] && [style detectStyle:leftRange]) {
+      leftParagraphStyle = style;
+    }
+  }
+
+  if (leftParagraphStyle == nullptr) {
+    return NO;
+  }
+
+  // index out of bounds
+  NSUInteger rightRangeStart = range.location + range.length;
+  if (rightRangeStart >= typedInput->textView.textStorage.string.length) {
+    return NO;
+  }
+
+  NSRange rightRange = [typedInput->textView.textStorage.string
+      paragraphRangeForRange:NSMakeRange(rightRangeStart, 1)];
+
+  StyleType type = [[leftParagraphStyle class] getStyleType];
+
+  NSArray *conflictingStyles = [typedInput
+      getPresentStyleTypesFrom:typedInput->conflictingStyles[@(type)]
+                         range:rightRange];
+  NSArray *blockingStyles =
+      [typedInput getPresentStyleTypesFrom:typedInput->blockingStyles[@(type)]
+                                     range:rightRange];
+  NSArray *allToBeRemoved =
+      [conflictingStyles arrayByAddingObjectsFromArray:blockingStyles];
+
+  for (NSNumber *style in allToBeRemoved) {
+    id<BaseStyleProtocol> styleClass = typedInput->stylesDict[style];
+
+    // for ranges, we need to remove each occurence
+    NSArray<StylePair *> *allOccurences =
+        [styleClass findAllOccurences:rightRange];
+
+    for (StylePair *pair in allOccurences) {
+      [styleClass removeAttributes:[pair.rangeValue rangeValue]];
+    }
+  }
+
+  [TextInsertionUtils replaceText:text
+                               at:range
+             additionalAttributes:nullptr
+                            input:typedInput
+                    withSelection:YES];
+  return YES;
 }
 
 /**

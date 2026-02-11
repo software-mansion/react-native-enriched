@@ -5,6 +5,9 @@
 + (StyleType)getStyleType {
   return H2;
 }
+- (NSString *)getHeadingLevelString {
+  return @"H2";
+}
 + (BOOL)isParagraphStyle {
   return YES;
 }

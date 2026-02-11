@@ -796,9 +796,6 @@ interface MentionStyleProperties {
 - `fontSize` is the size of the heading's font. Defaults to `32` for `H1`, `24` for `H2`, `20` for `H3`, `16` for `H4`, `14` for `H5`, `12` for `H6`.
 - `bold` defines whether the heading should be bolded, defaults to `false`.
 
-> [!NOTE]
-> On iOS, the headings cannot have same `fontSize` as the component's `fontSize`. Doing so results in unexpected behavior.
-
 ### blockquote
 
 - `borderColor` defines the color of the rectangular border drawn to the left of blockquote text. Takes [color](https://reactnative.dev/docs/colors) value, defaults to `darkgray`.
