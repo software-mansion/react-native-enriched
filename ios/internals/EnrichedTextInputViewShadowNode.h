@@ -17,7 +17,6 @@ class EnrichedTextInputViewShadowNode
     : public ConcreteViewShadowNode<
           EnrichedTextInputViewComponentName, EnrichedTextInputViewProps,
           EnrichedTextInputViewEventEmitter, EnrichedTextInputViewState> {
-
 public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
   EnrichedTextInputViewShadowNode(const ShadowNodeFragment &fragment,
@@ -26,7 +25,6 @@ public:
   EnrichedTextInputViewShadowNode(const ShadowNode &sourceShadowNode,
                                   const ShadowNodeFragment &fragment);
   void dirtyLayoutIfNeeded();
-
   Size
   measureContent(const LayoutContext &layoutContext,
                  const LayoutConstraints &layoutConstraints) const override;
@@ -39,7 +37,7 @@ public:
   }
 
 private:
-  mutable Size _prevContentSize{NAN, NAN};
+  int localForceHeightRecalculationCounter_;
   id setupMockTextInputView_() const;
 };
 
