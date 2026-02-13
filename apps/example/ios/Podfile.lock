@@ -1807,7 +1807,7 @@ PODS:
     - React-utils (= 0.84.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.84.0)
-  - ReactNativeEnriched (0.3.0):
+  - ReactNativeEnriched (0.4.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety

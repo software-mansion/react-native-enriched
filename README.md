@@ -105,8 +105,8 @@ export default function App() {
         style={styles.input}
       />
       <Button
-        title={stylesState?.isBold ? 'Unbold' : 'Bold'}
-        color={stylesState?.isBold ? 'green' : 'gray'}
+        title={stylesState?.bold.isActive ? 'Unbold' : 'Bold'}
+        color={stylesState?.bold.isActive ? 'green' : 'gray'}
         onPress={() => ref.current?.toggleBold()}
       />
     </View>
