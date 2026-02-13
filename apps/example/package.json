@@ -10,24 +10,25 @@
     "build:ios": "react-native build-ios --scheme EnrichedTextInputExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\""
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-native": "0.83.0",
+    "react": "19.2.3",
+    "react-native": "0.84.0",
     "react-native-image-picker": "^8.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "20.0.0",
-    "@react-native-community/cli-platform-android": "20.0.0",
-    "@react-native-community/cli-platform-ios": "20.0.0",
-    "@react-native/babel-preset": "0.83.0",
-    "@react-native/metro-config": "0.83.0",
-    "@react-native/typescript-config": "0.83.0",
+    "@react-native-community/cli": "20.1.0",
+    "@react-native-community/cli-platform-android": "20.1.0",
+    "@react-native-community/cli-platform-ios": "20.1.0",
+    "@react-native/babel-preset": "0.84.0",
+    "@react-native/metro-config": "0.84.0",
+    "@react-native/typescript-config": "0.84.0",
     "@types/react": "^19.2.0",
-    "react-native-builder-bob": "^0.40.13"
+    "react-native-builder-bob": "^0.40.18",
+    "react-native-monorepo-config": "0.3.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.11.0"
   }
 }
