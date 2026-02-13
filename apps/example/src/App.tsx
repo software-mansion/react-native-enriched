@@ -1,4 +1,6 @@
-import { View, StyleSheet, Text, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, Text, Platform } from 'react-native';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   EnrichedTextInput,
   type OnChangeTextEvent,
@@ -314,92 +316,98 @@ export default function App() {
   };
 
   return (
-    <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <Text style={styles.label}>Enriched Text Input</Text>
-        <View style={styles.editor}>
-          <EnrichedTextInput
-            ref={ref}
-            mentionIndicators={['@', '#']}
-            style={styles.editorInput}
-            htmlStyle={htmlStyle}
-            placeholder="Type something here..."
-            placeholderTextColor="rgb(0, 26, 114)"
-            selectionColor="deepskyblue"
-            cursorColor="dodgerblue"
-            autoCapitalize="sentences"
-            linkRegex={LINK_REGEX}
-            onChangeText={(e) => handleChangeText(e.nativeEvent)}
-            onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
-            onChangeState={(e) => handleChangeState(e.nativeEvent)}
-            onLinkDetected={handleLinkDetected}
-            onMentionDetected={console.log}
-            onStartMention={handleStartMention}
-            onChangeMention={handleChangeMention}
-            onEndMention={handleEndMention}
-            onFocus={handleFocusEvent}
-            onBlur={handleBlurEvent}
-            onChangeSelection={(e) => handleSelectionChangeEvent(e.nativeEvent)}
-            onKeyPress={(e) => handleKeyPress(e.nativeEvent)}
-            androidExperimentalSynchronousEvents={
-              ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
-            }
-            onPasteImages={(e) => handlePasteImagesEvent(e.nativeEvent)}
+    <GestureHandlerRootView
+      style={[styles.container, { backgroundColor: 'red' }]}
+    >
+      <BottomSheet>
+        <BottomSheetScrollView
+          style={styles.container}
+          contentContainerStyle={styles.content}
+        >
+          <Text style={styles.label}>Enriched Text Input</Text>
+          <View style={styles.editor}>
+            <EnrichedTextInput
+              ref={ref}
+              mentionIndicators={['@', '#']}
+              style={styles.editorInput}
+              htmlStyle={htmlStyle}
+              placeholder="Type something here..."
+              placeholderTextColor="rgb(0, 26, 114)"
+              selectionColor="deepskyblue"
+              cursorColor="dodgerblue"
+              autoCapitalize="sentences"
+              linkRegex={LINK_REGEX}
+              onChangeText={(e) => handleChangeText(e.nativeEvent)}
+              onChangeHtml={(e) => handleChangeHtml(e.nativeEvent)}
+              onChangeState={(e) => handleChangeState(e.nativeEvent)}
+              onLinkDetected={handleLinkDetected}
+              onMentionDetected={console.log}
+              onStartMention={handleStartMention}
+              onChangeMention={handleChangeMention}
+              onEndMention={handleEndMention}
+              onFocus={handleFocusEvent}
+              onBlur={handleBlurEvent}
+              onChangeSelection={(e) =>
+                handleSelectionChangeEvent(e.nativeEvent)
+              }
+              onKeyPress={(e) => handleKeyPress(e.nativeEvent)}
+              androidExperimentalSynchronousEvents={
+                ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
+              }
+              onPasteImages={(e) => handlePasteImagesEvent(e.nativeEvent)}
+            />
+            <Toolbar
+              stylesState={stylesState}
+              editorRef={ref}
+              onOpenLinkModal={openLinkModal}
+              onSelectImage={openImageModal}
+            />
+          </View>
+          <View style={styles.buttonStack}>
+            <Button title="Focus" onPress={handleFocus} style={styles.button} />
+            <Button title="Blur" onPress={handleBlur} style={styles.button} />
+          </View>
+          <Button
+            title="Set input's value"
+            onPress={openValueModal}
+            style={styles.valueButton}
           />
-          <Toolbar
-            stylesState={stylesState}
-            editorRef={ref}
-            onOpenLinkModal={openLinkModal}
-            onSelectImage={openImageModal}
-          />
-        </View>
-        <View style={styles.buttonStack}>
-          <Button title="Focus" onPress={handleFocus} style={styles.button} />
-          <Button title="Blur" onPress={handleBlur} style={styles.button} />
-        </View>
-        <Button
-          title="Set input's value"
-          onPress={openValueModal}
-          style={styles.valueButton}
+          <HtmlSection currentHtml={currentHtml} />
+          {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+        </BottomSheetScrollView>
+        <LinkModal
+          isOpen={isLinkModalOpen}
+          editedText={
+            insideCurrentLink ? currentLink.text : (selection?.text ?? '')
+          }
+          editedUrl={insideCurrentLink ? currentLink.url : ''}
+          onSubmit={submitLink}
+          onClose={closeLinkModal}
         />
-        <HtmlSection currentHtml={currentHtml} />
-        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
-      </ScrollView>
-      <LinkModal
-        isOpen={isLinkModalOpen}
-        editedText={
-          insideCurrentLink ? currentLink.text : (selection?.text ?? '')
-        }
-        editedUrl={insideCurrentLink ? currentLink.url : ''}
-        onSubmit={submitLink}
-        onClose={closeLinkModal}
-      />
-      <ImageModal
-        isOpen={isImageModalOpen}
-        onSubmit={selectImage}
-        onClose={closeImageModal}
-      />
-      <ValueModal
-        isOpen={isValueModalOpen}
-        onSubmit={submitSetValue}
-        onClose={closeValueModal}
-      />
-      <MentionPopup
-        variant="user"
-        data={userMention.data}
-        isOpen={isUserPopupOpen}
-        onItemPress={handleUserMentionSelected}
-      />
-      <MentionPopup
-        variant="channel"
-        data={channelMention.data}
-        isOpen={isChannelPopupOpen}
-        onItemPress={handleChannelMentionSelected}
-      />
-    </>
+        <ImageModal
+          isOpen={isImageModalOpen}
+          onSubmit={selectImage}
+          onClose={closeImageModal}
+        />
+        <ValueModal
+          isOpen={isValueModalOpen}
+          onSubmit={submitSetValue}
+          onClose={closeValueModal}
+        />
+        <MentionPopup
+          variant="user"
+          data={userMention.data}
+          isOpen={isUserPopupOpen}
+          onItemPress={handleUserMentionSelected}
+        />
+        <MentionPopup
+          variant="channel"
+          data={channelMention.data}
+          isOpen={isChannelPopupOpen}
+          onItemPress={handleChannelMentionSelected}
+        />
+      </BottomSheet>
+    </GestureHandlerRootView>
   );
 }
 
@@ -514,7 +522,7 @@ const styles = StyleSheet.create({
   editorInput: {
     marginTop: 24,
     width: '100%',
-    maxHeight: 180,
+    maxHeight: 250,
     backgroundColor: 'gainsboro',
     fontSize: 18,
     fontFamily: 'Nunito-Regular',
