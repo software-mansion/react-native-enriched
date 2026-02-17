@@ -185,6 +185,18 @@ export interface OnKeyPressEvent {
   key: string;
 }
 
+export interface ContextMenuItemConfig {
+  text: string;
+  visible: boolean;
+}
+
+export interface OnContextMenuItemPressEvent {
+  index: Int32;
+  selectedText: string;
+  selectionStart: Int32;
+  selectionEnd: Int32;
+}
+
 interface TargetedEvent {
   target: Int32;
 }
@@ -273,6 +285,7 @@ export interface NativeProps extends ViewProps {
   htmlStyle?: HtmlStyleInternal;
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
+  contextMenuItems?: ReadonlyArray<Readonly<ContextMenuItemConfig>>;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<TargetedEvent>;
@@ -287,6 +300,7 @@ export interface NativeProps extends ViewProps {
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
   onPasteImages?: DirectEventHandler<OnPasteImagesEvent>;
+  onContextMenuItemPress?: DirectEventHandler<OnContextMenuItemPressEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

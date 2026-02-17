@@ -30,6 +30,7 @@ We can help you build your next dream product –
 - [Inline Images](#inline-images)
 - [Style Detection](#style-detection)
 - [Other Events](#other-events)
+- [Context Menu Items](#context-menu-items)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 - [API Reference](#api-reference)
 - [Known limitations](#known-limitations)
@@ -231,6 +232,34 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 - [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
 - [onPasteImages](docs/API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
+
+## Context Menu Items
+
+> **Note:** This feature is currently supported on iOS only (iOS 16+).
+
+You can extend the native text editing menu with custom items using the [contextMenuItems](docs/API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
+
+```tsx
+<EnrichedTextInput
+  ref={ref}
+  contextMenuItems={[
+    {
+      text: 'Paste Link',
+      onPress: (selectedText, selection, stylesState) => {
+        if (!styleState.link.isBlocking) {
+          ref.current?.setLink(
+            selection.start,
+            selection.end,
+            selectedText,
+            url
+          );
+        }
+      },
+      visible: true,
+    },
+  ]}
+/>
+```
 
 ## Customizing \<EnrichedTextInput /> styles
 

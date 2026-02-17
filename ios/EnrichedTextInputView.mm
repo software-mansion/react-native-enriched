@@ -50,6 +50,7 @@ using namespace facebook::react;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
+  NSArray<NSDictionary *> *_contextMenuItems;
 }
 
 // MARK: - Component utils
@@ -849,6 +850,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // isOnChangeTextSet
   _emitTextChange = newViewProps.isOnChangeTextSet;
+
+  // contextMenuItems
+  bool contextMenuChanged = newViewProps.contextMenuItems.size() !=
+                            oldViewProps.contextMenuItems.size();
+  if (!contextMenuChanged) {
+    for (size_t i = 0; i < newViewProps.contextMenuItems.size(); i++) {
+      if (newViewProps.contextMenuItems[i].text !=
+              oldViewProps.contextMenuItems[i].text ||
+          newViewProps.contextMenuItems[i].visible !=
+              oldViewProps.contextMenuItems[i].visible) {
+        contextMenuChanged = true;
+        break;
+      }
+    }
+  }
+  if (contextMenuChanged) {
+    NSMutableArray<NSDictionary *> *items = [NSMutableArray new];
+    for (const auto &item : newViewProps.contextMenuItems) {
+      [items addObject:@{
+        @"text" : [NSString fromCppString:item.text],
+        @"visible" : @(item.visible)
+      }];
+    }
+    _contextMenuItems = [items copy];
+  }
 
   [super updateProps:props oldProps:oldProps];
   // run the changes callback
@@ -1795,6 +1821,64 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (emitter != nullptr && _emitFocusBlur) {
     // send onBlur event
     emitter->onInputBlur({});
+  }
+}
+
+- (UIMenu *)textView:(UITextView *)tv
+    editMenuForTextInRange:(NSRange)range
+          suggestedActions:(NSArray<UIMenuElement *> *)suggestedActions
+    API_AVAILABLE(ios(16.0)) {
+  if (_contextMenuItems == nil || _contextMenuItems.count == 0) {
+    return [UIMenu menuWithChildren:suggestedActions];
+  }
+
+  NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
+
+  for (NSUInteger i = 0; i < _contextMenuItems.count; i++) {
+    NSDictionary *item = _contextMenuItems[i];
+    BOOL visible = [item[@"visible"] boolValue];
+    if (!visible) {
+      continue;
+    }
+
+    NSString *title = item[@"text"];
+    NSUInteger capturedIndex = i;
+    __weak EnrichedTextInputView *weakSelf = self;
+
+    UIAction *action = [UIAction
+        actionWithTitle:title
+                  image:nil
+             identifier:nil
+                handler:^(__kindof UIAction *_Nonnull action) {
+                  [weakSelf emitOnContextMenuItemPressEvent:capturedIndex];
+                }];
+    [customActions addObject:action];
+  }
+
+  if (customActions.count == 0) {
+    return [UIMenu menuWithChildren:suggestedActions];
+  }
+
+  [customActions addObjectsFromArray:suggestedActions];
+  return [UIMenu menuWithChildren:customActions];
+}
+
+- (void)emitOnContextMenuItemPressEvent:(NSUInteger)index {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSRange selectedRange = textView.selectedRange;
+    NSString *selectedText = @"";
+    if (selectedRange.length > 0) {
+      selectedText =
+          [textView.textStorage.string substringWithRange:selectedRange];
+    }
+
+    emitter->onContextMenuItemPress(
+        {.index = static_cast<int>(index),
+         .selectedText = [selectedText toCppString],
+         .selectionStart = static_cast<int>(selectedRange.location),
+         .selectionEnd =
+             static_cast<int>(selectedRange.location + selectedRange.length)});
   }
 }
 
