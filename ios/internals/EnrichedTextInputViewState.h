@@ -1,24 +1,21 @@
 #pragma once
-#include <react/renderer/graphics/Size.h>
+#include <memory>
 
 namespace facebook::react {
 
 class EnrichedTextInputViewState {
 public:
-  EnrichedTextInputViewState() = default;
-
-  explicit EnrichedTextInputViewState(Size contentSize,
-                                      std::shared_ptr<void> ref)
-      : contentSize_(contentSize), componentViewRef_(std::move(ref)) {}
-
-  const Size &getContentSize() const { return contentSize_; }
-
-  const std::shared_ptr<void> getComponentViewRef() const {
-    return componentViewRef_;
+  EnrichedTextInputViewState()
+      : forceHeightRecalculationCounter_(0), componentViewRef_(nullptr) {}
+  EnrichedTextInputViewState(int counter, std::shared_ptr<void> ref) {
+    forceHeightRecalculationCounter_ = counter;
+    componentViewRef_ = ref;
   }
+  int getForceHeightRecalculationCounter() const;
+  std::shared_ptr<void> getComponentViewRef() const;
 
 private:
-  Size contentSize_{};
+  int forceHeightRecalculationCounter_{};
   std::shared_ptr<void> componentViewRef_{};
 };
 

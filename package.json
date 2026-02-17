@@ -1,6 +1,6 @@
 {
   "name": "react-native-enriched",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Rich Text Editor component for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
@@ -90,7 +90,7 @@
     "prettier": "^3.0.3",
     "react": "19.1.0",
     "react-native": "0.81.0",
-    "react-native-builder-bob": "^0.40.6",
+    "react-native-builder-bob": "^0.40.18",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.8.3"
