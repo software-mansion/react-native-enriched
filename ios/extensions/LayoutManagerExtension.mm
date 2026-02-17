@@ -406,10 +406,12 @@ static void const *kInputKey = &kInputKey;
               origin:(CGPoint)origin
             usedRect:(CGRect)usedRect {
   CGFloat gapWidth = [typedInput->config orderedListGapWidth];
-  CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-  CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth / 2;
+  CGSize markerSize = [marker sizeWithAttributes:markerAttributes];
+  CGFloat markerX = usedRect.origin.x - gapWidth - markerSize.width / 2;
+  CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
+  CGFloat markerY = centerY - markerSize.height / 2.0;
 
-  [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y)
+  [marker drawAtPoint:CGPointMake(markerX, markerY)
        withAttributes:markerAttributes];
 }
 

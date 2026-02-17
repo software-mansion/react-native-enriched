@@ -272,6 +272,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                             action:@selector(onTextBlockTap:)]];
 }
 
+// MARK: - Paragraph style helpers
+
+- (void)applyLineHeightToTypingAttributes:
+    (NSMutableDictionary *)typingAttributes {
+  NSMutableParagraphStyle *paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  CGFloat lineHeightMultiplier = [config primaryLineHeight];
+  if (lineHeightMultiplier > 0) {
+    CGFloat baseFontSize = [[config scaledPrimaryFontSize] floatValue];
+    CGFloat targetLineHeight = baseFontSize * lineHeightMultiplier;
+    paragraphStyle.minimumLineHeight = targetLineHeight;
+    UIFont *font = [config primaryFont];
+    // Half-leading: split the extra space (targetLineHeight - font.lineHeight)
+    // equally above and below the text to vertically center it in the line box.
+    CGFloat baselineOffset = (targetLineHeight - font.lineHeight) / 2.0;
+    typingAttributes[NSBaselineOffsetAttributeName] = @(MAX(0, baselineOffset));
+  } else {
+    typingAttributes[NSBaselineOffsetAttributeName] = @(0);
+  }
+  typingAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
+}
+
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props
@@ -311,6 +333,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     } else {
       [newConfig setPrimaryFontSize:nullptr];
     }
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.lineHeight != oldViewProps.lineHeight) {
+    [newConfig setPrimaryLineHeight:newViewProps.lineHeight];
     stylePropChanged = YES;
   }
 
@@ -713,8 +740,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] =
         [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] =
-        [[NSParagraphStyle alloc] init];
+    [self applyLineHeightToTypingAttributes:defaultTypingAttributes];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
   }

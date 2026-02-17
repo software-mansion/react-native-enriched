@@ -10,6 +10,8 @@
 - (void)setPrimaryColor:(UIColor *)newValue;
 - (NSNumber *)primaryFontSize;
 - (void)setPrimaryFontSize:(NSNumber *)newValue;
+- (CGFloat)primaryLineHeight;
+- (void)setPrimaryLineHeight:(CGFloat)newValue;
 - (NSString *)primaryFontWeight;
 - (void)setPrimaryFontWeight:(NSString *)newValue;
 - (NSString *)primaryFontFamily;
