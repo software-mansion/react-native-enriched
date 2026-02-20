@@ -296,18 +296,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     (NSMutableDictionary *)typingAttributes {
   NSMutableParagraphStyle *paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
-  CGFloat lineHeightMultiplier = [config primaryLineHeight];
-  if (lineHeightMultiplier > 0) {
-    CGFloat baseFontSize = [[config scaledPrimaryFontSize] floatValue];
-    CGFloat targetLineHeight = baseFontSize * lineHeightMultiplier;
-    paragraphStyle.minimumLineHeight = targetLineHeight;
-    UIFont *font = [config primaryFont];
-    // Half-leading: split the extra space (targetLineHeight - font.lineHeight)
-    // equally above and below the text to vertically center it in the line box.
-    CGFloat baselineOffset = (targetLineHeight - font.lineHeight) / 2.0;
-    typingAttributes[NSBaselineOffsetAttributeName] = @(MAX(0, baselineOffset));
-  } else {
-    typingAttributes[NSBaselineOffsetAttributeName] = @(0);
+  CGFloat rawLineHeight = [config primaryLineHeight];
+  if (rawLineHeight > 0) {
+    // Scale lineHeight with the same Dynamic Type factor used for font sizes.
+    CGFloat scaledLineHeight =
+        [[UIFontMetrics defaultMetrics] scaledValueForValue:rawLineHeight];
+    paragraphStyle.minimumLineHeight = scaledLineHeight;
   }
   typingAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
 }
