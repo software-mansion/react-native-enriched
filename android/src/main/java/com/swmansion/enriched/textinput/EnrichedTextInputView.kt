@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
 import android.util.AttributeSet
@@ -328,6 +329,46 @@ class EnrichedTextInputView : AppCompatEditText {
     val actualEnd = getActualIndex(visibleEnd)
 
     setSelection(actualStart, actualEnd)
+  }
+
+  fun insertValue(
+    value: String,
+    start: Int,
+    end: Int,
+  ) {
+    val currentText = text as Editable
+
+    if (currentText.isEmpty()) {
+      setValue(value)
+      return
+    }
+
+    var safeStart = start.coerceAtLeast(0)
+    var safeEnd = end.coerceAtLeast(0)
+
+    val textLength = currentText.length
+    safeStart = safeStart.coerceAtMost(textLength)
+    safeEnd = safeEnd.coerceAtMost(textLength)
+
+    if (safeEnd < safeStart) {
+      return
+    }
+
+    runAsATransaction {
+      val newText = parseText(value)
+
+      currentText.replace(
+        safeStart,
+        safeEnd,
+        newText,
+      )
+
+      observeAsyncImages()
+
+      // Scroll to the last char of inserted text
+      val newCursorPos = (safeStart + newText.length).coerceAtMost(currentText.length)
+      setSelection(newCursorPos)
+    }
   }
 
   // Helper: Walks through the string skipping ZWSPs to find the Nth visible character
