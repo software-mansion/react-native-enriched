@@ -437,7 +437,7 @@ const htmlStyle: HtmlStyle = {
   codeblock: {
     color: 'green',
     borderRadius: 8,
-    backgroundColor: 'aquamarine',
+    backgroundColor: 'grey',
   },
   code: {
     color: 'purple',
