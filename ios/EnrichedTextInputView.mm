@@ -1884,6 +1884,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return NO;
   }
 
+  // Tapping near a link causes iOS to re-derive typingAttributes from
+  // character attributes after textViewDidChangeSelection returns, undoing
+  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
+  // before insertion, so new text never inherits link styling.
+  if (linkStyle != nullptr) {
+    [linkStyle manageLinkTypingAttributes];
+  }
+
   return YES;
 }
 
