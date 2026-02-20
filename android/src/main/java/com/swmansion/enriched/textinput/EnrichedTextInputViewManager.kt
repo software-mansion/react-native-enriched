@@ -19,6 +19,7 @@ import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.events.OnChangeSelectionEvent
 import com.swmansion.enriched.textinput.events.OnChangeStateEvent
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
+import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnInputKeyPressEvent
@@ -72,6 +73,7 @@ class EnrichedTextInputViewManager :
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
     map.put(OnPasteImagesEvent.EVENT_NAME, mapOf("registrationName" to OnPasteImagesEvent.EVENT_NAME))
+    map.put(OnContextMenuItemPressEvent.EVENT_NAME, mapOf("registrationName" to OnContextMenuItemPressEvent.EVENT_NAME))
 
     return map
   }
@@ -255,6 +257,13 @@ class EnrichedTextInputViewManager :
     value: Boolean,
   ) {
     view?.experimentalSynchronousEvents = value
+  }
+
+  override fun setContextMenuItems(
+    view: EnrichedTextInputView?,
+    value: ReadableArray?,
+  ) {
+    view?.setContextMenuItems(value)
   }
 
   override fun focus(view: EnrichedTextInputView?) {
