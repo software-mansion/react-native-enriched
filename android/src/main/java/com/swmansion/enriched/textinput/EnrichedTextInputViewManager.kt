@@ -178,7 +178,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     height: Float,
   ) {
-    // no-op
+    view?.setLineHeight(height)
   }
 
   @ReactProp(name = "fontFamily")

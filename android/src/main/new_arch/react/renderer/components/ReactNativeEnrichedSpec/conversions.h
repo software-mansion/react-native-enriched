@@ -22,6 +22,7 @@ inline folly::dynamic toDynamic(const EnrichedTextInputViewProps &props) {
   serializedProps["fontWeight"] = props.fontWeight;
   serializedProps["fontStyle"] = props.fontStyle;
   serializedProps["fontFamily"] = props.fontFamily;
+  serializedProps["lineHeight"] = props.lineHeight;
   serializedProps["htmlStyle"] = toDynamic(props.htmlStyle);
 
   return serializedProps;
@@ -35,6 +36,7 @@ inline folly::dynamic toDynamic(const EnrichedTextInputViewProps &props) {
   serializedProps["fontWeight"] = props.fontWeight;
   serializedProps["fontStyle"] = props.fontStyle;
   serializedProps["fontFamily"] = props.fontFamily;
+  serializedProps["lineHeight"] = props.lineHeight;
   // Ideally we should also serialize htmlStyle, but toDynamic function is not
   // generated in this RN version
   // As RN 0.79 and 0.80 is no longer supported, we can skip it for now
