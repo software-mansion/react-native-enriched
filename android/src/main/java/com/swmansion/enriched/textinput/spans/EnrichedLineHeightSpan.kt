@@ -2,13 +2,24 @@ package com.swmansion.enriched.textinput.spans
 
 import android.graphics.Paint
 import android.text.Spannable
+import android.text.TextPaint
 import android.text.style.LineHeightSpan
+import android.text.style.MetricAffectingSpan
 import com.facebook.react.uimanager.PixelUtil
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 
 class EnrichedLineHeightSpan(
   val lineHeight: Float,
-) : LineHeightSpan {
+) : MetricAffectingSpan(),
+  LineHeightSpan {
+  override fun updateDrawState(p0: TextPaint?) {
+    // Do nothing but inform TextView that line height should be recalculated
+  }
+
+  override fun updateMeasureState(p0: TextPaint) {
+    // Do nothing but inform TextView that line height should be recalculated
+  }
+
   override fun chooseHeight(
     text: CharSequence,
     start: Int,
