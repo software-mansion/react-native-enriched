@@ -15,16 +15,18 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
 import android.util.TypedValue
+import android.view.ActionMode
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.ViewCompat
-import androidx.core.view.inputmethod.EditorInfoCompat
-import androidx.core.view.inputmethod.InputConnectionCompat
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
@@ -36,6 +38,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.events.MentionHandler
+import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
@@ -108,6 +111,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private var inputMethodManager: InputMethodManager? = null
   private val spannableFactory = EnrichedTextInputSpannableFactory()
+  private var contextMenuItems: List<Pair<Int, String>> = emptyList()
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -389,8 +393,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   fun setCursorColor(colorInt: Int?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val cursorDrawable = textCursorDrawable
-      if (cursorDrawable == null) return
+      val cursorDrawable = textCursorDrawable ?: return
 
       if (colorInt != null) {
         cursorDrawable.colorFilter = BlendModeColorFilter(colorInt, BlendMode.SRC_IN)
@@ -490,10 +493,96 @@ class EnrichedTextInputView : AppCompatEditText {
 
     try {
       linkRegex = Pattern.compile("(?s).*?($patternStr).*", flags)
-    } catch (e: PatternSyntaxException) {
+    } catch (_: PatternSyntaxException) {
       Log.w("EnrichedTextInputView", "Invalid link regex pattern: $patternStr")
       linkRegex = Patterns.WEB_URL
     }
+  }
+
+  fun setContextMenuItems(items: ReadableArray?) {
+    if (items == null) {
+      contextMenuItems = emptyList()
+      return
+    }
+
+    val result = mutableListOf<Pair<Int, String>>()
+    for (i in 0 until items.size()) {
+      // TODO: verify "visible" filtering
+      val item = items.getMap(i) ?: continue
+      val text = item.getString("text") ?: continue
+      result.add(Pair(i, text))
+    }
+
+    contextMenuItems = result
+  }
+
+  override fun startActionMode(
+    callback: ActionMode.Callback?,
+    type: Int,
+  ): ActionMode? {
+    if (contextMenuItems.isEmpty()) {
+      return super.startActionMode(callback, type)
+    }
+
+    val wrappedCallback =
+      object : ActionMode.Callback2() {
+        override fun onCreateActionMode(
+          mode: ActionMode,
+          menu: Menu,
+        ): Boolean {
+          val result = callback?.onCreateActionMode(mode, menu) ?: false
+          for ((index, text) in contextMenuItems) {
+            menu.add(Menu.NONE, CONTEXT_MENU_ITEM_ID + index, Menu.NONE, text)
+          }
+
+          return result
+        }
+
+        override fun onPrepareActionMode(
+          mode: ActionMode,
+          menu: Menu,
+        ) = callback?.onPrepareActionMode(mode, menu) ?: false
+
+        override fun onActionItemClicked(
+          mode: ActionMode,
+          menuItem: MenuItem,
+        ): Boolean {
+          val itemId = menuItem.itemId
+          if (itemId < CONTEXT_MENU_ITEM_ID) {
+            return callback?.onActionItemClicked(mode, menuItem) ?: false
+          }
+
+          val selStart = selection?.start ?: 0
+          val selEnd = selection?.end ?: 0
+          emitContextMenuItemPressEvent(itemId - CONTEXT_MENU_ITEM_ID)
+          mode.finish()
+          post {
+            if (selStart in 0..selEnd) {
+              setSelection(selStart, selEnd)
+            }
+          }
+          return true
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode) {
+          callback?.onDestroyActionMode(mode)
+        }
+      }
+
+    return super.startActionMode(wrappedCallback, type)
+  }
+
+  private fun emitContextMenuItemPressEvent(index: Int) {
+    val start = selection?.start ?: return
+    val end = selection.end
+    val selectedText = text?.subSequence(start, end)?.toString() ?: ""
+
+    val reactContext = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+    dispatcher?.dispatchEvent(
+      OnContextMenuItemPressEvent(surfaceId, id, index, selectedText, start, end, experimentalSynchronousEvents),
+    )
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
@@ -719,7 +808,7 @@ class EnrichedTextInputView : AppCompatEditText {
     val html =
       try {
         EnrichedParser.toHtmlWithDefault(text)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         null
       }
 
@@ -847,5 +936,6 @@ class EnrichedTextInputView : AppCompatEditText {
 
   companion object {
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
+    private const val CONTEXT_MENU_ITEM_ID = 10000
   }
 }
