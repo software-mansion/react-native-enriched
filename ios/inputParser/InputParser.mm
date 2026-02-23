@@ -763,13 +763,25 @@
                                                        withString:@""];
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>"
                                                        withString:@""];
-    } else {
+    } else if (_input->useHtmlNormalizer) {
       // External HTML (from Google Docs, Word, web pages, etc.)
       // Run through the Lexbor-based normalizer to convert arbitrary HTML
       // into our canonical tag subset.
       NSString *normalized = [self normalizeExternalHtml:html];
       if (normalized != nil) {
         fixedHtml = normalized;
+      }
+    } else {
+      // in other case we are most likely working with some external html - try
+      // getting the styles from between body tags
+      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
+      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
+      
+      if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
+        NSInteger newStart = openingBodyRange.location + 7;
+        NSInteger newEnd = closingBodyRange.location - 1;
+        fixedHtml = [htmlWithoutSpaces
+                     substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
       }
     }
   }

@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
+@public
+  BOOL useHtmlNormalizer;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
