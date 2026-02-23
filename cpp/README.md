@@ -16,11 +16,7 @@ The script clones the Lexbor repo at the pinned commit, runs the official
 
 1. Open `scripts/setup-lexbor.sh`.
 2. Change `LEXBOR_COMMIT` to the desired commit hash (or tag).
-3. Delete the existing header so the script regenerates it:
-   ```bash
-   rm cpp/lexbor/lexbor.h
-   bash scripts/setup-lexbor.sh
-   ```
+3. Delete the existing header so the script regenerates it.
 
 ## Building and running tests
 

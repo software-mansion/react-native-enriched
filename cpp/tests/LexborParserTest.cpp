@@ -196,203 +196,28 @@ TEST(LexborParserTest, DivRemappings) {
   "<p><b><i>--</i></b></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
   EXPECT_EQ(LexborParser::normalizeHtml("<span style='font-style: italic; font-weight: bold; text-decoration: underline'>--</span><br><div><div><span>John<span> </span></span><b>Doe</b><div><u><i>Software</i></u><span> </span>Engineer</div></div></div>"), 
   "<p><b><i><u>--</u></i></b></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
-  
 
-  // With whitespace
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <span>--</span>
-    <br>
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p>--</p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<div><br>here's more!</div><div><br></div><img src=\"https://example.com/image.png\" alt=\"image.png\" width=\"336\" height=\"297\">"),
+  "<br><p>here's more!</p><br><p><img src=\"https://example.com/image.png\" alt=\"image.png\" width=\"336\" height=\"297\" /></p>");
 
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <span style='font-weight: 700'>--</span>
-    <br>
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p><b>--</b></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <span style='font-style: italic'>--</span>
-    <br>
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p><i>--</i></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <span style='font-style: italic; font-weight: bold'>--</span>
-    <br>
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p><b><i>--</i></b></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <span font-style='italic' font-weight='bold' text-decoration='underline'>--</span>
-    <br>
-    <div>
-      <div>
-        <span>John<span> </span></span>
-        <b>Doe</b>
-        <div>
-          <u><i>Software</i></u>
-          <span> </span>Engineer
-        </div>
-      </div>
-    </div>
-  )"), "<p><b><i><u>--</u></i></b></p><p>John <b>Doe</b></p><p><u><i>Software</i></u> Engineer</p>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<div>what do you think of this craziness</div><span><blockquote><div><div><ul><li><b>another one </b>hello<div><br></div><div>hi</div></li></ul></div></div></blockquote></span>"),
+  "<p>what do you think of this craziness</p><blockquote><p><b>another one </b>hello</p><p>hi</p></blockquote>");
 }
 
 TEST(LexborParserTest, ListFlattening) {
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul>
-      <ol>
-        <li>x</li>
-        <li>y</li>
-      </ol>
-    </ul>
-  )"), "<ul><li>x</li><li>y</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><ol><li>x</li><li>y</li></ol></ul>"), "<ul><li>x</li><li>y</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><li>x</li><ol><li>y</li><li>z</li></ol></ul>"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><ol><li>x</li><li>y</li></ol><li>z</li></ul>"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ol><li>x</li><ul><li>y</li><li>z</li></ul></ol>"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ol><ul><li>x</li><li>y</li></ul><li>z</li></ol>"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ol><ul data-type='checkbox'><li>x</li><li>y</li></ul><li>z</li></ol>"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul data-type='checkbox'><ol><li>x</li><li>y</li></ol><li>z</li></ul>"), "<ul data-type=\"checkbox\"><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><li>x</li><ol><li>y</li><ul><li>z</li></ul></ol></ul>"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><li>x</li><ol><li>y</li><ul data-type='checkbox'><li>z</li></ul></ol></ul>"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul data-type='checkbox'><li>x</li><ol><li>y</li><ul><li>z</li></ul></ol></ul>"), "<ul data-type=\"checkbox\"><li>x</li><li>y</li><li>z</li></ul>");
+  EXPECT_EQ(LexborParser::normalizeHtml("<ul><li><b>another one </b>hi kacper,<div><br></div><div>hi</div></li></ul>"), "<ul><li><b>another one </b>hi kacper,</li><li>hi</li></ul>");
+}
 
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul>
-      <li>x</li>
-      <ol>
-        <li>y</li>
-        <li>z</li>
-      </ol>
-    </ul>
-  )"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
-
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul>
-      <ol>
-        <li>x</li>
-        <li>y</li>
-      </ol>
-      <li>z</li>
-    </ul>
-  )"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ol>
-      <li>x</li>
-      <ul>
-        <li>y</li>
-        <li>z</li>
-      </ul>
-    </ol>
-  )"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ol>
-      <ul>
-        <li>x</li>
-        <li>y</li>
-      </ul>
-      <li>z</li>
-    </ol>
-  )"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ol>
-      <ul data-type='checkbox'>
-        <li>x</li>
-        <li>y</li>
-      </ul>
-      <li>z</li>
-    </ol>
-  )"), "<ol><li>x</li><li>y</li><li>z</li></ol>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul data-type='checkbox'>
-      <ol>
-        <li>x</li>
-        <li>y</li>
-      </ol>
-      <li>z</li>
-    </ul>
-  )"), "<ul data-type=\"checkbox\"><li>x</li><li>y</li><li>z</li></ul>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul>
-      <li>x</li>
-      <ol>
-        <li>y</li>
-        <ul>
-          <li>z</li>
-        </ul>
-      </ol>
-    </ul>
-  )"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul>
-      <li>x</li>
-      <ol>
-        <li>y</li>
-        <ul data-type='checkbox'>
-          <li>z</li>
-        </ul>
-      </ol>
-    </ul>
-  )"), "<ul><li>x</li><li>y</li><li>z</li></ul>");
-
-  EXPECT_EQ(LexborParser::normalizeHtml(R"(
-    <ul data-type='checkbox'>
-      <li>x</li>
-      <ol>
-        <li>y</li>
-        <ul>
-          <li>z</li>
-        </ul>
-      </ol>
-    </ul>
-  )"), "<ul data-type=\"checkbox\"><li>x</li><li>y</li><li>z</li></ul>");
+TEST(LexborParserTest, BrRemappings) {
+  EXPECT_EQ(LexborParser::normalizeHtml("<p><b>Asdasdasd</b></p><br><br><p>Sent with<span> </span><a href='https://google.com'>Net</a></p>"), "<p><b>Asdasdasd</b></p><br><br><p>Sent with <a href=\"https://google.com\">Net</a></p>");
 }

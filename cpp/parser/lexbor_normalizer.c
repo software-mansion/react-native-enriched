@@ -77,6 +77,11 @@ static void buffer_append_str(buffer_t *b, const char *s) {
   buffer_append(b, s, strlen(s));
 }
 
+static void buffer_clear(buffer_t *b) {
+  b->len = 0;
+  b->data[0] = '\0';
+}
+
 static char *buffer_finish(buffer_t *b) { return b->data; /* caller owns */ }
 
 /* ------------------------------------------------------------------ */
@@ -91,15 +96,12 @@ typedef enum {
   TAG_CLASS_PASS,         /* pass-through (e.g. <html>, <body>) */
 } tag_class_t;
 
-/* Returns the canonical tag name if we want to remap, or NULL to keep as-is. */
 static const char *canonical_name(const char *name) {
   if (strcmp(name, "strong") == 0)
     return "b";
   if (strcmp(name, "em") == 0)
     return "i";
-  if (strcmp(name, "del") == 0)
-    return "s";
-  if (strcmp(name, "strike") == 0)
+  if (strcmp(name, "del") == 0 || strcmp(name, "strike") == 0)
     return "s";
   if (strcmp(name, "ins") == 0)
     return "u";
@@ -109,7 +111,6 @@ static const char *canonical_name(const char *name) {
 }
 
 static tag_class_t classify_tag(const char *name) {
-  /* Inline canonical tags */
   if (strcmp(name, "b") == 0 || strcmp(name, "i") == 0 ||
       strcmp(name, "u") == 0 || strcmp(name, "s") == 0 ||
       strcmp(name, "code") == 0 || strcmp(name, "a") == 0 ||
@@ -118,7 +119,6 @@ static tag_class_t classify_tag(const char *name) {
       strcmp(name, "ins") == 0 || strcmp(name, "mention") == 0)
     return TAG_CLASS_INLINE;
 
-  /* Block canonical tags */
   if (strcmp(name, "p") == 0 || strcmp(name, "h1") == 0 ||
       strcmp(name, "h2") == 0 || strcmp(name, "h3") == 0 ||
       strcmp(name, "h4") == 0 || strcmp(name, "h5") == 0 ||
@@ -128,17 +128,87 @@ static tag_class_t classify_tag(const char *name) {
       strcmp(name, "pre") == 0)
     return TAG_CLASS_BLOCK;
 
-  /* Self-closing */
   if (strcmp(name, "br") == 0 || strcmp(name, "img") == 0)
     return TAG_CLASS_SELF_CLOSING;
 
-  /* Pass-through (just emit children) */
   if (strcmp(name, "html") == 0 || strcmp(name, "head") == 0 ||
       strcmp(name, "body") == 0)
     return TAG_CLASS_PASS;
 
-  /* Everything else: strip tag, keep children text */
   return TAG_CLASS_SKIP;
+}
+
+/* ------------------------------------------------------------------ */
+/*  DOM helpers — get tag name, node type checks                       */
+/* ------------------------------------------------------------------ */
+
+/** Get the lowercased tag name of an element node into buf. Returns
+ *  buf on success, NULL if node is not an element or has no name. */
+static const char *get_tag_name(lxb_dom_node_t *node, char *buf,
+                                size_t buf_sz) {
+  if (!node || node->type != LXB_DOM_NODE_TYPE_ELEMENT)
+    return NULL;
+  lxb_dom_element_t *el = lxb_dom_interface_element(node);
+  size_t nlen;
+  const lxb_char_t *nraw = lxb_dom_element_local_name(el, &nlen);
+  if (!nraw || nlen == 0)
+    return NULL;
+  size_t n = nlen < buf_sz - 1 ? nlen : buf_sz - 1;
+  for (size_t i = 0; i < n; i++)
+    buf[i] = (char)tolower((unsigned char)nraw[i]);
+  buf[n] = '\0';
+  return buf;
+}
+
+static bool is_list_node(lxb_dom_node_t *node) {
+  char buf[64];
+  const char *n = get_tag_name(node, buf, sizeof(buf));
+  return n && (strcmp(n, "ul") == 0 || strcmp(n, "ol") == 0);
+}
+
+static bool is_blockquote_node(lxb_dom_node_t *node) {
+  char buf[64];
+  const char *n = get_tag_name(node, buf, sizeof(buf));
+  return n && strcmp(n, "blockquote") == 0;
+}
+
+static bool is_br_node(lxb_dom_node_t *node) {
+  char buf[64];
+  const char *n = get_tag_name(node, buf, sizeof(buf));
+  return n && strcmp(n, "br") == 0;
+}
+
+static bool is_block_producing(lxb_dom_node_t *node) {
+  char buf[64];
+  const char *n = get_tag_name(node, buf, sizeof(buf));
+  if (!n)
+    return false;
+  if (classify_tag(n) == TAG_CLASS_BLOCK)
+    return true;
+  return strcmp(n, "div") == 0 || strcmp(n, "table") == 0 ||
+         strcmp(n, "tr") == 0;
+}
+
+/** True if all children are inline/text (no block-producing elements). */
+static bool is_purely_inline(lxb_dom_node_t *node) {
+  lxb_dom_node_t *c = lxb_dom_node_first_child(node);
+  while (c) {
+    if (is_block_producing(c))
+      return false;
+    c = lxb_dom_node_next(c);
+  }
+  return true;
+}
+
+/** True if any direct child is block-producing or a blockquote. */
+static bool has_block_or_bq_child(lxb_dom_node_t *node) {
+  lxb_dom_node_t *c = lxb_dom_node_first_child(node);
+  while (c) {
+    if (is_block_producing(c) || is_blockquote_node(c))
+      return true;
+    c = lxb_dom_node_next(c);
+  }
+  return false;
 }
 
 /* ------------------------------------------------------------------ */
@@ -152,10 +222,6 @@ typedef struct {
   bool strikethrough;
 } css_styles_t;
 
-/**
- * Parse the value of a `style` attribute and extract relevant styles.
- * Uses Lexbor's CSS declaration list parser.
- */
 static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
   css_styles_t result = {false, false, false, false};
   if (!style_value || style_len == 0)
@@ -168,7 +234,6 @@ static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
     return result;
   }
 
-  /* The CSS parser needs a memory object to allocate rule nodes. */
   lxb_css_memory_t *memory = lxb_css_memory_create();
   status = lxb_css_memory_init(memory, 128);
   if (status != LXB_STATUS_OK) {
@@ -186,40 +251,30 @@ static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
     return result;
   }
 
-  /* Walk each declaration in the list */
   lxb_css_rule_t *rule = list->first;
   while (rule) {
     if (rule->type == LXB_CSS_RULE_DECLARATION) {
       lxb_css_rule_declaration_t *decl = (lxb_css_rule_declaration_t *)rule;
-
       switch ((unsigned)decl->type) {
       case LXB_CSS_PROPERTY_FONT_WEIGHT: {
         lxb_css_property_font_weight_t *fw = decl->u.font_weight;
         if (fw) {
           if (fw->type == LXB_CSS_FONT_WEIGHT_BOLD ||
-              fw->type == LXB_CSS_FONT_WEIGHT_BOLDER) {
+              fw->type == LXB_CSS_FONT_WEIGHT_BOLDER)
             result.bold = true;
-          } else if (fw->type == LXB_CSS_FONT_WEIGHT__NUMBER) {
-            /* Numeric weight >= 700 is bold */
-            if (fw->number.num >= 700.0) {
-              result.bold = true;
-            }
-          }
+          else if (fw->type == LXB_CSS_FONT_WEIGHT__NUMBER &&
+                   fw->number.num >= 700.0)
+            result.bold = true;
         }
         break;
       }
-
       case LXB_CSS_PROPERTY_FONT_STYLE: {
         lxb_css_property_font_style_t *fs = decl->u.font_style;
-        if (fs) {
-          if (fs->type == LXB_CSS_FONT_STYLE_ITALIC ||
-              fs->type == LXB_CSS_FONT_STYLE_OBLIQUE) {
-            result.italic = true;
-          }
-        }
+        if (fs && (fs->type == LXB_CSS_FONT_STYLE_ITALIC ||
+                   fs->type == LXB_CSS_FONT_STYLE_OBLIQUE))
+          result.italic = true;
         break;
       }
-
       case LXB_CSS_PROPERTY_TEXT_DECORATION:
       case LXB_CSS_PROPERTY_TEXT_DECORATION_LINE: {
         lxb_css_property_text_decoration_line_t *tdl = NULL;
@@ -238,7 +293,6 @@ static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
         }
         break;
       }
-
       default:
         break;
       }
@@ -249,18 +303,49 @@ static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
   lxb_css_rule_declaration_list_destroy(list, true);
   lxb_css_memory_destroy(memory, true);
   lxb_css_parser_destroy(parser, true);
-
   return result;
+}
+
+/** Compute extra styles that the tag doesn't already convey. */
+static css_styles_t extra_styles(css_styles_t s, const char *tag) {
+  if (strcmp(tag, "b") == 0)
+    s.bold = false;
+  if (strcmp(tag, "i") == 0)
+    s.italic = false;
+  if (strcmp(tag, "u") == 0)
+    s.underline = false;
+  if (strcmp(tag, "s") == 0)
+    s.strikethrough = false;
+  return s;
+}
+
+/* Emit opening / closing style wrapper tags. */
+static void emit_styles_open(buffer_t *out, css_styles_t s) {
+  if (s.bold)
+    buffer_append_str(out, "<b>");
+  if (s.italic)
+    buffer_append_str(out, "<i>");
+  if (s.underline)
+    buffer_append_str(out, "<u>");
+  if (s.strikethrough)
+    buffer_append_str(out, "<s>");
+}
+
+static void emit_styles_close(buffer_t *out, css_styles_t s) {
+  if (s.strikethrough)
+    buffer_append_str(out, "</s>");
+  if (s.underline)
+    buffer_append_str(out, "</u>");
+  if (s.italic)
+    buffer_append_str(out, "</i>");
+  if (s.bold)
+    buffer_append_str(out, "</b>");
 }
 
 /* ------------------------------------------------------------------ */
 /*  Attribute emission helpers                                         */
 /* ------------------------------------------------------------------ */
 
-/**
- * Get an attribute value from an element.
- * Returns NULL if the attribute doesn't exist.
- */
 static const char *get_attr(lxb_dom_element_t *el, const char *name,
                             size_t *out_len) {
   const lxb_char_t *val = lxb_dom_element_get_attribute(
@@ -268,93 +353,40 @@ static const char *get_attr(lxb_dom_element_t *el, const char *name,
   return (const char *)val;
 }
 
-/**
- * Emit whitelisted attributes for a given canonical tag into the buffer.
- * Only emits: href, src, width, height, data-type, data-id, data-label, checked
- */
+static void emit_one_attr(buffer_t *out, lxb_dom_element_t *el,
+                          const char *attr_name) {
+  size_t len;
+  const char *val = get_attr(el, attr_name, &len);
+  if (val && len > 0) {
+    buffer_append_str(out, " ");
+    buffer_append_str(out, attr_name);
+    buffer_append_str(out, "=\"");
+    buffer_append(out, val, len);
+    buffer_append_str(out, "\"");
+  }
+}
+
 static void emit_attributes(lxb_dom_element_t *el, const char *tag_name,
                             buffer_t *out) {
-  size_t len;
-  const char *val;
-
-  /* <a href="…"> */
   if (strcmp(tag_name, "a") == 0) {
-    val = get_attr(el, "href", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " href=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    return;
-  }
-
-  /* <img src="…" alt="…" width="…" height="…"> */
-  if (strcmp(tag_name, "img") == 0) {
-    val = get_attr(el, "src", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " src=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    val = get_attr(el, "alt", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " alt=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    val = get_attr(el, "width", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " width=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    val = get_attr(el, "height", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " height=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    return;
-  }
-
-  /* <ul data-type="checkbox"> */
-  if (strcmp(tag_name, "ul") == 0) {
-    val = get_attr(el, "data-type", &len);
-    if (val && len > 0 && strncmp(val, "checkbox", len) == 0) {
+    emit_one_attr(out, el, "href");
+  } else if (strcmp(tag_name, "img") == 0) {
+    emit_one_attr(out, el, "src");
+    emit_one_attr(out, el, "alt");
+    emit_one_attr(out, el, "width");
+    emit_one_attr(out, el, "height");
+  } else if (strcmp(tag_name, "ul") == 0) {
+    size_t len;
+    const char *val = get_attr(el, "data-type", &len);
+    if (val && len > 0 && strncmp(val, "checkbox", len) == 0)
       buffer_append_str(out, " data-type=\"checkbox\"");
-    }
-    return;
-  }
-
-  /* <li checked> (boolean attribute – value may be NULL) */
-  if (strcmp(tag_name, "li") == 0) {
-    if (lxb_dom_element_has_attribute(el, (const lxb_char_t *)"checked", 7)) {
+  } else if (strcmp(tag_name, "li") == 0) {
+    if (lxb_dom_element_has_attribute(el, (const lxb_char_t *)"checked", 7))
       buffer_append_str(out, " checked");
-    }
-    return;
-  }
-
-  /* <mention id="…" text="…" indicator="…"> */
-  if (strcmp(tag_name, "mention") == 0) {
-    val = get_attr(el, "id", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " id=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    val = get_attr(el, "text", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " text=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    val = get_attr(el, "indicator", &len);
-    if (val && len > 0) {
-      buffer_append_str(out, " indicator=\"");
-      buffer_append(out, val, len);
-      buffer_append_str(out, "\"");
-    }
-    return;
+  } else if (strcmp(tag_name, "mention") == 0) {
+    emit_one_attr(out, el, "id");
+    emit_one_attr(out, el, "text");
+    emit_one_attr(out, el, "indicator");
   }
 }
 
@@ -362,11 +394,6 @@ static void emit_attributes(lxb_dom_element_t *el, const char *tag_name,
 /*  Google Docs specific handling                                       */
 /* ------------------------------------------------------------------ */
 
-/**
- * Detect and skip the Google Docs wrapper: <b id="docs-internal-guid-…">
- * Returns true if this element is a Google Docs wrapper that should be
- * treated as pass-through (skip the <b> tag itself, keep children).
- */
 static bool is_google_docs_wrapper(lxb_dom_element_t *el,
                                    const char *tag_name) {
   if (strcmp(tag_name, "b") != 0)
@@ -375,7 +402,6 @@ static bool is_google_docs_wrapper(lxb_dom_element_t *el,
   const char *id_val = get_attr(el, "id", &id_len);
   if (!id_val)
     return false;
-  /* Google Docs uses: id="docs-internal-guid-…" */
   return (id_len > 20 && strncmp(id_val, "docs-internal-guid-", 19) == 0);
 }
 
@@ -385,216 +411,216 @@ static bool is_google_docs_wrapper(lxb_dom_element_t *el,
 
 static void walk_node(lxb_dom_node_t *node, buffer_t *out);
 
-/**
- * Check if a DOM node is a <ul> or <ol> list element.
- */
-static bool is_list_node(lxb_dom_node_t *node) {
-  if (!node || node->type != LXB_DOM_NODE_TYPE_ELEMENT)
-    return false;
-  lxb_dom_element_t *el = lxb_dom_interface_element(node);
-  size_t name_len;
-  const lxb_char_t *name_raw = lxb_dom_element_local_name(el, &name_len);
-  if (!name_raw || name_len != 2)
-    return false;
-  char a = (char)tolower((unsigned char)name_raw[0]);
-  char b = (char)tolower((unsigned char)name_raw[1]);
-  return (a == 'u' && b == 'l') || (a == 'o' && b == 'l');
-}
+/* ------------------------------------------------------------------ */
+/*  Blockquote content flattening                                      */
+/* ------------------------------------------------------------------ */
 
-/**
- * Check if a DOM node is a <blockquote> element.
- */
-static bool is_blockquote_node(lxb_dom_node_t *node) {
-  if (!node || node->type != LXB_DOM_NODE_TYPE_ELEMENT)
-    return false;
-  lxb_dom_element_t *el = lxb_dom_interface_element(node);
-  size_t name_len;
-  const lxb_char_t *name_raw = lxb_dom_element_local_name(el, &name_len);
-  if (!name_raw || name_len != 10)
-    return false;
-  /* Case-insensitive compare against "blockquote" */
-  const char *bq = "blockquote";
-  for (size_t i = 0; i < 10; i++) {
-    if (tolower((unsigned char)name_raw[i]) != bq[i])
-      return false;
+static void flatten_bq_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out);
+
+/** Flush the inline buffer into a <p> element (if non-empty). */
+static void flush_inline_p(buffer_t *ib, buffer_t *out) {
+  if (ib->len > 0) {
+    buffer_append_str(out, "<p>");
+    buffer_append(out, ib->data, ib->len);
+    buffer_append_str(out, "</p>");
+    buffer_clear(ib);
   }
-  return true;
 }
 
-/**
- * Check if a DOM node produces block-level output.
- */
-static bool is_block_producing_element(lxb_dom_node_t *node) {
-  if (!node || node->type != LXB_DOM_NODE_TYPE_ELEMENT)
-    return false;
-  lxb_dom_element_t *el = lxb_dom_interface_element(node);
-  size_t nlen;
-  const lxb_char_t *nraw = lxb_dom_element_local_name(el, &nlen);
-  if (!nraw || nlen == 0)
-    return false;
-  char buf[64];
-  size_t n = nlen < 63 ? nlen : 63;
-  for (size_t i = 0; i < n; i++)
-    buf[i] = (char)tolower((unsigned char)nraw[i]);
-  buf[n] = '\0';
-  if (classify_tag(buf) == TAG_CLASS_BLOCK)
-    return true;
-  if (strcmp(buf, "div") == 0)
-    return true;
-  if (strcmp(buf, "table") == 0 || strcmp(buf, "tr") == 0)
-    return true;
-  return false;
-}
-
-/**
- * Check if a text node's parent has any block-level element children.
- */
-static bool parent_has_block_children(lxb_dom_node_t *node) {
-  lxb_dom_node_t *parent = node->parent;
-  if (!parent)
-    return false;
-  lxb_dom_node_t *child = lxb_dom_node_first_child(parent);
-  while (child) {
-    if (is_block_producing_element(child))
-      return true;
-    child = lxb_dom_node_next(child);
-  }
-  return false;
-}
-
-/**
- * Check if a node's children are all inline/text (no block-level elements).
- * If so, the content should be wrapped in <p> when placed inside a blockquote.
- */
-static bool needs_p_wrap(lxb_dom_node_t *node) {
+static void flatten_bq_children(lxb_dom_node_t *node, buffer_t *ib,
+                                buffer_t *out) {
   lxb_dom_node_t *child = lxb_dom_node_first_child(node);
   while (child) {
-    if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
-      lxb_dom_element_t *el = lxb_dom_interface_element(child);
-      size_t nlen;
-      const lxb_char_t *nraw = lxb_dom_element_local_name(el, &nlen);
-      if (nraw && nlen > 0) {
-        char buf[64];
-        size_t n = nlen < 63 ? nlen : 63;
-        for (size_t i = 0; i < n; i++)
-          buf[i] = (char)tolower((unsigned char)nraw[i]);
-        buf[n] = '\0';
-        if (classify_tag(buf) == TAG_CLASS_BLOCK)
-          return false;
-      }
-    }
+    flatten_bq_node(child, ib, out);
     child = lxb_dom_node_next(child);
   }
-  return true;
 }
 
-/**
- * Check if a node has any <div> children.
- * Since <div> becomes <p> in the output, it counts as block-level content
- * even though classify_tag("div") returns TAG_CLASS_SKIP.
- */
-static bool has_div_child(lxb_dom_node_t *node) {
+static void flatten_bq_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out) {
+  if (!node)
+    return;
+  if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
+    walk_node(node, ib);
+    return;
+  }
+  if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
+    flatten_bq_children(node, ib, out);
+    return;
+  }
+  if (is_br_node(node)) {
+    flush_inline_p(ib, out);
+    return;
+  }
+  if (is_block_producing(node) || is_blockquote_node(node)) {
+    flush_inline_p(ib, out);
+    flatten_bq_children(node, ib, out);
+    flush_inline_p(ib, out);
+    return;
+  }
+  walk_node(node, ib);
+}
+
+/* ------------------------------------------------------------------ */
+/*  List item content flattening                                       */
+/* ------------------------------------------------------------------ */
+
+typedef struct {
+  lxb_dom_element_t *el;
+  css_styles_t styles;
+  lxb_dom_node_t **nested_lists;
+  int *nested_count;
+  int max_nested;
+} li_ctx_t;
+
+static void flatten_li_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out,
+                            li_ctx_t *ctx);
+
+static void flush_li_buffer(buffer_t *ib, buffer_t *out, li_ctx_t *ctx) {
+  if (ib->len == 0)
+    return;
+  buffer_append_str(out, "<li");
+  emit_attributes(ctx->el, "li", out);
+  buffer_append_str(out, ">");
+  emit_styles_open(out, ctx->styles);
+  buffer_append(out, ib->data, ib->len);
+  emit_styles_close(out, ctx->styles);
+  buffer_append_str(out, "</li>");
+  buffer_clear(ib);
+}
+
+static void flatten_li_children(lxb_dom_node_t *node, buffer_t *ib,
+                                buffer_t *out, li_ctx_t *ctx) {
   lxb_dom_node_t *child = lxb_dom_node_first_child(node);
   while (child) {
-    if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
-      lxb_dom_element_t *el = lxb_dom_interface_element(child);
-      size_t nlen;
-      const lxb_char_t *nraw = lxb_dom_element_local_name(el, &nlen);
-      if (nraw && nlen == 3) {
-        if (tolower((unsigned char)nraw[0]) == 'd' &&
-            tolower((unsigned char)nraw[1]) == 'i' &&
-            tolower((unsigned char)nraw[2]) == 'v')
-          return true;
-      }
-    }
+    flatten_li_node(child, ib, out, ctx);
     child = lxb_dom_node_next(child);
   }
-  return false;
 }
 
-/**
- * Walk children of a <li> node, but skip nested <ul>/<ol> elements.
- * Nested lists are collected in the provided array for later flattening.
- * Returns the number of nested lists found.
- */
-static int walk_li_children_collecting(lxb_dom_node_t *node, buffer_t *out,
-                                       lxb_dom_node_t **nested, int max_n) {
-  int count = 0;
-  lxb_dom_node_t *child = lxb_dom_node_first_child(node);
-  while (child) {
-    if (is_list_node(child)) {
-      if (count < max_n) {
-        nested[count++] = child;
-      }
-    } else {
-      walk_node(child, out);
-    }
-    child = lxb_dom_node_next(child);
+static void flatten_li_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out,
+                            li_ctx_t *ctx) {
+  if (!node)
+    return;
+  if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
+    walk_node(node, ib);
+    return;
   }
-  return count;
+  if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
+    flatten_li_children(node, ib, out, ctx);
+    return;
+  }
+  if (is_list_node(node)) {
+    if (*ctx->nested_count < ctx->max_nested) {
+      ctx->nested_lists[*ctx->nested_count] = node;
+      (*ctx->nested_count)++;
+    }
+    return;
+  }
+  if (is_br_node(node)) {
+    flush_li_buffer(ib, out, ctx);
+    return;
+  }
+  if (is_block_producing(node) || is_blockquote_node(node)) {
+    flush_li_buffer(ib, out, ctx);
+    flatten_li_children(node, ib, out, ctx);
+    flush_li_buffer(ib, out, ctx);
+    return;
+  }
+  walk_node(node, ib);
 }
 
-/**
- * Walk all children of a node.
- * Merges consecutive <blockquote> siblings into a single <blockquote>,
- * wrapping each original blockquote's content in <p> tags.
- */
+/* ------------------------------------------------------------------ */
+/*  walk_children — the main child-iteration driver                    */
+/* ------------------------------------------------------------------ */
+
 static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
   bool parent_is_list = is_list_node(node);
+
+  /* Detect mixed content: does the parent have any block-producing child? */
+  bool has_block = false;
+  {
+    lxb_dom_node_t *c = lxb_dom_node_first_child(node);
+    while (c) {
+      if (is_block_producing(c)) {
+        has_block = true;
+        break;
+      }
+      c = lxb_dom_node_next(c);
+    }
+  }
+
   lxb_dom_node_t *child = lxb_dom_node_first_child(node);
   while (child) {
-    /* Flatten list-inside-list: when a <ul>/<ol> is a direct child of
-     * another <ul>/<ol>, strip the inner list container and emit its
-     * children (the <li> items) directly as siblings in the parent list. */
+    /* Flatten list-inside-list */
     if (parent_is_list && is_list_node(child)) {
       walk_children(child, out);
       child = lxb_dom_node_next(child);
       continue;
     }
+
+    /* Merge consecutive blockquotes, flattening content into <p>s */
     if (is_blockquote_node(child)) {
-      /* Merge consecutive <blockquote> siblings into one */
       buffer_append_str(out, "<blockquote>");
+      buffer_t bq_ib = buffer_create(64);
       while (child && is_blockquote_node(child)) {
-        bool wrap = needs_p_wrap(child);
-        if (wrap)
-          buffer_append_str(out, "<p>");
-        walk_children(child, out);
-        if (wrap)
-          buffer_append_str(out, "</p>");
+        flatten_bq_children(child, &bq_ib, out);
         child = lxb_dom_node_next(child);
       }
+      flush_inline_p(&bq_ib, out);
+      free(bq_ib.data);
       buffer_append_str(out, "</blockquote>");
-      continue; /* child already advanced past the run */
+      continue;
     }
+
+    /* Auto-paragraph: group inline runs into <p> when mixed with blocks */
+    if (has_block && !parent_is_list && !is_block_producing(child) &&
+        !is_blockquote_node(child)) {
+      buffer_t ib = buffer_create(64);
+      while (child && !is_block_producing(child) &&
+             !is_blockquote_node(child)) {
+        if (is_br_node(child)) {
+          if (ib.len > 0)
+            flush_inline_p(&ib, out);
+          else
+            buffer_append_str(out, "<br>");
+          child = lxb_dom_node_next(child);
+          continue;
+        }
+        /* Transparent inline wrapper for block/bq children
+         * (e.g. <span><blockquote>…</blockquote></span>) */
+        if (child->type == LXB_DOM_NODE_TYPE_ELEMENT &&
+            has_block_or_bq_child(child)) {
+          flush_inline_p(&ib, out);
+          walk_children(child, out);
+          child = lxb_dom_node_next(child);
+          continue;
+        }
+        walk_node(child, &ib);
+        child = lxb_dom_node_next(child);
+      }
+      flush_inline_p(&ib, out);
+      free(ib.data);
+      continue;
+    }
+
     walk_node(child, out);
     child = lxb_dom_node_next(child);
   }
 }
 
-/**
- * Process a single DOM node.
- */
+/* ------------------------------------------------------------------ */
+/*  walk_node — process a single DOM node                              */
+/* ------------------------------------------------------------------ */
+
 static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
   if (!node)
     return;
 
-  /* --- Text node: emit verbatim (HTML-encoded by Lexbor) --- */
+  /* Text node */
   if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
     size_t text_len;
     const lxb_char_t *text_raw = lxb_dom_node_text_content(node, &text_len);
     if (text_raw && text_len > 0) {
-      /* Skip whitespace-only text nodes between block elements */
-      bool all_ws = true;
-      for (size_t i = 0; i < text_len; i++) {
-        if (!isspace((unsigned char)text_raw[i])) {
-          all_ws = false;
-          break;
-        }
-      }
-      if (all_ws && parent_has_block_children(node))
-        return;
-
-      /* Emit text, escaping < > & for safety */
       for (size_t i = 0; i < text_len; i++) {
         char c = (char)text_raw[i];
         switch (c) {
@@ -616,156 +642,123 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
     return;
   }
 
-  /* --- Only process element nodes --- */
   if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
     walk_children(node, out);
     return;
   }
 
   lxb_dom_element_t *el = lxb_dom_interface_element(node);
-  size_t name_len;
-  const lxb_char_t *name_raw = lxb_dom_element_local_name(el, &name_len);
-  if (!name_raw || name_len == 0) {
+  char name_buf[64];
+  if (!get_tag_name(node, name_buf, sizeof(name_buf))) {
     walk_children(node, out);
     return;
   }
 
-  /* Convert tag name to lowercase C string */
-  char name_buf[64];
-  size_t copy_len = name_len < 63 ? name_len : 63;
-  for (size_t i = 0; i < copy_len; i++)
-    name_buf[i] = (char)tolower((unsigned char)name_raw[i]);
-  name_buf[copy_len] = '\0';
-
-  /* --- Strip <meta>, <style>, <script>, <title>, <link> --- */
+  /* Strip <meta>, <style>, <script>, <title>, <link> */
   if (strcmp(name_buf, "meta") == 0 || strcmp(name_buf, "style") == 0 ||
       strcmp(name_buf, "script") == 0 || strcmp(name_buf, "title") == 0 ||
-      strcmp(name_buf, "link") == 0) {
-    return; /* skip entirely including children */
-  }
+      strcmp(name_buf, "link") == 0)
+    return;
 
-  /* --- Google Docs wrapper detection --- */
+  /* Google Docs wrapper */
   if (is_google_docs_wrapper(el, name_buf)) {
     walk_children(node, out);
     return;
   }
 
-  /* Determine canonical output name */
   const char *out_name = canonical_name(name_buf);
   if (!out_name)
-    out_name = name_buf; /* keep original */
+    out_name = name_buf;
 
   tag_class_t cls = classify_tag(name_buf);
 
-  /* --- Handle <span> with style-based inline formatting --- */
+  /* --- <span>: CSS style → inline tags --- */
   if (strcmp(name_buf, "span") == 0) {
-    size_t style_len;
-    const char *style_val = get_attr(el, "style", &style_len);
-    css_styles_t styles = parse_css_style(style_val, style_len);
-
-    /* Emit opening tags for detected styles */
-    if (styles.bold)
-      buffer_append_str(out, "<b>");
-    if (styles.italic)
-      buffer_append_str(out, "<i>");
-    if (styles.underline)
-      buffer_append_str(out, "<u>");
-    if (styles.strikethrough)
-      buffer_append_str(out, "<s>");
-
+    size_t slen;
+    const char *sval = get_attr(el, "style", &slen);
+    css_styles_t s = parse_css_style(sval, slen);
+    emit_styles_open(out, s);
     walk_children(node, out);
-
-    /* Emit closing tags in reverse */
-    if (styles.strikethrough)
-      buffer_append_str(out, "</s>");
-    if (styles.underline)
-      buffer_append_str(out, "</u>");
-    if (styles.italic)
-      buffer_append_str(out, "</i>");
-    if (styles.bold)
-      buffer_append_str(out, "</b>");
+    emit_styles_close(out, s);
     return;
   }
 
-  /* --- Handle <div> as a block element with style support --- */
+  /* --- <div>: becomes <p> or passes through --- */
   if (strcmp(name_buf, "div") == 0) {
-    size_t style_len;
-    const char *style_val = get_attr(el, "style", &style_len);
-    css_styles_t styles = parse_css_style(style_val, style_len);
+    size_t slen;
+    const char *sval = get_attr(el, "style", &slen);
+    css_styles_t s = parse_css_style(sval, slen);
 
-    /* Only wrap in <p> if the div has purely inline/text content.
-     * If it contains block-level children (ul, ol, p, div, etc.),
-     * just pass through to avoid invalid <p><ul>…</ul></p>. */
-    bool wrap = needs_p_wrap(node) && !has_div_child(node);
-
-    if (wrap)
-      buffer_append_str(out, "<p>");
-
-    if (styles.bold)
-      buffer_append_str(out, "<b>");
-    if (styles.italic)
-      buffer_append_str(out, "<i>");
-    if (styles.underline)
-      buffer_append_str(out, "<u>");
-    if (styles.strikethrough)
-      buffer_append_str(out, "<s>");
-
-    walk_children(node, out);
-
-    if (styles.strikethrough)
-      buffer_append_str(out, "</s>");
-    if (styles.underline)
-      buffer_append_str(out, "</u>");
-    if (styles.italic)
-      buffer_append_str(out, "</i>");
-    if (styles.bold)
-      buffer_append_str(out, "</b>");
-
-    if (wrap)
-      buffer_append_str(out, "</p>");
+    if (is_purely_inline(node)) {
+      /* Split on <br> into separate <p>s */
+      buffer_t pb = buffer_create(64);
+      lxb_dom_node_t *dc = lxb_dom_node_first_child(node);
+      while (dc) {
+        if (is_br_node(dc)) {
+          if (pb.len > 0) {
+            buffer_append_str(out, "<p>");
+            emit_styles_open(out, s);
+            buffer_append(out, pb.data, pb.len);
+            emit_styles_close(out, s);
+            buffer_append_str(out, "</p>");
+          } else {
+            buffer_append_str(out, "<br>");
+          }
+          buffer_clear(&pb);
+          dc = lxb_dom_node_next(dc);
+          continue;
+        }
+        walk_node(dc, &pb);
+        dc = lxb_dom_node_next(dc);
+      }
+      if (pb.len > 0) {
+        buffer_append_str(out, "<p>");
+        emit_styles_open(out, s);
+        buffer_append(out, pb.data, pb.len);
+        emit_styles_close(out, s);
+        buffer_append_str(out, "</p>");
+      }
+      free(pb.data);
+    } else {
+      emit_styles_open(out, s);
+      walk_children(node, out);
+      emit_styles_close(out, s);
+    }
     return;
   }
 
-  /* --- Handle table elements: extract text, separate cells --- */
+  /* --- Table elements --- */
   if (strcmp(name_buf, "table") == 0 || strcmp(name_buf, "thead") == 0 ||
       strcmp(name_buf, "tbody") == 0 || strcmp(name_buf, "tfoot") == 0 ||
       strcmp(name_buf, "tr") == 0 || strcmp(name_buf, "td") == 0 ||
       strcmp(name_buf, "th") == 0 || strcmp(name_buf, "caption") == 0 ||
       strcmp(name_buf, "colgroup") == 0 || strcmp(name_buf, "col") == 0) {
-    /* For td/th: emit children then a space separator */
     if (strcmp(name_buf, "td") == 0 || strcmp(name_buf, "th") == 0) {
       walk_children(node, out);
-      /* Only add space separator if there's a next cell sibling */
       lxb_dom_node_t *sib = lxb_dom_node_next(node);
       while (sib && sib->type != LXB_DOM_NODE_TYPE_ELEMENT)
         sib = lxb_dom_node_next(sib);
       if (sib)
         buffer_append_str(out, " ");
     } else if (strcmp(name_buf, "tr") == 0) {
-      /* Each row becomes a paragraph (if non-empty) */
-      buffer_t row_buf = buffer_create(64);
-      walk_children(node, &row_buf);
-      if (row_buf.len > 0) {
+      buffer_t row = buffer_create(64);
+      walk_children(node, &row);
+      if (row.len > 0) {
         buffer_append_str(out, "<p>");
-        buffer_append(out, row_buf.data, row_buf.len);
+        buffer_append(out, row.data, row.len);
         buffer_append_str(out, "</p>");
       }
-      free(row_buf.data);
+      free(row.data);
     } else {
-      /* table, thead, tbody, etc.: just pass through children */
       walk_children(node, out);
     }
     return;
   }
 
+  /* --- Remaining tags handled by class --- */
   switch (cls) {
   case TAG_CLASS_PASS:
-    /* html/body/head: just emit children */
-    walk_children(node, out);
-    break;
-
   case TAG_CLASS_SKIP:
-    /* Unknown tags: strip tag, keep text content */
     walk_children(node, out);
     break;
 
@@ -773,105 +766,50 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
     buffer_append_str(out, "<");
     buffer_append_str(out, out_name);
     emit_attributes(el, out_name, out);
-    if (strcmp(out_name, "img") == 0)
-      buffer_append_str(out, " />");
-    else
-      buffer_append_str(out, ">");
+    buffer_append_str(out, strcmp(out_name, "img") == 0 ? " />" : ">");
     break;
 
   case TAG_CLASS_INLINE:
   case TAG_CLASS_BLOCK: {
-    /* Check for inline styles on block/inline elements too */
-    size_t style_len;
-    const char *style_val = get_attr(el, "style", &style_len);
-    css_styles_t styles = parse_css_style(style_val, style_len);
+    size_t slen;
+    const char *sval = get_attr(el, "style", &slen);
+    css_styles_t es = extra_styles(parse_css_style(sval, slen), out_name);
 
-    /* For semantic tags that already convey a style, don't double-emit.
-     * E.g. <b style="font-weight:bold"> should not emit <b><b>. */
-    bool is_already_bold = (strcmp(out_name, "b") == 0);
-    bool is_already_italic = (strcmp(out_name, "i") == 0);
-    bool is_already_underline = (strcmp(out_name, "u") == 0);
-    bool is_already_strikethrough = (strcmp(out_name, "s") == 0);
-
-    /* --- Special handling for <li>: flatten nested lists --- */
+    /* <li>: always flatten (handles block children + nested lists) */
     if (strcmp(out_name, "li") == 0) {
-      buffer_append_str(out, "<li");
-      emit_attributes(el, "li", out);
-      buffer_append_str(out, ">");
-
-      if (styles.bold && !is_already_bold)
-        buffer_append_str(out, "<b>");
-      if (styles.italic && !is_already_italic)
-        buffer_append_str(out, "<i>");
-      if (styles.underline && !is_already_underline)
-        buffer_append_str(out, "<u>");
-      if (styles.strikethrough && !is_already_strikethrough)
-        buffer_append_str(out, "<s>");
-
-      /* Walk children but collect nested <ul>/<ol> for flattening */
       lxb_dom_node_t *nested_lists[16];
-      int nested_count =
-          walk_li_children_collecting(node, out, nested_lists, 16);
-
-      if (styles.strikethrough && !is_already_strikethrough)
-        buffer_append_str(out, "</s>");
-      if (styles.underline && !is_already_underline)
-        buffer_append_str(out, "</u>");
-      if (styles.italic && !is_already_italic)
-        buffer_append_str(out, "</i>");
-      if (styles.bold && !is_already_bold)
-        buffer_append_str(out, "</b>");
-
-      buffer_append_str(out, "</li>");
-
-      /* Flatten nested list items as siblings in the parent list */
-      for (int i = 0; i < nested_count; i++) {
+      int nested_count = 0;
+      buffer_t li_ib = buffer_create(64);
+      li_ctx_t ctx = {el, es, nested_lists, &nested_count, 16};
+      flatten_li_children(node, &li_ib, out, &ctx);
+      flush_li_buffer(&li_ib, out, &ctx);
+      free(li_ib.data);
+      for (int i = 0; i < nested_count; i++)
         walk_children(nested_lists[i], out);
-      }
       break;
     }
 
-    /* --- Special handling for <codeblock>: wrap inline content in <p> --- */
+    /* <codeblock>: wrap inline content in <p> */
     if (strcmp(out_name, "codeblock") == 0) {
+      bool wrap = is_purely_inline(node);
       buffer_append_str(out, "<codeblock>");
-      if (needs_p_wrap(node))
+      if (wrap)
         buffer_append_str(out, "<p>");
       walk_children(node, out);
-      if (needs_p_wrap(node))
+      if (wrap)
         buffer_append_str(out, "</p>");
       buffer_append_str(out, "</codeblock>");
       break;
     }
 
-    /* Emit the tag itself */
+    /* Generic block/inline tag */
     buffer_append_str(out, "<");
     buffer_append_str(out, out_name);
     emit_attributes(el, out_name, out);
     buffer_append_str(out, ">");
-
-    /* Wrap children with extra style tags if CSS adds styles
-     * that the tag doesn't already convey. */
-    if (styles.bold && !is_already_bold)
-      buffer_append_str(out, "<b>");
-    if (styles.italic && !is_already_italic)
-      buffer_append_str(out, "<i>");
-    if (styles.underline && !is_already_underline)
-      buffer_append_str(out, "<u>");
-    if (styles.strikethrough && !is_already_strikethrough)
-      buffer_append_str(out, "<s>");
-
+    emit_styles_open(out, es);
     walk_children(node, out);
-
-    if (styles.strikethrough && !is_already_strikethrough)
-      buffer_append_str(out, "</s>");
-    if (styles.underline && !is_already_underline)
-      buffer_append_str(out, "</u>");
-    if (styles.italic && !is_already_italic)
-      buffer_append_str(out, "</i>");
-    if (styles.bold && !is_already_bold)
-      buffer_append_str(out, "</b>");
-
-    /* Closing tag */
+    emit_styles_close(out, es);
     buffer_append_str(out, "</");
     buffer_append_str(out, out_name);
     buffer_append_str(out, ">");
@@ -899,7 +837,6 @@ char *normalize_html(const char *html, size_t len) {
     return NULL;
   }
 
-  /* Start from <body> if present, else from document element */
   lxb_html_body_element_t *body = lxb_html_document_body_element(doc);
   lxb_dom_node_t *root =
       body ? lxb_dom_interface_node(body)
