@@ -5,6 +5,8 @@
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
 
+#include "LexborParser.hpp"
+
 @implementation InputParser {
   EnrichedTextInputView *_input;
   NSInteger _precedingImageCount;
@@ -721,6 +723,22 @@
   [_input anyTextMayHaveBeenModified];
 }
 
+#pragma mark - External HTML normalization
+
+/**
+ * Normalizes external HTML (from Google Docs, Word, web pages, etc.) into our
+ * canonical tag subset using the Lexbor-based C++ normalizer.
+ *
+ * Converts: <strong> → <b>, <em> → <i>, <span style="font-weight:bold"> → <b>,
+ * strips unknown tags while preserving text
+ */
+- (NSString *_Nullable)normalizeExternalHtml:(NSString *_Nonnull)html {
+  std::string result =
+      LexborParser::normalizeHtml(std::string([html UTF8String]));
+  if (result.empty()) return nil;
+  return [NSString stringWithUTF8String:result.c_str()];
+}
+
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
   NSString *htmlWithoutSpaces = [self stripExtraWhiteSpacesAndNewlines:html];
   NSString *fixedHtml = nullptr;
@@ -746,16 +764,12 @@
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>"
                                                        withString:@""];
     } else {
-      // in other case we are most likely working with some external html - try
-      // getting the styles from between body tags
-      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
-      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
-
-      if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
-        NSInteger newStart = openingBodyRange.location + 7;
-        NSInteger newEnd = closingBodyRange.location - 1;
-        fixedHtml = [htmlWithoutSpaces
-            substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
+      // External HTML (from Google Docs, Word, web pages, etc.)
+      // Run through the Lexbor-based normalizer to convert arbitrary HTML
+      // into our canonical tag subset.
+      NSString *normalized = [self normalizeExternalHtml:html];
+      if (normalized != nil) {
+        fixedHtml = normalized;
       }
     }
   }
