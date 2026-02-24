@@ -283,6 +283,18 @@ static void const *kInputKey = &kInputKey;
                                                 NSTextContainer *container,
                                                 NSRange lineGlyphRange,
                                                 BOOL *stop) {
+                                     NSUInteger charIdx =
+                                         [self characterIndexForGlyphAtIndex:
+                                                   lineGlyphRange.location];
+                                     UIFont *font =
+                                         [typedInput->textView.textStorage
+                                                  attribute:NSFontAttributeName
+                                                    atIndex:charIdx
+                                             effectiveRange:nil];
+                                     CGRect textUsedRect =
+                                         [self getTextAlignedUsedRect:usedRect
+                                                                 font:font];
+
                                      NSString *markerFormat =
                                          pStyle.textLists.firstObject
                                              .markerFormat;
@@ -291,27 +303,23 @@ static void const *kInputKey = &kInputKey;
                                          NSTextListMarkerDecimal) {
                                        NSString *marker = [self
                                            getDecimalMarkerForList:typedInput
-                                                         charIndex:
-                                                             [self
-                                                                 characterIndexForGlyphAtIndex:
-                                                                     lineGlyphRange
-                                                                         .location]];
+                                                         charIndex:charIdx];
                                        [self drawDecimal:typedInput
                                                      marker:marker
                                            markerAttributes:markerAttributes
                                                      origin:origin
-                                                   usedRect:usedRect];
+                                                   usedRect:textUsedRect];
                                      } else if (markerFormat ==
                                                 NSTextListMarkerDisc) {
                                        [self drawBullet:typedInput
                                                  origin:origin
-                                               usedRect:usedRect];
+                                               usedRect:textUsedRect];
                                      } else if ([markerFormat
                                                     hasPrefix:@"{checkbox"]) {
                                        [self drawCheckbox:typedInput
                                              markerFormat:markerFormat
                                                    origin:origin
-                                                 usedRect:usedRect];
+                                                 usedRect:textUsedRect];
                                      }
                                      // only first line of a list gets its
                                      // marker drawn
@@ -361,6 +369,19 @@ static void const *kInputKey = &kInputKey;
   }
 
   return [NSString stringWithFormat:@"%ld.", (long)(itemNumber)];
+}
+
+// Returns a usedRect adjusted to cover only the text portion of the line.
+// When minimumLineHeight expands the line box, extra space is added at the top
+// and text stays at the bottom. This strips that padding so markers align with
+// the text, not the full line box.
+- (CGRect)getTextAlignedUsedRect:(CGRect)usedRect font:(UIFont *)font {
+  if (font && usedRect.size.height > font.lineHeight) {
+    CGFloat extraSpace = usedRect.size.height - font.lineHeight;
+    usedRect.origin.y += extraSpace;
+    usedRect.size.height = font.lineHeight;
+  }
+  return usedRect;
 }
 
 - (void)drawCheckbox:(EnrichedTextInputView *)typedInput

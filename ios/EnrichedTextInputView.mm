@@ -292,23 +292,45 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 // MARK: - Paragraph style helpers
 
-- (void)applyLineHeightToTypingAttributes:
-    (NSMutableDictionary *)typingAttributes {
+- (void)applyLineHeight:(NSMutableDictionary *)typingAttributes {
+  CGFloat rawLineHeight = [config primaryLineHeight];
+  NSUInteger length = textView.textStorage.string.length;
+  if (length == 0) {
+    return;
+  }
+
+  CGFloat scaledLineHeight = 0;
+  if (rawLineHeight > 0) {
+    // Scale lineHeight with the same Dynamic Type factor used for font sizes.
+    scaledLineHeight =
+        [[UIFontMetrics defaultMetrics] scaledValueForValue:rawLineHeight];
+  }
+
+  NSRange fullRange = NSMakeRange(0, length);
+
+  // apply lineHeight over the entire text storage content
+  [textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:fullRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle;
+                if (value != nil) {
+                  pStyle = [(NSParagraphStyle *)value mutableCopy];
+                } else {
+                  pStyle = [[NSMutableParagraphStyle alloc] init];
+                }
+                pStyle.minimumLineHeight = scaledLineHeight;
+                [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                             value:pStyle
+                                             range:range];
+              }];
+
+  // apply lineHeight to typing attributes
   NSMutableParagraphStyle *paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
-  CGFloat lineHeightMultiplier = [config primaryLineHeight];
-  if (lineHeightMultiplier > 0) {
-    CGFloat baseFontSize = [[config scaledPrimaryFontSize] floatValue];
-    CGFloat targetLineHeight = baseFontSize * lineHeightMultiplier;
-    paragraphStyle.minimumLineHeight = targetLineHeight;
-    UIFont *font = [config primaryFont];
-    // Half-leading: split the extra space (targetLineHeight - font.lineHeight)
-    // equally above and below the text to vertically center it in the line box.
-    CGFloat baselineOffset = (targetLineHeight - font.lineHeight) / 2.0;
-    typingAttributes[NSBaselineOffsetAttributeName] = @(MAX(0, baselineOffset));
-  } else {
-    typingAttributes[NSBaselineOffsetAttributeName] = @(0);
-  }
+  paragraphStyle.minimumLineHeight = scaledLineHeight;
   typingAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
 }
 
@@ -758,7 +780,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] =
         [config primaryColor];
-    [self applyLineHeightToTypingAttributes:defaultTypingAttributes];
+    [self applyLineHeight:defaultTypingAttributes];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
 
@@ -1908,6 +1930,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                                                 input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
+  }
+
+  // Tapping near a link causes iOS to re-derive typingAttributes from
+  // character attributes after textViewDidChangeSelection returns, undoing
+  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
+  // before insertion, so new text never inherits link styling.
+  if (linkStyle != nullptr) {
+    [linkStyle manageLinkTypingAttributes];
   }
 
   return YES;
