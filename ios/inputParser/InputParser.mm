@@ -735,7 +735,8 @@
 - (NSString *_Nullable)normalizeExternalHtml:(NSString *_Nonnull)html {
   std::string result =
       GumboParser::normalizeHtml(std::string([html UTF8String]));
-  if (result.empty()) return nil;
+  if (result.empty())
+    return nil;
   return [NSString stringWithUTF8String:result.c_str()];
 }
 
@@ -776,12 +777,12 @@
       // getting the styles from between body tags
       NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
       NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
-      
+
       if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
         NSInteger newStart = openingBodyRange.location + 7;
         NSInteger newEnd = closingBodyRange.location - 1;
         fixedHtml = [htmlWithoutSpaces
-                     substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
+            substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
       }
     }
   }
