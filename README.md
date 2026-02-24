@@ -245,14 +245,9 @@ You can extend the native text editing menu with custom items using the [context
   contextMenuItems={[
     {
       text: 'Paste Link',
-      onPress: (selectedText, selection, stylesState) => {
+      onPress: ({ text, selection, styleState }) => {
         if (!styleState.link.isBlocking) {
-          ref.current?.setLink(
-            selection.start,
-            selection.end,
-            selectedText,
-            url
-          );
+          ref.current?.setLink(selection.start, selection.end, text, url);
         }
       },
       visible: true,
