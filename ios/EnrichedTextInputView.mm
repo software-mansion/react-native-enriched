@@ -1834,24 +1834,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
 
-  for (NSUInteger i = 0; i < _contextMenuItems.count; i++) {
-    NSDictionary *item = _contextMenuItems[i];
+  for (NSDictionary *item in _contextMenuItems) {
     BOOL visible = [item[@"visible"] boolValue];
     if (!visible) {
       continue;
     }
 
     NSString *title = item[@"text"];
-    NSUInteger capturedIndex = i;
     __weak EnrichedTextInputView *weakSelf = self;
 
-    UIAction *action = [UIAction
-        actionWithTitle:title
-                  image:nil
-             identifier:nil
-                handler:^(__kindof UIAction *_Nonnull action) {
-                  [weakSelf emitOnContextMenuItemPressEvent:capturedIndex];
-                }];
+    UIAction *action =
+        [UIAction actionWithTitle:title
+                            image:nil
+                       identifier:nil
+                          handler:^(__kindof UIAction *_Nonnull action) {
+                            [weakSelf emitOnContextMenuItemPressEvent:title];
+                          }];
     [customActions addObject:action];
   }
 
@@ -1863,7 +1861,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return [UIMenu menuWithChildren:customActions];
 }
 
-- (void)emitOnContextMenuItemPressEvent:(NSUInteger)index {
+- (void)emitOnContextMenuItemPressEvent:(NSString *)itemText {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     NSRange selectedRange = textView.selectedRange;
@@ -1874,7 +1872,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
 
     emitter->onContextMenuItemPress(
-        {.index = static_cast<int>(index),
+        {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
          .selectionStart = static_cast<int>(selectedRange.location),
          .selectionEnd =

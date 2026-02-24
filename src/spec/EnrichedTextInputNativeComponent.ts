@@ -191,7 +191,7 @@ export interface ContextMenuItemConfig {
 }
 
 export interface OnContextMenuItemPressEvent {
-  index: Int32;
+  itemText: string;
   selectedText: string;
   selectionStart: Int32;
   selectionEnd: Int32;
