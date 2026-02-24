@@ -19,6 +19,35 @@
   return self;
 }
 
+- (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
+                      proposedLineFragment:(CGRect)lineFrag
+                             glyphPosition:(CGPoint)position
+                            characterIndex:(NSUInteger)charIndex {
+  CGRect baseBounds = self.bounds;
+
+  if (!textContainer.layoutManager.textStorage ||
+      charIndex >= textContainer.layoutManager.textStorage.length) {
+    return baseBounds;
+  }
+
+  UIFont *font =
+      [textContainer.layoutManager.textStorage attribute:NSFontAttributeName
+                                                 atIndex:charIndex
+                                          effectiveRange:NULL];
+  if (!font) {
+    return baseBounds;
+  }
+
+  // Extend the layout bounds below the baseline by the font's descender.
+  // Without this, a line containing only the attachment has no descender space
+  // below the baseline, but adding a text character introduces it — causing
+  // the line height to jump.  By reserving descender space upfront the line
+  // height stays consistent regardless of whether text is present.
+  CGFloat descender = font.descender;
+  return CGRectMake(baseBounds.origin.x, descender, baseBounds.size.width,
+                    baseBounds.size.height - descender);
+}
+
 - (void)loadAsync {
   NSURL *url = [NSURL URLWithString:self.uri];
   if (!url) {
