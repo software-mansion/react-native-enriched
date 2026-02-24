@@ -217,13 +217,11 @@ export const EnrichedTextInput = ({
       const { index, selectedText, selectionStart, selectionEnd } =
         e.nativeEvent;
       const callback = contextMenuCallbacksRef.current[index];
-      if (callback) {
-        callback(
-          selectedText,
-          { start: selectionStart, end: selectionEnd },
-          latestStyleStateRef.current ?? ({} as OnChangeStateEvent)
-        );
-      }
+      callback?.(
+        selectedText,
+        { start: selectionStart, end: selectionEnd },
+        latestStyleStateRef.current ?? ({} as OnChangeStateEvent)
+      );
     },
     []
   );
