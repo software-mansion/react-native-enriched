@@ -214,10 +214,11 @@ export const EnrichedTextInput = ({
 
   const nativeContextMenuItems = useMemo(
     () =>
-      contextMenuItems?.map((item) => ({
-        text: item.text,
-        visible: item.visible ?? true,
-      })),
+      contextMenuItems
+        ?.filter((item) => item.visible !== false)
+        .map((item) => ({
+          text: item.text,
+        })),
     [contextMenuItems]
   );
 

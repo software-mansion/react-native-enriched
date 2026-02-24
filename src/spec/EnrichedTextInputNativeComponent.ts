@@ -187,7 +187,6 @@ export interface OnKeyPressEvent {
 
 export interface ContextMenuItemConfig {
   text: string;
-  visible: boolean;
 }
 
 export interface OnContextMenuItemPressEvent {

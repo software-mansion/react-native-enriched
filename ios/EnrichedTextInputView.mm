@@ -857,21 +857,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (!contextMenuChanged) {
     for (size_t i = 0; i < newViewProps.contextMenuItems.size(); i++) {
       if (newViewProps.contextMenuItems[i].text !=
-              oldViewProps.contextMenuItems[i].text ||
-          newViewProps.contextMenuItems[i].visible !=
-              oldViewProps.contextMenuItems[i].visible) {
+          oldViewProps.contextMenuItems[i].text) {
         contextMenuChanged = true;
         break;
       }
     }
   }
   if (contextMenuChanged) {
-    NSMutableArray<NSDictionary *> *items = [NSMutableArray new];
+    NSMutableArray<NSString *> *items = [NSMutableArray new];
     for (const auto &item : newViewProps.contextMenuItems) {
-      [items addObject:@{
-        @"text" : [NSString fromCppString:item.text],
-        @"visible" : @(item.visible)
-      }];
+      [items addObject:[NSString fromCppString:item.text]];
     }
     _contextMenuItems = [items copy];
   }
@@ -1834,13 +1829,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
 
-  for (NSDictionary *item in _contextMenuItems) {
-    BOOL visible = [item[@"visible"] boolValue];
-    if (!visible) {
-      continue;
-    }
-
-    NSString *title = item[@"text"];
+  for (NSString *title in _contextMenuItems) {
     __weak EnrichedTextInputView *weakSelf = self;
 
     UIAction *action =
@@ -1851,10 +1840,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                             [weakSelf emitOnContextMenuItemPressEvent:title];
                           }];
     [customActions addObject:action];
-  }
-
-  if (customActions.count == 0) {
-    return [UIMenu menuWithChildren:suggestedActions];
   }
 
   [customActions addObjectsFromArray:suggestedActions];
