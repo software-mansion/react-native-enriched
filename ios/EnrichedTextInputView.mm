@@ -291,6 +291,50 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel.adjustsFontForContentSizeCategory = YES;
 }
 
+// MARK: - Paragraph style helpers
+
+- (void)applyLineHeight:(NSMutableDictionary *)typingAttributes {
+  CGFloat rawLineHeight = [config primaryLineHeight];
+  NSUInteger length = textView.textStorage.string.length;
+  if (length == 0) {
+    return;
+  }
+
+  CGFloat scaledLineHeight = 0;
+  if (rawLineHeight > 0) {
+    // Scale lineHeight with the same Dynamic Type factor used for font sizes.
+    scaledLineHeight =
+        [[UIFontMetrics defaultMetrics] scaledValueForValue:rawLineHeight];
+  }
+
+  NSRange fullRange = NSMakeRange(0, length);
+
+  // apply lineHeight over the entire text storage content
+  [textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:fullRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle;
+                if (value != nil) {
+                  pStyle = [(NSParagraphStyle *)value mutableCopy];
+                } else {
+                  pStyle = [[NSMutableParagraphStyle alloc] init];
+                }
+                pStyle.minimumLineHeight = scaledLineHeight;
+                [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                             value:pStyle
+                                             range:range];
+              }];
+
+  // apply lineHeight to typing attributes
+  NSMutableParagraphStyle *paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  paragraphStyle.minimumLineHeight = scaledLineHeight;
+  typingAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
+}
+
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props
@@ -330,6 +374,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     } else {
       [newConfig setPrimaryFontSize:nullptr];
     }
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.lineHeight != oldViewProps.lineHeight) {
+    [newConfig setPrimaryLineHeight:newViewProps.lineHeight];
     stylePropChanged = YES;
   }
 
@@ -732,8 +781,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] =
         [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] =
-        [[NSParagraphStyle alloc] init];
+    [self applyLineHeight:defaultTypingAttributes];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
 
