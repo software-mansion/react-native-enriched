@@ -348,6 +348,7 @@ export default function App() {
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }
             onPasteImages={(e) => handlePasteImagesEvent(e.nativeEvent)}
+            useHtmlNormalizer={true}
           />
           <Toolbar
             stylesState={stylesState}

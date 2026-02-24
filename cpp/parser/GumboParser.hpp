@@ -1,5 +1,5 @@
 /**
- * Cross-platform HTML normalizer powered by Lexbor.
+ * Cross-platform HTML normalizer powered by Gumbo.
  * Converts arbitrary external HTML (Google Docs, Word, etc.) into a canonical
  * subset that our enriched parser understands.
  */
@@ -9,9 +9,9 @@
 #include <string>
 
 /**
- * C++ wrapper around the Lexbor-based HTML normalizer.
+ * C++ wrapper around the Gumbo-based HTML normalizer.
  */
-class LexborParser {
+class GumboParser {
 public:
   /**
    * Normalize an HTML string into the canonical subset.

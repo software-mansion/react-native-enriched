@@ -1,17 +1,12 @@
 /**
- * lexbor_normalizer.c
+ * gumbo_normalizer.c
  *
- * Lexbor-based HTML normalizer (C implementation).
- * This file MUST be compiled as C (not C++) because Lexbor uses C99 features
- * (compound literals, etc.) that are not valid in C++.
- *
+ * Gumbo-based HTML normalizer (C implementation).
  * Converts arbitrary external HTML into the canonical subset that our enriched
  * parser understands.
  */
 
-#ifndef LEXBOR_STATIC
-#define LEXBOR_STATIC
-#endif
+#define GUMBO_IMPLEMENTATION
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -22,7 +17,7 @@
 #pragma GCC diagnostic ignored "-Wextra"
 #endif
 
-#include "lexbor.h"
+#include "gumpo-parser.h"
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -142,43 +137,66 @@ static tag_class_t classify_tag(const char *name) {
 /*  DOM helpers — get tag name, node type checks                       */
 /* ------------------------------------------------------------------ */
 
-/** Get the lowercased tag name of an element node into buf. Returns
- *  buf on success, NULL if node is not an element or has no name. */
-static const char *get_tag_name(lxb_dom_node_t *node, char *buf,
-                                size_t buf_sz) {
-  if (!node || node->type != LXB_DOM_NODE_TYPE_ELEMENT)
-    return NULL;
-  lxb_dom_element_t *el = lxb_dom_interface_element(node);
-  size_t nlen;
-  const lxb_char_t *nraw = lxb_dom_element_local_name(el, &nlen);
-  if (!nraw || nlen == 0)
-    return NULL;
-  size_t n = nlen < buf_sz - 1 ? nlen : buf_sz - 1;
-  for (size_t i = 0; i < n; i++)
-    buf[i] = (char)tolower((unsigned char)nraw[i]);
-  buf[n] = '\0';
-  return buf;
+static bool is_element(GumboNode *node) {
+  return node && (node->type == GUMBO_NODE_ELEMENT ||
+                  node->type == GUMBO_NODE_TEMPLATE);
 }
 
-static bool is_list_node(lxb_dom_node_t *node) {
+static bool is_text(GumboNode *node) {
+  return node &&
+         (node->type == GUMBO_NODE_TEXT || node->type == GUMBO_NODE_WHITESPACE);
+}
+
+/** Get the lowercased tag name of an element node into buf. */
+static const char *get_tag_name(GumboNode *node, char *buf, size_t buf_sz) {
+  if (!is_element(node))
+    return NULL;
+  GumboElement *el = &node->v.element;
+
+  if (el->tag != GUMBO_TAG_UNKNOWN) {
+    const char *name = gumbo_normalized_tagname(el->tag);
+    if (name && name[0]) {
+      size_t n = strlen(name);
+      if (n >= buf_sz)
+        n = buf_sz - 1;
+      memcpy(buf, name, n);
+      buf[n] = '\0';
+      return buf;
+    }
+  }
+
+  /* Unknown tag — extract from original_tag */
+  GumboStringPiece piece = el->original_tag;
+  gumbo_tag_from_original_text(&piece);
+  if (piece.data && piece.length > 0) {
+    size_t n = piece.length < buf_sz - 1 ? piece.length : buf_sz - 1;
+    for (size_t i = 0; i < n; i++)
+      buf[i] = (char)tolower((unsigned char)piece.data[i]);
+    buf[n] = '\0';
+    return buf;
+  }
+  return NULL;
+}
+
+static bool is_list_node(GumboNode *node) {
   char buf[64];
   const char *n = get_tag_name(node, buf, sizeof(buf));
   return n && (strcmp(n, "ul") == 0 || strcmp(n, "ol") == 0);
 }
 
-static bool is_blockquote_node(lxb_dom_node_t *node) {
+static bool is_blockquote_node(GumboNode *node) {
   char buf[64];
   const char *n = get_tag_name(node, buf, sizeof(buf));
   return n && strcmp(n, "blockquote") == 0;
 }
 
-static bool is_br_node(lxb_dom_node_t *node) {
+static bool is_br_node(GumboNode *node) {
   char buf[64];
   const char *n = get_tag_name(node, buf, sizeof(buf));
   return n && strcmp(n, "br") == 0;
 }
 
-static bool is_block_producing(lxb_dom_node_t *node) {
+static bool is_block_producing(GumboNode *node) {
   char buf[64];
   const char *n = get_tag_name(node, buf, sizeof(buf));
   if (!n)
@@ -190,29 +208,32 @@ static bool is_block_producing(lxb_dom_node_t *node) {
 }
 
 /** True if all children are inline/text (no block-producing elements). */
-static bool is_purely_inline(lxb_dom_node_t *node) {
-  lxb_dom_node_t *c = lxb_dom_node_first_child(node);
-  while (c) {
-    if (is_block_producing(c))
+static bool is_purely_inline(GumboNode *node) {
+  if (!is_element(node))
+    return true;
+  GumboVector *children = &node->v.element.children;
+  for (unsigned int i = 0; i < children->length; i++) {
+    if (is_block_producing(children->data[i]))
       return false;
-    c = lxb_dom_node_next(c);
   }
   return true;
 }
 
 /** True if any direct child is block-producing or a blockquote. */
-static bool has_block_or_bq_child(lxb_dom_node_t *node) {
-  lxb_dom_node_t *c = lxb_dom_node_first_child(node);
-  while (c) {
+static bool has_block_or_bq_child(GumboNode *node) {
+  if (!is_element(node))
+    return false;
+  GumboVector *children = &node->v.element.children;
+  for (unsigned int i = 0; i < children->length; i++) {
+    GumboNode *c = children->data[i];
     if (is_block_producing(c) || is_blockquote_node(c))
       return true;
-    c = lxb_dom_node_next(c);
   }
   return false;
 }
 
 /* ------------------------------------------------------------------ */
-/*  CSS style → canonical tag mapping  (uses Lexbor CSS parser)        */
+/*  CSS style → canonical tag mapping  (simple string matching)        */
 /* ------------------------------------------------------------------ */
 
 typedef struct {
@@ -222,91 +243,117 @@ typedef struct {
   bool strikethrough;
 } css_styles_t;
 
+static const char *find_css_value(const char *style, size_t style_len,
+                                  const char *prop_name, size_t *val_len) {
+  size_t plen = strlen(prop_name);
+  const char *end = style + style_len;
+  const char *p = style;
+  while (p < end) {
+    while (p < end &&
+           (*p == ' ' || *p == '\t' || *p == ';' || *p == '\n' || *p == '\r'))
+      p++;
+    if (p >= end)
+      break;
+    if ((size_t)(end - p) > plen && strncmp(p, prop_name, plen) == 0) {
+      const char *after = p + plen;
+      while (after < end && (*after == ' ' || *after == '\t'))
+        after++;
+      if (after < end && *after == ':') {
+        after++;
+        while (after < end && (*after == ' ' || *after == '\t'))
+          after++;
+        const char *val_start = after;
+        while (after < end && *after != ';')
+          after++;
+        const char *val_end = after;
+        while (val_end > val_start &&
+               (*(val_end - 1) == ' ' || *(val_end - 1) == '\t'))
+          val_end--;
+        *val_len = (size_t)(val_end - val_start);
+        return val_start;
+      }
+    }
+    while (p < end && *p != ';')
+      p++;
+    if (p < end)
+      p++;
+  }
+  return NULL;
+}
+
+static bool css_val_contains(const char *val, size_t val_len,
+                             const char *needle) {
+  size_t nlen = strlen(needle);
+  if (nlen > val_len)
+    return false;
+  for (size_t i = 0; i <= val_len - nlen; i++) {
+    bool match = true;
+    for (size_t j = 0; j < nlen; j++) {
+      if (tolower((unsigned char)val[i + j]) !=
+          tolower((unsigned char)needle[j])) {
+        match = false;
+        break;
+      }
+    }
+    if (match)
+      return true;
+  }
+  return false;
+}
+
 static css_styles_t parse_css_style(const char *style_value, size_t style_len) {
   css_styles_t result = {false, false, false, false};
   if (!style_value || style_len == 0)
     return result;
 
-  lxb_css_parser_t *parser = lxb_css_parser_create();
-  lxb_status_t status = lxb_css_parser_init(parser, NULL);
-  if (status != LXB_STATUS_OK) {
-    lxb_css_parser_destroy(parser, true);
-    return result;
-  }
+  size_t vlen;
+  const char *val;
 
-  lxb_css_memory_t *memory = lxb_css_memory_create();
-  status = lxb_css_memory_init(memory, 128);
-  if (status != LXB_STATUS_OK) {
-    lxb_css_memory_destroy(memory, true);
-    lxb_css_parser_destroy(parser, true);
-    return result;
-  }
-  lxb_css_parser_memory_set(parser, memory);
-
-  lxb_css_rule_declaration_list_t *list = lxb_css_declaration_list_parse(
-      parser, (const lxb_char_t *)style_value, style_len);
-  if (!list) {
-    lxb_css_memory_destroy(memory, true);
-    lxb_css_parser_destroy(parser, true);
-    return result;
-  }
-
-  lxb_css_rule_t *rule = list->first;
-  while (rule) {
-    if (rule->type == LXB_CSS_RULE_DECLARATION) {
-      lxb_css_rule_declaration_t *decl = (lxb_css_rule_declaration_t *)rule;
-      switch ((unsigned)decl->type) {
-      case LXB_CSS_PROPERTY_FONT_WEIGHT: {
-        lxb_css_property_font_weight_t *fw = decl->u.font_weight;
-        if (fw) {
-          if (fw->type == LXB_CSS_FONT_WEIGHT_BOLD ||
-              fw->type == LXB_CSS_FONT_WEIGHT_BOLDER)
-            result.bold = true;
-          else if (fw->type == LXB_CSS_FONT_WEIGHT__NUMBER &&
-                   fw->number.num >= 700.0)
-            result.bold = true;
-        }
-        break;
-      }
-      case LXB_CSS_PROPERTY_FONT_STYLE: {
-        lxb_css_property_font_style_t *fs = decl->u.font_style;
-        if (fs && (fs->type == LXB_CSS_FONT_STYLE_ITALIC ||
-                   fs->type == LXB_CSS_FONT_STYLE_OBLIQUE))
-          result.italic = true;
-        break;
-      }
-      case LXB_CSS_PROPERTY_TEXT_DECORATION:
-      case LXB_CSS_PROPERTY_TEXT_DECORATION_LINE: {
-        lxb_css_property_text_decoration_line_t *tdl = NULL;
-        if ((unsigned)decl->type == LXB_CSS_PROPERTY_TEXT_DECORATION) {
-          lxb_css_property_text_decoration_t *td = decl->u.text_decoration;
-          if (td)
-            tdl = &td->line;
-        } else {
-          tdl = decl->u.text_decoration_line;
-        }
-        if (tdl) {
-          if (tdl->underline == LXB_CSS_TEXT_DECORATION_LINE_UNDERLINE)
-            result.underline = true;
-          if (tdl->line_through == LXB_CSS_TEXT_DECORATION_LINE_LINE_THROUGH)
-            result.strikethrough = true;
-        }
-        break;
-      }
-      default:
-        break;
-      }
+  val = find_css_value(style_value, style_len, "font-weight", &vlen);
+  if (val) {
+    if (css_val_contains(val, vlen, "bold") ||
+        css_val_contains(val, vlen, "bolder")) {
+      result.bold = true;
+    } else {
+      int num = atoi(val);
+      if (num >= 700)
+        result.bold = true;
     }
-    rule = rule->next;
   }
 
-  lxb_css_rule_declaration_list_destroy(list, true);
-  lxb_css_memory_destroy(memory, true);
-  lxb_css_parser_destroy(parser, true);
+  val = find_css_value(style_value, style_len, "font-style", &vlen);
+  if (val) {
+    if (css_val_contains(val, vlen, "italic") ||
+        css_val_contains(val, vlen, "oblique"))
+      result.italic = true;
+  }
+
+  {
+    const char *search_start = style_value;
+    size_t search_remaining = style_len;
+    while (search_remaining > 0) {
+      val = find_css_value(search_start, search_remaining,
+                           "text-decoration-line", &vlen);
+      if (!val)
+        val = find_css_value(search_start, search_remaining, "text-decoration",
+                             &vlen);
+      if (!val)
+        break;
+      if (css_val_contains(val, vlen, "underline"))
+        result.underline = true;
+      if (css_val_contains(val, vlen, "line-through"))
+        result.strikethrough = true;
+      size_t consumed = (size_t)(val + vlen - search_start);
+      if (consumed >= search_remaining)
+        break;
+      search_start = val + vlen;
+      search_remaining = style_len - (size_t)(search_start - style_value);
+    }
+  }
+
   return result;
 }
 
-/** Compute extra styles that the tag doesn't already convey. */
 static css_styles_t extra_styles(css_styles_t s, const char *tag) {
   if (strcmp(tag, "b") == 0)
     s.bold = false;
@@ -319,7 +366,6 @@ static css_styles_t extra_styles(css_styles_t s, const char *tag) {
   return s;
 }
 
-/* Emit opening / closing style wrapper tags. */
 static void emit_styles_open(buffer_t *out, css_styles_t s) {
   if (s.bold)
     buffer_append_str(out, "<b>");
@@ -346,27 +392,26 @@ static void emit_styles_close(buffer_t *out, css_styles_t s) {
 /*  Attribute emission helpers                                         */
 /* ------------------------------------------------------------------ */
 
-static const char *get_attr(lxb_dom_element_t *el, const char *name,
-                            size_t *out_len) {
-  const lxb_char_t *val = lxb_dom_element_get_attribute(
-      el, (const lxb_char_t *)name, strlen(name), out_len);
-  return (const char *)val;
+static const char *get_attr(GumboElement *el, const char *name) {
+  GumboAttribute *attr = gumbo_get_attribute(&el->attributes, name);
+  if (attr)
+    return attr->value;
+  return NULL;
 }
 
-static void emit_one_attr(buffer_t *out, lxb_dom_element_t *el,
+static void emit_one_attr(buffer_t *out, GumboElement *el,
                           const char *attr_name) {
-  size_t len;
-  const char *val = get_attr(el, attr_name, &len);
-  if (val && len > 0) {
+  const char *val = get_attr(el, attr_name);
+  if (val && val[0]) {
     buffer_append_str(out, " ");
     buffer_append_str(out, attr_name);
     buffer_append_str(out, "=\"");
-    buffer_append(out, val, len);
+    buffer_append_str(out, val);
     buffer_append_str(out, "\"");
   }
 }
 
-static void emit_attributes(lxb_dom_element_t *el, const char *tag_name,
+static void emit_attributes(GumboElement *el, const char *tag_name,
                             buffer_t *out) {
   if (strcmp(tag_name, "a") == 0) {
     emit_one_attr(out, el, "href");
@@ -376,12 +421,11 @@ static void emit_attributes(lxb_dom_element_t *el, const char *tag_name,
     emit_one_attr(out, el, "width");
     emit_one_attr(out, el, "height");
   } else if (strcmp(tag_name, "ul") == 0) {
-    size_t len;
-    const char *val = get_attr(el, "data-type", &len);
-    if (val && len > 0 && strncmp(val, "checkbox", len) == 0)
+    const char *val = get_attr(el, "data-type");
+    if (val && strcmp(val, "checkbox") == 0)
       buffer_append_str(out, " data-type=\"checkbox\"");
   } else if (strcmp(tag_name, "li") == 0) {
-    if (lxb_dom_element_has_attribute(el, (const lxb_char_t *)"checked", 7))
+    if (gumbo_get_attribute(&el->attributes, "checked") != NULL)
       buffer_append_str(out, " checked");
   } else if (strcmp(tag_name, "mention") == 0) {
     emit_one_attr(out, el, "id");
@@ -394,14 +438,13 @@ static void emit_attributes(lxb_dom_element_t *el, const char *tag_name,
 /*  Google Docs specific handling                                       */
 /* ------------------------------------------------------------------ */
 
-static bool is_google_docs_wrapper(lxb_dom_element_t *el,
-                                   const char *tag_name) {
+static bool is_google_docs_wrapper(GumboElement *el, const char *tag_name) {
   if (strcmp(tag_name, "b") != 0)
     return false;
-  size_t id_len;
-  const char *id_val = get_attr(el, "id", &id_len);
+  const char *id_val = get_attr(el, "id");
   if (!id_val)
     return false;
+  size_t id_len = strlen(id_val);
   return (id_len > 20 && strncmp(id_val, "docs-internal-guid-", 19) == 0);
 }
 
@@ -409,15 +452,14 @@ static bool is_google_docs_wrapper(lxb_dom_element_t *el,
 /*  Recursive DOM tree walker                                          */
 /* ------------------------------------------------------------------ */
 
-static void walk_node(lxb_dom_node_t *node, buffer_t *out);
+static void walk_node(GumboNode *node, buffer_t *out);
 
 /* ------------------------------------------------------------------ */
 /*  Blockquote content flattening                                      */
 /* ------------------------------------------------------------------ */
 
-static void flatten_bq_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out);
+static void flatten_bq_node(GumboNode *node, buffer_t *ib, buffer_t *out);
 
-/** Flush the inline buffer into a <p> element (if non-empty). */
 static void flush_inline_p(buffer_t *ib, buffer_t *out) {
   if (ib->len > 0) {
     buffer_append_str(out, "<p>");
@@ -427,24 +469,23 @@ static void flush_inline_p(buffer_t *ib, buffer_t *out) {
   }
 }
 
-static void flatten_bq_children(lxb_dom_node_t *node, buffer_t *ib,
-                                buffer_t *out) {
-  lxb_dom_node_t *child = lxb_dom_node_first_child(node);
-  while (child) {
-    flatten_bq_node(child, ib, out);
-    child = lxb_dom_node_next(child);
+static void flatten_bq_children(GumboNode *node, buffer_t *ib, buffer_t *out) {
+  if (!is_element(node))
+    return;
+  GumboVector *children = &node->v.element.children;
+  for (unsigned int i = 0; i < children->length; i++) {
+    flatten_bq_node(children->data[i], ib, out);
   }
 }
 
-static void flatten_bq_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out) {
+static void flatten_bq_node(GumboNode *node, buffer_t *ib, buffer_t *out) {
   if (!node)
     return;
-  if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
+  if (is_text(node)) {
     walk_node(node, ib);
     return;
   }
-  if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
-    flatten_bq_children(node, ib, out);
+  if (!is_element(node)) {
     return;
   }
   if (is_br_node(node)) {
@@ -465,14 +506,14 @@ static void flatten_bq_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out) {
 /* ------------------------------------------------------------------ */
 
 typedef struct {
-  lxb_dom_element_t *el;
+  GumboElement *el;
   css_styles_t styles;
-  lxb_dom_node_t **nested_lists;
+  GumboNode **nested_lists;
   int *nested_count;
   int max_nested;
 } li_ctx_t;
 
-static void flatten_li_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out,
+static void flatten_li_node(GumboNode *node, buffer_t *ib, buffer_t *out,
                             li_ctx_t *ctx);
 
 static void flush_li_buffer(buffer_t *ib, buffer_t *out, li_ctx_t *ctx) {
@@ -488,24 +529,25 @@ static void flush_li_buffer(buffer_t *ib, buffer_t *out, li_ctx_t *ctx) {
   buffer_clear(ib);
 }
 
-static void flatten_li_children(lxb_dom_node_t *node, buffer_t *ib,
-                                buffer_t *out, li_ctx_t *ctx) {
-  lxb_dom_node_t *child = lxb_dom_node_first_child(node);
-  while (child) {
-    flatten_li_node(child, ib, out, ctx);
-    child = lxb_dom_node_next(child);
+static void flatten_li_children(GumboNode *node, buffer_t *ib, buffer_t *out,
+                                li_ctx_t *ctx) {
+  if (!is_element(node))
+    return;
+  GumboVector *children = &node->v.element.children;
+  for (unsigned int i = 0; i < children->length; i++) {
+    flatten_li_node(children->data[i], ib, out, ctx);
   }
 }
 
-static void flatten_li_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out,
+static void flatten_li_node(GumboNode *node, buffer_t *ib, buffer_t *out,
                             li_ctx_t *ctx) {
   if (!node)
     return;
-  if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
+  if (is_text(node)) {
     walk_node(node, ib);
     return;
   }
-  if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
+  if (!is_element(node)) {
     flatten_li_children(node, ib, out, ctx);
     return;
   }
@@ -533,28 +575,30 @@ static void flatten_li_node(lxb_dom_node_t *node, buffer_t *ib, buffer_t *out,
 /*  walk_children — the main child-iteration driver                    */
 /* ------------------------------------------------------------------ */
 
-static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
+static void walk_children(GumboNode *node, buffer_t *out) {
+  if (!is_element(node))
+    return;
+
+  GumboVector *children = &node->v.element.children;
   bool parent_is_list = is_list_node(node);
 
   /* Detect mixed content: does the parent have any block-producing child? */
   bool has_block = false;
-  {
-    lxb_dom_node_t *c = lxb_dom_node_first_child(node);
-    while (c) {
-      if (is_block_producing(c)) {
-        has_block = true;
-        break;
-      }
-      c = lxb_dom_node_next(c);
+  for (unsigned int j = 0; j < children->length; j++) {
+    if (is_block_producing(children->data[j])) {
+      has_block = true;
+      break;
     }
   }
 
-  lxb_dom_node_t *child = lxb_dom_node_first_child(node);
-  while (child) {
+  unsigned int i = 0;
+  while (i < children->length) {
+    GumboNode *child = children->data[i];
+
     /* Flatten list-inside-list */
     if (parent_is_list && is_list_node(child)) {
       walk_children(child, out);
-      child = lxb_dom_node_next(child);
+      i++;
       continue;
     }
 
@@ -562,9 +606,9 @@ static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
     if (is_blockquote_node(child)) {
       buffer_append_str(out, "<blockquote>");
       buffer_t bq_ib = buffer_create(64);
-      while (child && is_blockquote_node(child)) {
-        flatten_bq_children(child, &bq_ib, out);
-        child = lxb_dom_node_next(child);
+      while (i < children->length && is_blockquote_node(children->data[i])) {
+        flatten_bq_children(children->data[i], &bq_ib, out);
+        i++;
       }
       flush_inline_p(&bq_ib, out);
       free(bq_ib.data);
@@ -576,27 +620,26 @@ static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
     if (has_block && !parent_is_list && !is_block_producing(child) &&
         !is_blockquote_node(child)) {
       buffer_t ib = buffer_create(64);
-      while (child && !is_block_producing(child) &&
-             !is_blockquote_node(child)) {
+      while (i < children->length && !is_block_producing(children->data[i]) &&
+             !is_blockquote_node(children->data[i])) {
+        child = children->data[i];
         if (is_br_node(child)) {
           if (ib.len > 0)
             flush_inline_p(&ib, out);
           else
             buffer_append_str(out, "<br>");
-          child = lxb_dom_node_next(child);
+          i++;
           continue;
         }
-        /* Transparent inline wrapper for block/bq children
-         * (e.g. <span><blockquote>…</blockquote></span>) */
-        if (child->type == LXB_DOM_NODE_TYPE_ELEMENT &&
-            has_block_or_bq_child(child)) {
+        /* Transparent inline wrapper for block/bq children */
+        if (is_element(child) && has_block_or_bq_child(child)) {
           flush_inline_p(&ib, out);
           walk_children(child, out);
-          child = lxb_dom_node_next(child);
+          i++;
           continue;
         }
         walk_node(child, &ib);
-        child = lxb_dom_node_next(child);
+        i++;
       }
       flush_inline_p(&ib, out);
       free(ib.data);
@@ -604,7 +647,7 @@ static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
     }
 
     walk_node(child, out);
-    child = lxb_dom_node_next(child);
+    i++;
   }
 }
 
@@ -612,17 +655,17 @@ static void walk_children(lxb_dom_node_t *node, buffer_t *out) {
 /*  walk_node — process a single DOM node                              */
 /* ------------------------------------------------------------------ */
 
-static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
+static void walk_node(GumboNode *node, buffer_t *out) {
   if (!node)
     return;
 
   /* Text node */
-  if (node->type == LXB_DOM_NODE_TYPE_TEXT) {
-    size_t text_len;
-    const lxb_char_t *text_raw = lxb_dom_node_text_content(node, &text_len);
-    if (text_raw && text_len > 0) {
+  if (is_text(node)) {
+    const char *text_raw = node->v.text.text;
+    if (text_raw) {
+      size_t text_len = strlen(text_raw);
       for (size_t i = 0; i < text_len; i++) {
-        char c = (char)text_raw[i];
+        char c = text_raw[i];
         switch (c) {
         case '<':
           buffer_append_str(out, "&lt;");
@@ -642,12 +685,12 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
     return;
   }
 
-  if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
+  if (!is_element(node)) {
     walk_children(node, out);
     return;
   }
 
-  lxb_dom_element_t *el = lxb_dom_interface_element(node);
+  GumboElement *el = &node->v.element;
   char name_buf[64];
   if (!get_tag_name(node, name_buf, sizeof(name_buf))) {
     walk_children(node, out);
@@ -674,8 +717,8 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
 
   /* --- <span>: CSS style → inline tags --- */
   if (strcmp(name_buf, "span") == 0) {
-    size_t slen;
-    const char *sval = get_attr(el, "style", &slen);
+    const char *sval = get_attr(el, "style");
+    size_t slen = sval ? strlen(sval) : 0;
     css_styles_t s = parse_css_style(sval, slen);
     emit_styles_open(out, s);
     walk_children(node, out);
@@ -685,15 +728,16 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
 
   /* --- <div>: becomes <p> or passes through --- */
   if (strcmp(name_buf, "div") == 0) {
-    size_t slen;
-    const char *sval = get_attr(el, "style", &slen);
+    const char *sval = get_attr(el, "style");
+    size_t slen = sval ? strlen(sval) : 0;
     css_styles_t s = parse_css_style(sval, slen);
 
     if (is_purely_inline(node)) {
       /* Split on <br> into separate <p>s */
       buffer_t pb = buffer_create(64);
-      lxb_dom_node_t *dc = lxb_dom_node_first_child(node);
-      while (dc) {
+      GumboVector *div_children = &el->children;
+      for (unsigned int di = 0; di < div_children->length; di++) {
+        GumboNode *dc = div_children->data[di];
         if (is_br_node(dc)) {
           if (pb.len > 0) {
             buffer_append_str(out, "<p>");
@@ -705,11 +749,9 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
             buffer_append_str(out, "<br>");
           }
           buffer_clear(&pb);
-          dc = lxb_dom_node_next(dc);
           continue;
         }
         walk_node(dc, &pb);
-        dc = lxb_dom_node_next(dc);
       }
       if (pb.len > 0) {
         buffer_append_str(out, "<p>");
@@ -735,11 +777,23 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
       strcmp(name_buf, "colgroup") == 0 || strcmp(name_buf, "col") == 0) {
     if (strcmp(name_buf, "td") == 0 || strcmp(name_buf, "th") == 0) {
       walk_children(node, out);
-      lxb_dom_node_t *sib = lxb_dom_node_next(node);
-      while (sib && sib->type != LXB_DOM_NODE_TYPE_ELEMENT)
-        sib = lxb_dom_node_next(sib);
-      if (sib)
-        buffer_append_str(out, " ");
+      /* Check if there's a next sibling element */
+      GumboNode *parent = node->parent;
+      if (parent && is_element(parent)) {
+        GumboVector *siblings = &parent->v.element.children;
+        unsigned int my_idx = node->index_within_parent;
+        /* Find next element sibling */
+        bool has_next_el = false;
+        for (unsigned int si = my_idx + 1; si < siblings->length; si++) {
+          GumboNode *sib = siblings->data[si];
+          if (is_element(sib)) {
+            has_next_el = true;
+            break;
+          }
+        }
+        if (has_next_el)
+          buffer_append_str(out, " ");
+      }
     } else if (strcmp(name_buf, "tr") == 0) {
       buffer_t row = buffer_create(64);
       walk_children(node, &row);
@@ -771,21 +825,21 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
 
   case TAG_CLASS_INLINE:
   case TAG_CLASS_BLOCK: {
-    size_t slen;
-    const char *sval = get_attr(el, "style", &slen);
+    const char *sval = get_attr(el, "style");
+    size_t slen = sval ? strlen(sval) : 0;
     css_styles_t es = extra_styles(parse_css_style(sval, slen), out_name);
 
-    /* <li>: always flatten (handles block children + nested lists) */
+    /* <li>: always flatten */
     if (strcmp(out_name, "li") == 0) {
-      lxb_dom_node_t *nested_lists[16];
+      GumboNode *nested_lists[16];
       int nested_count = 0;
       buffer_t li_ib = buffer_create(64);
       li_ctx_t ctx = {el, es, nested_lists, &nested_count, 16};
       flatten_li_children(node, &li_ib, out, &ctx);
       flush_li_buffer(&li_ib, out, &ctx);
       free(li_ib.data);
-      for (int i = 0; i < nested_count; i++)
-        walk_children(nested_lists[i], out);
+      for (int k = 0; k < nested_count; k++)
+        walk_children(nested_lists[k], out);
       break;
     }
 
@@ -819,6 +873,22 @@ static void walk_node(lxb_dom_node_t *node, buffer_t *out) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Find <body> element from parse output                              */
+/* ------------------------------------------------------------------ */
+
+static GumboNode *find_body(GumboNode *root) {
+  if (!root || !is_element(root))
+    return root;
+  GumboVector *children = &root->v.element.children;
+  for (unsigned int i = 0; i < children->length; i++) {
+    GumboNode *child = children->data[i];
+    if (is_element(child) && child->v.element.tag == GUMBO_TAG_BODY)
+      return child;
+  }
+  return root;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -826,27 +896,20 @@ char *normalize_html(const char *html, size_t len) {
   if (!html || len == 0)
     return NULL;
 
-  lxb_html_document_t *doc = lxb_html_document_create();
-  if (!doc)
+  GumboOutput *output =
+      gumbo_parse_with_options(&kGumboDefaultOptions, html, len);
+  if (!output)
     return NULL;
 
-  lxb_status_t status =
-      lxb_html_document_parse(doc, (const lxb_char_t *)html, len);
-  if (status != LXB_STATUS_OK) {
-    lxb_html_document_destroy(doc);
-    return NULL;
-  }
+  GumboNode *body = find_body(output->root);
+  if (!body)
+    body = output->root;
 
-  lxb_html_body_element_t *body = lxb_html_document_body_element(doc);
-  lxb_dom_node_t *root =
-      body ? lxb_dom_interface_node(body)
-           : lxb_dom_interface_node(lxb_dom_interface_node(doc));
+  buffer_t buf = buffer_create(len * 2);
+  walk_children(body, &buf);
 
-  buffer_t output = buffer_create(len * 2);
-  walk_children(root, &output);
-
-  lxb_html_document_destroy(doc);
-  return buffer_finish(&output);
+  gumbo_destroy_output(&kGumboDefaultOptions, output);
+  return buffer_finish(&buf);
 }
 
 void free_normalized_html(char *result) { free(result); }

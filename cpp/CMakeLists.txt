@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(lexbor_parser_tests C CXX)
+project(gumbo_parser_tests C CXX)
 
 # ── Fetch Google Test ────────────────────────────────────────────────────────
 include(FetchContent)
@@ -12,39 +12,39 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# ── Static library: lexbor normalizer + C++ wrapper ──────────────────────────
-add_library(lexbor_normalizer_lib STATIC
-    parser/lexbor_normalizer.c
-    parser/LexborParser.cpp
+# ── Shared library: gumbo normalizer + C++ wrapper ──────────────────────────
+add_library(gumbo_normalizer_lib SHARED
+    parser/gumbo_normalizer.c
+    parser/GumboParser.cpp
 )
 
-target_include_directories(lexbor_normalizer_lib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/lexbor
+target_include_directories(gumbo_normalizer_lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/gumbo-parser
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
 )
 
 # Compile the C file as C99, C++ files as C++17
 set_source_files_properties(
-    parser/lexbor_normalizer.c
+    parser/gumbo_normalizer.c
     PROPERTIES LANGUAGE C
                COMPILE_FLAGS "-std=c99"
 )
 
-target_compile_options(lexbor_normalizer_lib PRIVATE
+target_compile_options(gumbo_normalizer_lib PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>
 )
 
 # ── Test executable ──────────────────────────────────────────────────────────
 enable_testing()
 
-add_executable(lexbor_parser_tests
-    tests/LexborParserTest.cpp
+add_executable(gumbo_parser_tests
+    tests/GumboParserTest.cpp
 )
 
-target_link_libraries(lexbor_parser_tests PRIVATE
-    lexbor_normalizer_lib
+target_link_libraries(gumbo_parser_tests PRIVATE
+    gumbo_normalizer_lib
     GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(lexbor_parser_tests)
+gtest_discover_tests(gumbo_parser_tests)

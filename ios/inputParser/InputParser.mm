@@ -5,7 +5,7 @@
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
 
-#include "LexborParser.hpp"
+#include "GumboParser.hpp"
 
 @implementation InputParser {
   EnrichedTextInputView *_input;
@@ -727,14 +727,14 @@
 
 /**
  * Normalizes external HTML (from Google Docs, Word, web pages, etc.) into our
- * canonical tag subset using the Lexbor-based C++ normalizer.
+ * canonical tag subset using the Gumbo-based C++ normalizer.
  *
  * Converts: <strong> → <b>, <em> → <i>, <span style="font-weight:bold"> → <b>,
  * strips unknown tags while preserving text
  */
 - (NSString *_Nullable)normalizeExternalHtml:(NSString *_Nonnull)html {
   std::string result =
-      LexborParser::normalizeHtml(std::string([html UTF8String]));
+      GumboParser::normalizeHtml(std::string([html UTF8String]));
   if (result.empty()) return nil;
   return [NSString stringWithUTF8String:result.c_str()];
 }
@@ -765,7 +765,7 @@
                                                        withString:@""];
     } else if (_input->useHtmlNormalizer) {
       // External HTML (from Google Docs, Word, web pages, etc.)
-      // Run through the Lexbor-based normalizer to convert arbitrary HTML
+      // Run through the Gumbo-based normalizer to convert arbitrary HTML
       // into our canonical tag subset.
       NSString *normalized = [self normalizeExternalHtml:html];
       if (normalized != nil) {

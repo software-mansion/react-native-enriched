@@ -1,22 +1,21 @@
-# C++ – Lexbor HTML Normalizer
+# C++ – Gumbo HTML Normalizer
 
-## Lexbor setup
+## Gumbo-parser setup
 
-The normalizer depends on a single amalgamation header `lexbor/lexbor.h`.
+The normalizer depends on a single amalgamation file `gumbo-parser/gumpo-parser.h`.
 
-```bash
-# from the project root
-bash scripts/setup-lexbor.sh
-```
+This file was created from the [gumbo-parser](https://codeberg.org/gumbo-parser/gumbo-parser) repository — an actively maintained fork of the original Google gumbo-parser.
 
-The script clones the Lexbor repo at the pinned commit, runs the official
-`single.pl` amalgamation generator, and writes the header to `cpp/lexbor/lexbor.h`.
+### Updating gumbo-parser
 
-### Updating Lexbor
+If you want to upgrade to a newer version:
 
-1. Open `scripts/setup-lexbor.sh`.
-2. Change `LEXBOR_COMMIT` to the desired commit hash (or tag).
-3. Delete the existing header so the script regenerates it.
+1. Clone the repository:
+   ```bash
+   git clone https://codeberg.org/gumbo-parser/gumbo-parser.git
+   ```
+2. Create a new amalgamation from the cloned source files.
+3. Replace the existing `cpp/gumbo-parser/gumpo-parser.h` with the newly generated amalgamation.
 
 ## Building and running tests
 
