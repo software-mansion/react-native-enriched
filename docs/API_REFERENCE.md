@@ -267,43 +267,6 @@ interface OnChangeStateEvent {
 |-------------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
 
-### `onChangeStateDeprecated`
-
-> [!WARNING]
-> Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
-
-Callback that gets called when any of the styles within the selection changes.
-
-Payload has a bool flag for each style:
-
-```ts
-interface OnChangeStateDeprecatedEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isH4: boolean;
-  isH5: boolean;
-  isH6: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isCheckboxList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
-```
-
-| Type                                                                  | Platform |
-|-----------------------------------------------------------------------|----------|
-| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | Both     |
-
 ### `onChangeText`
 
 Callback called when any text changes occur in the input.
