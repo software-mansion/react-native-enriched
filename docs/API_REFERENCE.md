@@ -413,6 +413,27 @@ export interface OnKeyPressEvent {
 |----------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
 
+### `OnPasteImages`
+
+Callback invoked when the user pastes one or more images or GIFs into the input.
+
+- `images` - is an array of objects containing the details (URI, MIME type, and dimensions) for each pasted image/GIF.
+
+```ts
+export interface OnPasteImagesEvent {
+  images: {
+    uri: string;
+    type: string;
+    width: Float;
+    height: Float;
+  }[];
+}
+```
+
+| Type                                                        | Platform |
+| ----------------------------------------------------------- | -------- |
+| `(event: NativeSyntheticEvent<OnPasteImagesEvent>) => void` | Both     |
+
 ### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
@@ -455,7 +476,9 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontFamily
 - fontSize
 - fontWeight
+- lineHeight
 - fontStyle only on Android
+- lineHeight only on iOS
 
 | Type                                                                                                               | Default Value | Platform |
 | ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
@@ -795,9 +818,6 @@ interface MentionStyleProperties {
 
 - `fontSize` is the size of the heading's font. Defaults to `32` for `H1`, `24` for `H2`, `20` for `H3`, `16` for `H4`, `14` for `H5`, `12` for `H6`.
 - `bold` defines whether the heading should be bolded, defaults to `false`.
-
-> [!NOTE]
-> On iOS, the headings cannot have same `fontSize` as the component's `fontSize`. Doing so results in unexpected behavior.
 
 ### blockquote
 

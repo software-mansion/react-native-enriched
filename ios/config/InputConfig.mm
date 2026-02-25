@@ -4,6 +4,7 @@
 @implementation InputConfig {
   UIColor *_primaryColor;
   NSNumber *_primaryFontSize;
+  CGFloat _primaryLineHeight;
   NSString *_primaryFontWeight;
   NSString *_primaryFontFamily;
   UIFont *_primaryFont;
@@ -67,6 +68,7 @@
   InputConfig *copy = [[[self class] allocWithZone:zone] init];
   copy->_primaryColor = [_primaryColor copy];
   copy->_primaryFontSize = [_primaryFontSize copy];
+  copy->_primaryLineHeight = _primaryLineHeight;
   copy->_primaryFontWeight = [_primaryFontWeight copy];
   copy->_primaryFontFamily = [_primaryFontFamily copy];
   copy->_primaryFont = [_primaryFont copy];
@@ -133,6 +135,14 @@
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
   _olMarkerFontNeedsRecreation = YES;
+}
+
+- (CGFloat)primaryLineHeight {
+  return _primaryLineHeight;
+}
+
+- (void)setPrimaryLineHeight:(CGFloat)newValue {
+  _primaryLineHeight = newValue;
 }
 
 - (NSString *)primaryFontWeight {

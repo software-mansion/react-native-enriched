@@ -195,6 +195,19 @@ class ListStyles(
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
+      // Check if the span from the previous line "leaked" into this one
+      if (spans.isNotEmpty()) {
+        val existingSpan = spans[0]
+        val spanStart = s.getSpanStart(existingSpan)
+
+        // If the span started before the current paragraph (belongs to the previous item)
+        // update it to end at the newline (start - 1)
+        if (spanStart < start) {
+          val spanFlags = s.getSpanFlags(existingSpan)
+          s.setSpan(existingSpan, spanStart, start - 1, spanFlags)
+        }
+      }
+
       s.insert(cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, end + 1)
       // Inform that new span has been added

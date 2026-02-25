@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/6963e203-38c8-4209-b1b2-1ff65f6765f9" alt="react-native-enriched by Software Mansion" width="100%">
+<img src="https://github.com/user-attachments/assets/c8ba03bc-4ea8-48f4-9566-02ebac0c19d3" alt="react-native-enriched by Software Mansion" width="100%">
 
 # react-native-enriched
 
@@ -40,8 +40,8 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.81`, `0.82` and `0.83`
-- If you would like to use `react-native-enriched` in React Native `0.79` or `0.80` use `react-native-enriched 0.3.x`.
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.81`, `0.82`, `0.83` and `0.84`.
+- If you would like to use `react-native-enriched` in React Native `0.79` or `0.80` use `react-native-enriched 0.4.x`.
 
 ## Installation
 
@@ -106,8 +106,8 @@ export default function App() {
         style={styles.input}
       />
       <Button
-        title={stylesState?.isBold ? 'Unbold' : 'Bold'}
-        color={stylesState?.isBold ? 'green' : 'gray'}
+        title={stylesState?.bold.isActive ? 'Unbold' : 'Bold'}
+        color={stylesState?.bold.isActive ? 'green' : 'gray'}
         onPress={() => ref.current?.toggleBold()}
       />
     </View>
@@ -231,6 +231,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 - [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
+- [onPasteImages](docs/API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
 
 ## Customizing \<EnrichedTextInput /> styles
 

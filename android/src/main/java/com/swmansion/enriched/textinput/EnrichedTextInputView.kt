@@ -21,6 +21,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.ViewCompat
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
@@ -43,6 +44,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -53,6 +55,7 @@ import com.swmansion.enriched.textinput.styles.ParametrizedStyles
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
+import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
@@ -92,6 +95,7 @@ class EnrichedTextInputView : AppCompatEditText {
   var experimentalSynchronousEvents: Boolean = false
 
   var fontSize: Float? = null
+  private var lineHeight: Float? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
@@ -138,6 +142,11 @@ class EnrichedTextInputView : AppCompatEditText {
 
   init {
     inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    ViewCompat.setOnReceiveContentListener(
+      this,
+      RichContentReceiver.MIME_TYPES,
+      RichContentReceiver(this, context as ReactContext),
+    )
   }
 
   private fun prepareComponent() {
@@ -233,11 +242,6 @@ class EnrichedTextInputView : AppCompatEditText {
         handleCustomCopy()
         return true
       }
-
-      android.R.id.paste -> {
-        handleCustomPaste()
-        return true
-      }
     }
     return super.onTextContextMenuItem(id)
   }
@@ -257,16 +261,11 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun handleCustomPaste() {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    if (!clipboard.hasPrimaryClip()) return
-
-    val clip = clipboard.primaryClip
-    val item = clip?.getItemAt(0)
-    val htmlText = item?.htmlText
+  fun handleTextPaste(item: ClipData.Item) {
+    val htmlText = item.htmlText
     val currentText = text as Spannable
-    val start = selection?.start ?: 0
-    val end = selection?.end ?: 0
+    val start = selectionStart.coerceAtLeast(0)
+    val end = selectionEnd.coerceAtLeast(0)
 
     if (htmlText != null) {
       val parsedText = parseText(htmlText)
@@ -277,8 +276,7 @@ class EnrichedTextInputView : AppCompatEditText {
       }
     }
 
-    // Currently, we do not support pasting images
-    if (item?.text == null) return
+    if (item.text == null) return
     val lengthBefore = currentText.length
     val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
@@ -314,6 +312,7 @@ class EnrichedTextInputView : AppCompatEditText {
     runAsATransaction {
       val newText = parseText(value)
       setText(newText)
+      applyLineSpacing()
 
       observeAsyncImages()
 
@@ -424,6 +423,28 @@ class EnrichedTextInputView : AppCompatEditText {
     htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout()
     forceScrollToSelection()
+  }
+
+  fun setLineHeight(height: Float) {
+    lineHeight = if (height == 0f) null else height
+    applyLineSpacing()
+    layoutManager.invalidateLayout()
+    forceScrollToSelection()
+  }
+
+  private fun applyLineSpacing() {
+    val spannable = text as? Spannable ?: return
+    spannable
+      .getSpans(0, spannable.length, EnrichedLineHeightSpan::class.java)
+      .forEach { spannable.removeSpan(it) }
+
+    val lh = lineHeight ?: return
+    spannable.setSpan(
+      EnrichedLineHeightSpan(lh),
+      0,
+      spannable.length,
+      Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+    )
   }
 
   fun setFontFamily(family: String?) {

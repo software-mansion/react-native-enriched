@@ -189,6 +189,22 @@ interface TargetedEvent {
   target: Int32;
 }
 
+export interface PastedImage {
+  uri: string;
+  type: string;
+  width: Float;
+  height: Float;
+}
+
+export interface OnPasteImagesEvent {
+  images: {
+    uri: string;
+    type: string;
+    width: Float;
+    height: Float;
+  }[];
+}
+
 type Heading = {
   fontSize?: Float;
   bold?: boolean;
@@ -264,18 +280,19 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onChangeStateDeprecated?: DirectEventHandler<OnChangeStateDeprecatedEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetected>;
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
+  onPasteImages?: DirectEventHandler<OnPasteImagesEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
   color?: ColorValue;
   fontSize?: Float;
+  lineHeight?: Float;
   fontFamily?: string;
   fontWeight?: string;
   fontStyle?: string;

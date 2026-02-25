@@ -17,7 +17,6 @@ import com.facebook.react.viewmanagers.EnrichedTextInputViewManagerInterface
 import com.facebook.yoga.YogaMeasureMode
 import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.events.OnChangeSelectionEvent
-import com.swmansion.enriched.textinput.events.OnChangeStateDeprecatedEvent
 import com.swmansion.enriched.textinput.events.OnChangeStateEvent
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
@@ -26,6 +25,7 @@ import com.swmansion.enriched.textinput.events.OnInputKeyPressEvent
 import com.swmansion.enriched.textinput.events.OnLinkDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionEvent
+import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -65,13 +65,13 @@ class EnrichedTextInputViewManager :
     map.put(OnChangeTextEvent.EVENT_NAME, mapOf("registrationName" to OnChangeTextEvent.EVENT_NAME))
     map.put(OnChangeHtmlEvent.EVENT_NAME, mapOf("registrationName" to OnChangeHtmlEvent.EVENT_NAME))
     map.put(OnChangeStateEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStateEvent.EVENT_NAME))
-    map.put(OnChangeStateDeprecatedEvent.EVENT_NAME, mapOf("registrationName" to OnChangeStateDeprecatedEvent.EVENT_NAME))
     map.put(OnLinkDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnLinkDetectedEvent.EVENT_NAME))
     map.put(OnMentionDetectedEvent.EVENT_NAME, mapOf("registrationName" to OnMentionDetectedEvent.EVENT_NAME))
     map.put(OnMentionEvent.EVENT_NAME, mapOf("registrationName" to OnMentionEvent.EVENT_NAME))
     map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
+    map.put(OnPasteImagesEvent.EVENT_NAME, mapOf("registrationName" to OnPasteImagesEvent.EVENT_NAME))
 
     return map
   }
@@ -171,6 +171,14 @@ class EnrichedTextInputViewManager :
     size: Float,
   ) {
     view?.setFontSize(size)
+  }
+
+  @ReactProp(name = "lineHeight", defaultFloat = 0f)
+  override fun setLineHeight(
+    view: EnrichedTextInputView?,
+    height: Float,
+  ) {
+    view?.setLineHeight(height)
   }
 
   @ReactProp(name = "fontFamily")
