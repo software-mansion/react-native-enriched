@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/6963e203-38c8-4209-b1b2-1ff65f6765f9" alt="react-native-enriched by Software Mansion" width="100%">
+<img src="https://github.com/user-attachments/assets/c8ba03bc-4ea8-48f4-9566-02ebac0c19d3" alt="react-native-enriched by Software Mansion" width="100%">
 
 # react-native-enriched
 
@@ -245,14 +245,9 @@ You can extend the native text editing menu with custom items using the [context
   contextMenuItems={[
     {
       text: 'Paste Link',
-      onPress: (selectedText, selection, stylesState) => {
+      onPress: ({ text, selection, styleState }) => {
         if (!styleState.link.isBlocking) {
-          ref.current?.setLink(
-            selection.start,
-            selection.end,
-            selectedText,
-            url
-          );
+          ref.current?.setLink(selection.start, selection.end, text, url);
         }
       },
       visible: true,

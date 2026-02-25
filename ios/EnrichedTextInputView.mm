@@ -291,6 +291,50 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _placeholderLabel.adjustsFontForContentSizeCategory = YES;
 }
 
+// MARK: - Paragraph style helpers
+
+- (void)applyLineHeight:(NSMutableDictionary *)typingAttributes {
+  CGFloat rawLineHeight = [config primaryLineHeight];
+  NSUInteger length = textView.textStorage.string.length;
+  if (length == 0) {
+    return;
+  }
+
+  CGFloat scaledLineHeight = 0;
+  if (rawLineHeight > 0) {
+    // Scale lineHeight with the same Dynamic Type factor used for font sizes.
+    scaledLineHeight =
+        [[UIFontMetrics defaultMetrics] scaledValueForValue:rawLineHeight];
+  }
+
+  NSRange fullRange = NSMakeRange(0, length);
+
+  // apply lineHeight over the entire text storage content
+  [textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:fullRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle;
+                if (value != nil) {
+                  pStyle = [(NSParagraphStyle *)value mutableCopy];
+                } else {
+                  pStyle = [[NSMutableParagraphStyle alloc] init];
+                }
+                pStyle.minimumLineHeight = scaledLineHeight;
+                [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                             value:pStyle
+                                             range:range];
+              }];
+
+  // apply lineHeight to typing attributes
+  NSMutableParagraphStyle *paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  paragraphStyle.minimumLineHeight = scaledLineHeight;
+  typingAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
+}
+
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props
@@ -330,6 +374,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     } else {
       [newConfig setPrimaryFontSize:nullptr];
     }
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.lineHeight != oldViewProps.lineHeight) {
+    [newConfig setPrimaryLineHeight:newViewProps.lineHeight];
     stylePropChanged = YES;
   }
 
@@ -732,8 +781,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [config primaryColor];
     defaultTypingAttributes[NSStrikethroughColorAttributeName] =
         [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] =
-        [[NSParagraphStyle alloc] init];
+    [self applyLineHeight:defaultTypingAttributes];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
 
@@ -857,21 +905,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (!contextMenuChanged) {
     for (size_t i = 0; i < newViewProps.contextMenuItems.size(); i++) {
       if (newViewProps.contextMenuItems[i].text !=
-              oldViewProps.contextMenuItems[i].text ||
-          newViewProps.contextMenuItems[i].visible !=
-              oldViewProps.contextMenuItems[i].visible) {
+          oldViewProps.contextMenuItems[i].text) {
         contextMenuChanged = true;
         break;
       }
     }
   }
   if (contextMenuChanged) {
-    NSMutableArray<NSDictionary *> *items = [NSMutableArray new];
+    NSMutableArray<NSString *> *items = [NSMutableArray new];
     for (const auto &item : newViewProps.contextMenuItems) {
-      [items addObject:@{
-        @"text" : [NSString fromCppString:item.text],
-        @"visible" : @(item.visible)
-      }];
+      [items addObject:[NSString fromCppString:item.text]];
     }
     _contextMenuItems = [items copy];
   }
@@ -1834,36 +1877,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
 
-  for (NSUInteger i = 0; i < _contextMenuItems.count; i++) {
-    NSDictionary *item = _contextMenuItems[i];
-    BOOL visible = [item[@"visible"] boolValue];
-    if (!visible) {
-      continue;
-    }
-
-    NSString *title = item[@"text"];
-    NSUInteger capturedIndex = i;
+  for (NSString *title in _contextMenuItems) {
     __weak EnrichedTextInputView *weakSelf = self;
 
-    UIAction *action = [UIAction
-        actionWithTitle:title
-                  image:nil
-             identifier:nil
-                handler:^(__kindof UIAction *_Nonnull action) {
-                  [weakSelf emitOnContextMenuItemPressEvent:capturedIndex];
-                }];
+    UIAction *action =
+        [UIAction actionWithTitle:title
+                            image:nil
+                       identifier:nil
+                          handler:^(__kindof UIAction *_Nonnull action) {
+                            [weakSelf emitOnContextMenuItemPressEvent:title];
+                          }];
     [customActions addObject:action];
-  }
-
-  if (customActions.count == 0) {
-    return [UIMenu menuWithChildren:suggestedActions];
   }
 
   [customActions addObjectsFromArray:suggestedActions];
   return [UIMenu menuWithChildren:customActions];
 }
 
-- (void)emitOnContextMenuItemPressEvent:(NSUInteger)index {
+- (void)emitOnContextMenuItemPressEvent:(NSString *)itemText {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     NSRange selectedRange = textView.selectedRange;
@@ -1874,11 +1905,34 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
 
     emitter->onContextMenuItemPress(
-        {.index = static_cast<int>(index),
+        {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
          .selectionStart = static_cast<int>(selectedRange.location),
          .selectionEnd =
-             static_cast<int>(selectedRange.location + selectedRange.length)});
+             static_cast<int>(selectedRange.location + selectedRange.length),
+         .styleState = {
+             .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+             .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
+             .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
+             .strikeThrough =
+                 GET_STYLE_STATE([StrikethroughStyle getStyleType]),
+             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
+             .h1 = GET_STYLE_STATE([H1Style getStyleType]),
+             .h2 = GET_STYLE_STATE([H2Style getStyleType]),
+             .h3 = GET_STYLE_STATE([H3Style getStyleType]),
+             .h4 = GET_STYLE_STATE([H4Style getStyleType]),
+             .h5 = GET_STYLE_STATE([H5Style getStyleType]),
+             .h6 = GET_STYLE_STATE([H6Style getStyleType]),
+             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
+             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
+             .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
+             .unorderedList =
+                 GET_STYLE_STATE([UnorderedListStyle getStyleType]),
+             .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+             .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+             .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+             .checkboxList =
+                 GET_STYLE_STATE([CheckboxListStyle getStyleType])}});
   }
 }
 
@@ -1966,6 +2020,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                                                 input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
+  }
+
+  // Tapping near a link causes iOS to re-derive typingAttributes from
+  // character attributes after textViewDidChangeSelection returns, undoing
+  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
+  // before insertion, so new text never inherits link styling.
+  if (linkStyle != nullptr) {
+    [linkStyle manageLinkTypingAttributes];
   }
 
   return YES;

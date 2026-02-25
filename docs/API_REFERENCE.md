@@ -27,7 +27,7 @@ Tells input to automatically capitalize certain characters.
 
 An array of custom items to display in the native text editing menu. Items appear in array order, before the system items (Copy/Paste/Cut). Each item specifies a title, visibility flag, and a callback that fires when the item is tapped.
 
-The `onPress` callback receives three arguments:
+The `onPress` callback receives a single object argument with the following properties:
 
 - `text` - the currently selected text.
 - `selection` - an object with `start` and `end` indices of the current selection.
@@ -38,22 +38,22 @@ Item type:
 ```ts
 interface ContextMenuItem {
   text: string;
-  onPress: (
-    text: string,
-    selection: { start: number; end: number },
-    styleState: OnChangeStateEvent
-  ) => void;
-  visible: boolean;
+  onPress: (args: {
+    text: string;
+    selection: { start: number; end: number };
+    styleState: OnChangeStateEvent;
+  }) => void;
+  visible?: boolean;
 }
 ```
 
 - `text` is the title displayed in the menu.
 - `onPress` is the callback invoked when the item is tapped.
-- `visible` controls whether the item is shown.
+- `visible` controls whether the item is shown. Defaults to `true`.
 
 | Type                | Default Value | Platform |
 | ------------------- | ------------- | -------- |
-| `ContextMenuItem[]` | -             | iOS      |
+| `ContextMenuItem[]` | []             | iOS      |
 
 > [!NOTE]
 > This prop is currently supported on iOS only (iOS 16+).
@@ -512,6 +512,7 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontSize
 - fontWeight
 - fontStyle only on Android
+- lineHeight only on iOS
 
 | Type                                                                                                               | Default Value | Platform |
 | ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |

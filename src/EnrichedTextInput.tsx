@@ -82,12 +82,16 @@ export interface EnrichedTextInputInstance extends NativeMethods {
 
 export interface ContextMenuItem {
   text: string;
-  onPress: (
-    text: string,
-    selection: { start: number; end: number },
-    styleState: OnChangeStateEvent
-  ) => void;
-  visible: boolean;
+  onPress: ({
+    text,
+    selection,
+    styleState,
+  }: {
+    text: string;
+    selection: { start: number; end: number };
+    styleState: OnChangeStateEvent;
+  }) => void;
+  visible?: boolean;
 }
 
 export interface OnChangeMentionEvent {
@@ -190,40 +194,46 @@ export const EnrichedTextInput = ({
   const nextHtmlRequestId = useRef(1);
   const pendingHtmlRequests = useRef(new Map<number, HtmlRequest>());
 
-  // Track latest style state for context menu callbacks
-  const latestStyleStateRef = useRef<OnChangeStateEvent | null>(null);
-
   // Store onPress callbacks in a ref so native only receives serializable data
-  const contextMenuCallbacksRef = useRef<Array<ContextMenuItem['onPress']>>([]);
-  if (contextMenuItems) {
-    contextMenuCallbacksRef.current = contextMenuItems.map(
-      (item) => item.onPress
-    );
-  } else {
-    contextMenuCallbacksRef.current = [];
-  }
+  const contextMenuCallbacksRef = useRef<
+    Map<string, ContextMenuItem['onPress']>
+  >(new Map());
+
+  useEffect(() => {
+    const callbacksMap = new Map<string, ContextMenuItem['onPress']>();
+    if (contextMenuItems) {
+      for (const item of contextMenuItems) {
+        callbacksMap.set(item.text, item.onPress);
+      }
+    }
+    contextMenuCallbacksRef.current = callbacksMap;
+  }, [contextMenuItems]);
 
   const nativeContextMenuItems = useMemo(
     () =>
-      contextMenuItems?.map((item) => ({
-        text: item.text,
-        visible: item.visible,
-      })),
+      contextMenuItems
+        ?.filter((item) => item.visible !== false)
+        .map((item) => ({
+          text: item.text,
+        })),
     [contextMenuItems]
   );
 
   const handleContextMenuItemPress = useCallback(
     (e: NativeSyntheticEvent<OnContextMenuItemPressEvent>) => {
-      const { index, selectedText, selectionStart, selectionEnd } =
-        e.nativeEvent;
-      const callback = contextMenuCallbacksRef.current[index];
-      if (callback) {
-        callback(
-          selectedText,
-          { start: selectionStart, end: selectionEnd },
-          latestStyleStateRef.current ?? ({} as OnChangeStateEvent)
-        );
-      }
+      const {
+        itemText,
+        selectedText,
+        selectionStart,
+        selectionEnd,
+        styleState,
+      } = e.nativeEvent;
+      const callback = contextMenuCallbacksRef.current.get(itemText);
+      callback?.({
+        text: selectedText,
+        selection: { start: selectionStart, end: selectionEnd },
+        styleState,
+      });
     },
     []
   );
@@ -413,7 +423,6 @@ export const EnrichedTextInput = ({
   const onChangeStateWithDeprecated = (
     e: NativeSyntheticEvent<OnChangeStateEvent>
   ) => {
-    latestStyleStateRef.current = e.nativeEvent;
     onChangeState?.(e);
     // TODO: remove in 0.5.0 release
     onChangeStateDeprecated?.({
