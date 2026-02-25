@@ -292,6 +292,7 @@ export interface NativeProps extends ViewProps {
   // These should not be passed as regular props
   color?: ColorValue;
   fontSize?: Float;
+  lineHeight?: Float;
   fontFamily?: string;
   fontWeight?: string;
   fontStyle?: string;
