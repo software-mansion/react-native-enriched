@@ -1909,7 +1909,30 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
          .selectedText = [selectedText toCppString],
          .selectionStart = static_cast<int>(selectedRange.location),
          .selectionEnd =
-             static_cast<int>(selectedRange.location + selectedRange.length)});
+             static_cast<int>(selectedRange.location + selectedRange.length),
+         .styleState = {
+             .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+             .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
+             .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
+             .strikeThrough =
+                 GET_STYLE_STATE([StrikethroughStyle getStyleType]),
+             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
+             .h1 = GET_STYLE_STATE([H1Style getStyleType]),
+             .h2 = GET_STYLE_STATE([H2Style getStyleType]),
+             .h3 = GET_STYLE_STATE([H3Style getStyleType]),
+             .h4 = GET_STYLE_STATE([H4Style getStyleType]),
+             .h5 = GET_STYLE_STATE([H5Style getStyleType]),
+             .h6 = GET_STYLE_STATE([H6Style getStyleType]),
+             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
+             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
+             .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
+             .unorderedList =
+                 GET_STYLE_STATE([UnorderedListStyle getStyleType]),
+             .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+             .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+             .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+             .checkboxList =
+                 GET_STYLE_STATE([CheckboxListStyle getStyleType])}});
   }
 }
 

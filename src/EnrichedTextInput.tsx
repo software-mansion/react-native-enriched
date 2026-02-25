@@ -194,9 +194,6 @@ export const EnrichedTextInput = ({
   const nextHtmlRequestId = useRef(1);
   const pendingHtmlRequests = useRef(new Map<number, HtmlRequest>());
 
-  // Track latest style state for context menu callbacks
-  const latestStyleStateRef = useRef<OnChangeStateEvent | null>(null);
-
   // Store onPress callbacks in a ref so native only receives serializable data
   const contextMenuCallbacksRef = useRef<
     Map<string, ContextMenuItem['onPress']>
@@ -224,13 +221,18 @@ export const EnrichedTextInput = ({
 
   const handleContextMenuItemPress = useCallback(
     (e: NativeSyntheticEvent<OnContextMenuItemPressEvent>) => {
-      const { itemText, selectedText, selectionStart, selectionEnd } =
-        e.nativeEvent;
+      const {
+        itemText,
+        selectedText,
+        selectionStart,
+        selectionEnd,
+        styleState,
+      } = e.nativeEvent;
       const callback = contextMenuCallbacksRef.current.get(itemText);
       callback?.({
         text: selectedText,
         selection: { start: selectionStart, end: selectionEnd },
-        styleState: latestStyleStateRef.current ?? ({} as OnChangeStateEvent),
+        styleState,
       });
     },
     []
@@ -421,7 +423,6 @@ export const EnrichedTextInput = ({
   const onChangeStateWithDeprecated = (
     e: NativeSyntheticEvent<OnChangeStateEvent>
   ) => {
-    latestStyleStateRef.current = e.nativeEvent;
     onChangeState?.(e);
     // TODO: remove in 0.5.0 release
     onChangeStateDeprecated?.({
