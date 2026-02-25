@@ -14,18 +14,18 @@ FetchContent_MakeAvailable(googletest)
 
 # ── Shared library: gumbo normalizer + C++ wrapper ──────────────────────────
 add_library(gumbo_normalizer_lib SHARED
-    parser/gumbo_normalizer.c
+    parser/GumboNormalizer.c
     parser/GumboParser.cpp
 )
 
 target_include_directories(gumbo_normalizer_lib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/gumbo-parser
+    ${CMAKE_CURRENT_SOURCE_DIR}/GumboParser
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
 )
 
 # Compile the C file as C99, C++ files as C++17
 set_source_files_properties(
-    parser/gumbo_normalizer.c
+    parser/GumboNormalizer.c
     PROPERTIES LANGUAGE C
                COMPILE_FLAGS "-std=c99"
 )

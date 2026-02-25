@@ -1,5 +1,5 @@
 /**
- * gumbo_normalizer.c
+ * GumboNormalizer.c
  *
  * Gumbo-based HTML normalizer (C implementation).
  * Converts arbitrary external HTML into the canonical subset that our enriched
@@ -17,7 +17,7 @@
 #pragma GCC diagnostic ignored "-Wextra"
 #endif
 
-#include "gumpo-parser.h"
+#include "GumboParser.h"
 
 #ifdef __clang__
 #pragma clang diagnostic pop

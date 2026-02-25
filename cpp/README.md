@@ -2,7 +2,7 @@
 
 ## Gumbo-parser setup
 
-The normalizer depends on a single amalgamation file `gumbo-parser/gumpo-parser.h`.
+The normalizer depends on a single amalgamation file `GumboParser/GumboParser.h`.
 
 This file was created from the [gumbo-parser](https://codeberg.org/gumbo-parser/gumbo-parser) repository — an actively maintained fork of the original Google gumbo-parser.
 
@@ -15,7 +15,7 @@ If you want to upgrade to a newer version:
    git clone https://codeberg.org/gumbo-parser/gumbo-parser.git
    ```
 2. Create a new amalgamation from the cloned source files.
-3. Replace the existing `cpp/gumbo-parser/gumpo-parser.h` with the newly generated amalgamation.
+3. Replace the existing `cpp/GumboParser/GumboParser.h` with the newly generated amalgamation.
 
 ## Building and running tests
 

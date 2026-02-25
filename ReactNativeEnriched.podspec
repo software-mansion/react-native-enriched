@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.exclude_files = ["cpp/tests/**"]
   s.private_header_files = "ios/**/*.h"
   s.pod_target_xcconfig = {
-    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/cpp/parser" "${PODS_TARGET_SRCROOT}/cpp/gumbo-parser"'
+    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/cpp/parser" "${PODS_TARGET_SRCROOT}/cpp/GumboParser"'
   }
 
 # Use install_modules_dependencies helper to install the dependencies if React Native version >=0.71.0.

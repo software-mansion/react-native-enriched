@@ -1,6 +1,6 @@
 #include "GumboParser.hpp"
 
-// C functions defined in gumbo_normalizer.c (compiled as C)
+// C functions defined in GumboNormalizer.c (compiled as C)
 extern "C" {
 char *normalize_html(const char *html, size_t len);
 void free_normalized_html(char *result);
