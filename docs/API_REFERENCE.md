@@ -53,7 +53,7 @@ interface ContextMenuItem {
 
 | Type                | Default Value | Platform |
 | ------------------- | ------------- | -------- |
-| `ContextMenuItem[]` | -             | iOS      |
+| `ContextMenuItem[]` | []             | iOS      |
 
 > [!NOTE]
 > This prop is currently supported on iOS only (iOS 16+).
