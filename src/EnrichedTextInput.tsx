@@ -127,7 +127,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   androidExperimentalSynchronousEvents?: boolean;
   /**
    * If true, external HTML (e.g. from Google Docs, Word, web pages) will be
-   * normalized through the Gumbo-based HTML normalizer before being applied.
+   * normalized through the HTML normalizer before being applied.
    * This converts arbitrary HTML into the canonical tag subset that the enriched
    * parser understands.
    * Disabled by default.
