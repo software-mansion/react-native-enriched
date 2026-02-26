@@ -265,6 +265,20 @@ class EnrichedTextInputViewManager :
     view?.experimentalSynchronousEvents = value
   }
 
+  override fun setContextMenuItems(
+    view: EnrichedTextInputView?,
+    value: ReadableArray?,
+  ) {
+    // no-op
+  }
+
+  override fun setUseHtmlNormalizer(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    // no-op
+  }
+
   override fun focus(view: EnrichedTextInputView?) {
     view?.requestFocusProgrammatically()
   }
