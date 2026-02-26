@@ -32,6 +32,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
@@ -93,6 +94,7 @@ class EnrichedTextInputView : AppCompatEditText {
   var shouldEmitHtml: Boolean = false
   var shouldEmitOnChangeText: Boolean = false
   var experimentalSynchronousEvents: Boolean = false
+  var useHtmlNormalizer: Boolean = false
 
   var fontSize: Float? = null
   private var lineHeight: Float? = null
@@ -271,7 +273,7 @@ class EnrichedTextInputView : AppCompatEditText {
       val parsedText = parseText(htmlText)
       if (parsedText is Spannable) {
         val finalText = currentText.mergeSpannables(start, end, parsedText)
-        setValue(finalText)
+        setValue(finalText, false)
         return
       }
     }
@@ -292,25 +294,43 @@ class EnrichedTextInputView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  private fun parseText(text: CharSequence): CharSequence {
-    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
-    if (!isHtml) return text
+  private fun normalizeHtmlIfNeeded(text: CharSequence): CharSequence {
+    if (!useHtmlNormalizer) return text
+    val normalized = GumboNormalizer.normalizeHtml(text.toString()) ?: return text
 
-    try {
-      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
-      val withoutLastNewLine = parsed.trimEnd('\n')
-      return withoutLastNewLine
+    return try {
+      val parsed = EnrichedParser.fromHtml(normalized, htmlStyle, spannableFactory)
+      parsed.trimEnd('\n')
     } catch (e: Exception) {
-      Log.e("EnrichedTextInputView", "Error parsing HTML: ${e.message}")
-      return text
+      Log.e(TAG, "Error parsing normalized HTML: ${e.message}")
+      text
     }
   }
 
-  fun setValue(value: CharSequence?) {
+  private fun parseText(text: CharSequence): CharSequence {
+    val isInternalHtml = text.startsWith("<html>") && text.endsWith("</html>")
+
+    if (isInternalHtml) {
+      try {
+        val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
+        return parsed.trimEnd('\n')
+      } catch (e: Exception) {
+        Log.e(TAG, "Error parsing HTML: ${e.message}")
+        return normalizeHtmlIfNeeded(text)
+      }
+    }
+
+    return normalizeHtmlIfNeeded(text)
+  }
+
+  fun setValue(
+    value: CharSequence?,
+    shouldParseHtml: Boolean = true,
+  ) {
     if (value == null) return
 
     runAsATransaction {
-      val newText = parseText(value)
+      val newText = if (shouldParseHtml) parseText(value) else value
       setText(newText)
       applyLineSpacing()
 
@@ -514,7 +534,7 @@ class EnrichedTextInputView : AppCompatEditText {
     try {
       linkRegex = Pattern.compile("(?s).*?($patternStr).*", flags)
     } catch (e: PatternSyntaxException) {
-      Log.w("EnrichedTextInputView", "Invalid link regex pattern: $patternStr")
+      Log.w(TAG, "Invalid link regex pattern: $patternStr")
       linkRegex = Patterns.WEB_URL
     }
   }
@@ -573,7 +593,7 @@ class EnrichedTextInputView : AppCompatEditText {
       EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
       EnrichedSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.UNORDERED_LIST)
       EnrichedSpans.CHECKBOX_LIST -> listStyles?.toggleStyle(EnrichedSpans.CHECKBOX_LIST)
-      else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
+      else -> Log.w(TAG, "Unknown style: $name")
     }
 
     layoutManager.invalidateLayout()
@@ -869,6 +889,7 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   companion object {
+    const val TAG = "EnrichedTextInputView"
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
   }
 }
