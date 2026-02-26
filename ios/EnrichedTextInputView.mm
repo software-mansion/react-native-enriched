@@ -794,6 +794,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.editable = newViewProps.editable;
   }
 
+  // useHtmlNormalizer
+  if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
+    useHtmlNormalizer = newViewProps.useHtmlNormalizer;
+  }
+
   // default value - must be set before placeholder to make sure it correctly
   // shows on first mount
   if (newViewProps.defaultValue != oldViewProps.defaultValue) {

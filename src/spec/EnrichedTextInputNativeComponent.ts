@@ -414,6 +414,7 @@ export interface NativeProps extends ViewProps {
 
   // Experimental
   androidExperimentalSynchronousEvents: boolean;
+  useHtmlNormalizer: boolean;
 }
 
 type ComponentType = HostComponent<NativeProps>;

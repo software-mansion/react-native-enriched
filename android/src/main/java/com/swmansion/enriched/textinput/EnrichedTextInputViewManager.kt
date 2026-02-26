@@ -272,6 +272,13 @@ class EnrichedTextInputViewManager :
     // no-op
   }
 
+  override fun setUseHtmlNormalizer(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    // no-op
+  }
+
   override fun focus(view: EnrichedTextInputView?) {
     view?.requestFocusProgrammatically()
   }
