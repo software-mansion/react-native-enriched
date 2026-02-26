@@ -1228,6 +1228,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *text = (NSString *)args[2];
     NSString *url = (NSString *)args[3];
     [self addLinkAt:start end:end text:text url:url];
+  } else if ([commandName isEqualToString:@"removeLink"]) {
+    NSInteger start = [((NSNumber *)args[0]) integerValue];
+    NSInteger end = [((NSNumber *)args[1]) integerValue];
+    [self removeLinkAt:start end:end];
   } else if ([commandName isEqualToString:@"addMention"]) {
     NSString *indicator = (NSString *)args[0];
     NSString *text = (NSString *)args[1];
@@ -1514,6 +1518,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
               withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
+}
+
+- (void)removeLinkAt:(NSInteger)start end:(NSInteger)end {
+  LinkStyle *linkStyleClass =
+      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  if (linkStyleClass == nullptr) {
+    return;
+  }
+
+  NSInteger textLength = (NSInteger)textView.textStorage.length;
+  if (start < 0) {
+    start = 0;
+  }
+  if (end > textLength) {
+    end = textLength;
+  }
+  if (start > end) {
+    return;
+  }
+
+  NSRange linkRange = NSMakeRange(start, end - start);
+  [linkStyleClass removeAttributes:linkRange];
+  [self anyTextMayHaveBeenModified];
 }
 
 - (void)addMention:(NSString *)indicator

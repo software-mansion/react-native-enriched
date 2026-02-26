@@ -44,6 +44,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
@@ -706,6 +707,25 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setLinkSpan(start, end, text, url)
+  }
+
+  fun removeLink(
+    start: Int,
+    end: Int,
+  ) {
+    val spannable = text as Spannable
+    val textLength = spannable.length
+
+    val clampedStart = start.coerceAtLeast(0)
+    val clampedEnd = end.coerceAtMost(textLength)
+    if (clampedStart > clampedEnd) return
+
+    val spans = spannable.getSpans(clampedStart, clampedEnd, EnrichedInputLinkSpan::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+
+    selection?.validateStyles()
   }
 
   fun addImage(

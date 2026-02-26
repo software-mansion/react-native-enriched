@@ -69,6 +69,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleUnorderedList: () => void;
   toggleCheckboxList: (checked: boolean) => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
+  removeLink: (start: number, end: number) => void;
   setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;
   setMention: (
@@ -283,6 +284,9 @@ export const EnrichedTextInput = ({
     },
     setLink: (start: number, end: number, text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);
+    },
+    removeLink: (start: number, end: number) => {
+      Commands.removeLink(nullthrows(nativeRef.current), start, end);
     },
     setImage: (uri: string, width: number, height: number) => {
       Commands.addImage(nullthrows(nativeRef.current), uri, width, height);

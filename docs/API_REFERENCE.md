@@ -559,6 +559,17 @@ Sets the link at the given place with a given displayed text and URL. Link will 
 - `text: string` - displayed text of the link.
 - `url: string` - URL of the link.
 
+### `.removeLink()`
+
+```ts
+removeLink: (start: number, end: number) => void;
+```
+
+Removes link styling from any links found within the given range. The text content is preserved, only the link attributes are stripped. Out-of-bounds values are clamped to valid range.
+
+- `start: number` - the starting index of the range to remove links from.
+- `end: number` - first index behind the range's ending index.
+
 ### `.setMention()`
 
 ```ts

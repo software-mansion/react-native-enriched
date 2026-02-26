@@ -365,6 +365,14 @@ class EnrichedTextInputViewManager :
     view?.addLink(start, end, text, url)
   }
 
+  override fun removeLink(
+    view: EnrichedTextInputView?,
+    start: Int,
+    end: Int,
+  ) {
+    view?.removeLink(start, end)
+  }
+
   override fun addImage(
     view: EnrichedTextInputView?,
     src: String,
