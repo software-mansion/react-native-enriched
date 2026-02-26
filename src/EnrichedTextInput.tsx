@@ -142,6 +142,14 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   androidExperimentalSynchronousEvents?: boolean;
+  /**
+   * If true, external HTML (e.g. from Google Docs, Word, web pages) will be
+   * normalized through the HTML normalizer before being applied.
+   * This converts arbitrary HTML into the canonical tag subset that the enriched
+   * parser understands.
+   * Disabled by default.
+   */
+  useHtmlNormalizer?: boolean;
 }
 
 const warnMentionIndicators = (indicator: string) => {
@@ -186,6 +194,7 @@ export const EnrichedTextInput = ({
   onKeyPress,
   contextMenuItems,
   androidExperimentalSynchronousEvents = false,
+  useHtmlNormalizer = false,
   scrollEnabled = true,
   ...rest
 }: EnrichedTextInputProps) => {
@@ -484,6 +493,7 @@ export const EnrichedTextInput = ({
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
+      useHtmlNormalizer={useHtmlNormalizer}
       scrollEnabled={scrollEnabled}
       {...rest}
     />

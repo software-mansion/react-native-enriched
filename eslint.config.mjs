@@ -33,6 +33,6 @@ export default defineConfig([
     },
   },
   {
-    ignores: ['node_modules/', 'lib/', 'apps/example-web/dist/'],
+    ignores: ['node_modules/', 'lib/', 'apps/example-web/dist/', 'cpp/build/'],
   },
 ]);
