@@ -25382,8 +25382,10 @@ void gumbo_token_destroy(struct GumboInternalParser *parser, GumboToken *token);
 
 #define AVOID_UNUSED_VARIABLE_WARNING(i) (void)(i)
 
-#define GUMBO_STRING(literal) {literal, sizeof(literal) - 1}
-#define TERMINATOR {"", 0}
+#define GUMBO_STRING(literal)                                                  \
+  { literal, sizeof(literal) - 1 }
+#define TERMINATOR                                                             \
+  { "", 0 }
 
 typedef char gumbo_tagset[GUMBO_TAG_LAST];
 #define TAG(tag) [GUMBO_TAG_##tag] = (1 << GUMBO_NAMESPACE_HTML)
@@ -25527,7 +25529,8 @@ typedef struct _ReplacementEntry {
   const GumboStringPiece to;
 } ReplacementEntry;
 
-#define REPLACEMENT_ENTRY(from, to) {GUMBO_STRING(from), GUMBO_STRING(to)}
+#define REPLACEMENT_ENTRY(from, to)                                            \
+  { GUMBO_STRING(from), GUMBO_STRING(to) }
 
 // Static data for SVG attribute replacements.
 // https://html.spec.whatwg.org/multipage/syntax.html#creating-and-inserting-nodes
