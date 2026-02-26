@@ -507,7 +507,6 @@ class EnrichedTextInputView : AppCompatEditText {
 
     val result = mutableListOf<Pair<Int, String>>()
     for (i in 0 until items.size()) {
-      // TODO: verify "visible" filtering
       val item = items.getMap(i) ?: continue
       val text = item.getString("text") ?: continue
       result.add(Pair(i, text))
@@ -554,9 +553,11 @@ class EnrichedTextInputView : AppCompatEditText {
 
           val selStart = selection?.start ?: 0
           val selEnd = selection?.end ?: 0
-          emitContextMenuItemPressEvent(itemId - CONTEXT_MENU_ITEM_ID)
+          val itemText = contextMenuItems.getOrNull(itemId - CONTEXT_MENU_ITEM_ID)?.second ?: return false
+          emitContextMenuItemPressEvent(itemText)
           mode.finish()
           post {
+            // Ensures selection is not lost after the action mode is finished
             if (selStart in 0..selEnd) {
               setSelection(selStart, selEnd)
             }
@@ -572,16 +573,17 @@ class EnrichedTextInputView : AppCompatEditText {
     return super.startActionMode(wrappedCallback, type)
   }
 
-  private fun emitContextMenuItemPressEvent(index: Int) {
+  private fun emitContextMenuItemPressEvent(itemText: String) {
     val start = selection?.start ?: return
     val end = selection.end
+    val styleState = spanState?.getStyleStatePayload() ?: return
     val selectedText = text?.subSequence(start, end)?.toString() ?: ""
 
     val reactContext = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
     dispatcher?.dispatchEvent(
-      OnContextMenuItemPressEvent(surfaceId, id, index, selectedText, start, end, experimentalSynchronousEvents),
+      OnContextMenuItemPressEvent(surfaceId, id, itemText, selectedText, start, end, styleState, experimentalSynchronousEvents),
     )
   }
 

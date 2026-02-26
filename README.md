@@ -235,7 +235,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 ## Context Menu Items
 
-> **Note:** This feature is currently supported on iOS only (iOS 16+).
+> **Note:** This feature is currently supported on Android and iOS 16+.
 
 You can extend the native text editing menu with custom items using the [contextMenuItems](docs/API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
 
