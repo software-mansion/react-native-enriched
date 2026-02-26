@@ -512,6 +512,7 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontFamily
 - fontSize
 - fontWeight
+- lineHeight
 - fontStyle only on Android
 - lineHeight only on iOS
 
@@ -530,6 +531,16 @@ If true, Android will use experimental synchronous events. This will prevent fro
 | Type   | Default Value | Platform |
 | ------ | ------------- | -------- |
 | `bool` | `false`       | Android  |
+
+### `useHtmlNormalizer` - EXPERIMENTAL
+
+If true, external HTML pasted/inserted into the input (e.g. from Google Docs, Word, or web pages) will be normalized into the canonical tag subset that the enriched parser understands. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
+
+> **Note:** Currently only supported on iOS.
+
+| Type   | Default Value | Platform |
+| ------ | ------------- | -------- |
+| `bool` | `false`       | iOS      |
 
 ## Ref Methods
 

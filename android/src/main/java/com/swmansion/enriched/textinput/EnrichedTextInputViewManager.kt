@@ -180,7 +180,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     height: Float,
   ) {
-    // no-op
+    view?.setLineHeight(height)
   }
 
   @ReactProp(name = "fontFamily")
@@ -272,6 +272,13 @@ class EnrichedTextInputViewManager :
     value: ReadableArray?,
   ) {
     view?.setContextMenuItems(value)
+  }
+
+  override fun setUseHtmlNormalizer(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    // no-op
   }
 
   override fun focus(view: EnrichedTextInputView?) {

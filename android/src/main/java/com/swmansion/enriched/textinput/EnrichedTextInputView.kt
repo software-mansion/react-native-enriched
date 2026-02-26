@@ -49,6 +49,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -99,6 +100,7 @@ class EnrichedTextInputView : AppCompatEditText {
   var experimentalSynchronousEvents: Boolean = false
 
   var fontSize: Float? = null
+  private var lineHeight: Float? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
@@ -316,6 +318,7 @@ class EnrichedTextInputView : AppCompatEditText {
     runAsATransaction {
       val newText = parseText(value)
       setText(newText)
+      applyLineSpacing()
 
       observeAsyncImages()
 
@@ -425,6 +428,28 @@ class EnrichedTextInputView : AppCompatEditText {
     htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout()
     forceScrollToSelection()
+  }
+
+  fun setLineHeight(height: Float) {
+    lineHeight = if (height == 0f) null else height
+    applyLineSpacing()
+    layoutManager.invalidateLayout()
+    forceScrollToSelection()
+  }
+
+  private fun applyLineSpacing() {
+    val spannable = text as? Spannable ?: return
+    spannable
+      .getSpans(0, spannable.length, EnrichedLineHeightSpan::class.java)
+      .forEach { spannable.removeSpan(it) }
+
+    val lh = lineHeight ?: return
+    spannable.setSpan(
+      EnrichedLineHeightSpan(lh),
+      0,
+      spannable.length,
+      Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+    )
   }
 
   fun setFontFamily(family: String?) {
