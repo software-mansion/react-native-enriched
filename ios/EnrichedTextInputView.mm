@@ -50,6 +50,7 @@ using namespace facebook::react;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
+  NSArray<NSDictionary *> *_contextMenuItems;
 }
 
 // MARK: - Component utils
@@ -902,6 +903,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // isOnChangeTextSet
   _emitTextChange = newViewProps.isOnChangeTextSet;
+
+  // contextMenuItems
+  bool contextMenuChanged = newViewProps.contextMenuItems.size() !=
+                            oldViewProps.contextMenuItems.size();
+  if (!contextMenuChanged) {
+    for (size_t i = 0; i < newViewProps.contextMenuItems.size(); i++) {
+      if (newViewProps.contextMenuItems[i].text !=
+          oldViewProps.contextMenuItems[i].text) {
+        contextMenuChanged = true;
+        break;
+      }
+    }
+  }
+  if (contextMenuChanged) {
+    NSMutableArray<NSString *> *items = [NSMutableArray new];
+    for (const auto &item : newViewProps.contextMenuItems) {
+      [items addObject:[NSString fromCppString:item.text]];
+    }
+    _contextMenuItems = [items copy];
+  }
 
   [super updateProps:props oldProps:oldProps];
   // run the changes callback
@@ -1848,6 +1869,75 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (emitter != nullptr && _emitFocusBlur) {
     // send onBlur event
     emitter->onInputBlur({});
+  }
+}
+
+- (UIMenu *)textView:(UITextView *)tv
+    editMenuForTextInRange:(NSRange)range
+          suggestedActions:(NSArray<UIMenuElement *> *)suggestedActions
+    API_AVAILABLE(ios(16.0)) {
+  if (_contextMenuItems == nil || _contextMenuItems.count == 0) {
+    return [UIMenu menuWithChildren:suggestedActions];
+  }
+
+  NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
+
+  for (NSString *title in _contextMenuItems) {
+    __weak EnrichedTextInputView *weakSelf = self;
+
+    UIAction *action =
+        [UIAction actionWithTitle:title
+                            image:nil
+                       identifier:nil
+                          handler:^(__kindof UIAction *_Nonnull action) {
+                            [weakSelf emitOnContextMenuItemPressEvent:title];
+                          }];
+    [customActions addObject:action];
+  }
+
+  [customActions addObjectsFromArray:suggestedActions];
+  return [UIMenu menuWithChildren:customActions];
+}
+
+- (void)emitOnContextMenuItemPressEvent:(NSString *)itemText {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSRange selectedRange = textView.selectedRange;
+    NSString *selectedText = @"";
+    if (selectedRange.length > 0) {
+      selectedText =
+          [textView.textStorage.string substringWithRange:selectedRange];
+    }
+
+    emitter->onContextMenuItemPress(
+        {.itemText = [itemText toCppString],
+         .selectedText = [selectedText toCppString],
+         .selectionStart = static_cast<int>(selectedRange.location),
+         .selectionEnd =
+             static_cast<int>(selectedRange.location + selectedRange.length),
+         .styleState = {
+             .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+             .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
+             .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
+             .strikeThrough =
+                 GET_STYLE_STATE([StrikethroughStyle getStyleType]),
+             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
+             .h1 = GET_STYLE_STATE([H1Style getStyleType]),
+             .h2 = GET_STYLE_STATE([H2Style getStyleType]),
+             .h3 = GET_STYLE_STATE([H3Style getStyleType]),
+             .h4 = GET_STYLE_STATE([H4Style getStyleType]),
+             .h5 = GET_STYLE_STATE([H5Style getStyleType]),
+             .h6 = GET_STYLE_STATE([H6Style getStyleType]),
+             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
+             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
+             .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
+             .unorderedList =
+                 GET_STYLE_STATE([UnorderedListStyle getStyleType]),
+             .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+             .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+             .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+             .checkboxList =
+                 GET_STYLE_STATE([CheckboxListStyle getStyleType])}});
   }
 }
 
