@@ -93,6 +93,7 @@ export interface ToolbarProps {
   editorRef?: React.RefObject<EnrichedTextInputInstance | null>;
   onOpenLinkModal: () => void;
   onSelectImage: () => void;
+  layout?: 'horizontal' | 'grid';
 }
 
 export const Toolbar: FC<ToolbarProps> = ({
@@ -100,6 +101,7 @@ export const Toolbar: FC<ToolbarProps> = ({
   editorRef,
   onOpenLinkModal,
   onSelectImage,
+  layout = 'horizontal',
 }) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
@@ -273,7 +275,10 @@ export const Toolbar: FC<ToolbarProps> = ({
 
   return (
     <FlatList
-      horizontal
+      key={layout}
+      numColumns={layout === 'grid' ? 6 : undefined}
+      horizontal={layout === 'horizontal'}
+      scrollEnabled={layout === 'horizontal'}
       data={STYLE_ITEMS}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

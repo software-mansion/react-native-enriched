@@ -86,6 +86,7 @@ const DEBUG_SCROLLABLE = false;
 const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = false;
 
 export default function App() {
+  const [isTestScreen, setIsTestScreen] = useState(false);
   const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -320,7 +321,7 @@ export default function App() {
         contentContainerStyle={styles.content}
       >
         <Text style={styles.label}>Enriched Text Input</Text>
-        <View style={styles.editor}>
+        <View style={styles.editor} testID="editor-container">
           <EnrichedTextInput
             ref={ref}
             mentionIndicators={['@', '#']}
@@ -356,6 +357,7 @@ export default function App() {
             editorRef={ref}
             onOpenLinkModal={openLinkModal}
             onSelectImage={openImageModal}
+            layout={isTestScreen ? 'grid' : 'horizontal'}
           />
         </View>
         <View style={styles.buttonStack}>
@@ -377,6 +379,12 @@ export default function App() {
           onPress={openValueModal}
           style={styles.valueButton}
           testID="set-value-button"
+        />
+        <Button
+          title={isTestScreen ? 'Dev Screen' : 'Test Screen'}
+          onPress={() => setIsTestScreen((prev) => !prev)}
+          style={styles.valueButton}
+          testID="toggle-screen-button"
         />
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}

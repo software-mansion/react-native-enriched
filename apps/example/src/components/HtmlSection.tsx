@@ -15,7 +15,7 @@ export const HtmlSection = ({ currentHtml }: HtmlSectionProps) => {
         title={showHtml ? 'Hide HTML' : 'Show HTML'}
         onPress={() => setShowHtml((current) => !current)}
         style={styles.button}
-        testID="show-html-button"
+        testID="toggle-html-button"
       />
       {showHtml && (
         <TextInput
