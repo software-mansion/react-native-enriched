@@ -41,7 +41,8 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81`, `0.82`, `0.83` and `0.84`.
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.81`, `0.82`, `0.83` and `0.84`.
+- If you would like to use `react-native-enriched` in React Native `0.79` or `0.80` use `react-native-enriched 0.4.x`.
 
 ## Installation
 
@@ -235,7 +236,7 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 ## Context Menu Items
 
-> **Note:** This feature is currently supported on iOS only (iOS 16+).
+> **Note:** This feature is currently supported on Android and iOS 16+.
 
 You can extend the native text editing menu with custom items using the [contextMenuItems](docs/API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
 

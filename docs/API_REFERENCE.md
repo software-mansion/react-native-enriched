@@ -25,7 +25,7 @@ Tells input to automatically capitalize certain characters.
 
 ### `contextMenuItems`
 
-An array of custom items to display in the native text editing menu. Items appear in array order, before the system items (Copy/Paste/Cut). Each item specifies a title, visibility flag, and a callback that fires when the item is tapped.
+An array of custom items to display in the native text editing menu. Each item specifies a title, visibility flag, and a callback that fires when the item is tapped.
 
 The `onPress` callback receives a single object argument with the following properties:
 
@@ -56,7 +56,8 @@ interface ContextMenuItem {
 | `ContextMenuItem[]` | []             | iOS      |
 
 > [!NOTE]
-> This prop is currently supported on iOS only (iOS 16+).
+> On iOS items appear in array order, before the system items (Copy/Paste/Cut).
+> On Android, there is no guaranteed order and custom items may be displayed in a submenu, depending on the device manufacturer.
 
 ### `cursorColor`
 
@@ -302,43 +303,6 @@ interface OnChangeStateEvent {
 |-------------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
 
-### `onChangeStateDeprecated`
-
-> [!WARNING]
-> Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
-
-Callback that gets called when any of the styles within the selection changes.
-
-Payload has a bool flag for each style:
-
-```ts
-interface OnChangeStateDeprecatedEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isH4: boolean;
-  isH5: boolean;
-  isH6: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isCheckboxList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
-```
-
-| Type                                                                  | Platform |
-|-----------------------------------------------------------------------|----------|
-| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | Both     |
-
 ### `onChangeText`
 
 Callback called when any text changes occur in the input.
@@ -535,11 +499,9 @@ If true, Android will use experimental synchronous events. This will prevent fro
 
 If true, external HTML pasted/inserted into the input (e.g. from Google Docs, Word, or web pages) will be normalized into the canonical tag subset that the enriched parser understands. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
 
-> **Note:** Currently only supported on iOS.
-
 | Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `false`       | iOS      |
+| ------ | ------------- |----------|
+| `bool` | `false`       | Both     |
 
 ## Ref Methods
 

@@ -124,28 +124,6 @@ export interface OnChangeStateEvent {
   };
 }
 
-export interface OnChangeStateDeprecatedEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isH4: boolean;
-  isH5: boolean;
-  isH6: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isCheckboxList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
-
 export interface OnLinkDetected {
   text: string;
   url: string;

@@ -20,7 +20,6 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-  type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
   type OnPasteImagesEvent,
 } from './spec/EnrichedTextInputNativeComponent';
@@ -120,12 +119,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  /**
-   * @deprecated Use onChangeState prop instead.
-   */
-  onChangeStateDeprecated?: (
-    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
-  ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
@@ -185,7 +178,6 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
-  onChangeStateDeprecated,
   onLinkDetected,
   onMentionDetected,
   onStartMention,
@@ -433,37 +425,6 @@ export const EnrichedTextInput = ({
     pendingHtmlRequests.current.delete(requestId);
   };
 
-  const onChangeStateWithDeprecated = (
-    e: NativeSyntheticEvent<OnChangeStateEvent>
-  ) => {
-    onChangeState?.(e);
-    // TODO: remove in 0.5.0 release
-    onChangeStateDeprecated?.({
-      ...e,
-      nativeEvent: {
-        isBold: e.nativeEvent.bold.isActive,
-        isItalic: e.nativeEvent.italic.isActive,
-        isUnderline: e.nativeEvent.underline.isActive,
-        isStrikeThrough: e.nativeEvent.strikeThrough.isActive,
-        isInlineCode: e.nativeEvent.inlineCode.isActive,
-        isH1: e.nativeEvent.h1.isActive,
-        isH2: e.nativeEvent.h2.isActive,
-        isH3: e.nativeEvent.h3.isActive,
-        isH4: e.nativeEvent.h4.isActive,
-        isH5: e.nativeEvent.h5.isActive,
-        isH6: e.nativeEvent.h6.isActive,
-        isCodeBlock: e.nativeEvent.codeBlock.isActive,
-        isBlockQuote: e.nativeEvent.blockQuote.isActive,
-        isOrderedList: e.nativeEvent.orderedList.isActive,
-        isUnorderedList: e.nativeEvent.unorderedList.isActive,
-        isCheckboxList: e.nativeEvent.checkboxList.isActive,
-        isLink: e.nativeEvent.link.isActive,
-        isImage: e.nativeEvent.image.isActive,
-        isMention: e.nativeEvent.mention.isActive,
-      },
-    });
-  };
-
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -485,7 +446,7 @@ export const EnrichedTextInput = ({
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeStateWithDeprecated}
+      onChangeState={onChangeState}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
