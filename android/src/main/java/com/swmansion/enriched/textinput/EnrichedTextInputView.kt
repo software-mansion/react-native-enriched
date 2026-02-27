@@ -50,6 +50,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
@@ -819,6 +820,13 @@ class EnrichedTextInputView : AppCompatEditText {
     if (!isValid) return
 
     parametrizedStyles?.setLinkSpan(start, end, text, url)
+  }
+
+  fun removeLink(
+    start: Int,
+    end: Int,
+  ) {
+    parametrizedStyles?.removeLinkSpans(start, end)
   }
 
   fun addImage(
