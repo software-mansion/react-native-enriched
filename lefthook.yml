@@ -15,7 +15,7 @@ pre-commit:
 
     clang-format:
       glob: "*.{h,m,mm,cpp}"
-      exclude: "(Pods|build|node_modules)"
+      exclude: "(Pods|build|node_modules|generated)"
       run: npx clang-format -i {staged_files} && git add {staged_files}
 
 commit-msg:
