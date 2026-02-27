@@ -3,7 +3,7 @@
 
 TEST(GumboParserTest, TagRemappings) {
   EXPECT_EQ(GumboParser::normalizeHtml("<strong>x</strong>"), "<b>x</b>");
-  EXPECT_EQ(GumboParser::normalizeHtml("<em>x</em>"), "<is>x</i>");
+  EXPECT_EQ(GumboParser::normalizeHtml("<em>x</em>"), "<i>x</i>");
   EXPECT_EQ(GumboParser::normalizeHtml("<del>x</del>"), "<s>x</s>");
   EXPECT_EQ(GumboParser::normalizeHtml("<strike>x</strike>"), "<s>x</s>");
   EXPECT_EQ(GumboParser::normalizeHtml("<ins>x</ins>"), "<u>x</u>");
