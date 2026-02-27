@@ -1560,11 +1560,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (end > textLength) {
     end = textLength;
   }
-  if (start > end) {
-    return;
-  }
 
-  NSRange linkRange = NSMakeRange(start, end - start);
+  NSInteger rangeStart = MIN(start, end);
+  NSInteger rangeLength = MAX(start, end) - rangeStart;
+  NSRange linkRange = NSMakeRange(rangeStart, rangeLength);
+
   [linkStyleClass removeAttributes:linkRange];
   [self anyTextMayHaveBeenModified];
 }

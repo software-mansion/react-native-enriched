@@ -713,19 +713,7 @@ class EnrichedTextInputView : AppCompatEditText {
     start: Int,
     end: Int,
   ) {
-    val spannable = text as Spannable
-    val textLength = spannable.length
-
-    val clampedStart = start.coerceAtLeast(0)
-    val clampedEnd = end.coerceAtMost(textLength)
-    if (clampedStart > clampedEnd) return
-
-    val spans = spannable.getSpans(clampedStart, clampedEnd, EnrichedInputLinkSpan::class.java)
-    for (span in spans) {
-      spannable.removeSpan(span)
-    }
-
-    selection?.validateStyles()
+    parametrizedStyles?.removeLinkSpans(start, end)
   }
 
   fun addImage(
