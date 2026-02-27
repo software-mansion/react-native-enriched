@@ -261,6 +261,7 @@ export const Toolbar: FC<ToolbarProps> = ({
     return (
       <ToolbarButton
         {...item}
+        testID={`toolbar-${item.name}`}
         isActive={isActive(item)}
         isDisabled={isDisabled(item)}
         onPress={() => handlePress(item)}
@@ -277,6 +278,7 @@ export const Toolbar: FC<ToolbarProps> = ({
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       style={styles.container}
+      testID="toolbar"
     />
   );
 };

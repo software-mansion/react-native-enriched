@@ -15,6 +15,7 @@ export const HtmlSection = ({ currentHtml }: HtmlSectionProps) => {
         title={showHtml ? 'Hide HTML' : 'Show HTML'}
         onPress={() => setShowHtml((current) => !current)}
         style={styles.button}
+        testID="show-html-button"
       />
       {showHtml && (
         <TextInput
@@ -22,6 +23,7 @@ export const HtmlSection = ({ currentHtml }: HtmlSectionProps) => {
           editable={false}
           style={styles.htmlText}
           value={currentHtml}
+          testID="html-output"
         />
       )}
     </>

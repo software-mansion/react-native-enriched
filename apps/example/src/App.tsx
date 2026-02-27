@@ -349,6 +349,7 @@ export default function App() {
             }
             onPasteImages={(e) => handlePasteImagesEvent(e.nativeEvent)}
             useHtmlNormalizer
+            testID="editor-input"
           />
           <Toolbar
             stylesState={stylesState}
@@ -358,13 +359,24 @@ export default function App() {
           />
         </View>
         <View style={styles.buttonStack}>
-          <Button title="Focus" onPress={handleFocus} style={styles.button} />
-          <Button title="Blur" onPress={handleBlur} style={styles.button} />
+          <Button
+            title="Focus"
+            onPress={handleFocus}
+            style={styles.button}
+            testID="focus-button"
+          />
+          <Button
+            title="Blur"
+            onPress={handleBlur}
+            style={styles.button}
+            testID="blur-button"
+          />
         </View>
         <Button
           title="Set input's value"
           onPress={openValueModal}
           style={styles.valueButton}
+          testID="set-value-button"
         />
         <HtmlSection currentHtml={currentHtml} />
         {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}

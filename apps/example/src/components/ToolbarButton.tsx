@@ -8,6 +8,7 @@ interface ToolbarButtonIconProps {
   isActive: boolean;
   isDisabled: boolean;
   onPress: () => void;
+  testID?: string;
 }
 
 interface ToolbarButtonTextProps {
@@ -16,6 +17,7 @@ interface ToolbarButtonTextProps {
   isActive: boolean;
   isDisabled: boolean;
   onPress: () => void;
+  testID?: string;
 }
 
 export type ToolbarButtonProps =
@@ -28,6 +30,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = ({
   isActive,
   isDisabled,
   onPress,
+  testID,
 }) => {
   return (
     <Pressable
@@ -38,6 +41,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = ({
       ]}
       disabled={isDisabled}
       onPress={onPress}
+      testID={testID}
     >
       {icon ? (
         <Icon name={icon} size={20} color="white" />
