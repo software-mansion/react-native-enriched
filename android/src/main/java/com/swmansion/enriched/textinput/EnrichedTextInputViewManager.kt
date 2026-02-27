@@ -278,7 +278,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     value: Boolean,
   ) {
-    // no-op
+    view?.useHtmlNormalizer = value
   }
 
   override fun focus(view: EnrichedTextInputView?) {
