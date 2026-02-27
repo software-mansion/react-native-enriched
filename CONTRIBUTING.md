@@ -74,6 +74,41 @@ Remember to add tests for your change if possible. Run the unit tests by:
 yarn test
 ```
 
+### E2E tests
+
+We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Test flows are located in `.maestro/`.
+
+#### Prerequisites
+
+Install the Maestro CLI:
+
+```sh
+curl -Ls "https://get.maestro.mobile.dev" | bash
+```
+
+#### Running E2E tests
+
+Start the example app on a simulator/emulator, then run all E2E tests:
+
+```sh
+yarn test:e2e:android
+yarn test:e2e:ios
+```
+
+To run an individual test:
+
+```sh
+maestro test .maestro/flows/placeholder_visual.yaml
+```
+
+#### Visual regression tests
+
+Some flows use Maestro's `takeScreenshot` / `assertScreenshot` to catch visual regressions. On the first run `takeScreenshot` saves a baseline image to `.maestro/screenshots/`. Once the baseline looks correct, replace `takeScreenshot` with `assertScreenshot` and set a `thresholdPercentage`. Subsequent runs will fail if the diff exceeds that threshold. See `inline_styles_visual.yaml` for an example.
+
+#### Adding new tests
+
+Add new `.yaml` flow files to `.maestro/flows/`.
+
 ### Commit message convention
 
 We follow the [conventional commits specification](https://www.conventionalcommits.org/en) for our commit messages:
@@ -116,6 +151,8 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
+- `yarn test:e2e:android`: run E2E tests on Android.
+- `yarn test:e2e:ios`: run E2E tests on iOS.
 
 ### Sending a pull request
 

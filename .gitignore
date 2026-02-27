@@ -88,3 +88,6 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# Maestro screenshot diffs
+.maestro/**/*_diff.png

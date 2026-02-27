@@ -1,0 +1,9 @@
+appId: swmansion.enriched.example
+---
+- launchApp
+
+- assertScreenshot:
+    path: .maestro/screenshots/initial-placeholder.png
+    thresholdPercentage: 100
+    cropOn:
+      id: "editor-input"
