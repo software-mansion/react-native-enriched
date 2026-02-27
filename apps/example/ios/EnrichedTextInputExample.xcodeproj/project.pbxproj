@@ -426,7 +426,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = swmansion.enrichedtextinputexample.example;
+				PRODUCT_BUNDLE_IDENTIFIER = swmansion.enriched.example;
 				PRODUCT_NAME = EnrichedTextInputExample;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -455,7 +455,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = swmansion.enrichedtextinputexample.example;
+				PRODUCT_BUNDLE_IDENTIFIER = swmansion.enriched.example;
 				PRODUCT_NAME = EnrichedTextInputExample;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
