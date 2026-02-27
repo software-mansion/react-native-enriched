@@ -124,28 +124,6 @@ export interface OnChangeStateEvent {
   };
 }
 
-export interface OnChangeStateDeprecatedEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isH4: boolean;
-  isH5: boolean;
-  isH6: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isCheckboxList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
-
 export interface OnLinkDetected {
   text: string;
   url: string;
@@ -185,8 +163,132 @@ export interface OnKeyPressEvent {
   key: string;
 }
 
+export interface ContextMenuItemConfig {
+  text: string;
+}
+
+export interface OnContextMenuItemPressEvent {
+  itemText: string;
+  selectedText: string;
+  selectionStart: Int32;
+  selectionEnd: Int32;
+  styleState: {
+    bold: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    italic: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    underline: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    strikeThrough: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    inlineCode: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h1: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h2: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h3: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h4: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h5: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    h6: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    codeBlock: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    blockQuote: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    orderedList: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    unorderedList: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    link: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    image: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    mention: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+    checkboxList: {
+      isActive: boolean;
+      isConflicting: boolean;
+      isBlocking: boolean;
+    };
+  };
+}
+
 interface TargetedEvent {
   target: Int32;
+}
+
+export interface PastedImage {
+  uri: string;
+  type: string;
+  width: Float;
+  height: Float;
+}
+
+export interface OnPasteImagesEvent {
+  images: {
+    uri: string;
+    type: string;
+    width: Float;
+    height: Float;
+  }[];
 }
 
 type Heading = {
@@ -257,6 +359,7 @@ export interface NativeProps extends ViewProps {
   htmlStyle?: HtmlStyleInternal;
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
+  contextMenuItems?: ReadonlyArray<Readonly<ContextMenuItemConfig>>;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<TargetedEvent>;
@@ -264,18 +367,20 @@ export interface NativeProps extends ViewProps {
   onChangeText?: DirectEventHandler<OnChangeTextEvent>;
   onChangeHtml?: DirectEventHandler<OnChangeHtmlEvent>;
   onChangeState?: DirectEventHandler<OnChangeStateEvent>;
-  onChangeStateDeprecated?: DirectEventHandler<OnChangeStateDeprecatedEvent>;
   onLinkDetected?: DirectEventHandler<OnLinkDetected>;
   onMentionDetected?: DirectEventHandler<OnMentionDetectedInternal>;
   onMention?: DirectEventHandler<OnMentionEvent>;
   onChangeSelection?: DirectEventHandler<OnChangeSelectionEvent>;
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
+  onPasteImages?: DirectEventHandler<OnPasteImagesEvent>;
+  onContextMenuItemPress?: DirectEventHandler<OnContextMenuItemPressEvent>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
   color?: ColorValue;
   fontSize?: Float;
+  lineHeight?: Float;
   fontFamily?: string;
   fontWeight?: string;
   fontStyle?: string;
@@ -287,6 +392,7 @@ export interface NativeProps extends ViewProps {
 
   // Experimental
   androidExperimentalSynchronousEvents: boolean;
+  useHtmlNormalizer: boolean;
 }
 
 type ComponentType = HostComponent<NativeProps>;
@@ -328,6 +434,11 @@ interface NativeCommands {
     end: Int32,
     text: string,
     url: string
+  ) => void;
+  removeLink: (
+    viewRef: React.ElementRef<ComponentType>,
+    start: Int32,
+    end: Int32
   ) => void;
   addImage: (
     viewRef: React.ElementRef<ComponentType>,
@@ -377,6 +488,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleUnorderedList',
     'toggleCheckboxList',
     'addLink',
+    'removeLink',
     'addImage',
     'startMention',
     'addMention',

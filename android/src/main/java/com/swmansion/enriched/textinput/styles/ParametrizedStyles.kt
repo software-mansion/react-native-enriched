@@ -69,6 +69,22 @@ class ParametrizedStyles(
     isSettingLinkSpan = false
   }
 
+  fun removeLinkSpans(
+    start: Int,
+    end: Int,
+  ) {
+    val spannable = view.text as SpannableStringBuilder
+    val textLength = spannable.length
+    val clampedStart = minOf(start, end).coerceIn(0, textLength)
+    val clampedEnd = maxOf(start, end).coerceIn(0, textLength)
+
+    val spans = spannable.getSpans(clampedStart, clampedEnd, EnrichedInputLinkSpan::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+    view.selection?.validateStyles()
+  }
+
   fun afterTextChanged(
     s: Editable,
     startCursorPosition: Int,

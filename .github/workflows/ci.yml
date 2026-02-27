@@ -11,6 +11,48 @@ on:
       - checks_requested
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            android:
+              - 'android/**'
+              - 'apps/example/android/**'
+              - 'src/**'
+              - 'cpp/**'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+            ios:
+              - 'ios/**'
+              - 'apps/example/ios/**'
+              - 'src/**'
+              - 'cpp/**'
+              - '*.podspec'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+            web:
+              - 'src/**'
+              - 'apps/example-web/src/**'
+              - 'package.json'
+              - 'apps/example-web/package.json'
+              - 'apps/example-web/vite.config.ts'
+              - 'apps/example-web/index.html'
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -57,6 +99,8 @@ jobs:
         run: yarn prepare
 
   build-web:
+    needs: [changes]
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     env:
       TURBO_CACHE_DIR: .turbo/web
@@ -88,6 +132,8 @@ jobs:
           yarn turbo run build:web --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-android:
+    needs: [changes]
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     env:
       TURBO_CACHE_DIR: .turbo/android
@@ -144,6 +190,8 @@ jobs:
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-ios:
+    needs: [changes]
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     env:
       TURBO_CACHE_DIR: .turbo/ios

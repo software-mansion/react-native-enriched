@@ -15,13 +15,18 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
 import android.util.TypedValue
+import android.view.ActionMode
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.ViewCompat
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
@@ -31,8 +36,10 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.textinput.events.MentionHandler
+import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
@@ -43,6 +50,8 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
+import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -53,6 +62,7 @@ import com.swmansion.enriched.textinput.styles.ParametrizedStyles
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
+import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
@@ -90,8 +100,10 @@ class EnrichedTextInputView : AppCompatEditText {
   var shouldEmitHtml: Boolean = false
   var shouldEmitOnChangeText: Boolean = false
   var experimentalSynchronousEvents: Boolean = false
+  var useHtmlNormalizer: Boolean = false
 
   var fontSize: Float? = null
+  private var lineHeight: Float? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
@@ -104,6 +116,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   private var inputMethodManager: InputMethodManager? = null
   private val spannableFactory = EnrichedTextInputSpannableFactory()
+  private var contextMenuItems: List<Pair<Int, String>> = emptyList()
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -138,6 +151,11 @@ class EnrichedTextInputView : AppCompatEditText {
 
   init {
     inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    ViewCompat.setOnReceiveContentListener(
+      this,
+      RichContentReceiver.MIME_TYPES,
+      RichContentReceiver(this, context as ReactContext),
+    )
   }
 
   private fun prepareComponent() {
@@ -233,11 +251,6 @@ class EnrichedTextInputView : AppCompatEditText {
         handleCustomCopy()
         return true
       }
-
-      android.R.id.paste -> {
-        handleCustomPaste()
-        return true
-      }
     }
     return super.onTextContextMenuItem(id)
   }
@@ -257,28 +270,22 @@ class EnrichedTextInputView : AppCompatEditText {
     }
   }
 
-  private fun handleCustomPaste() {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    if (!clipboard.hasPrimaryClip()) return
-
-    val clip = clipboard.primaryClip
-    val item = clip?.getItemAt(0)
-    val htmlText = item?.htmlText
+  fun handleTextPaste(item: ClipData.Item) {
+    val htmlText = item.htmlText
     val currentText = text as Spannable
-    val start = selection?.start ?: 0
-    val end = selection?.end ?: 0
+    val start = selectionStart.coerceAtLeast(0)
+    val end = selectionEnd.coerceAtLeast(0)
 
     if (htmlText != null) {
       val parsedText = parseText(htmlText)
       if (parsedText is Spannable) {
         val finalText = currentText.mergeSpannables(start, end, parsedText)
-        setValue(finalText)
+        setValue(finalText, false)
         return
       }
     }
 
-    // Currently, we do not support pasting images
-    if (item?.text == null) return
+    if (item.text == null) return
     val lengthBefore = currentText.length
     val finalText = currentText.mergeSpannables(start, end, item.text.toString())
     setValue(finalText)
@@ -294,26 +301,45 @@ class EnrichedTextInputView : AppCompatEditText {
     setSelection(selection?.start ?: text?.length ?: 0)
   }
 
-  private fun parseText(text: CharSequence): CharSequence {
-    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
-    if (!isHtml) return text
+  private fun normalizeHtmlIfNeeded(text: CharSequence): CharSequence {
+    if (!useHtmlNormalizer) return text
+    val normalized = GumboNormalizer.normalizeHtml(text.toString()) ?: return text
 
-    try {
-      val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
-      val withoutLastNewLine = parsed.trimEnd('\n')
-      return withoutLastNewLine
+    return try {
+      val parsed = EnrichedParser.fromHtml(normalized, htmlStyle, spannableFactory)
+      parsed.trimEnd('\n')
     } catch (e: Exception) {
-      Log.e("EnrichedTextInputView", "Error parsing HTML: ${e.message}")
-      return text
+      Log.e(TAG, "Error parsing normalized HTML: ${e.message}")
+      text
     }
   }
 
-  fun setValue(value: CharSequence?) {
+  private fun parseText(text: CharSequence): CharSequence {
+    val isInternalHtml = text.startsWith("<html>") && text.endsWith("</html>")
+
+    if (isInternalHtml) {
+      try {
+        val parsed = EnrichedParser.fromHtml(text.toString(), htmlStyle, spannableFactory)
+        return parsed.trimEnd('\n')
+      } catch (e: Exception) {
+        Log.e(TAG, "Error parsing HTML: ${e.message}")
+        return normalizeHtmlIfNeeded(text)
+      }
+    }
+
+    return normalizeHtmlIfNeeded(text)
+  }
+
+  fun setValue(
+    value: CharSequence?,
+    shouldParseHtml: Boolean = true,
+  ) {
     if (value == null) return
 
     runAsATransaction {
-      val newText = parseText(value)
+      val newText = if (shouldParseHtml) parseText(value) else value
       setText(newText)
+      applyLineSpacing()
 
       observeAsyncImages()
 
@@ -391,8 +417,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   fun setCursorColor(colorInt: Int?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val cursorDrawable = textCursorDrawable
-      if (cursorDrawable == null) return
+      val cursorDrawable = textCursorDrawable ?: return
 
       if (colorInt != null) {
         cursorDrawable.colorFilter = BlendModeColorFilter(colorInt, BlendMode.SRC_IN)
@@ -424,6 +449,28 @@ class EnrichedTextInputView : AppCompatEditText {
     htmlStyle.invalidateStyles()
     layoutManager.invalidateLayout()
     forceScrollToSelection()
+  }
+
+  fun setLineHeight(height: Float) {
+    lineHeight = if (height == 0f) null else height
+    applyLineSpacing()
+    layoutManager.invalidateLayout()
+    forceScrollToSelection()
+  }
+
+  private fun applyLineSpacing() {
+    val spannable = text as? Spannable ?: return
+    spannable
+      .getSpans(0, spannable.length, EnrichedLineHeightSpan::class.java)
+      .forEach { spannable.removeSpan(it) }
+
+    val lh = lineHeight ?: return
+    spannable.setSpan(
+      EnrichedLineHeightSpan(lh),
+      0,
+      spannable.length,
+      Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+    )
   }
 
   fun setFontFamily(family: String?) {
@@ -492,10 +539,98 @@ class EnrichedTextInputView : AppCompatEditText {
 
     try {
       linkRegex = Pattern.compile("(?s).*?($patternStr).*", flags)
-    } catch (e: PatternSyntaxException) {
-      Log.w("EnrichedTextInputView", "Invalid link regex pattern: $patternStr")
+    } catch (_: PatternSyntaxException) {
+      Log.w(TAG, "Invalid link regex pattern: $patternStr")
       linkRegex = Patterns.WEB_URL
     }
+  }
+
+  fun setContextMenuItems(items: ReadableArray?) {
+    if (items == null) {
+      contextMenuItems = emptyList()
+      return
+    }
+
+    val result = mutableListOf<Pair<Int, String>>()
+    for (i in 0 until items.size()) {
+      val item = items.getMap(i) ?: continue
+      val text = item.getString("text") ?: continue
+      result.add(Pair(i, text))
+    }
+
+    contextMenuItems = result
+  }
+
+  override fun startActionMode(
+    callback: ActionMode.Callback?,
+    type: Int,
+  ): ActionMode? {
+    if (contextMenuItems.isEmpty()) {
+      return super.startActionMode(callback, type)
+    }
+
+    val wrappedCallback =
+      object : ActionMode.Callback2() {
+        override fun onCreateActionMode(
+          mode: ActionMode,
+          menu: Menu,
+        ): Boolean {
+          val result = callback?.onCreateActionMode(mode, menu) ?: false
+          for ((index, text) in contextMenuItems) {
+            menu.add(Menu.NONE, CONTEXT_MENU_ITEM_ID + index, Menu.NONE, text)
+          }
+
+          return result
+        }
+
+        override fun onPrepareActionMode(
+          mode: ActionMode,
+          menu: Menu,
+        ) = callback?.onPrepareActionMode(mode, menu) ?: false
+
+        override fun onActionItemClicked(
+          mode: ActionMode,
+          menuItem: MenuItem,
+        ): Boolean {
+          val itemId = menuItem.itemId
+          if (itemId < CONTEXT_MENU_ITEM_ID) {
+            return callback?.onActionItemClicked(mode, menuItem) ?: false
+          }
+
+          val selStart = selection?.start ?: 0
+          val selEnd = selection?.end ?: 0
+          val itemText = contextMenuItems.getOrNull(itemId - CONTEXT_MENU_ITEM_ID)?.second ?: return false
+          emitContextMenuItemPressEvent(itemText)
+          mode.finish()
+          post {
+            // Ensures selection is not lost after the action mode is finished
+            if (selStart in 0..selEnd) {
+              setSelection(selStart, selEnd)
+            }
+          }
+          return true
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode) {
+          callback?.onDestroyActionMode(mode)
+        }
+      }
+
+    return super.startActionMode(wrappedCallback, type)
+  }
+
+  private fun emitContextMenuItemPressEvent(itemText: String) {
+    val start = selection?.start ?: return
+    val end = selection.end
+    val styleState = spanState?.getStyleStatePayload() ?: return
+    val selectedText = text?.subSequence(start, end)?.toString() ?: ""
+
+    val reactContext = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+    dispatcher?.dispatchEvent(
+      OnContextMenuItemPressEvent(surfaceId, id, itemText, selectedText, start, end, styleState, experimentalSynchronousEvents),
+    )
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
@@ -552,7 +687,7 @@ class EnrichedTextInputView : AppCompatEditText {
       EnrichedSpans.ORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.ORDERED_LIST)
       EnrichedSpans.UNORDERED_LIST -> listStyles?.toggleStyle(EnrichedSpans.UNORDERED_LIST)
       EnrichedSpans.CHECKBOX_LIST -> listStyles?.toggleStyle(EnrichedSpans.CHECKBOX_LIST)
-      else -> Log.w("EnrichedTextInputView", "Unknown style: $name")
+      else -> Log.w(TAG, "Unknown style: $name")
     }
 
     layoutManager.invalidateLayout()
@@ -687,6 +822,13 @@ class EnrichedTextInputView : AppCompatEditText {
     parametrizedStyles?.setLinkSpan(start, end, text, url)
   }
 
+  fun removeLink(
+    start: Int,
+    end: Int,
+  ) {
+    parametrizedStyles?.removeLinkSpans(start, end)
+  }
+
   fun addImage(
     src: String,
     width: Float,
@@ -721,7 +863,7 @@ class EnrichedTextInputView : AppCompatEditText {
     val html =
       try {
         EnrichedParser.toHtmlWithDefault(text)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         null
       }
 
@@ -848,6 +990,8 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   companion object {
+    const val TAG = "EnrichedTextInputView"
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
+    private const val CONTEXT_MENU_ITEM_ID = 10000
   }
 }
