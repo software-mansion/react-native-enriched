@@ -278,7 +278,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     value: Boolean,
   ) {
-    // no-op
+    view?.useHtmlNormalizer = value
   }
 
   override fun focus(view: EnrichedTextInputView?) {
@@ -379,6 +379,14 @@ class EnrichedTextInputViewManager :
     url: String,
   ) {
     view?.addLink(start, end, text, url)
+  }
+
+  override fun removeLink(
+    view: EnrichedTextInputView?,
+    start: Int,
+    end: Int,
+  ) {
+    view?.removeLink(start, end)
   }
 
   override fun addImage(

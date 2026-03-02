@@ -435,6 +435,11 @@ interface NativeCommands {
     text: string,
     url: string
   ) => void;
+  removeLink: (
+    viewRef: React.ElementRef<ComponentType>,
+    start: Int32,
+    end: Int32
+  ) => void;
   addImage: (
     viewRef: React.ElementRef<ComponentType>,
     uri: string,
@@ -483,6 +488,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'toggleUnorderedList',
     'toggleCheckboxList',
     'addLink',
+    'removeLink',
     'addImage',
     'startMention',
     'addMention',

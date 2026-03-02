@@ -499,11 +499,9 @@ If true, Android will use experimental synchronous events. This will prevent fro
 
 If true, external HTML pasted/inserted into the input (e.g. from Google Docs, Word, or web pages) will be normalized into the canonical tag subset that the enriched parser understands. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
 
-> **Note:** Currently only supported on iOS.
-
 | Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `false`       | iOS      |
+| ------ | ------------- |----------|
+| `bool` | `false`       | Both     |
 
 ## Ref Methods
 
@@ -567,6 +565,17 @@ Sets the link at the given place with a given displayed text and URL. Link will 
 - `end: number` - first index behind the new link's ending index.
 - `text: string` - displayed text of the link.
 - `url: string` - URL of the link.
+
+### `.removeLink()`
+
+```ts
+removeLink: (start: number, end: number) => void;
+```
+
+Removes link styling from any links found within the given range. The text content is preserved, only the link attributes are stripped. Out-of-bounds values are clamped to valid range.
+
+- `start: number` - the starting index of the range to remove links from.
+- `end: number` - first index behind the range's ending index.
 
 ### `.setMention()`
 
