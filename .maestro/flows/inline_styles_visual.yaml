@@ -8,6 +8,8 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "editor-input"
 
+- inputText: "plain "
+
 - tapOn:
     id: "toolbar-bold"
 - inputText: "bold"
@@ -30,6 +32,13 @@ appId: swmansion.enriched.example
 - inputText: " "
 
 - tapOn:
+    id: "toolbar-strikethrough"
+- inputText: "strikethrough"
+- tapOn:
+    id: "toolbar-strikethrough"
+- inputText: " "
+
+- tapOn:
     id: "toolbar-inline-code"
 - inputText: "code"
 - tapOn:
@@ -39,8 +48,7 @@ appId: swmansion.enriched.example
     id: "blur-button"
 
 
-- assertScreenshot:
-    path: .maestro/screenshots/inline-styles.png
-    thresholdPercentage: 100
-    cropOn:
-      id: "editor-input"
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+        SCREENSHOT_NAME: "inline_styles"
