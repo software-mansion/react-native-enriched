@@ -145,6 +145,11 @@
   _primaryLineHeight = newValue;
 }
 
+- (CGFloat)scaledPrimaryLineHeight {
+  return [[UIFontMetrics defaultMetrics]
+      scaledValueForValue:[self primaryLineHeight]];
+}
+
 - (NSString *)primaryFontWeight {
   return _primaryFontWeight != nullptr
              ? _primaryFontWeight
