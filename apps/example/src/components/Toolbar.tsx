@@ -6,6 +6,8 @@ import type {
 } from 'react-native-enriched';
 import type { FC } from 'react';
 
+const GRID_COLUMNS = 6;
+
 const STYLE_ITEMS = [
   {
     name: 'bold',
@@ -267,6 +269,7 @@ export const Toolbar: FC<ToolbarProps> = ({
         isActive={isActive(item)}
         isDisabled={isDisabled(item)}
         onPress={() => handlePress(item)}
+        containerStyle={layout === 'grid' ? styles.gridItem : undefined}
       />
     );
   };
@@ -291,5 +294,9 @@ export const Toolbar: FC<ToolbarProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+  },
+  gridItem: {
+    flexBasis: `${100 / GRID_COLUMNS}%`,
+    aspectRatio: 1,
   },
 });

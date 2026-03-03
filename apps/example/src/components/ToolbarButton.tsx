@@ -1,5 +1,11 @@
 import { type FC } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { Icon, type IconName } from './Icon';
 
 interface ToolbarButtonIconProps {
@@ -9,6 +15,7 @@ interface ToolbarButtonIconProps {
   isDisabled: boolean;
   onPress: () => void;
   testID?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 interface ToolbarButtonTextProps {
@@ -18,6 +25,7 @@ interface ToolbarButtonTextProps {
   isDisabled: boolean;
   onPress: () => void;
   testID?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export type ToolbarButtonProps =
@@ -31,6 +39,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = ({
   isDisabled,
   onPress,
   testID,
+  containerStyle,
 }) => {
   return (
     <Pressable
@@ -38,6 +47,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = ({
         styles.container,
         isActive && styles.containerActive,
         isDisabled && styles.containerDisabled,
+        containerStyle,
       ]}
       disabled={isDisabled}
       onPress={onPress}
