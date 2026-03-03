@@ -12,6 +12,7 @@
 - (void)setPrimaryFontSize:(NSNumber *)newValue;
 - (CGFloat)primaryLineHeight;
 - (void)setPrimaryLineHeight:(CGFloat)newValue;
+- (CGFloat)scaledPrimaryLineHeight;
 - (NSString *)primaryFontWeight;
 - (void)setPrimaryFontWeight:(NSString *)newValue;
 - (NSString *)primaryFontFamily;
