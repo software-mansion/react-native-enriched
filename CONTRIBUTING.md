@@ -76,52 +76,50 @@ yarn test
 
 ### E2E tests
 
-We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Test flows are located in `.maestro/flows/`, and shared logic lives in `.maestro/subflows/`.
+We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/flows/` and shared subflows in `.maestro/subflows/`.
 
 #### Prerequisites
 
-Install the Maestro CLI by following the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started).
+- **Maestro CLI** - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started)
+- **iOS** - Xcode
+- **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator.
 
-#### Required devices
+The target devices are:
 
-| Platform | Device    | OS version                        |
-| -------- | --------- | --------------------------------- |
-| iOS      | iPhone 17 | iOS 26.2                          |
-| Android  | Pixel 9   | API 36.0 "Baklava" (Android 16.0) |
+| Platform | Device    | OS                            |
+| -------- | --------- | ----------------------------- |
+| iOS      | iPhone 17 | iOS 26.2                      |
+| Android  | Pixel 9   | API 36 "Baklava" (Android 16) |
 
 #### Running E2E tests
 
-Start the example app on the appropriate simulator/emulator, then run all E2E tests:
+Each command sets up the device, builds and installs the example app, and runs all Maestro flows in one go:
 
 ```sh
-yarn test:e2e:android
 yarn test:e2e:ios
+yarn test:e2e:android
 ```
 
-To run an individual flow, use `--platform <ios|android>` to target a specific platform:
+You can target specific flows or pass additional flags:
 
 ```sh
-maestro test .maestro/flows/placeholder_visual.yaml --platform <ios|android>
+# Run a single flow
+yarn test:e2e:ios .maestro/flows/core_controls_smoke.yaml
+
+# Skip the build step when the app is already installed
+yarn test:e2e:android --skip-build
 ```
 
 #### Visual regression tests
 
-Some flows perform visual regression checks by comparing a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted; pass `UPDATE_SCREENSHOTS=true` to save new baselines instead.
-
-For a single flow:
+Some flows compare a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
 
 ```sh
-maestro test .maestro/flows/inline_styles_visual.yaml --platform <ios|android> --env UPDATE_SCREENSHOTS=true
+yarn test:e2e:ios --update-screenshots
+yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.yaml
 ```
 
-For all flows at once:
-
-```sh
-yarn test:e2e:ios --env UPDATE_SCREENSHOTS=true
-yarn test:e2e:android --env UPDATE_SCREENSHOTS=true
-```
-
-Always review the newly saved screenshots in `.maestro/screenshots/` before committing them.
+Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
 
 ### Commit message convention
 

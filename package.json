@@ -50,8 +50,8 @@
     "release": "release-it",
     "android-studio": "open -a 'Android Studio' apps/example/android",
     "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace",
-    "test:e2e:android": "maestro test .maestro/flows --platform android",
-    "test:e2e:ios": "maestro test .maestro/flows --platform ios"
+    "test:e2e:android": "sh .maestro/scripts/run-tests.sh --platform android",
+    "test:e2e:ios": "sh .maestro/scripts/run-tests.sh --platform ios"
   },
   "keywords": [
     "react-native",
