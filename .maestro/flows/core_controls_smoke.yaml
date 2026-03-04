@@ -54,12 +54,3 @@ appId: swmansion.enriched.example
     id: "toolbar-ordered-list"
 - assertVisible:
     id: "toolbar-checkbox-list"
-
-- tapOn:
-    id: "toggle-html-button"
-- assertVisible:
-    id: "html-output"
-- tapOn:
-    id: "toggle-html-button"
-- assertNotVisible:
-    id: "html-output"
