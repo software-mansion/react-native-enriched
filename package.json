@@ -49,7 +49,10 @@
     "prepare": "bob build",
     "release": "release-it",
     "android-studio": "open -a 'Android Studio' apps/example/android",
-    "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace"
+    "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace",
+    "test:e2e": ".maestro/scripts/run-tests-all.sh",
+    "test:e2e:android": ".maestro/scripts/run-tests.sh --platform android",
+    "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios"
   },
   "keywords": [
     "react-native",

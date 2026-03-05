@@ -74,6 +74,70 @@ Remember to add tests for your change if possible. Run the unit tests by:
 yarn test
 ```
 
+### E2E tests
+
+We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/flows/` and shared subflows in `.maestro/subflows/`.
+
+#### Prerequisites
+
+- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
+- **iOS** - Xcode. Ensure `xcrun` is available (it ships with Xcode Command Line Tools).
+- **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator. Set up `ANDROID_HOME` (typically `$HOME/Library/Android/sdk` on macOS) and ensure the following are in your `PATH`:
+  - `$ANDROID_HOME/cmdline-tools/latest/bin`
+  - `$ANDROID_HOME/platform-tools`
+  - `$ANDROID_HOME/emulator`
+
+The target devices are:
+
+| Platform | Device    | OS                            |
+| -------- | --------- | ----------------------------- |
+| iOS      | iPhone 17 | iOS 26.2                      |
+| Android  | Pixel 9   | API 36 "Baklava" (Android 16) |
+
+#### Running E2E tests
+
+Start the Metro packager before running E2E tests:
+
+```sh
+yarn example start
+```
+
+Each command sets up the device and runs all Maestro flows. The script automatically detects whether the app is already installed and only builds when necessary:
+
+```sh
+# Both platforms sequentially
+yarn test:e2e
+
+# Single platform
+yarn test:e2e:ios
+yarn test:e2e:android
+```
+
+You can target specific flows or force a rebuild:
+
+```sh
+# Run a single flow
+yarn test:e2e:ios .maestro/flows/core_controls_smoke.yaml
+
+# Force a fresh build even if the app is already installed
+yarn test:e2e:android --rebuild
+```
+
+#### Visual regression tests
+
+Some flows compare a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
+
+```sh
+# Update baselines on both platforms
+yarn test:e2e --update-screenshots
+
+# Single platform
+yarn test:e2e:ios --update-screenshots
+yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.yaml
+```
+
+Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
+
 ### Commit message convention
 
 We follow the [conventional commits specification](https://www.conventionalcommits.org/en) for our commit messages:
@@ -116,6 +180,9 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
+- `yarn test:e2e`: run E2E tests on iOS and Android sequentially.
+- `yarn test:e2e:android`: run E2E tests on Android.
+- `yarn test:e2e:ios`: run E2E tests on iOS.
 
 ### Sending a pull request
 

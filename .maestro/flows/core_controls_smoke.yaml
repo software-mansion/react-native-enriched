@@ -1,0 +1,56 @@
+appId: swmansion.enriched.example
+---
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- assertVisible:
+    id: "editor-input"
+
+- assertVisible:
+    id: "focus-button"
+- assertVisible:
+    id: "blur-button"
+- assertVisible:
+    id: "set-value-button"
+
+
+- assertVisible:
+    id: "toolbar-bold"
+- assertVisible:
+    id: "toolbar-italic"
+- assertVisible:
+    id: "toolbar-underline"
+- assertVisible:
+    id: "toolbar-strikethrough"
+- assertVisible:
+    id: "toolbar-inline-code"
+- assertVisible:
+    id: "toolbar-heading-1"
+- assertVisible:
+    id: "toolbar-heading-2"
+- assertVisible:
+    id: "toolbar-heading-3"
+- assertVisible:
+    id: "toolbar-heading-4"
+- assertVisible:
+    id: "toolbar-heading-5"
+- assertVisible:
+    id: "toolbar-heading-6"
+- assertVisible:
+    id: "toolbar-quote"
+- assertVisible:
+    id: "toolbar-code-block"
+- assertVisible:
+    id: "toolbar-image"
+- assertVisible:
+    id: "toolbar-link"
+- assertVisible:
+    id: "toolbar-mention"
+- assertVisible:
+    id: "toolbar-unordered-list"
+- assertVisible:
+    id: "toolbar-ordered-list"
+- assertVisible:
+    id: "toolbar-checkbox-list"
