@@ -1,4 +1,4 @@
-This is an example React Native app that let you develop and test `react-native-enriched`.
+This is an example React Native app that lets you develop and test `react-native-enriched`.
 
 # Getting Started
 
