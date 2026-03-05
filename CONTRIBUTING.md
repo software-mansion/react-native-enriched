@@ -80,7 +80,7 @@ We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live
 
 #### Prerequisites
 
-- **Maestro CLI** - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started)
+- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started)
 - **iOS** - Xcode
 - **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator.
 

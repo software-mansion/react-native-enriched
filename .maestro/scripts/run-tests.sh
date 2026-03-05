@@ -19,6 +19,20 @@
 
 set -eu
 
+MIN_MAESTRO_VERSION="2.2.0"
+
+if ! command -v maestro >/dev/null 2>&1; then
+  echo "Error: maestro CLI not found." >&2
+  exit 1
+fi
+
+MAESTRO_VERSION=$(maestro --version)
+# Compare versions by sorting them; if the minimum sorts after the actual, it's too old.
+if [ "$(printf '%s\n' "$MIN_MAESTRO_VERSION" "$MAESTRO_VERSION" | sort -V | head -n1)" != "$MIN_MAESTRO_VERSION" ]; then
+  echo "Error: maestro $MAESTRO_VERSION is too old, minimum required is $MIN_MAESTRO_VERSION" >&2
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLE_ID="swmansion.enriched.example"
 
