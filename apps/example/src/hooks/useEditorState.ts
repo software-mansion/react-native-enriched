@@ -80,6 +80,10 @@ export function useEditorState() {
     ref.current?.blur();
   };
 
+  const handleClear = () => {
+    ref.current?.setValue('');
+  };
+
   const openLinkModal = () => setIsLinkModalOpen(true);
   const closeLinkModal = () => setIsLinkModalOpen(false);
   const openImageModal = () => setIsImageModalOpen(true);
@@ -250,6 +254,7 @@ export function useEditorState() {
     closeValueModal,
     handleFocus,
     handleBlur,
+    handleClear,
     handleChangeText,
     handleChangeHtml,
     handleChangeState,

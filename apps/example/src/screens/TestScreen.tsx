@@ -39,6 +39,12 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
             style={styles.button}
             testID="blur-button"
           />
+          <Button
+            title="Clear"
+            onPress={editor.handleClear}
+            style={styles.button}
+            testID="clear-button"
+          />
         </View>
         <View style={styles.editor} testID="editor-container">
           <EnrichedTextInput
@@ -150,11 +156,11 @@ const styles = StyleSheet.create({
   buttonStack: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     width: '100%',
+    gap: 8,
   },
   button: {
-    width: '45%',
+    flex: 1,
   },
   buttonRow: {
     flexDirection: 'row',
