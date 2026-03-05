@@ -65,6 +65,7 @@ import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
+import com.swmansion.enriched.textinput.utils.zwsCountBefore
 import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.textinput.watchers.EnrichedTextWatcher
 import java.util.regex.Pattern
@@ -623,13 +624,26 @@ class EnrichedTextInputView : AppCompatEditText {
     val start = selection?.start ?: return
     val end = selection.end
     val styleState = spanState?.getStyleStatePayload() ?: return
-    val selectedText = text?.subSequence(start, end)?.toString() ?: ""
+    val currentText = text ?: return
+    val selectedText = currentText.subSequence(start, end).toString().replace(EnrichedConstants.ZWS_STRING, "")
+
+    val visibleStart = start - currentText.zwsCountBefore(start)
+    val visibleEnd = end - currentText.zwsCountBefore(end)
 
     val reactContext = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
     dispatcher?.dispatchEvent(
-      OnContextMenuItemPressEvent(surfaceId, id, itemText, selectedText, start, end, styleState, experimentalSynchronousEvents),
+      OnContextMenuItemPressEvent(
+        surfaceId,
+        id,
+        itemText,
+        selectedText,
+        visibleStart,
+        visibleEnd,
+        styleState,
+        experimentalSynchronousEvents,
+      ),
     )
   }
 
@@ -819,14 +833,14 @@ class EnrichedTextInputView : AppCompatEditText {
     val isValid = verifyStyle(EnrichedSpans.LINK)
     if (!isValid) return
 
-    parametrizedStyles?.setLinkSpan(start, end, text, url)
+    parametrizedStyles?.setLinkSpan(getActualIndex(start), getActualIndex(end), text, url)
   }
 
   fun removeLink(
     start: Int,
     end: Int,
   ) {
-    parametrizedStyles?.removeLinkSpans(start, end)
+    parametrizedStyles?.removeLinkSpans(getActualIndex(start), getActualIndex(end))
   }
 
   fun addImage(
