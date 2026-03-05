@@ -2,6 +2,9 @@ appId: swmansion.enriched.example
 ---
 - launchApp
 
+- tapOn:
+    id: "toggle-screen-button"
+
 - assertVisible:
     id: "editor-input"
 
@@ -12,9 +15,6 @@ appId: swmansion.enriched.example
 - assertVisible:
     id: "set-value-button"
 
-# Switch to test/grid layout so all toolbar buttons are visible at once
-- tapOn:
-    id: "toggle-screen-button"
 
 - assertVisible:
     id: "toolbar-bold"

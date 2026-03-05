@@ -102,6 +102,10 @@ yarn example start
 Each command sets up the device and runs all Maestro flows. The script automatically detects whether the app is already installed and only builds when necessary:
 
 ```sh
+# Both platforms sequentially
+yarn test:e2e:mobile
+
+# Single platform
 yarn test:e2e:ios
 yarn test:e2e:android
 ```
@@ -121,6 +125,10 @@ yarn test:e2e:android --rebuild
 Some flows compare a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
 
 ```sh
+# Update baselines on both platforms
+yarn test:e2e:mobile --update-screenshots
+
+# Single platform
 yarn test:e2e:ios --update-screenshots
 yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.yaml
 ```
@@ -169,6 +177,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
+- `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
 
