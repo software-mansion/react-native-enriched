@@ -93,21 +93,27 @@ The target devices are:
 
 #### Running E2E tests
 
-Each command sets up the device, builds and installs the example app, and runs all Maestro flows in one go:
+Start the Metro packager before running E2E tests:
+
+```sh
+yarn example start
+```
+
+Each command sets up the device and runs all Maestro flows. The script automatically detects whether the app is already installed and only builds when necessary:
 
 ```sh
 yarn test:e2e:ios
 yarn test:e2e:android
 ```
 
-You can target specific flows or pass additional flags:
+You can target specific flows or force a rebuild:
 
 ```sh
 # Run a single flow
 yarn test:e2e:ios .maestro/flows/core_controls_smoke.yaml
 
-# Skip the build step when the app is already installed
-yarn test:e2e:android --skip-build
+# Force a fresh build even if the app is already installed
+yarn test:e2e:android --rebuild
 ```
 
 #### Visual regression tests

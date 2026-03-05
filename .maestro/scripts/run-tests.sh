@@ -2,36 +2,36 @@
 # run-tests.sh - set up a device, build the example app, and run Maestro flows.
 #
 # Usage:
-#   ./run-tests.sh --platform <ios|android> [--update-screenshots] [--skip-build] [flow ...]
+#   ./run-tests.sh --platform <ios|android> [--update-screenshots] [--rebuild] [flow ...]
 #
 # Options:
 #   --platform            Required. Target platform: ios or android.
-#   --update-screenshots  Passes UPDATE_SCREENSHOTS=true to Maestro (used by
-#                         capture_or_assert_screenshot subflow to refresh baselines).
-#   --skip-build          Skip building and installing the app. Useful when the app
-#                         is already running on the device from a previous run.
+#   --update-screenshots  Refresh baselines.
+#   --rebuild             Force a rebuild and install, even if the app is
+#                         already installed on the device.
 #   flow ...              One or more Maestro flow files or directories to run.
 #                         Defaults to .maestro/flows if omitted.
 #
 # Examples:
 #   ./run-tests.sh --platform ios
 #   ./run-tests.sh --platform android --update-screenshots .maestro/flows/core_controls_smoke.yaml
-#   ./run-tests.sh --platform ios --skip-build .maestro/flows
+#   ./run-tests.sh --platform ios --rebuild
 
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BUNDLE_ID="swmansion.enriched.example"
 
 PLATFORM=""
 UPDATE_SCREENSHOTS=""
-SKIP_BUILD=""
+REBUILD=""
 FLOWS=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --platform)           PLATFORM="$2"; shift 2 ;;
     --update-screenshots) UPDATE_SCREENSHOTS="true"; shift ;;
-    --skip-build)         SKIP_BUILD="true"; shift ;;
+    --rebuild)            REBUILD="true"; shift ;;
     *)                    FLOWS="${FLOWS:+$FLOWS }$1"; shift ;;
   esac
 done
@@ -46,12 +46,24 @@ esac
 
 DEVICE_ID=$("$SETUP" | tee /dev/tty | grep "^DEVICE_ID=" | cut -d= -f2)
 
-if [ -z "$SKIP_BUILD" ]; then
+app_installed() {
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl listapps "$DEVICE_ID" 2>/dev/null | grep -q "$BUNDLE_ID"
+  else
+    adb -s "$DEVICE_ID" shell pm list packages "$BUNDLE_ID" 2>/dev/null | grep -q "$BUNDLE_ID"
+  fi
+}
+
+if [ -n "$REBUILD" ] || ! app_installed; then
+  [ -n "$REBUILD" ] && echo "=== --rebuild requested, building and installing ==="
+  [ -z "$REBUILD" ] && echo "=== App ($BUNDLE_ID) not found, building and installing ==="
   if [ "$PLATFORM" = ios ]; then
     yarn example ios --udid "$DEVICE_ID"
   else
     yarn example android --device "$DEVICE_ID"
   fi
+else
+  echo "=== App ($BUNDLE_ID) already installed, skipping build ==="
 fi
 
 EXTRA=""
