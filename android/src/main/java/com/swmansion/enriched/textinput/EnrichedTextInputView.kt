@@ -980,7 +980,8 @@ class EnrichedTextInputView : AppCompatEditText {
     super.onAttachedToWindow()
 
     // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L946
-    super.setTextIsSelectable(true)
+    // setTextIsSelectable internally calls setText(), which fires afterTextChanged that should be marked as a transaction to avoid unwanted side effects
+    runAsATransaction { super.setTextIsSelectable(true) }
 
     if (autoFocus && !didAttachToWindow) {
       requestFocusProgrammatically()
