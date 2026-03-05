@@ -74,12 +74,12 @@
       NSString *type = item.allKeys[j];
       if ([type isEqual:UTTypeJPEG.identifier] ||
           [type isEqual:UTTypePNG.identifier] ||
-          [type isEqual:UTTypeWebP.identifier] ||
           [type isEqual:UTTypeHEIC.identifier] ||
           [type isEqual:UTTypeTIFF.identifier]) {
         imageData = [self getDataForImageItem:item[type] type:type];
-      } else if ([type isEqual:UTTypeGIF.identifier]) {
-        // gifs
+      } else if ([type isEqual:UTTypeWebP.identifier] ||
+                 [type isEqual:UTTypeGIF.identifier]) {
+        // webp and gifs: read raw bytes directly — no re-encoding needed
         imageData = [pasteboard dataForPasteboardType:type];
       }
       if (!imageData) {
