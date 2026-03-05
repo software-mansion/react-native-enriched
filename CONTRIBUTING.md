@@ -80,9 +80,12 @@ We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live
 
 #### Prerequisites
 
-- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started)
-- **iOS** - Xcode
-- **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator.
+- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
+- **iOS** - Xcode. Ensure `xcrun` is available (it ships with Xcode Command Line Tools).
+- **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator. Set up `ANDROID_HOME` (typically `$HOME/Library/Android/sdk` on macOS) and ensure the following are in your `PATH`:
+  - `$ANDROID_HOME/cmdline-tools/latest/bin`
+  - `$ANDROID_HOME/platform-tools`
+  - `$ANDROID_HOME/emulator`
 
 The target devices are:
 
@@ -103,7 +106,7 @@ Each command sets up the device and runs all Maestro flows. The script automatic
 
 ```sh
 # Both platforms sequentially
-yarn test:e2e:mobile
+yarn test:e2e
 
 # Single platform
 yarn test:e2e:ios
@@ -126,7 +129,7 @@ Some flows compare a screenshot of the editor against a saved baseline in `.maes
 
 ```sh
 # Update baselines on both platforms
-yarn test:e2e:mobile --update-screenshots
+yarn test:e2e --update-screenshots
 
 # Single platform
 yarn test:e2e:ios --update-screenshots
@@ -177,7 +180,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
-- `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
+- `yarn test:e2e`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
 

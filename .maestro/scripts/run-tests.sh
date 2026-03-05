@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # run-tests.sh - set up a device, build the example app, and run Maestro flows.
 #
 # Usage:
@@ -17,7 +17,7 @@
 #   ./run-tests.sh --platform android --update-screenshots .maestro/flows/core_controls_smoke.yaml
 #   ./run-tests.sh --platform ios --rebuild
 
-set -eu
+set -euo pipefail
 
 MIN_MAESTRO_VERSION="2.2.0"
 
@@ -69,7 +69,7 @@ app_installed() {
 }
 
 if [ -n "$REBUILD" ] || ! app_installed; then
-  [ -n "$REBUILD" ] && echo "=== --rebuild requested, building and installing ==="
+  [ -n "$REBUILD" ] && echo "=== rebuild requested, building and installing ==="
   [ -z "$REBUILD" ] && echo "=== App ($BUNDLE_ID) not found, building and installing ==="
   if [ "$PLATFORM" = ios ]; then
     yarn example ios --udid "$DEVICE_ID"

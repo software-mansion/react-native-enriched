@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # run-tests-all.sh - run e2e tests on both iOS and Android sequentially.
 #
 # Usage:
@@ -7,13 +7,13 @@
 # All options (--update-screenshots, --rebuild, flow files, etc.) are
 # forwarded to run-tests.sh for each platform.
 
-set -eu
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo === iOS ===
+echo "=== iOS ==="
 "$SCRIPT_DIR/run-tests.sh" --platform ios "$@"
 
 echo ""
-echo "== android ==="
+echo "=== Android ==="
 "$SCRIPT_DIR/run-tests.sh" --platform android "$@"
