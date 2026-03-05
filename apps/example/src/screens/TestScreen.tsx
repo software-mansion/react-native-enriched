@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { EnrichedTextInput } from 'react-native-enriched';
 import { Button } from '../components/Button';
@@ -19,6 +20,7 @@ interface TestScreenProps {
 
 export function TestScreen({ onSwitch }: TestScreenProps) {
   const editor = useEditorState();
+  const [sizeMode, setSizeMode] = useState<'min' | 'max'>('min');
 
   return (
     <>
@@ -45,12 +47,22 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
             style={styles.button}
             testID="clear-button"
           />
+          <Button
+            title={sizeMode === 'max' ? 'Min' : 'Max'}
+            onPress={() => setSizeMode(sizeMode === 'max' ? 'min' : 'max')}
+            style={styles.button}
+            testID="size-max-button"
+          />
         </View>
         <View style={styles.editor} testID="editor-container">
           <EnrichedTextInput
             ref={editor.ref}
             mentionIndicators={['@', '#']}
-            style={styles.editorInput}
+            style={
+              sizeMode === 'max'
+                ? { ...styles.editorInput, ...styles.editorInputMax }
+                : styles.editorInput
+            }
             htmlStyle={htmlStyle}
             placeholder="Type something here..."
             placeholderTextColor="rgb(0, 26, 114)"
@@ -179,5 +191,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+  },
+  editorInputMax: {
+    maxHeight: 400,
   },
 });
