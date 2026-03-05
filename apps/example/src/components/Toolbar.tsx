@@ -6,7 +6,7 @@ import type {
 } from 'react-native-enriched';
 import type { FC } from 'react';
 
-const GRID_COLUMNS = 6;
+const GRID_COLUMNS = 8;
 
 const STYLE_ITEMS = [
   {
@@ -279,7 +279,7 @@ export const Toolbar: FC<ToolbarProps> = ({
   return (
     <FlatList
       key={layout}
-      numColumns={layout === 'grid' ? 6 : undefined}
+      numColumns={layout === 'grid' ? GRID_COLUMNS : undefined}
       horizontal={layout === 'horizontal'}
       scrollEnabled={layout === 'horizontal'}
       data={STYLE_ITEMS}
