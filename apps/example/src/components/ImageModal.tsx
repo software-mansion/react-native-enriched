@@ -51,24 +51,31 @@ export const ImageModal: FC<ImageModalProps> = ({
     <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
       <View style={styles.modal}>
         <View style={styles.header}>
-          <Pressable onPress={closeModal} style={styles.closeButton}>
+          <Pressable
+            testID="image-modal-close-button"
+            onPress={closeModal}
+            style={styles.closeButton}
+          >
             <Icon name="close" color="rgb(0, 26, 114)" size={20} />
           </Pressable>
         </View>
         <View style={styles.content}>
           <TextInput
+            testID="image-modal-width-input"
             placeholder="Width"
             style={styles.input}
             value={width}
             onChangeText={setWidth}
           />
           <TextInput
+            testID="image-modal-height-input"
             placeholder="Height"
             style={styles.input}
             value={height}
             onChangeText={setHeight}
           />
           <TextInput
+            testID="image-modal-url-input"
             placeholder="Remote URL"
             style={styles.input}
             value={url}
@@ -77,6 +84,7 @@ export const ImageModal: FC<ImageModalProps> = ({
             autoCorrect={false}
           />
           <Button
+            testID="image-modal-submit-button"
             title="Choose Image"
             onPress={handleSave}
             style={styles.saveButton}

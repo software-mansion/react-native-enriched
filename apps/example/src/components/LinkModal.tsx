@@ -37,12 +37,17 @@ export const LinkModal: FC<LinkModalProps> = ({
     <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
       <View style={styles.modal}>
         <View style={styles.header}>
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable
+            testID="link-modal-close-button"
+            onPress={onClose}
+            style={styles.closeButton}
+          >
             <Icon name="close" color="rgb(0, 26, 114)" size={20} />
           </Pressable>
         </View>
         <View style={styles.content}>
           <TextInput
+            testID="link-modal-text-input"
             placeholder="Text"
             defaultValue={editedText}
             style={styles.input}
@@ -51,6 +56,7 @@ export const LinkModal: FC<LinkModalProps> = ({
             autoCorrect={false}
           />
           <TextInput
+            testID="link-modal-url-input"
             placeholder="Link"
             defaultValue={editedUrl}
             style={styles.input}
@@ -59,6 +65,7 @@ export const LinkModal: FC<LinkModalProps> = ({
             autoCorrect={false}
           />
           <Button
+            testID="link-modal-submit-button"
             title="Save"
             onPress={handleSave}
             disabled={url.length === 0}

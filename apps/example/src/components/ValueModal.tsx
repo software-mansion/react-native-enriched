@@ -28,12 +28,17 @@ export const ValueModal: FC<ValueModalProps> = ({
     <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
       <View style={styles.modal}>
         <View style={styles.header}>
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable
+            testID="value-modal-close-button"
+            onPress={onClose}
+            style={styles.closeButton}
+          >
             <Icon name="close" color="rgb(0, 26, 114)" size={20} />
           </Pressable>
         </View>
         <View style={styles.content}>
           <TextInput
+            testID="value-modal-input"
             multiline
             placeholder="New value"
             style={styles.input}
