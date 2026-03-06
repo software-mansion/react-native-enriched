@@ -1,0 +1,47 @@
+appId: swmansion.enriched.example
+---
+# PR #424 - fix(iOS): drawing image in proper place
+# Verifies that an image inserted between paragraphs stays in the correct
+# position and does not shift when text is typed around it.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- inputText: "Paragraph one"
+- pressKey: Enter
+- pressKey: Enter
+
+- inputText:  "Paragraph two"
+
+- tapOn:
+    id: "editor-input"
+    point: "50%,50%" 
+
+# cursor is now on the blank second line
+
+- tapOn:
+    id: "toolbar-image"
+- tapOn:
+    id: "image-modal-url-input"
+- inputText: "https://dummydash.com/image_200x300"
+- tapOn:
+    id: "image-modal-submit-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "image_position_stability_before_typing"
+
+- tapOn:
+    id: "editor-input"
+    point: "50%,50%"
+- inputText: "Paragraph in the middle"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "image_position_stability_after_typing"
