@@ -6,6 +6,17 @@
 
 @implementation InputTextView
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  // UITextView resets contentSize during its own layout pass (triggered when
+  // the frame is set on first mount). Re-schedule a relayout so our explicit
+  // contentSize is applied after UITextView finishes its internal layout.
+  EnrichedTextInputView *input = (EnrichedTextInputView *)_input;
+  if (input != nil) {
+    [input scheduleRelayoutIfNeeded];
+  }
+}
+
 - (void)copy:(id)sender {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
   if (typedInput == nullptr) {
