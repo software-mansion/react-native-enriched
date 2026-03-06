@@ -115,6 +115,7 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
         </View>
       </ScrollView>
       <LinkModal
+        avoidKeyboard
         isOpen={editor.isLinkModalOpen}
         editedText={
           editor.insideCurrentLink
@@ -126,11 +127,13 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
         onClose={editor.closeLinkModal}
       />
       <ImageModal
+        avoidKeyboard
         isOpen={editor.isImageModalOpen}
         onSubmit={editor.selectImage}
         onClose={editor.closeImageModal}
       />
       <ValueModal
+        avoidKeyboard
         isOpen={editor.isValueModalOpen}
         onSubmit={editor.submitSetValue}
         onClose={editor.closeValueModal}
