@@ -72,7 +72,9 @@ export const ImageModal: FC<ImageModalProps> = ({
             placeholder="Remote URL"
             style={styles.input}
             value={url}
+            autoCapitalize="none"
             onChangeText={setUrl}
+            autoCorrect={false}
           />
           <Button
             title="Choose Image"

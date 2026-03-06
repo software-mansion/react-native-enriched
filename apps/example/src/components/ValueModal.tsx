@@ -38,6 +38,8 @@ export const ValueModal: FC<ValueModalProps> = ({
             placeholder="New value"
             style={styles.input}
             onChangeText={setValue}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <Button
             testID="set-value-button"

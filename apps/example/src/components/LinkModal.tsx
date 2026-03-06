@@ -47,12 +47,16 @@ export const LinkModal: FC<LinkModalProps> = ({
             defaultValue={editedText}
             style={styles.input}
             onChangeText={setText}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <TextInput
             placeholder="Link"
             defaultValue={editedUrl}
             style={styles.input}
             onChangeText={setUrl}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <Button
             title="Save"
