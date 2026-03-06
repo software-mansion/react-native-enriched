@@ -1,0 +1,29 @@
+appId: swmansion.enriched.example
+---
+# PR #462 - fix(android): parsing initial HTML
+# Verifies that setting an HTML defaultValue with headings renders correctly
+# without duplicate or extra tags being inserted.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "set-value-button"
+
+- tapOn: 
+    id: "value-modal-input"
+
+- inputText: "<h1>Hello</h1><h2>World</h2><p>!!!</p>"
+
+- tapOn:
+    id: "value-modal-submit-button"
+
+- tapOn:
+    id: "size-max-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "initial_html_parsing"
+      SKIP_BLUR: "true"

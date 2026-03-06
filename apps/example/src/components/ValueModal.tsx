@@ -47,7 +47,7 @@ export const ValueModal: FC<ValueModalProps> = ({
             autoCorrect={false}
           />
           <Button
-            testID="set-value-button"
+            testID="value-modal-submit-button"
             title="Set Value"
             onPress={handleSave}
             style={styles.saveButton}
