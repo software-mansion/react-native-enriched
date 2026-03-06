@@ -717,18 +717,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // now set the new config
     config = newConfig;
 
-    // no emitting during styles reload
-    blockEmitting = YES;
-
-    // make sure everything is sound in the html
-    NSString *initiallyProcessedHtml =
-        [parser initiallyProcessHtml:currentHtml];
-    if (initiallyProcessedHtml != nullptr) {
-      [parser replaceWholeFromHtml:initiallyProcessedHtml];
-    }
-
-    blockEmitting = NO;
-
     // fill the typing attributes with style props
     defaultTypingAttributes[NSForegroundColorAttributeName] =
         [config primaryColor];
@@ -741,6 +729,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[NSMutableParagraphStyle alloc] init];
     defaultPStyle.minimumLineHeight = [config scaledPrimaryLineHeight];
     defaultTypingAttributes[NSParagraphStyleAttributeName] = defaultPStyle;
+
+    // no emitting during styles reload
+    blockEmitting = YES;
+
+    // make sure everything is sound in the html
+    NSString *initiallyProcessedHtml =
+        [parser initiallyProcessHtml:currentHtml];
+    if (initiallyProcessedHtml != nullptr) {
+      [parser replaceWholeFromHtml:initiallyProcessedHtml];
+    }
+
+    blockEmitting = NO;
 
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
