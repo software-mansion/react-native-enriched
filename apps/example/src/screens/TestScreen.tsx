@@ -48,7 +48,7 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
             testID="clear-button"
           />
           <Button
-            title={sizeMode === 'max' ? 'Max' : 'Base'}
+            title={sizeMode === 'max' ? 'Base' : 'Max'}
             onPress={() => setSizeMode(sizeMode === 'max' ? 'base' : 'max')}
             style={styles.button}
             testID="size-max-button"
