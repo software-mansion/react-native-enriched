@@ -72,6 +72,9 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
               editor.handleSelectionChangeEvent(e.nativeEvent)
             }
             onKeyPress={(e) => editor.handleKeyPress(e.nativeEvent)}
+            onSubmitEditing={(e) =>
+              editor.handleSubmitEditingEvent(e.nativeEvent)
+            }
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }

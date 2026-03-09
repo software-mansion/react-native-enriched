@@ -9,6 +9,7 @@ import {
   type OnChangeSelectionEvent,
   type OnKeyPressEvent,
   type OnPasteImagesEvent,
+  type OnSubmitEditing,
 } from 'react-native-enriched';
 import { useRef, useState } from 'react';
 import { type MentionItem } from '../components/MentionPopup';
@@ -232,6 +233,10 @@ export function useEditorState() {
     }
   };
 
+  const handleSubmitEditingEvent = (e: OnSubmitEditing) => {
+    console.log('Submitted editing:', e.text);
+  };
+
   return {
     ref,
     stylesState,
@@ -269,6 +274,7 @@ export function useEditorState() {
     handleChangeMention,
     handleUserMentionSelected,
     handleChannelMentionSelected,
+    handleSubmitEditingEvent,
     submitLink,
     submitSetValue,
     selectImage,
