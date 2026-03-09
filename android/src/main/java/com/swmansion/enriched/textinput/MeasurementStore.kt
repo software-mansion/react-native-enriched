@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.Log
@@ -16,6 +17,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
@@ -141,16 +143,31 @@ object MeasurementStore {
   ): Long {
     val defaultView = EnrichedTextInputView(context)
 
-    val text = getInitialText(defaultView, props)
+    val rawText = getInitialText(defaultView, props)
     val fontSize = getInitialFontSize(defaultView, props)
+    val lineHeight = props?.getDouble("lineHeight")?.toFloat() ?: 0f
 
     val fontFamily = props?.getString("fontFamily")
     val fontStyle = parseFontStyle(props?.getString("fontStyle"))
     val fontWeight = parseFontWeight(props?.getString("fontWeight"))
 
+    val text: CharSequence =
+      if (lineHeight > 0f) {
+        val spannable = SpannableString(rawText)
+        spannable.setSpan(
+          EnrichedLineHeightSpan(lineHeight),
+          0,
+          spannable.length,
+          Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+        )
+        spannable
+      } else {
+        rawText
+      }
+
     val typeface = applyStyles(defaultView.typeface, fontStyle, fontWeight, fontFamily, context.assets)
     val paintParams = PaintParams(typeface, fontSize)
-    val size = measure(width, text, PaintParams(typeface, fontSize))
+    val size = measure(width, text, paintParams)
 
     if (id != null) {
       data[id] = MeasurementParams(true, width, size, text, paintParams)

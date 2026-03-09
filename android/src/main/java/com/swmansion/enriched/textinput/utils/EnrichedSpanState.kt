@@ -203,18 +203,7 @@ class EnrichedSpanState(
     }
   }
 
-  private fun emitStateChangeEvent() {
-    val context = view.context as ReactContext
-    val surfaceId = UIManagerHelper.getSurfaceId(context)
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
-
-    dispatchPayload(dispatcher, surfaceId)
-  }
-
-  private fun dispatchPayload(
-    dispatcher: EventDispatcher?,
-    surfaceId: Int,
-  ) {
+  fun getStyleStatePayload(): WritableMap {
     val activeStyles =
       listOfNotNull(
         if (boldStart != null) EnrichedSpans.BOLD else null,
@@ -257,6 +246,23 @@ class EnrichedSpanState(
     payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
     payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
     payload.putMap("checkboxList", getStyleState(activeStyles, EnrichedSpans.CHECKBOX_LIST))
+
+    return payload
+  }
+
+  private fun emitStateChangeEvent() {
+    val context = view.context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+
+    dispatchPayload(dispatcher, surfaceId)
+  }
+
+  private fun dispatchPayload(
+    dispatcher: EventDispatcher?,
+    surfaceId: Int,
+  ) {
+    val payload = getStyleStatePayload()
 
     // Do not emit event if payload is the same
     if (previousPayload == payload) {

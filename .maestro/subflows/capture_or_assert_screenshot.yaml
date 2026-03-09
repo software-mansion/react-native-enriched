@@ -1,0 +1,23 @@
+appId: swmansion.enriched.example
+---
+- tapOn:
+    id: "blur-button"
+
+- runFlow:
+    when:
+      true: ${UPDATE_SCREENSHOTS === "true"}
+    commands:
+      - takeScreenshot:
+          path: ".maestro/screenshots/${maestro.platform}/${SCREENSHOT_NAME}"
+          cropOn:
+            id: "editor-input"
+
+- runFlow:
+    when:
+      true: ${UPDATE_SCREENSHOTS !== "true"}
+    commands:
+      - assertScreenshot:
+          path: ".maestro/screenshots/${maestro.platform}/${SCREENSHOT_NAME}.png"
+          thresholdPercentage: 100
+          cropOn:
+            id: "editor-input"

@@ -30,17 +30,20 @@ NS_ASSUME_NONNULL_BEGIN
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
+@public
+  BOOL useHtmlNormalizer;
 }
+- (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
                           range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
+- (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
 - (void)anyTextMayHaveBeenModified;
+- (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
                                             range:(NSRange)range;
-- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth;
-- (void)commitSize:(CGSize)size;
 @end
 
 NS_ASSUME_NONNULL_END
