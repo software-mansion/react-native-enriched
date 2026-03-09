@@ -80,8 +80,9 @@ open class EnrichedCheckboxListSpan(
     if (spannedText.getSpanStart(this) == start) {
       checkboxDrawable.update(isChecked)
 
-      val lineCenter = (top + bottom) / 2f
-      val drawableTop = lineCenter - (enrichedStyle.ulCheckboxBoxSize / 2f)
+      val fm = paint.fontMetricsInt
+      val textCenter = baseline + (fm.ascent + fm.descent) / 2f
+      val drawableTop = textCenter - (enrichedStyle.ulCheckboxBoxSize / 2f)
 
       canvas.withTranslation(x.toFloat() + enrichedStyle.ulCheckboxMarginLeft, drawableTop) {
         checkboxDrawable.draw(this)

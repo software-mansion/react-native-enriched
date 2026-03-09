@@ -24,7 +24,7 @@ class EnrichedInputImageSpan(
       width: Int,
       height: Int,
     ): EnrichedInputImageSpan {
-      var imgDrawable = prepareDrawableForImage(src)
+      var imgDrawable = prepareDrawableForImage(src, width, height)
 
       if (imgDrawable == null) {
         imgDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)

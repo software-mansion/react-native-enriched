@@ -3,10 +3,10 @@ export type {
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
-  OnChangeStateDeprecatedEvent,
   OnLinkDetected,
   OnMentionDetected,
   OnChangeSelectionEvent,
   OnKeyPressEvent,
+  OnPasteImagesEvent,
 } from './spec/EnrichedTextInputNativeComponent';
 export type { HtmlStyle, MentionStyleProperties } from './types';

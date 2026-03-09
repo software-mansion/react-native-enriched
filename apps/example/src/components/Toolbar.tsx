@@ -6,6 +6,8 @@ import type {
 } from 'react-native-enriched';
 import type { FC } from 'react';
 
+const GRID_COLUMNS = 8;
+
 const STYLE_ITEMS = [
   {
     name: 'bold',
@@ -93,6 +95,7 @@ export interface ToolbarProps {
   editorRef?: React.RefObject<EnrichedTextInputInstance | null>;
   onOpenLinkModal: () => void;
   onSelectImage: () => void;
+  layout?: 'horizontal' | 'grid';
 }
 
 export const Toolbar: FC<ToolbarProps> = ({
@@ -100,6 +103,7 @@ export const Toolbar: FC<ToolbarProps> = ({
   editorRef,
   onOpenLinkModal,
   onSelectImage,
+  layout = 'horizontal',
 }) => {
   const handlePress = (item: Item) => {
     const currentRef = editorRef?.current;
@@ -261,9 +265,11 @@ export const Toolbar: FC<ToolbarProps> = ({
     return (
       <ToolbarButton
         {...item}
+        testID={`toolbar-${item.name}`}
         isActive={isActive(item)}
         isDisabled={isDisabled(item)}
         onPress={() => handlePress(item)}
+        containerStyle={layout === 'grid' ? styles.gridItem : undefined}
       />
     );
   };
@@ -272,11 +278,15 @@ export const Toolbar: FC<ToolbarProps> = ({
 
   return (
     <FlatList
-      horizontal
+      key={layout}
+      numColumns={layout === 'grid' ? GRID_COLUMNS : undefined}
+      horizontal={layout === 'horizontal'}
+      scrollEnabled={layout === 'horizontal'}
       data={STYLE_ITEMS}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       style={styles.container}
+      testID="toolbar"
     />
   );
 };
@@ -284,5 +294,9 @@ export const Toolbar: FC<ToolbarProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+  },
+  gridItem: {
+    flexBasis: `${100 / GRID_COLUMNS}%`,
+    aspectRatio: 1,
   },
 });

@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig",
-  "exclude": ["apps", "lib"]
+  "exclude": ["apps", "lib", "cpp/build"]
 }
