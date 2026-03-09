@@ -29,7 +29,7 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "toolbar-image"
 - addMedia:
-    - "./assets/sample_image.jpg"
+    - "../assets/sample_image.jpg"
 - tapOn:
     id: "image-modal-submit-button"
 - runFlow:

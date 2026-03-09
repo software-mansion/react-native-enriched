@@ -20,7 +20,7 @@ interface TestScreenProps {
 
 export function TestScreen({ onSwitch }: TestScreenProps) {
   const editor = useEditorState();
-  const [sizeMode, setSizeMode] = useState<'min' | 'max'>('min');
+  const [sizeMode, setSizeMode] = useState<'base' | 'max'>('base');
 
   return (
     <>
@@ -48,8 +48,8 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
             testID="clear-button"
           />
           <Button
-            title={sizeMode === 'max' ? 'Min' : 'Max'}
-            onPress={() => setSizeMode(sizeMode === 'max' ? 'min' : 'max')}
+            title={sizeMode === 'max' ? 'Max' : 'Base'}
+            onPress={() => setSizeMode(sizeMode === 'max' ? 'base' : 'max')}
             style={styles.button}
             testID="size-max-button"
           />
