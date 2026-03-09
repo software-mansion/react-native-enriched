@@ -9,6 +9,9 @@ appId: swmansion.enriched.example
     id: "toggle-screen-button"
 
 - tapOn:
+    id: "size-max-button"
+
+- tapOn:
     id: "editor-input"
 
 - inputText: "Paragraph one"
@@ -25,11 +28,12 @@ appId: swmansion.enriched.example
 
 - tapOn:
     id: "toolbar-image"
-- tapOn:
-    id: "image-modal-url-input"
-- inputText: "https://dummydash.com/image_200x300"
+- addMedia:
+    - "./assets/sample_image.jpg"
 - tapOn:
     id: "image-modal-submit-button"
+- runFlow:
+    file: "../subflows/pick_first_image.yaml"
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
