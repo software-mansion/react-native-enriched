@@ -16,7 +16,7 @@ appId: swmansion.enriched.example
 - inputText: "<mention text='@John Doe' indicator='@' id='1' type='user'>@John Doe</mention>"
 
 - tapOn:
-    id: "set-value-button"
+    id: "value-modal-submit-button"
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"

@@ -26,4 +26,3 @@ appId: swmansion.enriched.example
     file: "../subflows/capture_or_assert_screenshot.yaml"
     env:
       SCREENSHOT_NAME: "initial_html_parsing"
-      SKIP_BLUR: "true"

@@ -1,5 +1,6 @@
 appId: swmansion.enriched.example
 ---
+
 - tapOn:
     id: "blur-button"
 
