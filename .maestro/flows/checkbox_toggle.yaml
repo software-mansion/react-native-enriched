@@ -1,0 +1,31 @@
+appId: swmansion.enriched.example
+---
+# PR #410 - fix: remove applying typing attr when toggling checkbox
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-checkbox-list"
+- inputText: "Item one"
+- pressKey: Enter
+- inputText: "Item two"
+- pressKey: Enter
+
+- pressKey: Backspace
+- inputText: "Plain text"
+- pressKey: Enter
+
+- tapOn:
+    id: "editor-input"
+    point: "14%,37%"
+
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "checkbox_toggle"
