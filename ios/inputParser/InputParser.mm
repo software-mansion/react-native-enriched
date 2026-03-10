@@ -274,7 +274,9 @@
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:@"\n<p>"];
+          [result appendString:@"\n<p"];
+          [self appendAlignment:currentRange.location toResult:result];
+          [result appendString:@">"];
         }
       }
 
@@ -368,7 +370,11 @@
               appendString:[NSString stringWithFormat:@"<%@/>", tagContent]];
           [currentActiveStyles removeObject:@([ImageStyle getStyleType])];
         } else {
-          [result appendString:[NSString stringWithFormat:@"<%@>", tagContent]];
+          [result appendString:[NSString stringWithFormat:@"<%@", tagContent]];
+          if ([self isBlockStyle:style]) {
+            [self appendAlignment:currentRange.location toResult:result];
+          }
+          [result appendString:@">"];
         }
       }
 
@@ -601,6 +607,39 @@
   return @"";
 }
 
+- (BOOL)isBlockStyle:(NSNumber *)style {
+  if ([style isEqualToNumber:@([H1Style getStyleType])] ||
+      [style isEqualToNumber:@([H2Style getStyleType])] ||
+      [style isEqualToNumber:@([H3Style getStyleType])] ||
+      [style isEqualToNumber:@([H4Style getStyleType])] ||
+      [style isEqualToNumber:@([H5Style getStyleType])] ||
+      [style isEqualToNumber:@([H6Style getStyleType])] ||
+      [style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
+      [style isEqualToNumber:@([OrderedListStyle getStyleType])] ||
+      [style isEqualToNumber:@([CheckboxListStyle getStyleType])] ||
+      [style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
+      [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
+    return YES;
+  }
+  return NO;
+}
+
+- (void)appendAlignment:(NSInteger)location toResult:(NSMutableString *)result {
+  if (location >= _input->textView.textStorage.length)
+    return;
+  NSParagraphStyle *paragraphStyle =
+      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                      atIndex:location
+                               effectiveRange:NULL];
+  NSTextAlignment align =
+      paragraphStyle ? paragraphStyle.alignment : NSTextAlignmentLeft;
+  if (align == NSTextAlignmentCenter) {
+    [result appendString:@" style=\"text-align: center\""];
+  } else if (align == NSTextAlignmentRight) {
+    [result appendString:@" style=\"text-align: right\""];
+  }
+}
+
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
   NSArray *processingResult = [self getTextAndStylesFromHtml:html];
   NSString *plainText = (NSString *)processingResult[0];
@@ -670,8 +709,26 @@
 
     // of course any changes here need to take blocks and conflicts into
     // consideration
-    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType]
-                                        range:styleRange]) {
+    if ([styleType isEqualToNumber:@(-1)]) {
+      NSTextAlignment align =
+          (NSTextAlignment)[(NSNumber *)stylePair.styleValue integerValue];
+      NSMutableParagraphStyle *pStyle =
+          [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                          atIndex:styleRange.location
+                                   effectiveRange:NULL];
+      if (!pStyle)
+        pStyle = [_input->defaultTypingAttributes[NSParagraphStyleAttributeName]
+            mutableCopy];
+      else
+        pStyle = [pStyle mutableCopy];
+      pStyle.alignment = align;
+      [_input->textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                           value:pStyle
+                                           range:styleRange];
+    } else if (baseStyle &&
+               [_input handleStyleBlocksAndConflicts:[[baseStyle class]
+                                                         getStyleType]
+                                               range:styleRange]) {
       if ([styleType isEqualToNumber:@([LinkStyle getStyleType])]) {
         NSString *text =
             [_input->textView.textStorage.string substringWithRange:styleRange];
@@ -1132,8 +1189,7 @@
         isSelfClosing = YES;
       }
 
-      if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"]) {
+      if ([currentTagName isEqualToString:@"br"]) {
         // do nothing, we don't include these tags in styles
       } else if ([currentTagName isEqualToString:@"li"]) {
         // Only track checkbox state if we're inside a checkbox list
@@ -1252,6 +1308,33 @@
 
     NSMutableArray *styleArr = [[NSMutableArray alloc] init];
     StylePair *stylePair = [[StylePair alloc] init];
+
+    NSRegularExpression *alignRegex = [NSRegularExpression
+        regularExpressionWithPattern:@"text-align:\\s*(center|right)"
+                             options:0
+                               error:nil];
+    NSTextCheckingResult *alignMatch =
+        [alignRegex firstMatchInString:params
+                               options:0
+                                 range:NSMakeRange(0, params.length)];
+    if (alignMatch) {
+      NSString *alignStr =
+          [params substringWithRange:[alignMatch rangeAtIndex:1]];
+      NSTextAlignment align = NSTextAlignmentLeft;
+      if ([alignStr isEqualToString:@"center"])
+        align = NSTextAlignmentCenter;
+      else if ([alignStr isEqualToString:@"right"])
+        align = NSTextAlignmentRight;
+
+      NSMutableArray *alignArr = [[NSMutableArray alloc] init];
+      StylePair *alignPair = [[StylePair alloc] init];
+      alignPair.rangeValue = tagRangeValue;
+      alignPair.styleValue = @(align);
+      [alignArr addObject:@(-1)];
+      [alignArr addObject:alignPair];
+      [processedStyles addObject:alignArr];
+    }
+
     if ([tagName isEqualToString:@"b"]) {
       [styleArr addObject:@([BoldStyle getStyleType])];
     } else if ([tagName isEqualToString:@"i"]) {
@@ -1408,15 +1491,20 @@
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
     } else if ([tagName isEqualToString:@"codeblock"]) {
       [styleArr addObject:@([CodeBlockStyle getStyleType])];
+    } else if ([tagName isEqualToString:@"p"]) {
+      // already processed alignment if present, nothing else to do for
+      // paragraph
     } else {
       // some other external tags like span just don't get put into the
       // processed styles
       continue;
     }
 
-    stylePair.rangeValue = tagRangeValue;
-    [styleArr addObject:stylePair];
-    [processedStyles addObject:styleArr];
+    if (styleArr.count > 0) {
+      stylePair.rangeValue = tagRangeValue;
+      [styleArr addObject:stylePair];
+      [processedStyles addObject:styleArr];
+    }
   }
 
   return @[ plainText, processedStyles ];

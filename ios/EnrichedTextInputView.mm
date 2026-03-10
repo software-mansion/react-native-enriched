@@ -44,6 +44,7 @@ using namespace facebook::react;
   MentionParams *_recentlyActiveMentionParams;
   NSRange _recentlyActiveMentionRange;
   NSString *_recentlyEmittedHtml;
+  NSString *_recentlyEmittedAlignment;
   BOOL _emitHtml;
   UILabel *_placeholderLabel;
   UIColor *_placeholderColor;
@@ -92,6 +93,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   recentlyChangedRange = NSMakeRange(0, 0);
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
+  _recentlyEmittedAlignment = @"left";
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
@@ -1121,6 +1123,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  NSString *currentAlignment = [self currentParagraphAlignmentString];
+  if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
+    updateNeeded = YES;
+    _recentlyEmittedAlignment = currentAlignment;
+  }
+
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
@@ -1147,7 +1155,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
            .image = GET_STYLE_STATE([ImageStyle getStyleType]),
-           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType])});
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType]),
+           .alignment = [_recentlyEmittedAlignment toCppString]});
     }
   }
 
@@ -1208,6 +1217,80 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+// MARK: - Paragraph alignment
+
+- (NSString *)currentParagraphAlignmentString {
+  NSRange currentRange = textView.selectedRange;
+  if (currentRange.location >= textView.textStorage.string.length) {
+    currentRange.location = textView.textStorage.string.length > 0
+                                ? textView.textStorage.string.length - 1
+                                : 0;
+  }
+
+  NSParagraphStyle *paragraphStyle;
+  if (textView.textStorage.length == 0) {
+    // When text is empty, check the typing attributes for alignment
+    paragraphStyle = textView.typingAttributes[NSParagraphStyleAttributeName];
+  } else {
+    paragraphStyle =
+        [textView.textStorage attribute:NSParagraphStyleAttributeName
+                                atIndex:currentRange.location
+                         effectiveRange:NULL];
+  }
+
+  NSTextAlignment align =
+      paragraphStyle ? paragraphStyle.alignment : NSTextAlignmentLeft;
+
+  switch (align) {
+  case NSTextAlignmentCenter:
+    return @"center";
+  case NSTextAlignmentRight:
+    return @"right";
+  default:
+    return @"left";
+  }
+}
+
+- (void)setParagraphAlignment:(NSString *)alignment {
+  [self focus];
+  NSTextAlignment align = NSTextAlignmentNatural;
+  if ([alignment isEqualToString:@"center"]) {
+    align = NSTextAlignmentCenter;
+  } else if ([alignment isEqualToString:@"right"]) {
+    align = NSTextAlignmentRight;
+  }
+
+  NSRange paragraphRange = [textView.textStorage.string
+      paragraphRangeForRange:textView.selectedRange];
+
+  [textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:paragraphRange
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle =
+                    value ? [(NSParagraphStyle *)value mutableCopy]
+                          : [[NSMutableParagraphStyle alloc] init];
+                pStyle.alignment = align;
+                [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                             value:pStyle
+                                             range:range];
+              }];
+
+  NSMutableParagraphStyle *typingPStyle =
+      textView.typingAttributes[NSParagraphStyleAttributeName]
+          ? [textView.typingAttributes[NSParagraphStyleAttributeName]
+                mutableCopy]
+          : [[NSMutableParagraphStyle alloc] init];
+  typingPStyle.alignment = align;
+  NSMutableDictionary *newTypingAttrs = [textView.typingAttributes mutableCopy];
+  newTypingAttrs[NSParagraphStyleAttributeName] = typingPStyle;
+  textView.typingAttributes = newTypingAttrs;
+
+  [self anyTextMayHaveBeenModified];
+}
+
 // MARK: - Native commands and events
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
@@ -1246,6 +1329,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"startMention"]) {
     NSString *indicator = (NSString *)args[0];
     [self startMentionWithIndicator:indicator];
+  } else if ([commandName isEqualToString:@"setParagraphAlignment"]) {
+    NSString *alignment = (NSString *)args[0];
+    [self setParagraphAlignment:alignment];
   } else if ([commandName isEqualToString:@"toggleH1"]) {
     [self toggleParagraphStyle:[H1Style getStyleType]];
   } else if ([commandName isEqualToString:@"toggleH2"]) {
@@ -1753,10 +1839,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // placholder management
-  if (!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
+  BOOL isFocused = [textView isFirstResponder];
+  BOOL hasText = textView.textStorage.string.length > 0;
+  BOOL shouldShowPlaceholder = !hasText && !isFocused;
+
+  if (!_placeholderLabel.hidden && !shouldShowPlaceholder) {
     [self setPlaceholderLabelShown:NO];
-  } else if (textView.textStorage.string.length == 0 &&
-             _placeholderLabel.hidden) {
+  } else if (_placeholderLabel.hidden && shouldShowPlaceholder) {
     [self setPlaceholderLabelShown:YES];
   }
 
@@ -1850,6 +1939,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // MARK: - UITextView delegate methods
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
+  [self anyTextMayHaveBeenModified];
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     // send onFocus event if allowed
@@ -1872,6 +1962,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
+  [self anyTextMayHaveBeenModified];
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr && _emitFocusBlur) {
     // send onBlur event
