@@ -1,0 +1,26 @@
+appId: swmansion.enriched.example
+---
+# PR #257 - fix: handle style conflicts during automatic links detection
+# Toggles code block, types a URL, and screenshots to assert
+# the URL does not receive link styling inside the code block.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-code-block"
+
+- inputText: "Hello example.com"
+
+- assertVisible:
+    id: "toolbar-link"
+    enabled: false
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "codeblock_no_link_detection"
