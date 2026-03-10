@@ -476,7 +476,7 @@
                                range:NSMakeRange(0, result.length)];
 
   // remove zero width spaces in the very end
-  [result replaceOccurrencesOfString:@"\u200A"
+  [result replaceOccurrencesOfString:@"\u200B"
                           withString:@""
                              options:0
                                range:NSMakeRange(0, result.length)];
@@ -914,10 +914,10 @@
     // space so we do that manually here
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
-                                  withString:@"<p>\u200A</p>\n</blockquote>"];
+                                  withString:@"<p>\u200B</p>\n</blockquote>"];
     fixedHtml = [fixedHtml
         stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
-                                  withString:@"<p>\u200A</p>\n</codeblock>"];
+                                  withString:@"<p>\u200B</p>\n</codeblock>"];
 
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
     // handle last <br> in html
