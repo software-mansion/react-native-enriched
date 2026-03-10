@@ -1,70 +1,66 @@
 name: Publish
 on:
+  # For nightly releases
+  schedule:
+    - cron: '42 23 * * *' # at 23:42 every day
+  # For manual releases
   workflow_dispatch:
     inputs:
-      dryRun:
-        description: 'Set to true to perform a dry run'
+      release-type:
+        description: Type of release to publish.
+        type: choice
+        options: [stable, nightly, beta, rc]
+        default: stable
+      version:
+        description: Specific version to publish (usually inferred from x.y-stable branch name).
+        type: string
         required: false
-        default: 'true'
-
-permissions:
-  id-token: write
-  contents: read
+        default: ''
+      dry-run:
+        description: Whether to perform a dry run of the publish.
+        type: boolean
+        default: true
 
 jobs:
-  verify-and-publish:
+  publish:
     runs-on: ubuntu-latest
-    environment: production
+
+    permissions:
+      contents: write
+      id-token: write # for OIDC
+
+    concurrency:
+      group: publish-${{ github.ref }}
+      cancel-in-progress: false
+
     steps:
-      - name: Checkout
+      - name: Check out
         uses: actions/checkout@v4
 
-      - name: Setup
-        uses: ./.github/actions/setup
-
-      - name: Run ESLint (JS/TS check)
-        run: yarn lint
-
-      - name: Typecheck files
-        run: yarn typecheck
-
-      - name: Run clang-format (C/C++ check)
-        run: yarn lint-clang
-
-      - name: Run android lint (Kotlin/Java/Groovy check)
-        run: yarn lint:android
-
-      - name: Run unit tests
-        run: yarn test --maxWorkers=2 --coverage
-
-      - name: Build package
-        run: npm pack
-
-      - name: Get metadata
-        id: meta
-        run: |
-          NAME=$(jq -r .name package.json)
-          VERSION=$(jq -r .version package.json)
-          FILENAME="${NAME}-${VERSION}.tgz"
-          echo "PACKAGE_NAME=$FILENAME" >> $GITHUB_OUTPUT
-          echo "Artifact filename: $FILENAME"
-
-      - name: Upload NPM tarball as artifact
-        uses: actions/upload-artifact@v4
+      - name: Setup Node
+        uses: actions/setup-node@v6
         with:
-          name: ${{ steps.meta.outputs.PACKAGE_NAME }}
-          path: ${{ steps.meta.outputs.PACKAGE_NAME }}
-          overwrite: true
-          if-no-files-found: error
+          node-version-file: .nvmrc
+          cache: 'yarn'
+          registry-url: https://registry.npmjs.org/
 
-      - name: Publish package (dry-run)
-        if: ${{ github.event.inputs.dryRun == 'true' }}
-        run: |
-          echo "Dry run enabled — skipping actual publish"
-          npm publish --dry-run
+      - name: Publish manual release
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
+        with:
+          package-name: 'react-native-enriched'
+          package-json-path: 'package.json'
+          install-dependencies-command: 'yarn install --immutable'
+          release-type: ${{ inputs.release-type }}
+          version: ${{ inputs.version }}
+          dry-run: ${{ inputs.dry-run }}
 
-      - name: Publish package
-        if: ${{ github.event.inputs.dryRun != 'true' }}
-        run: |
-          echo "Publishing package..."
-          npm publish
+      - name: Publish automatic nightly release
+        if: ${{ github.event_name == 'schedule' }}
+        uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
+        with:
+          package-name: 'react-native-enriched'
+          package-json-path: 'package.json'
+          install-dependencies-command: 'yarn install --immutable'
+          release-type: 'nightly'
+          dry-run: false
