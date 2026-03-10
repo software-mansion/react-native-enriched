@@ -54,7 +54,7 @@ jobs:
         uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
         with:
           package-name: 'react-native-enriched'
-          package-json-path: 'packages/react-native-enriched/package.json'
+          package-json-path: 'package.json'
           install-dependencies-command: 'yarn install --immutable'
           release-type: ${{ inputs.release-type }}
           version: ${{ inputs.version }}
@@ -65,7 +65,7 @@ jobs:
         uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
         with:
           package-name: 'react-native-enriched'
-          package-json-path: 'packages/react-native-enriched/package.json'
+          package-json-path: 'package.json'
           install-dependencies-command: 'yarn install --immutable'
           release-type: 'nightly'
           dry-run: false
