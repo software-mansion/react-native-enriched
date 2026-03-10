@@ -37,11 +37,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up environment
-        shell: bash
-        run: |
-          echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
-
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
