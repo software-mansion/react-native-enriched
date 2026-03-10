@@ -104,6 +104,8 @@ class EnrichedSelection(
     for ((style, config) in EnrichedSpans.parametrizedStyles) {
       state.setStart(style, getParametrizedStyleStart(config.clazz))
     }
+
+    state.setAlignment(view.getCurrentParagraphAlignment())
   }
 
   fun getInlineSelection(): Pair<Int, Int> {

@@ -85,8 +85,8 @@ class EnrichedSpanWatcher(
     // Do not parse spannable and emit event if onChangeHtml is not provided
     if (!view.shouldEmitHtml) return
 
-    // Emit event only if we change one of ours spans
-    if (what != null && what !is EnrichedInputSpan) return
+    // Emit event only if we change one of ours spans or alignment
+    if (what != null && what !is EnrichedInputSpan && what !is android.text.style.AlignmentSpan.Standard) return
 
     val html = EnrichedParser.toHtml(s)
     if (html == previousHtml) return
