@@ -10,4 +10,8 @@
             forRange:(NSRange)range
              inInput:(EnrichedTextInputView *)input;
 
++ (NSString *)alignmentToString:(NSTextAlignment)alignment;
+
++ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input;
+
 @end

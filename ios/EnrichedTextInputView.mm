@@ -53,6 +53,7 @@ using namespace facebook::react;
   BOOL _emitTextChange;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   NSArray<NSDictionary *> *_contextMenuItems;
+  NSString *_recentlyEmittedAlignment;
 }
 
 // MARK: - Component utils
@@ -91,6 +92,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
+  _recentlyEmittedAlignment = @"left";
   recentlyChangedRange = NSMakeRange(0, 0);
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
@@ -1123,12 +1125,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  // detect alignment change
+  NSString *currentAlignment =
+      [AlignmentUtils currentAlignmentStringForInput:self];
+  if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
+    updateNeeded = YES;
+  }
+
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
       // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
+      _recentlyEmittedAlignment = currentAlignment;
 
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
@@ -1149,7 +1159,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
            .image = GET_STYLE_STATE([ImageStyle getStyleType]),
-           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType])});
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType]),
+           .alignment = [currentAlignment UTF8String]});
     }
   }
 
@@ -1346,7 +1357,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // If the current char is not a hidden space, it counts towards our visible
     // index.
-    if ([text characterAtIndex:actualIndex] != 0x200A) {
+    if ([text characterAtIndex:actualIndex] != 0x200B) {
       currentVisibleCount++;
     }
 
@@ -1792,7 +1803,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
       // emit string without zero width spaces
       NSString *stringToBeEmitted = [[textView.textStorage.string
-          stringByReplacingOccurrencesOfString:@"\u200A"
+          stringByReplacingOccurrencesOfString:@"\u200B"
                                     withString:@""] copy];
 
       emitter->onChangeText({.value = [stringToBeEmitted toCppString]});

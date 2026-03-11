@@ -67,6 +67,30 @@
   [input anyTextMayHaveBeenModified];
 }
 
++ (NSString *)alignmentToString:(NSTextAlignment)alignment {
+  switch (alignment) {
+  case NSTextAlignmentLeft:
+    return @"left";
+  case NSTextAlignmentCenter:
+    return @"center";
+  case NSTextAlignmentRight:
+    return @"right";
+  case NSTextAlignmentJustified:
+    return @"justify";
+  case NSTextAlignmentNatural:
+  default:
+    return @"left";
+  }
+}
+
++ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input {
+  NSParagraphStyle *paraStyle =
+      input->textView.typingAttributes[NSParagraphStyleAttributeName];
+  NSTextAlignment alignment =
+      paraStyle ? paraStyle.alignment : NSTextAlignmentNatural;
+  return [AlignmentUtils alignmentToString:alignment];
+}
+
 + (NSRange)expandRangeToContiguousList:(NSRange)range
                                inInput:(EnrichedTextInputView *)input {
   NSString *text = input->textView.textStorage.string;

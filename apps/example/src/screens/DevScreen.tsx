@@ -184,4 +184,14 @@ const styles = StyleSheet.create({
     height: 1000,
     backgroundColor: 'rgb(0, 26, 114)',
   },
+  alignmentLabel: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'rgb(0, 26, 114)',
+  },
+  alignmentButton: {
+    width: '25%',
+  },
 });

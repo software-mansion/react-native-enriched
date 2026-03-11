@@ -122,6 +122,7 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  alignment: string;
 }
 
 export interface OnLinkDetected {
@@ -268,6 +269,7 @@ export interface OnContextMenuItemPressEvent {
       isConflicting: boolean;
       isBlocking: boolean;
     };
+    alignment: string;
   };
 }
 

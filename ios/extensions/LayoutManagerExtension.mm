@@ -309,18 +309,21 @@ static void const *kInputKey = &kInputKey;
                                                      marker:marker
                                            markerAttributes:markerAttributes
                                                      origin:origin
-                                                   usedRect:textUsedRect];
+                                                   usedRect:textUsedRect
+                                                     indent:indent];
                                      } else if (markerFormat ==
                                                 NSTextListMarkerDisc) {
                                        [self drawBullet:typedInput
                                                  origin:origin
-                                               usedRect:textUsedRect];
+                                               usedRect:textUsedRect
+                                                 indent:indent];
                                      } else if ([markerFormat
                                                     hasPrefix:@"{checkbox"]) {
                                        [self drawCheckbox:typedInput
                                              markerFormat:markerFormat
                                                    origin:origin
-                                                 usedRect:textUsedRect];
+                                                 usedRect:textUsedRect
+                                                   indent:indent];
                                      }
                                      // only first line of a list gets its
                                      // marker drawn
@@ -432,7 +435,7 @@ static void const *kInputKey = &kInputKey;
               indent:(CGFloat)indent {
   CGFloat gapWidth = [typedInput->config orderedListGapWidth];
   CGSize markerSize = [marker sizeWithAttributes:markerAttributes];
-  CGFloat markerX = usedRect.origin.x - gapWidth - markerSize.width / 2;
+  CGFloat markerX = origin.x + indent - gapWidth - markerSize.width / 2;
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
   CGFloat markerY = centerY - markerSize.height / 2.0;
 

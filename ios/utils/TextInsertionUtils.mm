@@ -25,7 +25,7 @@
   // Give \u200B a tiny kern so the layout engine recognizes ZWS-only lines
   // under right/center alignment (zero advance width causes height collapse).
   if ([text rangeOfString:@"\u200B"].location != NSNotFound) {
-    copiedAttrs[NSKernAttributeName] = @(0.01);
+    copiedAttrs[NSKernAttributeName] = @(__FLT_EPSILON__);
   }
 
   NSAttributedString *newAttrStr =
@@ -67,7 +67,7 @@
       [text rangeOfString:@"\u200B"].location != NSNotFound) {
     [textView.textStorage
         addAttribute:NSKernAttributeName
-               value:@(0.01)
+               value:@(__FLT_EPSILON__)
                range:NSMakeRange(range.location, [text length])];
   }
 
