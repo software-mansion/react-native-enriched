@@ -772,18 +772,24 @@
       if (normalized != nil) {
         fixedHtml = normalized;
       }
-    } else {
-      // in other case we are most likely working with some external html - try
-      // getting the styles from between body tags
-      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
-      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
+    }
 
-      if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
-        NSInteger newStart = openingBodyRange.location + 7;
-        NSInteger newEnd = closingBodyRange.location - 1;
-        fixedHtml = [htmlWithoutSpaces
-            substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
-      }
+    // Additionally, try getting the content from between body tags if there are
+    // some:
+
+    // Firstly make sure there are no newlines between them.
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<body>\n"
+                                                     withString:@"<body>"];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</body>"
+                                                     withString:@"</body>"];
+    // Then, if there actually are body tags, use the content between them.
+    NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
+    NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
+    if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
+      NSInteger newStart = openingBodyRange.location + 6;
+      NSInteger newEnd = closingBodyRange.location - 1;
+      fixedHtml = [htmlWithoutSpaces
+          substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
     }
   }
 
