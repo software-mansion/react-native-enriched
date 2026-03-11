@@ -26,14 +26,8 @@ appId: swmansion.enriched.example
 
 # cursor is now on the blank second line
 
-- tapOn:
-    id: "toolbar-image"
-- addMedia:
-    - "../assets/sample_image.jpg"
-- tapOn:
-    id: "image-modal-submit-button"
 - runFlow:
-    file: "../subflows/pick_first_image.yaml"
+    file: "../subflows/insert_image.yaml"
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"

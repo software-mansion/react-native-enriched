@@ -8,22 +8,10 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "toggle-screen-button"
 
-- tapOn:
-    id: "set-value-button"
-
-- waitForAnimationToEnd
-- extendedWaitUntil:
-    visible:
-      id: "value-modal-input"
-    timeout: 10000
-
-- tapOn:
-    id: "value-modal-input"
-
-- inputText: "<h1>Hello</h1><h2>World</h2><p>!!!</p>"
-
-- tapOn:
-    id: "value-modal-submit-button"
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+      VALUE: "<html><h1>Hello</h1><h2>World</h2><p>!!!</p></html>"
 
 - tapOn:
     id: "size-max-button"

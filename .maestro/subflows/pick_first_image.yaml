@@ -1,12 +1,13 @@
 appId: swmansion.enriched.example
 ---
 
+- waitForAnimationToEnd
+
 - runFlow:
     when:
       platform: Android
     commands:
       # Target: API 35/36 (Android 15+)
-      - waitForAnimationToEnd
       - extendedWaitUntil:
           visible:
             text: 'Photo taken.*'

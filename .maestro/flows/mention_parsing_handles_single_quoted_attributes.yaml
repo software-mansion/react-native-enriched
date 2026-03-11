@@ -8,15 +8,10 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "toggle-screen-button"
 
-- tapOn:
-    id: "set-value-button"
-
-- tapOn: "New value"
-
-- inputText: "<mention text='@John Doe' indicator='@' id='1' type='user'>@John Doe</mention>"
-
-- tapOn:
-    id: "value-modal-submit-button"
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+      VALUE: "<mention text='@John Doe' indicator='@' id='1' type='user'>@John Doe</mention>"
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
