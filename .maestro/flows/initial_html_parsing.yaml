@@ -11,7 +11,13 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "set-value-button"
 
-- tapOn: 
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "value-modal-input"
+    timeout: 10000
+
+- tapOn:
     id: "value-modal-input"
 
 - inputText: "<h1>Hello</h1><h2>World</h2><p>!!!</p>"

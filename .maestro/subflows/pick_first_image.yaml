@@ -6,6 +6,11 @@ appId: swmansion.enriched.example
       platform: Android
     commands:
       # Target: API 35/36 (Android 15+)
+      - waitForAnimationToEnd
+      - extendedWaitUntil:
+          visible:
+            text: 'Photo taken.*'
+          timeout: 30000
       - tapOn:
           text: 'Photo taken.*'
           index: 0
