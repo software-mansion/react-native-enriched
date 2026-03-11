@@ -80,7 +80,7 @@ We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live
 
 #### Prerequisites
 
-- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
+- **Maestro CLI** (v2.3.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
 - **iOS** - Xcode. Ensure `xcrun` is available (it ships with Xcode Command Line Tools).
 - **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator. Set up `ANDROID_HOME` (typically `$HOME/Library/Android/sdk` on macOS) and ensure the following are in your `PATH`:
   - `$ANDROID_HOME/cmdline-tools/latest/bin`
