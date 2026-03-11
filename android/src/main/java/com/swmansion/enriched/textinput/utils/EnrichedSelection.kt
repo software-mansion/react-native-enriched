@@ -233,14 +233,16 @@ class EnrichedSelection(
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
 
-    val text = editable.substring(start, end)
+    val visibleStart = start - editable.zwsCountBefore(start)
+    val visibleEnd = end - editable.zwsCountBefore(end)
+    val text = editable.substring(start, end).replace(EnrichedConstants.ZWS_STRING, "")
     dispatcher?.dispatchEvent(
       OnChangeSelectionEvent(
         surfaceId,
         view.id,
         text,
-        start,
-        end,
+        visibleStart,
+        visibleEnd,
         view.experimentalSynchronousEvents,
       ),
     )
@@ -252,7 +254,7 @@ class EnrichedSelection(
     start: Int,
     end: Int,
   ) {
-    val text = spannable.substring(start, end)
+    val text = spannable.substring(start, end).replace(EnrichedConstants.ZWS_STRING, "")
     val url = span?.getUrl() ?: ""
 
     // Prevents emitting unnecessary events
@@ -260,6 +262,9 @@ class EnrichedSelection(
 
     previousLinkDetectedEvent.put("text", text)
     previousLinkDetectedEvent.put("url", url)
+
+    val visibleStart = start - spannable.zwsCountBefore(start)
+    val visibleEnd = end - spannable.zwsCountBefore(end)
 
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
@@ -270,8 +275,8 @@ class EnrichedSelection(
         view.id,
         text,
         url,
-        start,
-        end,
+        visibleStart,
+        visibleEnd,
         view.experimentalSynchronousEvents,
       ),
     )

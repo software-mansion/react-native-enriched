@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
+import { useCallback } from 'react';
 import EnrichedTextInputNativeComponent, {
   Commands,
   type NativeProps,
@@ -13,13 +14,14 @@ import EnrichedTextInputNativeComponent, {
   type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
+  type OnContextMenuItemPressEvent,
   type OnLinkDetected,
   type OnMentionEvent,
   type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-  type OnChangeStateDeprecatedEvent,
   type OnKeyPressEvent,
+  type OnPasteImagesEvent,
 } from './spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -68,6 +70,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   toggleUnorderedList: () => void;
   toggleCheckboxList: (checked: boolean) => void;
   setLink: (start: number, end: number, text: string, url: string) => void;
+  removeLink: (start: number, end: number) => void;
   setImage: (src: string, width: number, height: number) => void;
   startMention: (indicator: string) => void;
   setMention: (
@@ -78,6 +81,20 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   setTextAlignment: (
     alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
   ) => void;
+}
+
+export interface ContextMenuItem {
+  text: string;
+  onPress: ({
+    text,
+    selection,
+    styleState,
+  }: {
+    text: string;
+    selection: { start: number; end: number };
+    styleState: OnChangeStateEvent;
+  }) => void;
+  visible?: boolean;
 }
 
 export interface OnChangeMentionEvent {
@@ -105,12 +122,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  /**
-   * @deprecated Use onChangeState prop instead.
-   */
-  onChangeStateDeprecated?: (
-    e: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>
-  ) => void;
   onLinkDetected?: (e: OnLinkDetected) => void;
   onMentionDetected?: (e: OnMentionDetected) => void;
   onStartMention?: (indicator: string) => void;
@@ -118,6 +129,8 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
+  contextMenuItems?: ContextMenuItem[];
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -126,9 +139,17 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   androidExperimentalSynchronousEvents?: boolean;
+  /**
+   * If true, external HTML (e.g. from Google Docs, Word, web pages) will be
+   * normalized through the HTML normalizer before being applied.
+   * This converts arbitrary HTML into the canonical tag subset that the enriched
+   * parser understands.
+   * Disabled by default.
+   */
+  useHtmlNormalizer?: boolean;
 }
 
-const warnAboutMissconfiguredMentions = (indicator: string) => {
+const warnMentionIndicators = (indicator: string) => {
   console.warn(
     `Looks like you are trying to set a "${indicator}" but it's not in the mentionIndicators prop`
   );
@@ -160,7 +181,6 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
-  onChangeStateDeprecated,
   onLinkDetected,
   onMentionDetected,
   onStartMention,
@@ -168,7 +188,9 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   onKeyPress,
+  contextMenuItems,
   androidExperimentalSynchronousEvents = false,
+  useHtmlNormalizer = false,
   scrollEnabled = true,
   ...rest
 }: EnrichedTextInputProps) => {
@@ -176,6 +198,50 @@ export const EnrichedTextInput = ({
 
   const nextHtmlRequestId = useRef(1);
   const pendingHtmlRequests = useRef(new Map<number, HtmlRequest>());
+
+  // Store onPress callbacks in a ref so native only receives serializable data
+  const contextMenuCallbacksRef = useRef<
+    Map<string, ContextMenuItem['onPress']>
+  >(new Map());
+
+  useEffect(() => {
+    const callbacksMap = new Map<string, ContextMenuItem['onPress']>();
+    if (contextMenuItems) {
+      for (const item of contextMenuItems) {
+        callbacksMap.set(item.text, item.onPress);
+      }
+    }
+    contextMenuCallbacksRef.current = callbacksMap;
+  }, [contextMenuItems]);
+
+  const nativeContextMenuItems = useMemo(
+    () =>
+      contextMenuItems
+        ?.filter((item) => item.visible !== false)
+        .map((item) => ({
+          text: item.text,
+        })),
+    [contextMenuItems]
+  );
+
+  const handleContextMenuItemPress = useCallback(
+    (e: NativeSyntheticEvent<OnContextMenuItemPressEvent>) => {
+      const {
+        itemText,
+        selectedText,
+        selectionStart,
+        selectionEnd,
+        styleState,
+      } = e.nativeEvent;
+      const callback = contextMenuCallbacksRef.current.get(itemText);
+      callback?.({
+        text: selectedText,
+        selection: { start: selectionStart, end: selectionEnd },
+        styleState,
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     const pendingRequests = pendingHtmlRequests.current;
@@ -285,6 +351,9 @@ export const EnrichedTextInput = ({
     setLink: (start: number, end: number, text: string, url: string) => {
       Commands.addLink(nullthrows(nativeRef.current), start, end, text, url);
     },
+    removeLink: (start: number, end: number) => {
+      Commands.removeLink(nullthrows(nativeRef.current), start, end);
+    },
     setImage: (uri: string, width: number, height: number) => {
       Commands.addImage(nullthrows(nativeRef.current), uri, width, height);
     },
@@ -305,7 +374,7 @@ export const EnrichedTextInput = ({
     },
     startMention: (indicator: string) => {
       if (!mentionIndicators?.includes(indicator)) {
-        warnAboutMissconfiguredMentions(indicator);
+        warnMentionIndicators(indicator);
       }
 
       Commands.startMention(nullthrows(nativeRef.current), indicator);
@@ -364,37 +433,6 @@ export const EnrichedTextInput = ({
     pendingHtmlRequests.current.delete(requestId);
   };
 
-  const onChangeStateWithDeprecated = (
-    e: NativeSyntheticEvent<OnChangeStateEvent>
-  ) => {
-    onChangeState?.(e);
-    // TODO: remove in 0.5.0 release
-    onChangeStateDeprecated?.({
-      ...e,
-      nativeEvent: {
-        isBold: e.nativeEvent.bold.isActive,
-        isItalic: e.nativeEvent.italic.isActive,
-        isUnderline: e.nativeEvent.underline.isActive,
-        isStrikeThrough: e.nativeEvent.strikeThrough.isActive,
-        isInlineCode: e.nativeEvent.inlineCode.isActive,
-        isH1: e.nativeEvent.h1.isActive,
-        isH2: e.nativeEvent.h2.isActive,
-        isH3: e.nativeEvent.h3.isActive,
-        isH4: e.nativeEvent.h4.isActive,
-        isH5: e.nativeEvent.h5.isActive,
-        isH6: e.nativeEvent.h6.isActive,
-        isCodeBlock: e.nativeEvent.codeBlock.isActive,
-        isBlockQuote: e.nativeEvent.blockQuote.isActive,
-        isOrderedList: e.nativeEvent.orderedList.isActive,
-        isUnorderedList: e.nativeEvent.unorderedList.isActive,
-        isCheckboxList: e.nativeEvent.checkboxList.isActive,
-        isLink: e.nativeEvent.link.isActive,
-        isImage: e.nativeEvent.image.isActive,
-        isMention: e.nativeEvent.mention.isActive,
-      },
-    });
-  };
-
   return (
     <EnrichedTextInputNativeComponent
       ref={nativeRef}
@@ -416,16 +454,19 @@ export const EnrichedTextInput = ({
       onChangeHtml={onChangeHtml}
       isOnChangeHtmlSet={onChangeHtml !== undefined}
       isOnChangeTextSet={onChangeText !== undefined}
-      onChangeState={onChangeStateWithDeprecated}
+      onChangeState={onChangeState}
       onLinkDetected={handleLinkDetected}
       onMentionDetected={handleMentionDetected}
       onMention={handleMentionEvent}
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
+      contextMenuItems={nativeContextMenuItems}
+      onContextMenuItemPress={handleContextMenuItemPress}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
+      useHtmlNormalizer={useHtmlNormalizer}
       scrollEnabled={scrollEnabled}
       {...rest}
     />

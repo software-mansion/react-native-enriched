@@ -4,7 +4,6 @@
 #import "StyleHeaders.h"
 
 static const CGFloat kCheckboxHitSlopLeft = 8.0;
-static const CGFloat kCheckboxHitSlopRight = 0.0;
 static const CGFloat kCheckboxHitSlopVertical = 6.0;
 
 @implementation CheckboxHitTestUtils

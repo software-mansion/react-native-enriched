@@ -4,6 +4,7 @@
 @interface ImageAttachment : MediaAttachment
 
 @property(nonatomic, strong) ImageData *imageData;
+@property(nonatomic, strong) UIImage *storedAnimatedImage;
 
 - (instancetype)initWithImageData:(ImageData *)data;
 

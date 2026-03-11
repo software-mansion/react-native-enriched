@@ -55,10 +55,10 @@
   id input;
 }
 - (CGFloat)getHeadingFontSize;
+- (NSString *)getHeadingLevelString;
 - (BOOL)isHeadingBold;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)handleImproperHeadings;
-@property(nonatomic, assign) CGFloat lastAppliedFontSize;
+- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end
 
 @interface H1Style : HeadingStyleBase

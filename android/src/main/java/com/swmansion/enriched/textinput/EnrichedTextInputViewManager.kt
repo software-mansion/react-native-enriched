@@ -19,12 +19,14 @@ import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.events.OnChangeSelectionEvent
 import com.swmansion.enriched.textinput.events.OnChangeStateEvent
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
+import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnInputKeyPressEvent
 import com.swmansion.enriched.textinput.events.OnLinkDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionEvent
+import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -70,6 +72,8 @@ class EnrichedTextInputViewManager :
     map.put(OnChangeSelectionEvent.EVENT_NAME, mapOf("registrationName" to OnChangeSelectionEvent.EVENT_NAME))
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
+    map.put(OnPasteImagesEvent.EVENT_NAME, mapOf("registrationName" to OnPasteImagesEvent.EVENT_NAME))
+    map.put(OnContextMenuItemPressEvent.EVENT_NAME, mapOf("registrationName" to OnContextMenuItemPressEvent.EVENT_NAME))
 
     return map
   }
@@ -171,6 +175,14 @@ class EnrichedTextInputViewManager :
     view?.setFontSize(size)
   }
 
+  @ReactProp(name = "lineHeight", defaultFloat = 0f)
+  override fun setLineHeight(
+    view: EnrichedTextInputView?,
+    height: Float,
+  ) {
+    view?.setLineHeight(height)
+  }
+
   @ReactProp(name = "fontFamily")
   override fun setFontFamily(
     view: EnrichedTextInputView?,
@@ -253,6 +265,20 @@ class EnrichedTextInputViewManager :
     value: Boolean,
   ) {
     view?.experimentalSynchronousEvents = value
+  }
+
+  override fun setContextMenuItems(
+    view: EnrichedTextInputView?,
+    value: ReadableArray?,
+  ) {
+    view?.setContextMenuItems(value)
+  }
+
+  override fun setUseHtmlNormalizer(
+    view: EnrichedTextInputView?,
+    value: Boolean,
+  ) {
+    view?.useHtmlNormalizer = value
   }
 
   override fun focus(view: EnrichedTextInputView?) {
@@ -353,6 +379,14 @@ class EnrichedTextInputViewManager :
     url: String,
   ) {
     view?.addLink(start, end, text, url)
+  }
+
+  override fun removeLink(
+    view: EnrichedTextInputView?,
+    start: Int,
+    end: Int,
+  ) {
+    view?.removeLink(start, end)
   }
 
   override fun addImage(
