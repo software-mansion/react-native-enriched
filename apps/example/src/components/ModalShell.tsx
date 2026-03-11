@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   StyleSheet,
-  View,
 } from 'react-native';
 
 interface ModalShellProps {
@@ -18,20 +17,15 @@ export const ModalShell: FC<ModalShellProps> = ({
   avoidKeyboard = false,
   children,
 }) => {
-  const inner = avoidKeyboard ? (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {children}
-    </KeyboardAvoidingView>
-  ) : (
-    <View style={styles.container}>{children}</View>
-  );
-
   return (
     <Modal visible={isOpen} animationType="slide" transparent>
-      {inner}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        enabled={avoidKeyboard}
+      >
+        {children}
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
