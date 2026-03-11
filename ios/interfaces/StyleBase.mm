@@ -48,14 +48,16 @@
 
   BOOL isPresent = [self detect:actualRange];
   if (actualRange.length >= 1) {
-    isPresent ? [self remove:actualRange]
-              : [self add:actualRange withTyping:YES];
+    isPresent ? [self remove:actualRange withDirtyRange:YES]
+              : [self add:actualRange withTyping:YES withDirtyRange:YES];
   } else {
     isPresent ? [self removeTyping] : [self addTyping];
   }
 }
 
-- (void)add:(NSRange)range withTyping:(BOOL)withTyping {
+- (void)add:(NSRange)range
+        withTyping:(BOOL)withTyping
+    withDirtyRange:(BOOL)withDirtyRange {
   NSRange actualRange = [self actualUsedRange:range];
 
   if (![self isParagraph]) {
@@ -88,11 +90,13 @@
     }
   }
 
-  // Notify attributes manager of styling to be re-done.
-  [self.input->attributesManager addDirtyRange:actualRange];
+  // Notify attributes manager of styling to be re-done if needed.
+  if (withDirtyRange) {
+    [self.input->attributesManager addDirtyRange:actualRange];
+  }
 }
 
-- (void)remove:(NSRange)range {
+- (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
   NSRange actualRange = [self actualUsedRange:range];
 
   if (![self isParagraph]) {
@@ -120,8 +124,10 @@
     [self removeTyping];
   }
 
-  // Notify attributes manager of styling to be re-done.
-  [self.input->attributesManager addDirtyRange:actualRange];
+  // Notify attributes manager of styling to be re-done if needed.
+  if (withDirtyRange) {
+    [self.input->attributesManager addDirtyRange:actualRange];
+  }
 }
 
 - (void)addTyping {

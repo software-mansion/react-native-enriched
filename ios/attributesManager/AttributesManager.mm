@@ -82,7 +82,7 @@
       for (StylePair *stylePair in presentStyles[styleType]) {
         NSRange occurenceRange = [stylePair.rangeValue rangeValue];
         [style applyStyling:occurenceRange];
-        [style add:occurenceRange withTyping:NO];
+        [style add:occurenceRange withTyping:NO withDirtyRange:NO];
       }
     }
   }
@@ -153,13 +153,9 @@
 
     AttributeEntry *entry = nullptr;
 
-    if (![style isParagraph] && selectedRange.location > 0) {
+    if (selectedRange.location > 0) {
       entry =
           [style getEntryIfPresent:NSMakeRange(selectedRange.location - 1, 1)];
-    } else if ([style isParagraph]) {
-      NSRange paragraphRange = [_input->textView.textStorage.string
-          paragraphRangeForRange:selectedRange];
-      entry = [style getEntryIfPresent:paragraphRange];
     }
 
     if (entry == nullptr)

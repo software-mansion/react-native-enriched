@@ -242,7 +242,7 @@
                       withSelection:YES];
 
     if ([ulStyle detect:styleRemovalRange]) {
-      [ulStyle remove:styleRemovalRange];
+      [ulStyle remove:styleRemovalRange withDirtyRange:YES];
     } else if ([olStyle detectStyle:styleRemovalRange]) {
       [olStyle removeAttributes:styleRemovalRange];
     } else if ([bqStyle detectStyle:styleRemovalRange]) {

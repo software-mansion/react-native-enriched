@@ -15,8 +15,10 @@
 - (instancetype)initWithInput:(EnrichedTextInputView *)input;
 - (NSRange)actualUsedRange:(NSRange)range;
 - (void)toggle:(NSRange)range;
-- (void)add:(NSRange)range withTyping:(BOOL)withTyping;
-- (void)remove:(NSRange)range;
+- (void)add:(NSRange)range
+        withTyping:(BOOL)withTyping
+    withDirtyRange:(BOOL)withDirtyRange;
+- (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange;
 - (void)addTyping;
 - (void)removeTyping;
 - (BOOL)styleCondition:(id)value range:(NSRange)range;

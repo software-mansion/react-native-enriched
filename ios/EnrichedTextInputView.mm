@@ -1519,11 +1519,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       if ([style isParagraph]) {
         // for paragraph styles we can just call remove since it will pick up
         // proper paragraph range
-        [style remove:range];
+        [style remove:range withDirtyRange:YES];
       } else {
         // for inline styles we have to differentiate betweeen normal and typing
         // attributes removal
-        range.length >= 1 ? [style remove:range] : [style removeTyping];
+        range.length >= 1 ? [style remove:range withDirtyRange:YES]
+                          : [style removeTyping];
       }
     }
   }
