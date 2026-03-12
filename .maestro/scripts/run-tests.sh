@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-MIN_MAESTRO_VERSION="2.2.0"
+MIN_MAESTRO_VERSION="2.3.0"
 
 if ! command -v maestro >/dev/null 2>&1; then
   echo "Error: maestro CLI not found." >&2
