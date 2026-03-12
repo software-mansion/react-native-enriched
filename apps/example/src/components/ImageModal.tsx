@@ -1,10 +1,12 @@
 import { type FC, useState } from 'react';
-import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
 import { Icon } from './Icon';
+import { ModalShell } from './ModalShell';
 
 interface ImageModalProps {
   isOpen: boolean;
+  avoidKeyboard?: boolean;
   onClose: () => void;
   onSubmit: (
     width: number | undefined,
@@ -15,6 +17,7 @@ interface ImageModalProps {
 
 export const ImageModal: FC<ImageModalProps> = ({
   isOpen,
+  avoidKeyboard,
   onClose,
   onSubmit,
 }) => {
@@ -45,52 +48,54 @@ export const ImageModal: FC<ImageModalProps> = ({
   };
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent>
-      <View style={styles.container}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Pressable onPress={closeModal} style={styles.closeButton}>
-              <Icon name="close" color="rgb(0, 26, 114)" size={20} />
-            </Pressable>
-          </View>
-          <View style={styles.content}>
-            <TextInput
-              placeholder="Width"
-              style={styles.input}
-              value={width}
-              onChangeText={setWidth}
-            />
-            <TextInput
-              placeholder="Height"
-              style={styles.input}
-              value={height}
-              onChangeText={setHeight}
-            />
-            <TextInput
-              placeholder="Remote URL"
-              style={styles.input}
-              value={url}
-              onChangeText={setUrl}
-            />
-            <Button
-              title="Choose Image"
-              onPress={handleSave}
-              style={styles.saveButton}
-            />
-          </View>
+    <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
+      <View style={styles.modal}>
+        <View style={styles.header}>
+          <Pressable
+            testID="image-modal-close-button"
+            onPress={closeModal}
+            style={styles.closeButton}
+          >
+            <Icon name="close" color="rgb(0, 26, 114)" size={20} />
+          </Pressable>
+        </View>
+        <View style={styles.content}>
+          <TextInput
+            testID="image-modal-width-input"
+            placeholder="Width"
+            style={styles.input}
+            value={width}
+            onChangeText={setWidth}
+          />
+          <TextInput
+            testID="image-modal-height-input"
+            placeholder="Height"
+            style={styles.input}
+            value={height}
+            onChangeText={setHeight}
+          />
+          <TextInput
+            testID="image-modal-url-input"
+            placeholder="Remote URL"
+            style={styles.input}
+            value={url}
+            autoCapitalize="none"
+            onChangeText={setUrl}
+            autoCorrect={false}
+          />
+          <Button
+            testID="image-modal-submit-button"
+            title="Choose Image"
+            onPress={handleSave}
+            style={styles.saveButton}
+          />
         </View>
       </View>
-    </Modal>
+    </ModalShell>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgb(0, 0, 0, 0.5)',
-  },
   modal: {
     width: 300,
     height: 320,

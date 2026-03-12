@@ -138,6 +138,13 @@ yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.y
 
 Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
 
+#### Troubleshooting: flaky Android tests on macOS
+
+macOS may throttle the Android emulator via **App Nap** when its window is not visible (e.g. minimized or behind other windows), which can cause test timeouts. Two workarounds:
+
+1. **Keep the emulator window visible** while tests are running.
+2. **Disable App Nap** for the emulator: `defaults write com.google.android.emulator NSAppSleepDisabled -bool YES` (requires an emulator restart). Note this may drain your battery, so you may want to re-enable it afterwards with `-bool NO`.
+
 ### Commit message convention
 
 We follow the [conventional commits specification](https://www.conventionalcommits.org/en) for our commit messages:

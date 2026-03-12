@@ -83,6 +83,11 @@ fi
 EXTRA=""
 [ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="--env UPDATE_SCREENSHOTS=true"
 
+# Maestro resolves addMedia paths by walking the workspace inputs. Since assets
+# live outside the flows directory, always include it so media files are found.
+ASSETS_DIR=".maestro/assets"
+[ -d "$ASSETS_DIR" ] && FLOWS="$ASSETS_DIR $FLOWS"
+
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
 maestro test --device "$DEVICE_ID" $EXTRA $FLOWS

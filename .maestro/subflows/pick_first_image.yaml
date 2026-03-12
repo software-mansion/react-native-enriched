@@ -1,0 +1,38 @@
+appId: swmansion.enriched.example
+---
+
+- waitForAnimationToEnd
+
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # Target: API 35/36 (Android 15+)
+      - extendedWaitUntil:
+          visible:
+            text: 'Photo taken.*'
+          timeout: 30000
+      - tapOn:
+          text: 'Photo taken.*'
+          index: 0
+
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # new iOS grid/layout
+      - tapOn:
+          id: 'PXGGridLayout-Info'
+          index: 0
+          optional: true
+
+      # fallback: accessibility label for a Photo thumbnail
+      - tapOn:
+          text: 'Photo, .*'
+          index: 0
+          optional: true
+      
+      # final fallback: tap on top-left corner where the first photo is
+      - tapOn:
+          point: '33%,20%'
+          optional: true
