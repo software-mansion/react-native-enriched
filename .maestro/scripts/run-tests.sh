@@ -83,6 +83,12 @@ fi
 EXTRA=""
 [ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="--env UPDATE_SCREENSHOTS=true"
 
+# Exclude tests tagged for the other platform.
+case "$PLATFORM" in
+  ios)     EXTRA="$EXTRA --exclude-tags android-only" ;;
+  android) EXTRA="$EXTRA --exclude-tags ios-only" ;;
+esac
+
 # Maestro resolves addMedia paths by walking the workspace inputs. Since assets
 # live outside the flows directory, always include it so media files are found.
 ASSETS_DIR=".maestro/assets"
