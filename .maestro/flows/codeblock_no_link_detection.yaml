@@ -1,8 +1,6 @@
 appId: swmansion.enriched.example
 ---
 # PR #257 - fix: handle style conflicts during automatic links detection
-# Toggles code block, types a URL, and screenshots to assert
-# the URL does not receive link styling inside the code block.
 - launchApp
 
 - tapOn:
