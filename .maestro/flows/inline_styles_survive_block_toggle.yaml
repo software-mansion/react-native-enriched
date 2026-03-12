@@ -1,6 +1,4 @@
 appId: swmansion.enriched.example
-# tags:
-#     - android-only
 ---
 # PR #370 - fix: reapplying spans
 - launchApp
