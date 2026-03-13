@@ -1,0 +1,29 @@
+appId: swmansion.enriched.example
+---
+# PR #370 - fix: reapplying spans
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-bold"
+- inputText: "Bold"
+
+- tapOn:
+    id: "toolbar-bold"
+- inputText: " regular"
+
+- tapOn:
+    id: "toolbar-quote"
+
+- tapOn:
+    id: "toolbar-quote"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "inline_styles_survive_block_toggle"
