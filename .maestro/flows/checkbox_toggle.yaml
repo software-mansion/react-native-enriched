@@ -24,7 +24,6 @@ appId: swmansion.enriched.example
     id: "editor-input"
     point: "14%,37%"
 
-
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
     env:

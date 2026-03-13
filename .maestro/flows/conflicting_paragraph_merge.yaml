@@ -53,7 +53,6 @@ appId: swmansion.enriched.example
 - pressKey: Backspace
 - inputText: " "
 
-
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
     env:
