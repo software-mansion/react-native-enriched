@@ -38,10 +38,6 @@ appId: swmansion.enriched.example
 - tapOn:
     id: "focus-button"
 
-- repeat:
-    times: 2
-    commands:
-
 - swipe:
     from:
       id: "editor-input"

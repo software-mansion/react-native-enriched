@@ -1,6 +1,5 @@
 appId: swmansion.enriched.example
 # Tests scrolling with mixed block formatting (lists, quotes)
-# Covers: PR #342, PR #473 — layout issues with mixed content
 ---
 - launchApp
 
@@ -40,6 +39,8 @@ appId: swmansion.enriched.example
 - inputText: "Numbered item three"
 - pressKey: Enter
 - pressKey: Enter
+
+- pressKey: Backspace
 
 - inputText: "Plain text line one"
 - pressKey: Enter
