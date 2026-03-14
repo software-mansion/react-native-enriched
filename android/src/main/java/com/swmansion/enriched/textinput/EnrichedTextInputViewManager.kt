@@ -422,6 +422,13 @@ class EnrichedTextInputViewManager :
     view?.requestHTML(requestId)
   }
 
+  override fun setParagraphAlignment(
+    view: EnrichedTextInputView?,
+    alignment: String,
+  ) {
+    view?.setParagraphAlignment(alignment)
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

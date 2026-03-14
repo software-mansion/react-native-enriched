@@ -78,6 +78,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  setParagraphAlignment: (alignment: 'left' | 'center' | 'right') => void;
 }
 
 export interface ContextMenuItem {
@@ -378,6 +379,9 @@ export const EnrichedTextInput = ({
     },
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
+    },
+    setParagraphAlignment: (alignment: string) => {
+      Commands.setParagraphAlignment(nullthrows(nativeRef.current), alignment);
     },
   }));
 

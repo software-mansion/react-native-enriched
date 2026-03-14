@@ -225,6 +225,16 @@ public class EnrichedParser {
         out.append("<");
         out.append(tagType);
 
+        AlignmentSpan.Standard[] alignments = text.getSpans(i, next, AlignmentSpan.Standard.class);
+        if (alignments.length > 0) {
+          Layout.Alignment align = alignments[alignments.length - 1].getAlignment();
+          if (align == Layout.Alignment.ALIGN_CENTER) {
+            out.append(" style=\"text-align: center\"");
+          } else if (align == Layout.Alignment.ALIGN_OPPOSITE) {
+            out.append(" style=\"text-align: right\"");
+          }
+        }
+
         if (isCheckboxListItem) {
           EnrichedCheckboxListSpan[] checkboxSpans =
               text.getSpans(i, next, EnrichedCheckboxListSpan.class);
@@ -462,16 +472,16 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
       // so we can safely emit the linebreaks when we handle the close tag.
     } else if (tag.equalsIgnoreCase("p")) {
       isEmptyTag = true;
-      startBlockElement(mSpannableStringBuilder);
+      startBlockElement(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
       String dataType = attributes.getValue("", "data-type");
       isInCheckboxList = "checkbox".equals(dataType);
-      startBlockElement(mSpannableStringBuilder);
+      startBlockElement(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("ol")) {
       isInOrderedList = true;
       currentOrderedListItemIndex = 0;
-      startBlockElement(mSpannableStringBuilder);
+      startBlockElement(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("li")) {
       isEmptyTag = true;
       startLi(mSpannableStringBuilder, attributes);
@@ -481,10 +491,10 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
       start(mSpannableStringBuilder, new Italic());
     } else if (tag.equalsIgnoreCase("blockquote")) {
       isEmptyTag = true;
-      startBlockquote(mSpannableStringBuilder);
+      startBlockquote(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("codeblock")) {
       isEmptyTag = true;
-      startCodeBlock(mSpannableStringBuilder);
+      startCodeBlock(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("a")) {
       startA(mSpannableStringBuilder, attributes);
     } else if (tag.equalsIgnoreCase("u")) {
@@ -494,17 +504,17 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     } else if (tag.equalsIgnoreCase("strike")) {
       start(mSpannableStringBuilder, new Strikethrough());
     } else if (tag.equalsIgnoreCase("h1")) {
-      startHeading(mSpannableStringBuilder, 1);
+      startHeading(mSpannableStringBuilder, 1, attributes);
     } else if (tag.equalsIgnoreCase("h2")) {
-      startHeading(mSpannableStringBuilder, 2);
+      startHeading(mSpannableStringBuilder, 2, attributes);
     } else if (tag.equalsIgnoreCase("h3")) {
-      startHeading(mSpannableStringBuilder, 3);
+      startHeading(mSpannableStringBuilder, 3, attributes);
     } else if (tag.equalsIgnoreCase("h4")) {
-      startHeading(mSpannableStringBuilder, 4);
+      startHeading(mSpannableStringBuilder, 4, attributes);
     } else if (tag.equalsIgnoreCase("h5")) {
-      startHeading(mSpannableStringBuilder, 5);
+      startHeading(mSpannableStringBuilder, 5, attributes);
     } else if (tag.equalsIgnoreCase("h6")) {
-      startHeading(mSpannableStringBuilder, 6);
+      startHeading(mSpannableStringBuilder, 6, attributes);
     } else if (tag.equalsIgnoreCase("img")) {
       startImg(mSpannableStringBuilder, attributes, mSpanFactory);
     } else if (tag.equalsIgnoreCase("code")) {
@@ -573,9 +583,24 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     }
   }
 
-  private static void startBlockElement(Editable text) {
+  private static void startBlockElement(Editable text, Attributes attributes) {
     appendNewlines(text, 1);
     start(text, new Newline(1));
+
+    if (attributes != null) {
+      String style = attributes.getValue("", "style");
+      if (style != null) {
+        if (style.contains("text-align: center")) {
+          start(text, new Alignment(Layout.Alignment.ALIGN_CENTER));
+        } else if (style.contains("text-align: right")) {
+          start(text, new Alignment(Layout.Alignment.ALIGN_OPPOSITE));
+        }
+      }
+    }
+  }
+
+  private static void startBlockElement(Editable text) {
+    startBlockElement(text, null);
   }
 
   private static void endBlockElement(Editable text) {
@@ -595,7 +620,7 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
   }
 
   private void startLi(Editable text, Attributes attributes) {
-    startBlockElement(text);
+    startBlockElement(text, attributes);
 
     if (isInOrderedList) {
       currentOrderedListItemIndex++;
@@ -625,8 +650,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     endBlockElement(text);
   }
 
-  private void startBlockquote(Editable text) {
-    startBlockElement(text);
+  private void startBlockquote(Editable text, Attributes attributes) {
+    startBlockElement(text, attributes);
     start(text, new Blockquote());
   }
 
@@ -637,8 +662,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     setParagraphSpanFromMark(text, last, spanFactory.createBlockQuoteSpan(style));
   }
 
-  private void startCodeBlock(Editable text) {
-    startBlockElement(text);
+  private void startCodeBlock(Editable text, Attributes attributes) {
+    startBlockElement(text, attributes);
     start(text, new CodeBlock());
   }
 
@@ -648,8 +673,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     setParagraphSpanFromMark(text, last, spanFactory.createCodeBlockSpan(style));
   }
 
-  private void startHeading(Editable text, int level) {
-    startBlockElement(text);
+  private void startHeading(Editable text, int level, Attributes attributes) {
+    startBlockElement(text, attributes);
 
     switch (level) {
       case 1:

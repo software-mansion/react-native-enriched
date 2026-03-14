@@ -10,7 +10,9 @@ import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.InputType
+import android.text.Layout
 import android.text.Spannable
+import android.text.style.AlignmentSpan
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
@@ -473,6 +475,55 @@ class EnrichedTextInputView : AppCompatEditText {
       spannable.length,
       Spannable.SPAN_INCLUSIVE_INCLUSIVE,
     )
+  }
+
+  fun setParagraphAlignment(alignment: String) {
+    val align =
+      when (alignment) {
+        "center" -> Layout.Alignment.ALIGN_CENTER
+        "right" -> Layout.Alignment.ALIGN_OPPOSITE
+        else -> Layout.Alignment.ALIGN_NORMAL
+      }
+
+    val targetRange = paragraphStyles?.getStyleRange() ?: return
+    runAsATransaction {
+      var start = targetRange.first
+      var end = targetRange.second
+      if (start == end) {
+        text?.insert(start, EnrichedConstants.ZWS_STRING)
+        end += 1
+      }
+      removeParagraphAlignment(start, end)
+      val span = AlignmentSpan.Standard(align)
+      (text as? Spannable)?.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
+    layoutManager.invalidateLayout()
+    selection?.validateStyles()
+    requestFocusProgrammatically()
+  }
+
+  fun getCurrentParagraphAlignment(): String {
+    val targetRange = paragraphStyles?.getStyleRange() ?: return "left"
+    val spannable = text as? Spannable ?: return "left"
+    val spans = spannable.getSpans(targetRange.first, targetRange.second, AlignmentSpan.Standard::class.java)
+    if (spans.isEmpty()) return "left"
+    val span = spans.last()
+    return when (span.alignment) {
+      Layout.Alignment.ALIGN_CENTER -> "center"
+      Layout.Alignment.ALIGN_OPPOSITE -> "right"
+      else -> "left"
+    }
+  }
+
+  private fun removeParagraphAlignment(
+    start: Int,
+    end: Int,
+  ) {
+    val spannable = text as? Spannable ?: return
+    val spans = spannable.getSpans(start, end, AlignmentSpan.Standard::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
   }
 
   fun setFontFamily(family: String?) {
