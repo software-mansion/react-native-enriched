@@ -292,12 +292,14 @@ interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  alignment: string;
 }
 ```
 
 - `isActive` indicates if the style is active within current selection.
 - `isBlocking` indicates if the style is blocked by other currently active, meaning it can't be toggled.
 - `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove conflicting style.
+- `alignment` indicates the current text alignment of the paragraph at the cursor position. Possible values: `'left'`, `'center'`, `'right'`, `'justify'`.
 
 | Type                                                        | Platform |
 |-------------------------------------------------------------|----------|
@@ -613,6 +615,16 @@ Sets the selection at the given indexes.
 
 - `start: number` - starting index of the selection.
 - `end: number` - first index after the selection's ending index. For just a cursor in place (no selection), `start` equals `end`.
+
+### `.setTextAlignment()`
+
+```ts
+setTextAlignment: (alignment: 'left' | 'center' | 'right' | 'justify' | 'default') => void;
+```
+
+Sets text alignment for the paragraph(s) at the current selection. When inside a list, the alignment is applied to all contiguous list items.
+
+- `alignment` - the desired text alignment. Use `'default'` to reset to the system natural alignment.
 
 ### `.startMention()`
 
