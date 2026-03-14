@@ -342,6 +342,7 @@ export interface HtmlStyleInternal {
     boxSize?: Float;
     marginLeft?: Float;
     boxColor?: ColorValue;
+    paragraphSpacing?: Float;
   };
 }
 

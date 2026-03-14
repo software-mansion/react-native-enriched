@@ -652,6 +652,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  if (newViewProps.htmlStyle.ulCheckbox.paragraphSpacing !=
+      oldViewProps.htmlStyle.ulCheckbox.paragraphSpacing) {
+    [newConfig setCheckboxListParagraphSpacing:newViewProps.htmlStyle.ulCheckbox.paragraphSpacing];
+    stylePropChanged = YES;
+  }
+
   if (newViewProps.htmlStyle.a.textDecorationLine !=
       oldViewProps.htmlStyle.a.textDecorationLine) {
     NSString *objcString =

@@ -52,6 +52,7 @@
   CGFloat _checkboxListGapWidth;
   CGFloat _checkboxListMarginLeft;
   UIColor *_checkboxListBoxColor;
+  CGFloat _checkboxListParagraphSpacing;
   UIImage *_checkboxCheckedImage;
   UIImage *_checkboxUncheckedImage;
 }
@@ -113,6 +114,7 @@
   copy->_checkboxListGapWidth = _checkboxListGapWidth;
   copy->_checkboxListMarginLeft = _checkboxListMarginLeft;
   copy->_checkboxListBoxColor = [_checkboxListBoxColor copy];
+  copy->_checkboxListParagraphSpacing = _checkboxListParagraphSpacing;
   copy->_checkboxCheckedImage = _checkboxCheckedImage;
   copy->_checkboxUncheckedImage = _checkboxUncheckedImage;
   return copy;
@@ -594,6 +596,14 @@
     _checkboxCheckedImage = nil;
     _checkboxUncheckedImage = nil;
   }
+}
+
+- (CGFloat)checkboxListParagraphSpacing {
+  return _checkboxListParagraphSpacing;
+}
+
+- (void)setCheckboxListParagraphSpacing:(CGFloat)newValue {
+  _checkboxListParagraphSpacing = newValue;
 }
 
 - (UIImage *)checkboxCheckedImage {

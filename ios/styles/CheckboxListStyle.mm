@@ -81,6 +81,7 @@
                   pStyle.textLists = @[];
                   pStyle.headIndent = 0;
                   pStyle.firstLineHeadIndent = 0;
+                  pStyle.paragraphSpacing = 0;
                   [_input->textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -98,6 +99,7 @@
   pStyle.textLists = @[];
   pStyle.headIndent = 0;
   pStyle.firstLineHeadIndent = 0;
+  pStyle.paragraphSpacing = 0;
   typingAttrs[NSParagraphStyleAttributeName] = pStyle;
   _input->textView.typingAttributes = typingAttrs;
 }
@@ -220,6 +222,7 @@
                   pStyle.textLists = @[ checkboxMarker ];
                   pStyle.headIndent = [self getHeadIndent];
                   pStyle.firstLineHeadIndent = [self getHeadIndent];
+                  pStyle.paragraphSpacing = [_input->config checkboxListParagraphSpacing];
                   [_input->textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -249,6 +252,7 @@
     pStyle.textLists = @[ checkboxMarker ];
     pStyle.headIndent = [self getHeadIndent];
     pStyle.firstLineHeadIndent = [self getHeadIndent];
+    pStyle.paragraphSpacing = [_input->config checkboxListParagraphSpacing];
     typingAttrs[NSParagraphStyleAttributeName] = pStyle;
     _input->textView.typingAttributes = typingAttrs;
   }

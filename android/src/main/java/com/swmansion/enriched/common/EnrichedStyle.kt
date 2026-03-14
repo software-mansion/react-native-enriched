@@ -38,6 +38,7 @@ interface EnrichedStyle {
   val ulCheckboxGapWidth: Int
   val ulCheckboxMarginLeft: Int
   val ulCheckboxBoxColor: Int
+  val ulCheckboxParagraphSpacing: Int
 
   // Links
   val aColor: Int

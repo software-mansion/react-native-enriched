@@ -56,6 +56,15 @@ open class EnrichedCheckboxListSpan(
       fm.top -= halfExtra
       fm.bottom += (extraSpace - halfExtra)
     }
+
+    // Add paragraph spacing after the last line of this span's paragraph
+    val paragraphSpacing = enrichedStyle.ulCheckboxParagraphSpacing
+    if (paragraphSpacing > 0 && end > 0 && end <= text.length &&
+      (text[end - 1] == '\n' || end == text.length)
+    ) {
+      fm.descent += paragraphSpacing
+      fm.bottom = maxOf(fm.bottom, fm.descent)
+    }
   }
 
   override fun getLeadingMargin(first: Boolean): Int =
