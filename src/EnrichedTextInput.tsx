@@ -22,6 +22,7 @@ import EnrichedTextInputNativeComponent, {
   type OnRequestHtmlResultEvent,
   type OnKeyPressEvent,
   type OnPasteImagesEvent,
+  type OnSubmitEditing,
 } from './spec/EnrichedTextInputNativeComponent';
 import type {
   ColorValue,
@@ -31,6 +32,7 @@ import type {
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
+  ReturnKeyTypeOptions,
   TargetedEvent,
   TextStyle,
   ViewProps,
@@ -114,6 +116,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
+  returnKeyType?: ReturnKeyTypeOptions;
+  returnKeyLabel?: string;
+  submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
   onFocus?: (e: FocusEvent) => void;
   onBlur?: (e: BlurEvent) => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -126,6 +131,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
   /**
@@ -185,6 +191,7 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   onKeyPress,
+  onSubmitEditing,
   contextMenuItems,
   androidExperimentalSynchronousEvents = false,
   useHtmlNormalizer = false,
@@ -455,6 +462,7 @@ export const EnrichedTextInput = ({
       onInputKeyPress={onKeyPress}
       contextMenuItems={nativeContextMenuItems}
       onContextMenuItemPress={handleContextMenuItemPress}
+      onSubmitEditing={onSubmitEditing}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
