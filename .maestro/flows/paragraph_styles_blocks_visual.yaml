@@ -1,0 +1,34 @@
+appId: swmansion.enriched.example
+---
+# Visually validates rendering of block-level paragraph styles:
+# blockquote and code block, each with multiple lines.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-quote"
+- inputText: "Quote first line"
+- pressKey: Enter
+- inputText: "Quote second line"
+- pressKey: Enter
+- tapOn:
+    id: "toolbar-quote"
+
+- inputText: "Normal paragraph"
+- pressKey: Enter
+
+- tapOn:
+    id: "toolbar-code-block"
+- inputText: "Code first line"
+- pressKey: Enter
+- inputText: "Code second line"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "paragraph_styles_blocks"
