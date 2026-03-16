@@ -20,10 +20,15 @@ appId: swmansion.enriched.example
         - tapOn:
             id: "editor-input"
             point: "50%,50%"
+# iOS places the cursor on word boundaries by default. Precisely positioning
+# the cursor would require a press-and-drag gesture, which Maestro does not
+# support. As a workaround we type two words, tap between them (snapping to
+# the word boundary/space), then delete the space so we end up with a
+# continuous word and the cursor in the middle.
 - runFlow:
     when:
         platform: ios
-    commands: 
+    commands:
         - inputText: "XXXXXXXXXXX XXXXXXXXXXXXX"
         - tapOn:
             id: "editor-input"
