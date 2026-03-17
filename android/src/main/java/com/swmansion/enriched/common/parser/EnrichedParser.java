@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.ccil.cowan.tagsoup.HTMLSchema;
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
@@ -157,6 +159,17 @@ public class EnrichedParser {
     return "p";
   }
 
+  private static String getTextAlignStyleValue(Layout.Alignment alignment) {
+    if (alignment == null || alignment == Layout.Alignment.ALIGN_NORMAL) {
+      return null;
+    } else if (alignment == Layout.Alignment.ALIGN_CENTER) {
+      return "center";
+    } else if (alignment == Layout.Alignment.ALIGN_OPPOSITE) {
+      return "right";
+    }
+    return null;
+  }
+
   private static void withinBlock(StringBuilder out, Spanned text, int start, int end) {
     boolean isInUlList = false;
     boolean isInOlList = false;
@@ -231,6 +244,18 @@ public class EnrichedParser {
           if (checkboxSpans.length > 0) {
             boolean isChecked = checkboxSpans[0].isChecked();
             if (isChecked) out.append(" checked");
+          }
+        }
+
+        ParagraphStyle[] paragraphStyleSpans = text.getSpans(i, next, ParagraphStyle.class);
+        for (ParagraphStyle paragraphStyle : paragraphStyleSpans) {
+          if (paragraphStyle instanceof AlignmentSpan) {
+            String alignment =
+                getTextAlignStyleValue(((AlignmentSpan) paragraphStyle).getAlignment());
+            if (alignment != null) {
+              out.append(" style=\"text-align: ").append(alignment).append("\"");
+            }
+            break;
           }
         }
 
@@ -463,6 +488,10 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     } else if (tag.equalsIgnoreCase("p")) {
       isEmptyTag = true;
       startBlockElement(mSpannableStringBuilder);
+      Layout.Alignment alignment = parseTextAlignFromStyle(attributes.getValue("", "style"));
+      if (alignment != null) {
+        start(mSpannableStringBuilder, new Alignment(alignment));
+      }
     } else if (tag.equalsIgnoreCase("ul")) {
       isInOrderedList = false;
       String dataType = attributes.getValue("", "data-type");
@@ -511,6 +540,33 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
       start(mSpannableStringBuilder, new Code());
     } else if (tag.equalsIgnoreCase("mention")) {
       startMention(mSpannableStringBuilder, attributes);
+    }
+  }
+
+  private static Layout.Alignment parseTextAlignFromStyle(String styleAttr) {
+    if (styleAttr == null) {
+      return null;
+    }
+
+    Pattern pattern =
+        Pattern.compile("text-align\\s*:\\s*(left|center|right|justify)", Pattern.CASE_INSENSITIVE);
+    Matcher matcher = pattern.matcher(styleAttr);
+    if (!matcher.find()) {
+      return null;
+    }
+
+    String value = matcher.group(1).toLowerCase();
+    switch (value) {
+      case "left":
+        return Layout.Alignment.ALIGN_NORMAL;
+      case "center":
+        return Layout.Alignment.ALIGN_CENTER;
+      case "right":
+        return Layout.Alignment.ALIGN_OPPOSITE;
+      case "justify":
+        return Layout.Alignment.ALIGN_NORMAL;
+      default:
+        return null;
     }
   }
 
@@ -596,6 +652,11 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
 
   private void startLi(Editable text, Attributes attributes) {
     startBlockElement(text);
+
+    Layout.Alignment alignment = parseTextAlignFromStyle(attributes.getValue("", "style"));
+    if (alignment != null) {
+      start(text, new Alignment(alignment));
+    }
 
     if (isInOrderedList) {
       currentOrderedListItemIndex++;
