@@ -12,9 +12,9 @@ appId: swmansion.enriched.example
 
 - tapOn:
     id: "toolbar-quote"
-- inputText: "Quote first line"
+- inputText: "Quote 1"
 - pressKey: Enter
-- inputText: "Quote second line"
+- inputText: "Quote 2"
 - pressKey: Enter
 - tapOn:
     id: "toolbar-quote"
@@ -24,9 +24,9 @@ appId: swmansion.enriched.example
 
 - tapOn:
     id: "toolbar-code-block"
-- inputText: "Code first line"
+- inputText: "Code 1"
 - pressKey: Enter
-- inputText: "Code second line"
+- inputText: "Code 2"
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
