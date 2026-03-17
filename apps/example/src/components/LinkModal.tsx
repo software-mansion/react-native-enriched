@@ -1,10 +1,12 @@
 import { type FC, useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
 import { Icon } from './Icon';
+import { ModalShell } from './ModalShell';
 
 interface LinkModalProps {
   isOpen: boolean;
+  avoidKeyboard?: boolean;
   editedText: string;
   editedUrl: string;
   onClose: () => void;
@@ -13,6 +15,7 @@ interface LinkModalProps {
 
 export const LinkModal: FC<LinkModalProps> = ({
   isOpen,
+  avoidKeyboard,
   editedText,
   editedUrl,
   onClose,
@@ -31,47 +34,50 @@ export const LinkModal: FC<LinkModalProps> = ({
   };
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent>
-      <View style={styles.container}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Icon name="close" color="rgb(0, 26, 114)" size={20} />
-            </Pressable>
-          </View>
-          <View style={styles.content}>
-            <TextInput
-              placeholder="Text"
-              defaultValue={editedText}
-              style={styles.input}
-              onChangeText={setText}
-            />
-            <TextInput
-              placeholder="Link"
-              defaultValue={editedUrl}
-              style={styles.input}
-              onChangeText={setUrl}
-            />
-            <Button
-              title="Save"
-              onPress={handleSave}
-              disabled={url.length === 0}
-              style={styles.saveButton}
-            />
-          </View>
+    <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
+      <View style={styles.modal}>
+        <View style={styles.header}>
+          <Pressable
+            testID="link-modal-close-button"
+            onPress={onClose}
+            style={styles.closeButton}
+          >
+            <Icon name="close" color="rgb(0, 26, 114)" size={20} />
+          </Pressable>
+        </View>
+        <View style={styles.content}>
+          <TextInput
+            testID="link-modal-text-input"
+            placeholder="Text"
+            defaultValue={editedText}
+            style={styles.input}
+            onChangeText={setText}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            testID="link-modal-url-input"
+            placeholder="Link"
+            defaultValue={editedUrl}
+            style={styles.input}
+            onChangeText={setUrl}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Button
+            testID="link-modal-submit-button"
+            title="Save"
+            onPress={handleSave}
+            disabled={url.length === 0}
+            style={styles.saveButton}
+          />
         </View>
       </View>
-    </Modal>
+    </ModalShell>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgb(0, 0, 0, 0.5)',
-  },
   modal: {
     width: 300,
     height: 240,

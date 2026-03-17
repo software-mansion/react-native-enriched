@@ -1,0 +1,34 @@
+appId: swmansion.enriched.example
+tags:
+    - android-only
+---
+# PR #284 - fix: parsing empty elements
+- launchApp
+- tapOn:
+    id: "toggle-screen-button"
+
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+        VALUE: >
+            <html>
+                <p>A</p>
+                <p>B</p>
+                <p><b>A</b></p>
+                <p><b>B</b></p>
+                <ul>
+                    <li><b>A</b></li>
+                    <li><b>B</b></li>
+                    <li><b>C</b></li>
+                    <li><b></b></li>
+                </ul>
+                <br>
+            </html>
+
+- tapOn:
+    id: "size-max-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+        SCREENSHOT_NAME: "empty_element_parsing"
