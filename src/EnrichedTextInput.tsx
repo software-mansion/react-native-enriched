@@ -78,6 +78,9 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  setTextAlignment: (
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+  ) => void;
 }
 
 export interface ContextMenuItem {
@@ -378,6 +381,11 @@ export const EnrichedTextInput = ({
     },
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
+    },
+    setTextAlignment: (
+      alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+    ) => {
+      Commands.setTextAlignment(nullthrows(nativeRef.current), alignment);
     },
   }));
 

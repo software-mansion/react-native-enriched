@@ -1,9 +1,11 @@
 package com.swmansion.enriched.textinput.styles
 
 import android.text.Editable
+import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.AlignmentSpan
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
@@ -11,8 +13,9 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
+import com.swmansion.enriched.textinput.utils.getParagraphRangesInRange
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
-import com.swmansion.enriched.textinput.utils.removeZWS
+import com.swmansion.enriched.textinput.utils.removeNonAlignmentZWS
 
 class ListStyles(
   private val view: EnrichedTextInputView,
@@ -78,7 +81,6 @@ class ListStyles(
         val span = EnrichedInputCheckboxListSpan(isChecked ?: false, view.htmlStyle)
         spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-        // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
         view.layoutManager.invalidateLayout()
       }
     }
@@ -98,8 +100,60 @@ class ListStyles(
       ssb.removeSpan(span)
     }
 
-    ssb.removeZWS(start, end)
+    ssb.removeNonAlignmentZWS(start, end)
     return true
+  }
+
+  private fun reapplyTypingAlignmentAfterListRemoval(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ) {
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    val cursorPos = view.selectionStart.coerceIn(0, spannable.length)
+
+    // Selection changes during list removal can temporarily land in an empty paragraph
+    // before alignment spans/placeholders are applied there, which would sync typingAlignment
+    // back to ALIGN_NORMAL. Re-sync from surrounding spans at the final cursor anchor first.
+    if (!view.isDuringTransaction) {
+      view.syncTypingAlignmentWithSelection(cursorPos, cursorPos)
+    }
+
+    val paragraphRanges =
+      if (safeStart == safeEnd) {
+        val (paragraphStart, paragraphEnd) = spannable.getParagraphBounds(safeStart, safeStart)
+        listOf(Pair(paragraphStart, paragraphEnd))
+      } else {
+        spannable.getParagraphRangesInRange(safeStart, safeEnd)
+      }
+
+    val rangesToProcess =
+      if (paragraphRanges.isEmpty()) {
+        val anchor = safeStart.coerceIn(0, spannable.length)
+        val (paragraphStart, paragraphEnd) = spannable.getParagraphBounds(anchor, anchor)
+        listOf(Pair(paragraphStart, paragraphEnd))
+      } else {
+        paragraphRanges
+      }
+
+    // Process in reverse so ZWS insertions don't shift earlier ranges
+    var insertedBeforeCursor = 0
+    for ((paragraphStart, paragraphEnd) in rangesToProcess.reversed()) {
+      val inserted = view.applyTypingAlignmentToParagraphRange(
+        paragraphStart,
+        paragraphEnd,
+        manageCursorExternally = true,
+      )
+      if (inserted && paragraphStart <= cursorPos) {
+        insertedBeforeCursor++
+      }
+    }
+
+    val finalCursor = (cursorPos + insertedBeforeCursor).coerceIn(0, spannable.length)
+    view.setSelection(finalCursor)
+    view.layoutManager.invalidateLayout()
+    view.requestLayout()
+    view.invalidate()
   }
 
   fun updateOrderedListIndexes(
@@ -127,17 +181,23 @@ class ListStyles(
 
     if (styleStart != null) {
       view.spanState.setStart(name, null)
-      removeSpansForRange(spannable, start, end, config.clazz)
+      view.runAsATransaction {
+        removeSpansForRange(spannable, start, end, config.clazz)
+        reapplyTypingAlignmentAfterListRemoval(spannable, start, end)
+      }
       view.selection.validateStyles()
 
       return
     }
+
+    val alignment = captureAlignment(spannable, start, end)
 
     if (start == end) {
       spannable.insert(start, EnrichedConstants.ZWS_STRING)
       view.spanState?.setStart(name, start + 1)
       removeSpansForRange(spannable, start, end, config.clazz)
       setSpan(spannable, name, start, end + 1, checkboxState)
+      applyAlignmentToRange(spannable, start, end + 1, alignment)
 
       return
     }
@@ -150,11 +210,43 @@ class ListStyles(
       spannable.insert(currentStart, EnrichedConstants.ZWS_STRING)
       val currentEnd = currentStart + paragraph.length + 1
       setSpan(spannable, name, currentStart, currentEnd, checkboxState)
+      applyAlignmentToRange(spannable, currentStart, currentEnd, alignment)
 
       currentStart = currentEnd + 1
     }
 
     view.spanState?.setStart(name, currentStart)
+  }
+
+  private fun captureAlignment(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ): Layout.Alignment {
+    val alignmentSpans = spannable.getSpans(start, end, AlignmentSpan::class.java)
+    return alignmentSpans.firstOrNull()?.alignment ?: Layout.Alignment.ALIGN_NORMAL
+  }
+
+  private fun applyAlignmentToRange(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    alignment: Layout.Alignment,
+  ) {
+    if (alignment == Layout.Alignment.ALIGN_NORMAL) return
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    if (safeStart >= safeEnd) return
+
+    val existing = spannable.getSpans(safeStart, safeEnd, AlignmentSpan::class.java)
+    for (span in existing) {
+      spannable.removeSpan(span)
+    }
+    spannable.setSpan(
+      AlignmentSpan.Standard(alignment),
+      safeStart,
+      safeEnd,
+      Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
   }
 
   fun toggleStyle(name: String) {
@@ -182,7 +274,11 @@ class ListStyles(
 
     // Remove spans if cursor is at the start of the paragraph and spans exist
     if (isBackspace && start == cursorPosition && spans.isNotEmpty()) {
-      removeSpansForRange(s, start, end, config.clazz)
+      view.runAsATransaction {
+        removeSpansForRange(s, start, end, config.clazz)
+        val cursorAfterRemoval = view.selectionStart.coerceIn(0, s.length)
+        reapplyTypingAlignmentAfterListRemoval(s, cursorAfterRemoval, cursorAfterRemoval)
+      }
       return
     }
 
@@ -195,6 +291,13 @@ class ListStyles(
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
+      val prevParagraphAlignment = if (start > 0) {
+        val (prevStart, prevEnd) = s.getParagraphBounds(start - 1)
+        captureAlignment(s, prevStart, prevEnd)
+      } else {
+        Layout.Alignment.ALIGN_NORMAL
+      }
+
       // Check if the span from the previous line "leaked" into this one
       if (spans.isNotEmpty()) {
         val existingSpan = spans[0]
@@ -210,6 +313,7 @@ class ListStyles(
 
       s.insert(cursorPosition, EnrichedConstants.ZWS_STRING)
       setSpan(s, name, start, end + 1)
+      applyAlignmentToRange(s, start, end + 1, prevParagraphAlignment)
       // Inform that new span has been added
       view.selection?.validateStyles()
       return
@@ -219,23 +323,28 @@ class ListStyles(
       if (spans.isNotEmpty()) {
         val previousSpan = spans[0] as EnrichedInputCheckboxListSpan
         val isChecked = previousSpan.isChecked
+        val alignment = captureAlignment(s, start, end)
 
         for (span in spans) {
           s.removeSpan(span)
         }
 
         setSpan(s, EnrichedSpans.CHECKBOX_LIST, start, end, isChecked)
+        applyAlignmentToRange(s, start, end, alignment)
       }
 
       return
     }
 
     if (spans.isNotEmpty()) {
+      val alignment = captureAlignment(s, start, end)
+
       for (span in spans) {
         s.removeSpan(span)
       }
 
       setSpan(s, name, start, end)
+      applyAlignmentToRange(s, start, end, alignment)
     }
   }
 
@@ -257,7 +366,14 @@ class ListStyles(
     end: Int,
   ): Boolean {
     val config = EnrichedSpans.listSpans[name] ?: return false
-    val spannable = view.text as Spannable
-    return removeSpansForRange(spannable, start, end, config.clazz)
+    val spannable = view.text as? Spannable ?: return false
+    var removed = false
+    view.runAsATransaction {
+      removed = removeSpansForRange(spannable, start, end, config.clazz)
+      if (removed) {
+        reapplyTypingAlignmentAfterListRemoval(spannable, start, end)
+      }
+    }
+    return removed
   }
 }

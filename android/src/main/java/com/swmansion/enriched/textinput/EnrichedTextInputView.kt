@@ -9,8 +9,13 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.Editable
 import android.text.InputType
+import android.text.Layout
 import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.AlignmentSpan
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
@@ -49,9 +54,13 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH3Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
+import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
+import com.swmansion.enriched.textinput.spans.EnrichedAlignmentPlaceholderSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -63,6 +72,9 @@ import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
+import com.swmansion.enriched.textinput.utils.getParagraphBounds
+import com.swmansion.enriched.textinput.utils.getParagraphRangesInRange
+import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.utils.zwsCountBefore
@@ -80,7 +92,9 @@ class EnrichedTextInputView : AppCompatEditText {
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
-  var isDuringTransaction: Boolean = false
+  private var transactionDepth: Int = 0
+  val isDuringTransaction: Boolean
+    get() = transactionDepth > 0
   var isRemovingMany: Boolean = false
   var scrollEnabled: Boolean = true
 
@@ -114,6 +128,7 @@ class EnrichedTextInputView : AppCompatEditText {
   private var fontWeight: Int = ReactConstants.UNSET
   private var defaultValue: CharSequence? = null
   private var defaultValueDirty: Boolean = false
+  private var typingAlignment: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL
 
   private var inputMethodManager: InputMethodManager? = null
   private val spannableFactory = EnrichedTextInputSpannableFactory()
@@ -215,6 +230,14 @@ class EnrichedTextInputView : AppCompatEditText {
   override fun canScrollVertically(direction: Int): Boolean = scrollEnabled
 
   override fun canScrollHorizontally(direction: Int): Boolean = scrollEnabled
+
+  override fun bringPointIntoView(offset: Int): Boolean {
+    val result = super.bringPointIntoView(offset)
+    if (scrollX != 0) {
+      scrollTo(0, scrollY)
+    }
+    return result
+  }
 
   override fun onSelectionChanged(
     selStart: Int,
@@ -648,6 +671,491 @@ class EnrichedTextInputView : AppCompatEditText {
     )
   }
 
+  fun setTextAlignment(alignment: String) {
+    val layoutAlignment =
+      when (alignment.lowercase()) {
+        "left", "default" -> Layout.Alignment.ALIGN_NORMAL
+        "center" -> Layout.Alignment.ALIGN_CENTER
+        "right" -> Layout.Alignment.ALIGN_OPPOSITE
+        "justify" -> Layout.Alignment.ALIGN_NORMAL
+        else -> Layout.Alignment.ALIGN_NORMAL
+      }
+
+    val spannable = text as? SpannableStringBuilder ?: return
+    typingAlignment = layoutAlignment
+
+    if (spannable.isEmpty()) {
+      if (layoutAlignment != Layout.Alignment.ALIGN_NORMAL) {
+        runAsATransaction {
+          spannable.insert(0, EnrichedConstants.ZWS_STRING)
+          spannable.setSpan(
+            EnrichedAlignmentPlaceholderSpan(),
+            0,
+            1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+          spannable.setSpan(
+            AlignmentSpan.Standard(layoutAlignment),
+            0,
+            1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        setSelection(1)
+        layoutManager.invalidateLayout()
+        requestLayout()
+        invalidate()
+      }
+      return
+    }
+
+    val (initialStart, initialEnd) =
+      selection?.getParagraphSelection()
+        ?: Pair(selectionStart.coerceIn(0, spannable.length), selectionEnd.coerceIn(0, spannable.length))
+    val (start, end) = spannable.getSafeSpanBoundaries(initialStart, initialEnd)
+    val targetRange = expandRangeToContiguousList(spannable, start, end)
+    val paragraphRanges = spannable.getParagraphRangesInRange(targetRange.first, targetRange.second)
+
+    val cursorStart = selectionStart
+    val cursorEnd = selectionEnd
+    runAsATransaction {
+      for ((paragraphStart, paragraphEnd) in paragraphRanges) {
+        removeAlignmentSpans(spannable, paragraphStart, paragraphEnd)
+        if (layoutAlignment != Layout.Alignment.ALIGN_NORMAL && paragraphStart < paragraphEnd) {
+          spannable.setSpan(
+            AlignmentSpan.Standard(layoutAlignment),
+            paragraphStart,
+            paragraphEnd,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+      }
+    }
+
+    setSelection(cursorStart.coerceIn(0, spannable.length), cursorEnd.coerceIn(0, spannable.length))
+    layoutManager.invalidateLayout()
+    requestLayout()
+    invalidate()
+    spanState?.emitStateChangeEvent()
+  }
+
+  fun getCurrentAlignment(): String {
+    val spannable = text as? Spannable ?: return "left"
+    val (start, end) = selection?.getParagraphSelection() ?: Pair(selectionStart, selectionEnd)
+    val alignment = getParagraphAlignment(spannable, start, end)
+    return when (alignment) {
+      Layout.Alignment.ALIGN_NORMAL -> "left"
+      Layout.Alignment.ALIGN_CENTER -> "center"
+      Layout.Alignment.ALIGN_OPPOSITE -> "right"
+    }
+  }
+
+  fun applyTypingAlignmentIfNeeded(
+    editable: Editable,
+    changeStart: Int,
+    changeEnd: Int,
+    previousTextLength: Int,
+    deletedAlignmentPlaceholder: Boolean = false,
+  ) {
+    val spannable = editable as? SpannableStringBuilder ?: return
+
+    if (spannable.isEmpty()) {
+      typingAlignment = Layout.Alignment.ALIGN_NORMAL
+      return
+    }
+
+    if (spannable.length < previousTextLength) {
+      if (!deletedAlignmentPlaceholder && typingAlignment != Layout.Alignment.ALIGN_NORMAL) {
+        val cursorPos = changeStart.coerceIn(0, spannable.length)
+        val (pStart, pEnd) = spannable.getParagraphBounds(cursorPos, cursorPos)
+        if (pStart == pEnd &&
+          getParagraphAlignment(spannable, pStart, pEnd) == Layout.Alignment.ALIGN_NORMAL &&
+          !paragraphHasListSpan(spannable, pStart, pEnd)
+        ) {
+          runAsATransaction {
+            spannable.insert(pStart, EnrichedConstants.ZWS_STRING)
+            spannable.setSpan(
+              EnrichedAlignmentPlaceholderSpan(),
+              pStart,
+              pStart + 1,
+              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            spannable.setSpan(
+              AlignmentSpan.Standard(typingAlignment),
+              pStart,
+              pStart + 1,
+              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+          }
+          setSelection(pStart + 1)
+          layoutManager.invalidateLayout()
+          requestLayout()
+          invalidate()
+        }
+      }
+      return
+    }
+
+    val safeStart = changeStart.coerceIn(0, spannable.length)
+    val safeEnd = changeEnd.coerceIn(safeStart, spannable.length)
+    if (safeStart >= safeEnd) return
+
+    val alignment = typingAlignment
+    var changedAlignment = ensureAlignedEmptyParagraphPlaceholders(spannable, safeStart, safeEnd)
+    var index = safeStart
+    while (index < safeEnd) {
+      if (spannable[index] == '\n') {
+        index++
+        continue
+      }
+
+      val (paragraphStart, paragraphEnd) = spannable.getParagraphBounds(index, index)
+
+      if (paragraphHasListSpan(spannable, paragraphStart, paragraphEnd)) {
+        if (ensureParagraphAlignmentSpan(spannable, paragraphStart, paragraphEnd, alignment)) {
+          changedAlignment = true
+        }
+        index = if (paragraphEnd > index) paragraphEnd else index + 1
+        continue
+      }
+
+      val hadPlaceholder = removeLeadingAlignmentPlaceholderIfNeeded(spannable, paragraphStart, paragraphEnd)
+      val adjustedParagraphEnd =
+        if (hadPlaceholder) {
+          (paragraphEnd - 1).coerceAtLeast(paragraphStart)
+        } else {
+          paragraphEnd
+        }
+      val alignmentChanged = ensureParagraphAlignmentSpan(spannable, paragraphStart, adjustedParagraphEnd, alignment)
+      if (hadPlaceholder || alignmentChanged) {
+        changedAlignment = true
+      }
+
+      index = if (adjustedParagraphEnd > index) adjustedParagraphEnd else index + 1
+    }
+
+    typingAlignment = alignment
+    if (changedAlignment) {
+      layoutManager.invalidateLayout()
+      requestLayout()
+      invalidate()
+      post {
+        val currentText = text as? Spannable ?: return@post
+        val cursor = selectionStart.coerceIn(0, currentText.length)
+
+        if (cursor < currentText.length &&
+          currentText[cursor] == EnrichedConstants.ZWS &&
+          currentText.getSpans(cursor, cursor + 1, EnrichedAlignmentPlaceholderSpan::class.java).isNotEmpty()
+        ) {
+          val newCursor = (cursor + 1).coerceAtMost(currentText.length)
+          setSelection(newCursor)
+          bringPointIntoView(newCursor)
+          return@post
+        }
+
+        bringPointIntoView(cursor)
+      }
+    }
+  }
+
+  fun syncTypingAlignmentWithSelection(
+    selStart: Int = selectionStart,
+    selEnd: Int = selectionEnd,
+  ) {
+    val spannable = text as? Spannable ?: run {
+      typingAlignment = Layout.Alignment.ALIGN_NORMAL
+      return
+    }
+
+    if (spannable.isEmpty()) {
+      typingAlignment = Layout.Alignment.ALIGN_NORMAL
+      return
+    }
+
+    val safeStart = selStart.coerceIn(0, spannable.length)
+    val safeEnd = selEnd.coerceIn(0, spannable.length)
+    val resolved = resolveTypingAlignmentForSelection(spannable, safeStart, safeEnd)
+
+    // Preserve explicit typing alignment during edits/newline creation.
+    // Selection changes can happen before paragraph alignment spans are applied,
+    // and we must not downgrade a non-left typingAlignment back to left because of that.
+    if (typingAlignment != Layout.Alignment.ALIGN_NORMAL && resolved == Layout.Alignment.ALIGN_NORMAL) {
+      return
+    }
+
+    typingAlignment = resolved
+  }
+
+  private fun resolveTypingAlignmentForSelection(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ): Layout.Alignment {
+    val anchor =
+      when {
+        start < spannable.length -> start
+        start > 0 -> start - 1
+        else -> 0
+      }
+    val (paragraphStart, paragraphEnd) = spannable.getParagraphBounds(anchor, anchor)
+    val paragraphAlignment = getParagraphAlignment(spannable, paragraphStart, paragraphEnd)
+    if (paragraphAlignment != Layout.Alignment.ALIGN_NORMAL || paragraphStart < paragraphEnd || end > start) {
+      return paragraphAlignment
+    }
+
+    if (paragraphStart > 0) {
+      val (previousStart, previousEnd) = spannable.getParagraphBounds(paragraphStart - 1, paragraphStart - 1)
+      return getParagraphAlignment(spannable, previousStart, previousEnd)
+    }
+
+    return Layout.Alignment.ALIGN_NORMAL
+  }
+
+  internal fun getParagraphAlignment(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ): Layout.Alignment {
+    val spans = spannable.getSpans(start, end, AlignmentSpan::class.java)
+    return spans.firstOrNull()?.alignment ?: Layout.Alignment.ALIGN_NORMAL
+  }
+
+  private fun removeAlignmentSpans(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ) {
+    val spans = spannable.getSpans(start, end, AlignmentSpan::class.java)
+    for (span in spans) {
+      spannable.removeSpan(span)
+    }
+  }
+
+  private fun ensureParagraphAlignmentSpan(
+    spannable: SpannableStringBuilder,
+    paragraphStart: Int,
+    paragraphEnd: Int,
+    alignment: Layout.Alignment,
+  ): Boolean {
+    if (alignment == Layout.Alignment.ALIGN_NORMAL) return false
+    if (paragraphStart >= paragraphEnd) return false
+
+    val existing = spannable.getSpans(paragraphStart, paragraphEnd, AlignmentSpan::class.java)
+      .firstOrNull()
+
+    if (existing == null || existing.alignment != alignment) {
+      runAsATransaction {
+        removeAlignmentSpans(spannable, paragraphStart, paragraphEnd)
+        spannable.setSpan(
+          AlignmentSpan.Standard(alignment),
+          paragraphStart,
+          paragraphEnd,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+      }
+      return true
+    }
+
+    val spanStart = spannable.getSpanStart(existing)
+    val spanEnd = spannable.getSpanEnd(existing)
+    if (spanStart == paragraphStart && spanEnd >= paragraphEnd) return false
+
+    // Grow/shrink to exactly the paragraph bounds (excludes trailing '\n')
+    runAsATransaction {
+      val flags = spannable.getSpanFlags(existing)
+      spannable.setSpan(existing, paragraphStart, paragraphEnd, flags)
+    }
+    return true
+  }
+
+  private fun paragraphHasListSpan(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ): Boolean =
+    spannable.getSpans(start, end, EnrichedInputUnorderedListSpan::class.java).isNotEmpty() ||
+      spannable.getSpans(start, end, EnrichedInputOrderedListSpan::class.java).isNotEmpty() ||
+      spannable.getSpans(start, end, EnrichedInputCheckboxListSpan::class.java).isNotEmpty()
+
+
+
+  /**
+   * Applies the current [typingAlignment] to the given paragraph range.
+   * Returns true if a ZWS character was inserted (changing text length by 1).
+   * Callers are responsible for cursor positioning and layout invalidation.
+   */
+  fun applyTypingAlignmentToParagraphRange(
+    paragraphStart: Int,
+    paragraphEnd: Int,
+    manageCursorExternally: Boolean = false,
+  ): Boolean {
+    val spannable = text as? SpannableStringBuilder ?: return false
+    if (typingAlignment == Layout.Alignment.ALIGN_NORMAL) return false
+
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(paragraphStart, paragraphEnd)
+
+    if (safeStart >= safeEnd) {
+      runAsATransaction {
+        spannable.insert(safeStart, EnrichedConstants.ZWS_STRING)
+        spannable.setSpan(
+          EnrichedAlignmentPlaceholderSpan(),
+          safeStart,
+          safeStart + 1,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+        removeAlignmentSpans(spannable, safeStart, safeStart + 1)
+        spannable.setSpan(
+          AlignmentSpan.Standard(typingAlignment),
+          safeStart,
+          safeStart + 1,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+      }
+      if (!manageCursorExternally) {
+        setSelection(safeStart + 1)
+      }
+      if (!manageCursorExternally) {
+        layoutManager.invalidateLayout()
+        requestLayout()
+        invalidate()
+      }
+      return true
+    } else {
+      runAsATransaction {
+        removeAlignmentSpans(spannable, safeStart, safeEnd)
+        spannable.setSpan(
+          AlignmentSpan.Standard(typingAlignment),
+          safeStart,
+          safeEnd,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+      }
+      if (!manageCursorExternally) {
+        layoutManager.invalidateLayout()
+        requestLayout()
+        invalidate()
+      }
+      return false
+    }
+  }
+
+  private fun ensureAlignedEmptyParagraphPlaceholders(
+    spannable: SpannableStringBuilder,
+    start: Int,
+    end: Int,
+  ): Boolean {
+    val alignment = typingAlignment
+    if (alignment == Layout.Alignment.ALIGN_NORMAL) return false
+
+    var applied = false
+    var index = start
+    while (index < end && index < spannable.length) {
+      if (spannable[index] != '\n') {
+        index++
+        continue
+      }
+
+      val paragraphStart = index + 1
+      if (paragraphStart > spannable.length) break
+
+      val (nextParagraphStart, nextParagraphEnd) = spannable.getParagraphBounds(paragraphStart, paragraphStart)
+      if (nextParagraphStart == nextParagraphEnd && !paragraphHasListSpan(spannable, nextParagraphStart, nextParagraphEnd)) {
+        runAsATransaction {
+          spannable.insert(nextParagraphStart, EnrichedConstants.ZWS_STRING)
+          spannable.setSpan(
+            EnrichedAlignmentPlaceholderSpan(),
+            nextParagraphStart,
+            nextParagraphStart + 1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+          removeAlignmentSpans(spannable, nextParagraphStart, nextParagraphStart + 1)
+          spannable.setSpan(
+            AlignmentSpan.Standard(alignment),
+            nextParagraphStart,
+            nextParagraphStart + 1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        applied = true
+      }
+
+      index++
+    }
+    typingAlignment = alignment
+    return applied
+  }
+
+  private fun removeLeadingAlignmentPlaceholderIfNeeded(
+    spannable: SpannableStringBuilder,
+    start: Int,
+    end: Int,
+  ): Boolean {
+    if (start >= end) return false
+    if (spannable[start] != EnrichedConstants.ZWS) return false
+    if (end - start <= 1) return false
+    if (paragraphHasListSpan(spannable, start, end)) return false
+    val alignmentPlaceholderSpans = spannable.getSpans(start, start + 1, EnrichedAlignmentPlaceholderSpan::class.java)
+    if (alignmentPlaceholderSpans.isEmpty()) return false
+
+    runAsATransaction {
+      spannable.delete(start, start + 1)
+    }
+    return true
+  }
+
+  private fun expandRangeToContiguousList(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+  ): Pair<Int, Int> {
+    if (spannable.length == 0) return Pair(start, end)
+
+    val listSpanClasses =
+      listOf(
+        EnrichedInputUnorderedListSpan::class.java,
+        EnrichedInputOrderedListSpan::class.java,
+        EnrichedInputCheckboxListSpan::class.java,
+      )
+
+    val (startParagraphStart, startParagraphEnd) = spannable.getParagraphBounds(start, start)
+    val activeStartList =
+      listSpanClasses.firstOrNull { clazz ->
+        spannable.getSpans(startParagraphStart, startParagraphEnd, clazz).isNotEmpty()
+      }
+
+    var expandedStart = start
+    if (activeStartList != null) {
+      var currentStart = startParagraphStart
+      while (currentStart > 0) {
+        val (previousStart, previousEnd) = spannable.getParagraphBounds(currentStart - 1, currentStart - 1)
+        if (spannable.getSpans(previousStart, previousEnd, activeStartList).isEmpty()) break
+        expandedStart = previousStart
+        currentStart = previousStart
+      }
+    }
+
+    val endLocation = if (end > start) end - 1 else end
+    val (endParagraphStart, endParagraphEnd) = spannable.getParagraphBounds(endLocation, endLocation)
+    val activeEndList =
+      listSpanClasses.firstOrNull { clazz ->
+        spannable.getSpans(endParagraphStart, endParagraphEnd, clazz).isNotEmpty()
+      }
+
+    var expandedEnd = end
+    if (activeEndList != null) {
+      var currentStart = endParagraphStart
+      while (currentStart < spannable.length) {
+        val (nextStart, nextEnd) = spannable.getParagraphBounds(currentStart, currentStart)
+        if (nextStart >= spannable.length) break
+        if (spannable.getSpans(nextStart, nextEnd, activeEndList).isEmpty()) break
+        expandedEnd = nextEnd.coerceAtMost(spannable.length)
+        currentStart = nextEnd + 1
+      }
+    }
+
+    return Pair(expandedStart, expandedEnd)
+  }
+
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L283C2-L284C1
   // After the text changes inside an EditText, TextView checks if a layout() has been requested.
   // If it has, it will not scroll the text to the end of the new text inserted, but wait for the
@@ -892,11 +1400,11 @@ class EnrichedTextInputView : AppCompatEditText {
   // Eg. removing conflicting styles -> changing text -> applying spans
   // In such scenario we want to prevent from handling side effects (eg. onTextChanged)
   fun runAsATransaction(block: () -> Unit) {
+    transactionDepth++
     try {
-      isDuringTransaction = true
       block()
     } finally {
-      isDuringTransaction = false
+      transactionDepth = (transactionDepth - 1).coerceAtLeast(0)
     }
   }
 
@@ -924,7 +1432,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
     val maxScrollY = (textLayout.height - visibleTextHeight).coerceAtLeast(0)
     targetScrollY = targetScrollY.coerceIn(0, maxScrollY)
-    scrollTo(scrollX, targetScrollY)
+    scrollTo(0, targetScrollY)
   }
 
   private fun isHeadingBold(
