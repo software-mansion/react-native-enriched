@@ -6,7 +6,10 @@ import type {
 
 export interface EnrichedTextInputProps extends BaseEnrichedTextInputProps {}
 
-export const EnrichedTextInput = ({ ref }: EnrichedTextInputProps) => {
+export const EnrichedTextInput = ({
+  ref,
+  defaultValue,
+}: EnrichedTextInputProps) => {
   useImperativeHandle(
     ref,
     (): EnrichedTextInputInstance => ({
@@ -43,5 +46,5 @@ export const EnrichedTextInput = ({ ref }: EnrichedTextInputProps) => {
     })
   );
 
-  return <div />;
+  return <textarea defaultValue={defaultValue} />;
 };
