@@ -7,10 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'react-native-enriched': path.resolve(
-        __dirname,
-        '../../src/index.web.tsx'
-      ),
+      'react-native-enriched': path.resolve(__dirname, '../../src/index.tsx'),
     },
   },
 });

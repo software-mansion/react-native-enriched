@@ -4,9 +4,14 @@
   "description": "Rich Text Editor component for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
-  "types": "./lib/typescript/src/index.d.ts",
+  "types": "./lib/typescript/src/index.native.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "react-native": {
+        "types": "./lib/typescript/src/index.native.d.ts",
+        "default": "./lib/module/index.native.js"
+      },
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -21,13 +26,13 @@
     "*.podspec",
     "react-native.config.js",
     "!src/web",
-    "!src/index.web.tsx",
+    "!src/index.tsx",
     "!lib/module/web",
-    "!lib/module/index.web.js",
-    "!lib/module/index.web.js.map",
+    "!lib/module/index.js",
+    "!lib/module/index.js.map",
     "!lib/typescript/src/web",
-    "!lib/typescript/src/index.web.d.ts",
-    "!lib/typescript/src/index.web.d.ts.map",
+    "!lib/typescript/src/index.d.ts",
+    "!lib/typescript/src/index.d.ts.map",
     "!ios/build",
     "!android/build",
     "!android/gradle",
