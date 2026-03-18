@@ -12,6 +12,7 @@
 - (NSString *)getKey;
 - (NSString *)getValue;
 - (BOOL)isParagraph;
+- (BOOL)needsZWS;
 - (instancetype)initWithInput:(EnrichedTextInputView *)input;
 - (NSRange)actualUsedRange:(NSRange)range;
 - (void)toggle:(NSRange)range;

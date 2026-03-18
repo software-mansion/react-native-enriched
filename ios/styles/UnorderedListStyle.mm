@@ -17,6 +17,10 @@
   return YES;
 }
 
+- (BOOL)needsZWS {
+  return YES;
+}
+
 - (void)applyStyling:(NSRange)range {
   // lists are drawn manually
   // margin before bullet + gap between bullet and paragraph

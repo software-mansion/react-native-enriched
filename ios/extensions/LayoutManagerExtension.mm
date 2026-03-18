@@ -251,14 +251,15 @@ static void const *kInputKey = &kInputKey;
       typedInput->stylesDict[@([OrderedListStyle getStyleType])];
   CheckboxListStyle *cbStyle =
       typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-  if (ulStyle == nullptr || olStyle == nullptr || cbStyle == nullptr) {
+  if (ulStyle == nullptr) {
     return;
   }
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
   [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
-  [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
-  [allLists addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
+  // [allLists addObjectsFromArray:[olStyle
+  // findAllOccurences:visibleCharRange]]; [allLists
+  // addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;

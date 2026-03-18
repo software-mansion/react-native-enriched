@@ -3,6 +3,7 @@
 #import "EnrichedTextInputView.h"
 #import "OccurenceUtils.h"
 #import "RangeUtils.h"
+#import "ZeroWidthSpaceUtils.h"
 
 @implementation StyleBase
 
@@ -28,6 +29,10 @@
 // This method gets overridden
 - (BOOL)isParagraph {
   return false;
+}
+
+- (BOOL)needsZWS {
+  return NO;
 }
 
 - (instancetype)initWithInput:(EnrichedTextInputView *)input {

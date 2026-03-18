@@ -1606,8 +1606,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
 
-  //  // zero width space adding or removal
-  //  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
+  // zero width space adding or removal
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
 
   // emptying input typing attributes management
   if (textView.textStorage.string.length == 0 &&
@@ -1780,32 +1780,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // cause a crash so here I rely on short circuiting evaluation of the logical
   // expression either way it's not possible to have two of them come off at the
   // same time
-  if (false
-      //      [uStyle handleBackspaceInRange:range replacementText:text] ||
-      //      [uStyle tryHandlingListShorcutInRange:range replacementText:text]
-      //     || [oStyle handleBackspaceInRange:range replacementText:text] ||
-      //      [oStyle tryHandlingListShorcutInRange:range replacementText:text]
-      //      || [cbLStyle handleBackspaceInRange:range replacementText:text] ||
-      //      [cbLStyle handleNewlinesInRange:range replacementText:text] ||
-      //      [bqStyle handleBackspaceInRange:range replacementText:text] ||
-      //      [cbStyle handleBackspaceInRange:range replacementText:text] ||
-      //      [linkStyle handleLeadingLinkReplacement:range
+  if (
+      // ZWS backspace handling for paragraph styles
+      [ZeroWidthSpaceUtils handleBackspaceInRange:range
+                                  replacementText:text
+                                            input:self]
+      //      || [uStyle handleBackspaceInRange:range replacementText:text]
+      //      || [uStyle tryHandlingListShorcutInRange:range
+      //      replacementText:text]
+      //      || [oStyle handleBackspaceInRange:range replacementText:text]
+      //      || [oStyle tryHandlingListShorcutInRange:range
+      //      replacementText:text]
+      //      || [cbLStyle handleBackspaceInRange:range replacementText:text]
+      //      || [cbLStyle handleNewlinesInRange:range replacementText:text]
+      //      || [bqStyle handleBackspaceInRange:range replacementText:text]
+      //      || [cbStyle handleBackspaceInRange:range replacementText:text]
+      //      || [linkStyle handleLeadingLinkReplacement:range
       //      replacementText:text] || [mentionStyle
       //      handleLeadingMentionReplacement:range
-      //                                    replacementText:text] ||
-      //      [h1Style handleNewlinesInRange:range replacementText:text] ||
-      //      [h2Style handleNewlinesInRange:range replacementText:text] ||
-      //      [h3Style handleNewlinesInRange:range replacementText:text] ||
-      //      [h4Style handleNewlinesInRange:range replacementText:text] ||
-      //      [h5Style handleNewlinesInRange:range replacementText:text] ||
-      //      [h6Style handleNewlinesInRange:range replacementText:text] ||
-      //      [ZeroWidthSpaceUtils handleBackspaceInRange:range
-      //                                  replacementText:text
-      //                                            input:self] ||
-      //      [ParagraphAttributesUtils handleBackspaceInRange:range
-      //                                       replacementText:text
-      //                                                 input:self] ||
-      //      [ParagraphAttributesUtils
+      //                                    replacementText:text]
+      //      || [h1Style handleNewlinesInRange:range replacementText:text]
+      //      || [h2Style handleNewlinesInRange:range replacementText:text]
+      //      || [h3Style handleNewlinesInRange:range replacementText:text]
+      //      || [h4Style handleNewlinesInRange:range replacementText:text]
+      //      || [h5Style handleNewlinesInRange:range replacementText:text]
+      //      || [h6Style handleNewlinesInRange:range replacementText:text]
+      || [ParagraphAttributesUtils handleBackspaceInRange:range
+                                          replacementText:text
+                                                    input:self]
+      //      || [ParagraphAttributesUtils
       //      handleResetTypingAttributesOnBackspace:range
       //                                                       replacementText:text
       //                                                                 input:self]
@@ -1815,7 +1818,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // This function is the "Generic Fallback": if no specific style claims
       // the backspace action to change its state, only then do we proceed to
       // physically delete the newline and merge paragraphs.
-      //      [ParagraphAttributesUtils
+      //      || [ParagraphAttributesUtils
       //      handleParagraphStylesMergeOnBackspace:range
       //                                                      replacementText:text
       //                                                                input:self]

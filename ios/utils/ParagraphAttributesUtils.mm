@@ -14,17 +14,6 @@
                replacementText:(NSString *)text
                          input:(id)input {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
-  UnorderedListStyle *ulStyle =
-      typedInput->stylesDict[@([UnorderedListStyle getType])];
-  OrderedListStyle *olStyle =
-      typedInput->stylesDict[@([OrderedListStyle getStyleType])];
-  BlockQuoteStyle *bqStyle =
-      typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
-  CodeBlockStyle *cbStyle =
-      typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
-  CheckboxListStyle *cbLStyle =
-      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-
   if (typedInput == nullptr) {
     return NO;
   }
@@ -52,41 +41,25 @@
   if (range.location == nonNewlineRange.location &&
       range.length >= nonNewlineRange.length) {
 
-    // for lists, quotes and codeblocks present we do the following:
+    // for styles that need ZWS (lists, quotes, etc.) we do the following:
     // - manually do the removing
     // - reset typing attribtues so that the previous line styles don't get
     // applied
     // - reapply the paragraph style that was present so that a zero width space
     // appears here
-    NSArray *handledStyles = @[ ulStyle, olStyle, bqStyle, cbStyle, cbLStyle ];
-    for (id<BaseStyleProtocol> style in handledStyles) {
-      if ([style detectStyle:nonNewlineRange]) {
-        // For checkbox lists, preserve the current checked state
-        if (style == cbLStyle) {
-          BOOL isCurrentlyChecked =
-              [cbLStyle getCheckboxStateAt:range.location];
-          [TextInsertionUtils replaceText:text
-                                       at:range
-                     additionalAttributes:nullptr
-                                    input:typedInput
-                            withSelection:YES];
-          typedInput->textView.typingAttributes =
-              typedInput->defaultTypingAttributes;
-          [cbLStyle addAttributesWithCheckedValue:isCurrentlyChecked
-                                          inRange:NSMakeRange(range.location, 0)
-                                   withTypingAttr:YES];
-        } else {
-          [TextInsertionUtils replaceText:text
-                                       at:range
-                     additionalAttributes:nullptr
-                                    input:typedInput
-                            withSelection:YES];
-          typedInput->textView.typingAttributes =
-              typedInput->defaultTypingAttributes;
-          [style addAttributes:NSMakeRange(range.location, 0)
-                withTypingAttr:YES];
-        }
-
+    for (NSNumber *type in typedInput->stylesDict) {
+      StyleBase *style = typedInput->stylesDict[type];
+      if ([style needsZWS] && [style detect:nonNewlineRange]) {
+        [TextInsertionUtils replaceText:text
+                                     at:range
+                   additionalAttributes:nullptr
+                                  input:typedInput
+                          withSelection:YES];
+        typedInput->textView.typingAttributes =
+            typedInput->defaultTypingAttributes;
+        [style add:NSMakeRange(range.location, 0)
+                withTyping:YES
+            withDirtyRange:YES];
         return YES;
       }
     }
