@@ -280,6 +280,7 @@ export interface BaseEnrichedTextInputProps
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
+  style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   onFocus?: (e: FocusEvent) => void;
@@ -312,5 +313,4 @@ export interface BaseEnrichedTextInputProps
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
-  style?: ViewStyle | TextStyle;
 }
