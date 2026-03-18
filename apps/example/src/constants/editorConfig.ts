@@ -28,6 +28,7 @@ export const DEFAULT_STYLES: StylesState = {
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,
   checkboxList: DEFAULT_STYLE_STATE,
+  alignment: 'left',
 };
 
 export const DEFAULT_LINK_STATE = {
