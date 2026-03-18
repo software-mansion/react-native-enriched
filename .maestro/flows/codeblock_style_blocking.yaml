@@ -1,0 +1,50 @@
+appId: swmansion.enriched.example
+---
+# Verifies that inside a code block, inline styles and rich features are
+# blocked in the toolbar. Code blocks do not support inline formatting,
+# automatic link detection, or mention insertion.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-code-block"
+
+- inputText: "ABC example.com"
+
+- assertVisible:
+    id: "toolbar-bold"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-italic"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-underline"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-strikethrough"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-inline-code"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-link"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-mention"
+    enabled: false
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "codeblock_style_blocking"
