@@ -215,9 +215,8 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
-// Base props shared between native and web — not part of the public API,
-// only used to derive platform-specific EnrichedTextInputProps subtypes.
-export interface BaseEnrichedTextInputProps {
+export interface BaseEnrichedTextInputProps
+  extends Omit<ViewProps, 'children'> {
   ref?: RefObject<EnrichedTextInputInstance | null>;
   autoFocus?: boolean;
   editable?: boolean;
@@ -261,14 +260,5 @@ export interface BaseEnrichedTextInputProps {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
-}
-
-// Native-specific props — extends base with ViewProps and native style type.
-// onFocus and onBlur are omitted from ViewProps because ViewProps types them via
-// DirectEventHandler (which includes null) — we re-declare them via BaseEnrichedTextInputProps
-// with the narrower handler signature instead.
-export interface EnrichedTextInputProps
-  extends Omit<ViewProps, 'children' | 'onFocus' | 'onBlur'>,
-    BaseEnrichedTextInputProps {
   style?: ViewStyle | TextStyle;
 }

@@ -13,7 +13,7 @@ import EnrichedTextInputNativeComponent, {
   type OnMentionEvent,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-} from './spec/EnrichedTextInputNativeComponent';
+} from '../spec/EnrichedTextInputNativeComponent';
 import type {
   HostInstance,
   MeasureInWindowOnSuccessCallback,
@@ -22,15 +22,17 @@ import type {
   NativeMethods,
   NativeSyntheticEvent,
 } from 'react-native';
-import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
-import { toNativeRegexConfig } from './utils/regexParser';
-import { nullthrows } from './utils/nullthrows';
+import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
+import { toNativeRegexConfig } from '../utils/regexParser';
+import { nullthrows } from '../utils/nullthrows';
 import type {
+  BaseEnrichedTextInputProps,
   ContextMenuItem,
-  EnrichedTextInputProps,
   OnLinkDetected,
   OnMentionDetected,
-} from './types';
+} from '../types';
+
+export interface EnrichedTextInputProps extends BaseEnrichedTextInputProps {}
 
 const warnMentionIndicators = (indicator: string) => {
   console.warn(
