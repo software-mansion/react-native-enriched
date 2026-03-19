@@ -488,7 +488,7 @@
     } else {
       return @"";
     }
-  } else if ([style isEqualToNumber:@([UnderlineStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([UnderlineStyle getType])]) {
     return @"u";
   } else if ([style isEqualToNumber:@([StrikethroughStyle getType])]) {
     return @"s";
@@ -1268,7 +1268,7 @@
 
       stylePair.styleValue = imageData;
     } else if ([tagName isEqualToString:@"u"]) {
-      [styleArr addObject:@([UnderlineStyle getStyleType])];
+      [styleArr addObject:@([UnderlineStyle getType])];
     } else if ([tagName isEqualToString:@"s"]) {
       [styleArr addObject:@([StrikethroughStyle getType])];
     } else if ([tagName isEqualToString:@"code"]) {

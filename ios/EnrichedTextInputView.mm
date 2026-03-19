@@ -101,8 +101,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   stylesDict = @{
     //    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
     @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithInput:self],
-    //    @([UnderlineStyle getStyleType]) :
-    //        [[UnderlineStyle alloc] initWithInput:self],
+    @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithInput:self],
     @([StrikethroughStyle getType]) :
         [[StrikethroughStyle alloc] initWithInput:self],
     @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithInput:self],
@@ -129,7 +128,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   conflictingStyles = @{
     //    @([BoldStyle getStyleType]) : @[],
     @([ItalicStyle getType]) : @[],
-    //    @([UnderlineStyle getStyleType]) : @[],
+    @([UnderlineStyle getType]) : @[],
     @([StrikethroughStyle getType]) : @[],
     @([InlineCodeStyle getType]) : @[
       //      @([LinkStyle getStyleType]), @([MentionStyle getStyleType])
@@ -215,10 +214,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([CodeBlockStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      //      @([BoldStyle getStyleType]), @([UnderlineStyle getStyleType]),
-      @([ItalicStyle getType]), @([StrikethroughStyle getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
+      //      @([BoldStyle getStyleType]),
+      @([UnderlineStyle getType]), @([ItalicStyle getType]),
+      @([StrikethroughStyle getType]), @([UnorderedListStyle getType]),
+      @([OrderedListStyle getType]), @([BlockQuoteStyle getType]),
+      @([InlineCodeStyle getType]),
       //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
       //      @([CheckboxListStyle getStyleType])
     ],
@@ -229,8 +229,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   blockingStyles = [@{
     //    @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
     @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    //    @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType])
-    //    ],
+    @([UnderlineStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([InlineCodeStyle getType]) : @[
       @([CodeBlockStyle getType]),
@@ -1022,8 +1021,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       emitter->onChangeStateDeprecated({
           //           .isBold = [self isStyleActive:[BoldStyle getStyleType]],
           .isItalic = [self isStyleActive:[ItalicStyle getType]],
-          //           .isUnderline = [self isStyleActive:[UnderlineStyle
-          //           getStyleType]],
+          .isUnderline = [self isStyleActive:[UnderlineStyle getType]],
           .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
           .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
           //           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
@@ -1047,8 +1045,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       emitter->onChangeState({
           //           .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
           .italic = GET_STYLE_STATE([ItalicStyle getType]),
-          //           .underline = GET_STYLE_STATE([UnderlineStyle
-          //           getStyleType]),
+          .underline = GET_STYLE_STATE([UnderlineStyle getType]),
           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
           //           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
@@ -1144,11 +1141,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  }
   else if ([commandName isEqualToString:@"toggleItalic"]) {
     [self toggleRegularStyle:[ItalicStyle getType]];
-  }
-  //  else if ([commandName isEqualToString:@"toggleUnderline"]) {
-  //    [self toggleRegularStyle:[UnderlineStyle getStyleType]];
-  //  }
-  else if ([commandName isEqualToString:@"toggleStrikeThrough"]) {
+  } else if ([commandName isEqualToString:@"toggleUnderline"]) {
+    [self toggleRegularStyle:[UnderlineStyle getType]];
+  } else if ([commandName isEqualToString:@"toggleStrikeThrough"]) {
     [self toggleRegularStyle:[StrikethroughStyle getType]];
   } else if ([commandName isEqualToString:@"toggleInlineCode"]) {
     [self toggleRegularStyle:[InlineCodeStyle getType]];

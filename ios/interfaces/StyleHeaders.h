@@ -11,7 +11,7 @@
 @interface ItalicStyle : StyleBase
 @end
 
-@interface UnderlineStyle : NSObject <BaseStyleProtocol>
+@interface UnderlineStyle : StyleBase
 @end
 
 @interface StrikethroughStyle : StyleBase
