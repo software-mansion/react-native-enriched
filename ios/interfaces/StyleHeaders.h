@@ -106,9 +106,7 @@
 - (void)manageBlockquoteColor;
 @end
 
-@interface CodeBlockStyle : NSObject <BaseStyleProtocol>
-- (void)manageCodeBlockFontAndColor;
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@interface CodeBlockStyle : StyleBase
 @end
 
 @interface ImageStyle : NSObject <BaseStyleProtocol>

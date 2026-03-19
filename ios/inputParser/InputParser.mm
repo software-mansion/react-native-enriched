@@ -99,7 +99,7 @@
         } else if (inCodeBlock) {
           CodeBlockStyle *cbStyle = _input->stylesDict[@(CodeBlock)];
           BOOL detected =
-              [cbStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+              [cbStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -158,8 +158,7 @@
             [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
-            [previousActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [previousActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [previousActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           // do nothing, proper closing paragraph tags have been already
@@ -202,8 +201,7 @@
         }
         // handle ending codeblock
         if (inCodeBlock &&
-            ![currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+            ![currentActiveStyles containsObject:@([CodeBlockStyle getType])]) {
           inCodeBlock = NO;
           [result appendString:@"\n</codeblock>"];
         }
@@ -238,8 +236,7 @@
         }
         // handle starting codeblock
         if (!inCodeBlock &&
-            [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+            [currentActiveStyles containsObject:@([CodeBlockStyle getType])]) {
           inCodeBlock = YES;
           [result appendString:@"\n<codeblock>"];
         }
@@ -264,8 +261,7 @@
             [currentActiveStyles containsObject:@([H6Style getStyleType])] ||
             [currentActiveStyles
                 containsObject:@([BlockQuoteStyle getStyleType])] ||
-            [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])] ||
+            [currentActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
@@ -410,7 +406,7 @@
                    containsObject:@([BlockQuoteStyle getStyleType])]) {
       [result appendString:@"\n</blockquote>"];
     } else if ([previousActiveStyles
-                   containsObject:@([CodeBlockStyle getStyleType])]) {
+                   containsObject:@([CodeBlockStyle getType])]) {
       [result appendString:@"\n</codeblock>"];
     } else if ([previousActiveStyles
                    containsObject:@([CheckboxListStyle getStyleType])]) {
@@ -589,7 +585,7 @@
       return @"li";
     }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
-             [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
+             [style isEqualToNumber:@([CodeBlockStyle getType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
     return @"p";
   }
@@ -1377,7 +1373,7 @@
     } else if ([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
     } else if ([tagName isEqualToString:@"codeblock"]) {
-      [styleArr addObject:@([CodeBlockStyle getStyleType])];
+      [styleArr addObject:@([CodeBlockStyle getType])];
     } else {
       // some other external tags like span just don't get put into the
       // processed styles

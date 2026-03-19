@@ -124,8 +124,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //         [[CheckboxListStyle alloc] initWithInput:self],
     //    @([BlockQuoteStyle getStyleType]) :
     //        [[BlockQuoteStyle alloc] initWithInput:self],
-    //    @([CodeBlockStyle getStyleType]) :
-    //        [[CodeBlockStyle alloc] initWithInput:self],
+    @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
     //    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
   };
 
@@ -197,7 +196,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([OrderedListStyle getType]),
       //      @([BlockQuoteStyle getStyleType]),
-      //      @([CodeBlockStyle getStyleType])
+      @([CodeBlockStyle getType]),
     ],
     @([OrderedListStyle getType]) : @[
       //      @([H1Style getStyleType]), @([H2Style getStyleType]),
@@ -205,7 +204,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([UnorderedListStyle getType]),
       //      @([BlockQuoteStyle getStyleType]),
-      //      @([CodeBlockStyle getStyleType]),
+      @([CodeBlockStyle getType]),
       //      @([CheckboxListStyle getStyleType])
     ],
     //    @([CheckboxListStyle getStyleType]) : @[
@@ -225,31 +224,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle
     //      getStyleType])
     //    ],
-    //    @([CodeBlockStyle getStyleType]) : @[
-    //      @([H1Style getStyleType]), @([H2Style getStyleType]),
-    //      @([H3Style getStyleType]), @([H4Style getStyleType]),
-    //      @([H5Style getStyleType]), @([H6Style getStyleType]),
-    //      @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]),
-    //      @([UnderlineStyle getStyleType]), @([StrikethroughStyle
-    //      getStyleType]),
-    //      @([UnorderedListStyle getStyleType]), @([OrderedListStyle
-    //      getStyleType]),
-    //      @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle
-    //      getStyleType]),
-    //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
-    //      @([CheckboxListStyle getStyleType])
-    //    ],
+    @([CodeBlockStyle getType]) : @[
+      //      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      //      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      //      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      //      @([BoldStyle getStyleType]), @([UnderlineStyle getStyleType]),
+      @([ItalicStyle getType]), @([StrikethroughStyle getType]),
+      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
+      //      @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle
+      //      getStyleType]),
+      //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
+      //      @([CheckboxListStyle getStyleType])
+    ],
     //    @([ImageStyle getStyleType]) :
     //        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
   };
 
   blockingStyles = [@{
     //    @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
-    @([ItalicStyle getType]) : @[ /*@([CodeBlockStyle getStyleType]) */ ],
+    @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     //    @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType])
     //    ],
-    @([StrikethroughStyle getType]) :
-        @[ /*@([CodeBlockStyle getStyleType]) */ ],
+    @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     //    @([InlineCodeStyle getStyleType]) :
     //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
     //        ],
@@ -1057,8 +1053,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
           //           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle
           //           getStyleType]],
-          //           .isCodeBlock = [self isStyleActive:[CodeBlockStyle
-          //           getStyleType]],
+          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
           //           .isImage = [self isStyleActive:[ImageStyle
           //           getStyleType]],
           //           .isCheckboxList =
@@ -1084,8 +1079,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
           //           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle
           //           getStyleType]),
-          //           .codeBlock = GET_STYLE_STATE([CodeBlockStyle
-          //           getStyleType]),
+          .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
           //           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
           //           .checkboxList = GET_STYLE_STATE([CheckboxListStyle
           //           getStyleType])
@@ -1213,9 +1207,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //    [self toggleCheckboxList:checked];
   //  } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
   //    [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
-  //  } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
-  //    [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
-  //  } else if ([commandName isEqualToString:@"addImage"]) {
+  else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
+    [self toggleRegularStyle:[CodeBlockStyle getType]];
+  }
+  //  else if ([commandName isEqualToString:@"addImage"]) {
   //    NSString *uri = (NSString *)args[0];
   //    CGFloat imgWidth = [(NSNumber *)args[1] floatValue];
   //    CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
@@ -1389,9 +1384,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)toggleRegularStyle:(StyleType)type {
   StyleBase *style = stylesDict[@(type)];
-
-  if ([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
-    [style toggle:textView.selectedRange];
+  NSRange range = textView.selectedRange;
+  if ([style isParagraph]) {
+    range = [textView.textStorage.string paragraphRangeForRange:range];
+  }
+  if ([self handleStyleBlocksAndConflicts:type range:range]) {
+    [style toggle:range];
     [self anyTextMayHaveBeenModified];
   }
 }

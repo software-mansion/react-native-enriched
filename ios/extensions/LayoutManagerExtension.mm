@@ -66,13 +66,12 @@ static void const *kInputKey = &kInputKey;
                 origin:(CGPoint)origin
       visibleCharRange:(NSRange)visibleCharRange {
   CodeBlockStyle *codeBlockStyle =
-      typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+      typedInput->stylesDict[@([CodeBlockStyle getType])];
   if (codeBlockStyle == nullptr) {
     return;
   }
 
-  NSArray<StylePair *> *allCodeBlocks =
-      [codeBlockStyle findAllOccurences:visibleCharRange];
+  NSArray<StylePair *> *allCodeBlocks = [codeBlockStyle all:visibleCharRange];
   NSArray<StylePair *> *mergedCodeBlocks =
       [self mergeContiguousStylePairs:allCodeBlocks];
   UIColor *bgColor = [[typedInput->config codeBlockBgColor]
