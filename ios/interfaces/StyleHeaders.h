@@ -5,7 +5,7 @@
 #import "MentionParams.h"
 #import "StyleBase.h"
 
-@interface BoldStyle : NSObject <BaseStyleProtocol>
+@interface BoldStyle : StyleBase
 @end
 
 @interface ItalicStyle : StyleBase

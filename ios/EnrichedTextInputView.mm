@@ -99,7 +99,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
 
   stylesDict = @{
-    //    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
+    @([BoldStyle getType]) : [[BoldStyle alloc] initWithInput:self],
     @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithInput:self],
     @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithInput:self],
     @([StrikethroughStyle getType]) :
@@ -126,7 +126,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   };
 
   conflictingStyles = @{
-    //    @([BoldStyle getStyleType]) : @[],
+    @([BoldStyle getType]) : @[],
     @([ItalicStyle getType]) : @[],
     @([UnderlineStyle getType]) : @[],
     @([StrikethroughStyle getType]) : @[],
@@ -214,11 +214,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([CodeBlockStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      //      @([BoldStyle getStyleType]),
-      @([UnderlineStyle getType]), @([ItalicStyle getType]),
-      @([StrikethroughStyle getType]), @([UnorderedListStyle getType]),
-      @([OrderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([InlineCodeStyle getType]),
+      @([BoldStyle getType]), @([UnderlineStyle getType]),
+      @([ItalicStyle getType]), @([StrikethroughStyle getType]),
+      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
+      @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
       //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
       //      @([CheckboxListStyle getStyleType])
     ],
@@ -227,7 +226,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   };
 
   blockingStyles = [@{
-    //    @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
+    @([BoldStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([UnderlineStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
@@ -1019,7 +1018,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _blockedStyles = newBlockedStyles;
 
       emitter->onChangeStateDeprecated({
-          //           .isBold = [self isStyleActive:[BoldStyle getStyleType]],
+          .isBold = [self isStyleActive:[BoldStyle getType]],
           .isItalic = [self isStyleActive:[ItalicStyle getType]],
           .isUnderline = [self isStyleActive:[UnderlineStyle getType]],
           .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
@@ -1043,7 +1042,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //               [self isStyleActive:[CheckboxListStyle getStyleType]]
       });
       emitter->onChangeState({
-          //           .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
+          .bold = GET_STYLE_STATE([BoldStyle getType]),
           .italic = GET_STYLE_STATE([ItalicStyle getType]),
           .underline = GET_STYLE_STATE([UnderlineStyle getType]),
           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
@@ -1136,10 +1135,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //    NSString *value = (NSString *)args[0];
   //    [self setValue:value];
   //  }
-  //  else if ([commandName isEqualToString:@"toggleBold"]) {
-  //    [self toggleRegularStyle:[BoldStyle getStyleType]];
-  //  }
-  else if ([commandName isEqualToString:@"toggleItalic"]) {
+  else if ([commandName isEqualToString:@"toggleBold"]) {
+    [self toggleRegularStyle:[BoldStyle getType]];
+  } else if ([commandName isEqualToString:@"toggleItalic"]) {
     [self toggleRegularStyle:[ItalicStyle getType]];
   } else if ([commandName isEqualToString:@"toggleUnderline"]) {
     [self toggleRegularStyle:[UnderlineStyle getType]];

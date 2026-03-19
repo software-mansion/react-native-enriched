@@ -468,7 +468,7 @@
 - (NSString *)tagContentForStyle:(NSNumber *)style
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location {
-  if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
+  if ([style isEqualToNumber:@([BoldStyle getType])]) {
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
     return @"i";
@@ -1210,7 +1210,7 @@
     NSMutableArray *styleArr = [[NSMutableArray alloc] init];
     StylePair *stylePair = [[StylePair alloc] init];
     if ([tagName isEqualToString:@"b"]) {
-      [styleArr addObject:@([BoldStyle getStyleType])];
+      [styleArr addObject:@([BoldStyle getType])];
     } else if ([tagName isEqualToString:@"i"]) {
       [styleArr addObject:@([ItalicStyle getType])];
     } else if ([tagName isEqualToString:@"img"]) {
