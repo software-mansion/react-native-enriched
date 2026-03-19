@@ -25,6 +25,7 @@ import type {
 import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from '../utils/regexParser';
 import { nullthrows } from '../utils/nullthrows';
+import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/enrichedTextInputDefaultProps';
 import type {
   ContextMenuItem,
   EnrichedTextInputProps,
@@ -47,8 +48,8 @@ type HtmlRequest = {
 
 export const EnrichedTextInput = ({
   ref,
-  autoFocus,
-  editable = true,
+  autoFocus = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoFocus,
+  editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
   mentionIndicators = ['@'],
   defaultValue,
   placeholder,
@@ -56,7 +57,7 @@ export const EnrichedTextInput = ({
   cursorColor,
   selectionColor,
   style,
-  autoCapitalize = 'sentences',
+  autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   htmlStyle = {},
   linkRegex: _linkRegex,
   onFocus,
@@ -78,7 +79,7 @@ export const EnrichedTextInput = ({
   contextMenuItems,
   androidExperimentalSynchronousEvents = false,
   useHtmlNormalizer = false,
-  scrollEnabled = true,
+  scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);

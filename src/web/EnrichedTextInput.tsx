@@ -13,15 +13,16 @@ import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import getNormalizedHtml from './getNormalizedHtml';
+import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/enrichedTextInputDefaultProps';
 
 export const EnrichedTextInput = ({
   ref,
   defaultValue,
-  autoFocus = false,
-  editable = true,
+  autoFocus = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoFocus,
+  editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
   placeholder,
-  autoCapitalize = 'sentences',
-  scrollEnabled = true,
+  autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
+  scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   onFocus,
   onBlur,
   onChangeSelection,
