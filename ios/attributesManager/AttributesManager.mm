@@ -50,6 +50,10 @@
   [_removedTypingAttributes addObject:key];
 }
 
+- (void)clearRemovedTypingAttributes {
+  [_removedTypingAttributes removeAllObjects];
+}
+
 - (void)handleDirtyRangesStyling {
   for (NSValue *rangeObj in _dirtyRanges) {
     NSRange dirtyRange = [rangeObj rangeValue];
@@ -164,7 +168,6 @@
     newAttrs[entry.key] = entry.value;
   }
 
-  [_removedTypingAttributes removeAllObjects];
   textView.typingAttributes = newAttrs;
 }
 

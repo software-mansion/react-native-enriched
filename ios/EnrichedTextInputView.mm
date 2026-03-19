@@ -1552,6 +1552,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   BOOL onlySelectionChanged =
       textView.selectedRange.length == 0 &&
       [_recentInputString isEqualToString:currentString];
+  [attributesManager clearRemovedTypingAttributes];
   [attributesManager
       manageTypingAttributesWithOnlySelection:onlySelectionChanged];
 

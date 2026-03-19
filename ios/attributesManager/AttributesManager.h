@@ -10,6 +10,7 @@
 - (void)shiftDirtyRangesWithEditedRange:(NSRange)editedRange
                          changeInLength:(NSInteger)delta;
 - (void)didRemoveTypingAttribute:(NSString *)key;
+- (void)clearRemovedTypingAttributes;
 - (void)manageTypingAttributesWithOnlySelection:(BOOL)onlySelectionChanged;
 - (void)handleDirtyRangesStyling;
 @end
