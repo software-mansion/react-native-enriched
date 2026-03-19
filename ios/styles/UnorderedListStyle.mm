@@ -44,30 +44,6 @@
               }];
 }
 
-//- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text
-//{
-//  if ([self detectStyle:_input->textView.selectedRange] && text.length == 0) {
-//    // backspace while the style is active
-//
-//    NSRange paragraphRange = [_input->textView.textStorage.string
-//        paragraphRangeForRange:_input->textView.selectedRange];
-//
-//    if (NSEqualRanges(_input->textView.selectedRange, NSMakeRange(0, 0))) {
-//      // a backspace on the very first input's line list point
-//      // it doesn't run textVieDidChange so we need to manually remove
-//      // attributes
-//      [self removeAttributes:paragraphRange];
-//      return YES;
-//    } else if (range.location == paragraphRange.location - 1) {
-//      // same case in other lines; here, the removed range location will be
-//      // exactly 1 less than paragraph range location
-//      [self removeAttributes:paragraphRange];
-//      return YES;
-//    }
-//  }
-//  return NO;
-//}
-//
 //- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
 //                      replacementText:(NSString *)text {
 //  NSRange paragraphRange =

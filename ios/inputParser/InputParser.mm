@@ -70,8 +70,7 @@
         // checked on 0 length range, not on the newline character
         if (inOrderedList) {
           OrderedListStyle *oStyle = _input->stylesDict[@(OrderedList)];
-          BOOL detected =
-              [oStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          BOOL detected = [oStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<li></li>"];
           } else {
@@ -150,7 +149,7 @@
         if ([previousActiveStyles
                 containsObject:@([UnorderedListStyle getType])] ||
             [previousActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])] ||
+                containsObject:@([OrderedListStyle getType])] ||
             [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
@@ -190,7 +189,7 @@
         // handle ending ordered list
         if (inOrderedList &&
             ![currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])]) {
+                containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = NO;
           [result appendString:@"\n</ol>"];
         }
@@ -226,7 +225,7 @@
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])]) {
+                containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = YES;
           [result appendString:@"\n<ol>"];
         }
@@ -256,7 +255,7 @@
         if ([currentActiveStyles
                 containsObject:@([UnorderedListStyle getType])] ||
             [currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])] ||
+                containsObject:@([OrderedListStyle getType])] ||
             [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
@@ -405,7 +404,7 @@
     if ([previousActiveStyles containsObject:@([UnorderedListStyle getType])]) {
       [result appendString:@"\n</ul>"];
     } else if ([previousActiveStyles
-                   containsObject:@([OrderedListStyle getStyleType])]) {
+                   containsObject:@([OrderedListStyle getType])]) {
       [result appendString:@"\n</ol>"];
     } else if ([previousActiveStyles
                    containsObject:@([BlockQuoteStyle getStyleType])]) {
@@ -573,7 +572,7 @@
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
     return @"h6";
   } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
-             [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
+             [style isEqualToNumber:@([OrderedListStyle getType])]) {
     return @"li";
   } else if ([style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
     if (openingTag) {
@@ -1374,7 +1373,7 @@
         [styleArr addObject:@([UnorderedListStyle getType])];
       }
     } else if ([tagName isEqualToString:@"ol"]) {
-      [styleArr addObject:@([OrderedListStyle getStyleType])];
+      [styleArr addObject:@([OrderedListStyle getType])];
     } else if ([tagName isEqualToString:@"blockquote"]) {
       [styleArr addObject:@([BlockQuoteStyle getStyleType])];
     } else if ([tagName isEqualToString:@"codeblock"]) {

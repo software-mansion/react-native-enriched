@@ -118,8 +118,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //    @([H6Style getStyleType]) : [[H6Style alloc] initWithInput:self],
     @([UnorderedListStyle getType]) :
         [[UnorderedListStyle alloc] initWithInput:self],
-    //    @([OrderedListStyle getStyleType]) :
-    //        [[OrderedListStyle alloc] initWithInput:self],
+    @([OrderedListStyle getType]) :
+        [[OrderedListStyle alloc] initWithInput:self],
     // @([CheckboxListStyle getStyleType]) :
     //         [[CheckboxListStyle alloc] initWithInput:self],
     //    @([BlockQuoteStyle getStyleType]) :
@@ -195,19 +195,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([H1Style getStyleType]), @([H2Style getStyleType]),
       //      @([H3Style getStyleType]), @([H4Style getStyleType]),
       //      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      //      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle
-      //      getStyleType]),
+      @([OrderedListStyle getType]),
+      //      @([BlockQuoteStyle getStyleType]),
       //      @([CodeBlockStyle getStyleType])
     ],
-    //    @([OrderedListStyle getStyleType]) : @[
-    //      @([H1Style getStyleType]), @([H2Style getStyleType]),
-    //      @([H3Style getStyleType]), @([H4Style getStyleType]),
-    //      @([H5Style getStyleType]), @([H6Style getStyleType]),
-    //      @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle
-    //      getStyleType]),
-    //      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle
-    //      getStyleType])
-    //    ],
+    @([OrderedListStyle getType]) : @[
+      //      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      //      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      //      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getType]),
+      //      @([BlockQuoteStyle getStyleType]),
+      //      @([CodeBlockStyle getStyleType]),
+      //      @([CheckboxListStyle getStyleType])
+    ],
     //    @([CheckboxListStyle getStyleType]) : @[
     //      @([H1Style getStyleType]), @([H2Style getStyleType]),
     //      @([H3Style getStyleType]), @([H4Style getStyleType]),
@@ -1054,8 +1054,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .isH5 = [self isStyleActive:[H5Style getStyleType]],
           //           .isH6 = [self isStyleActive:[H6Style getStyleType]],
           .isUnorderedList = [self isStyleActive:[UnorderedListStyle getType]],
-          //           .isOrderedList =
-          //               [self isStyleActive:[OrderedListStyle getStyleType]],
+          .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
           //           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle
           //           getStyleType]],
           //           .isCodeBlock = [self isStyleActive:[CodeBlockStyle
@@ -1082,8 +1081,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .h5 = GET_STYLE_STATE([H5Style getStyleType]),
           //           .h6 = GET_STYLE_STATE([H6Style getStyleType]),
           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
-          //           .orderedList = GET_STYLE_STATE([OrderedListStyle
-          //           getStyleType]),
+          .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
           //           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle
           //           getStyleType]),
           //           .codeBlock = GET_STYLE_STATE([CodeBlockStyle
@@ -1207,10 +1205,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  }
   else if ([commandName isEqualToString:@"toggleUnorderedList"]) {
     [self toggleRegularStyle:[UnorderedListStyle getType]];
+  } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
+    [self toggleRegularStyle:[OrderedListStyle getType]];
   }
-  //  else if ([commandName isEqualToString:@"toggleOrderedList"]) {
-  //    [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
-  //  } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
+  //  else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
   //    BOOL checked = [args[0] boolValue];
   //    [self toggleCheckboxList:checked];
   //  } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {

@@ -248,18 +248,22 @@ static void const *kInputKey = &kInputKey;
   UnorderedListStyle *ulStyle =
       typedInput->stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *olStyle =
-      typedInput->stylesDict[@([OrderedListStyle getStyleType])];
-  CheckboxListStyle *cbStyle =
-      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-  if (ulStyle == nullptr) {
+      typedInput->stylesDict[@([OrderedListStyle getType])];
+  // CheckboxListStyle *cbStyle =
+  //     typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
+  if (ulStyle == nullptr && olStyle == nullptr) {
     return;
   }
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
-  // [allLists addObjectsFromArray:[olStyle
-  // findAllOccurences:visibleCharRange]]; [allLists
-  // addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
+  if (ulStyle != nullptr) {
+    [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
+  }
+  if (olStyle != nullptr) {
+    [allLists addObjectsFromArray:[olStyle all:visibleCharRange]];
+  }
+  // [allLists addObjectsFromArray:[cbStyle
+  // findAllOccurences:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
@@ -288,8 +292,9 @@ static void const *kInputKey = &kInputKey;
                                          pStyle.textLists.firstObject
                                              .markerFormat;
 
-                                     if (markerFormat ==
-                                         NSTextListMarkerDecimal) {
+                                     if ([markerFormat
+                                             isEqualToString:
+                                                 NSTextListMarkerDecimal]) {
                                        NSString *marker = [self
                                            getDecimalMarkerForList:typedInput
                                                          charIndex:
@@ -331,7 +336,7 @@ static void const *kInputKey = &kInputKey;
       [fullText paragraphRangeForRange:NSMakeRange(index, 0)];
   if (currentParagraph.location > 0) {
     OrderedListStyle *olStyle =
-        input->stylesDict[@([OrderedListStyle getStyleType])];
+        input->stylesDict[@([OrderedListStyle getType])];
 
     NSInteger prevParagraphsCount = 0;
     NSInteger recentParagraphLocation =
@@ -341,7 +346,7 @@ static void const *kInputKey = &kInputKey;
 
     // seek for previous lists
     while (true) {
-      if ([olStyle detectStyle:NSMakeRange(recentParagraphLocation, 0)]) {
+      if ([olStyle detect:NSMakeRange(recentParagraphLocation, 0)]) {
         prevParagraphsCount += 1;
 
         if (recentParagraphLocation > 0) {
@@ -408,7 +413,7 @@ static void const *kInputKey = &kInputKey;
             usedRect:(CGRect)usedRect {
   CGFloat gapWidth = [typedInput->config orderedListGapWidth];
   CGFloat markerWidth = [marker sizeWithAttributes:markerAttributes].width;
-  CGFloat markerX = usedRect.origin.x - gapWidth - markerWidth / 2;
+  CGFloat markerX = origin.x + usedRect.origin.x - gapWidth - markerWidth / 2;
 
   [marker drawAtPoint:CGPointMake(markerX, usedRect.origin.y + origin.y)
        withAttributes:markerAttributes];

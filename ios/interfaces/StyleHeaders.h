@@ -81,16 +81,13 @@
 @end
 
 @interface UnorderedListStyle : StyleBase
-//- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString
-//*)text;
 //- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
 //                      replacementText:(NSString *)text;
 @end
 
-@interface OrderedListStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
-                      replacementText:(NSString *)text;
+@interface OrderedListStyle : StyleBase
+//- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
+//                      replacementText:(NSString *)text;
 @end
 
 @interface CheckboxListStyle : NSObject <BaseStyleProtocol>
