@@ -122,8 +122,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[OrderedListStyle alloc] initWithInput:self],
     // @([CheckboxListStyle getStyleType]) :
     //         [[CheckboxListStyle alloc] initWithInput:self],
-    //    @([BlockQuoteStyle getStyleType]) :
-    //        [[BlockQuoteStyle alloc] initWithInput:self],
+    @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithInput:self],
     @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
     //    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
   };
@@ -195,15 +194,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([H3Style getStyleType]), @([H4Style getStyleType]),
       //      @([H5Style getStyleType]), @([H6Style getStyleType]),
       @([OrderedListStyle getType]),
-      //      @([BlockQuoteStyle getStyleType]),
+      @([BlockQuoteStyle getType]),
       @([CodeBlockStyle getType]),
     ],
     @([OrderedListStyle getType]) : @[
       //      @([H1Style getStyleType]), @([H2Style getStyleType]),
       //      @([H3Style getStyleType]), @([H4Style getStyleType]),
       //      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getType]),
-      //      @([BlockQuoteStyle getStyleType]),
+      @([UnorderedListStyle getType]), @([BlockQuoteStyle getType]),
       @([CodeBlockStyle getType]),
       //      @([CheckboxListStyle getStyleType])
     ],
@@ -215,15 +213,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //      getStyleType]),
     //      @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])
     //    ],
-    //    @([BlockQuoteStyle getStyleType]) : @[
-    //      @([H1Style getStyleType]), @([H2Style getStyleType]),
-    //      @([H3Style getStyleType]), @([H4Style getStyleType]),
-    //      @([H5Style getStyleType]), @([H6Style getStyleType]),
-    //      @([UnorderedListStyle getStyleType]), @([OrderedListStyle
-    //      getStyleType]),
-    //      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle
-    //      getStyleType])
-    //    ],
+    @([BlockQuoteStyle getType]) : @[
+      //      @([H1Style getStyleType]), @([H2Style getStyleType]),
+      //      @([H3Style getStyleType]), @([H4Style getStyleType]),
+      //      @([H5Style getStyleType]), @([H6Style getStyleType]),
+      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
+      @([CodeBlockStyle getType]),
+      //      @([CheckboxListStyle getStyleType])
+    ],
     @([CodeBlockStyle getType]) : @[
       //      @([H1Style getStyleType]), @([H2Style getStyleType]),
       //      @([H3Style getStyleType]), @([H4Style getStyleType]),
@@ -231,8 +228,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([BoldStyle getStyleType]), @([UnderlineStyle getStyleType]),
       @([ItalicStyle getType]), @([StrikethroughStyle getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      //      @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle
-      //      getStyleType]),
+      @([BlockQuoteStyle getType]),
+      //      @([InlineCodeStyle getStyleType]),
       //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
       //      @([CheckboxListStyle getStyleType])
     ],
@@ -1051,8 +1048,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .isH6 = [self isStyleActive:[H6Style getStyleType]],
           .isUnorderedList = [self isStyleActive:[UnorderedListStyle getType]],
           .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
-          //           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle
-          //           getStyleType]],
+          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getType]],
           .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
           //           .isImage = [self isStyleActive:[ImageStyle
           //           getStyleType]],
@@ -1077,8 +1073,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .h6 = GET_STYLE_STATE([H6Style getStyleType]),
           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
           .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
-          //           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle
-          //           getStyleType]),
+          .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
           //           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
           //           .checkboxList = GET_STYLE_STATE([CheckboxListStyle
@@ -1205,9 +1200,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
   //    BOOL checked = [args[0] boolValue];
   //    [self toggleCheckboxList:checked];
-  //  } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
-  //    [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
-  else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
+  else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
+    [self toggleRegularStyle:[BlockQuoteStyle getType]];
+  } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
     [self toggleRegularStyle:[CodeBlockStyle getType]];
   }
   //  else if ([commandName isEqualToString:@"addImage"]) {

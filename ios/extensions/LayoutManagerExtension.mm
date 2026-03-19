@@ -204,12 +204,12 @@ static void const *kInputKey = &kInputKey;
                  origin:(CGPoint)origin
        visibleCharRange:(NSRange)visibleCharRange {
   BlockQuoteStyle *bqStyle =
-      typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
+      typedInput->stylesDict[@([BlockQuoteStyle getType])];
   if (bqStyle == nullptr) {
     return;
   }
 
-  NSArray *allBlockquotes = [bqStyle findAllOccurences:visibleCharRange];
+  NSArray *allBlockquotes = [bqStyle all:visibleCharRange];
 
   for (StylePair *pair in allBlockquotes) {
     NSRange paragraphRange = [typedInput->textView.textStorage.string

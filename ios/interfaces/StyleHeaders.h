@@ -101,9 +101,7 @@
                        withTypingAttr:(BOOL)withTypingAttr;
 @end
 
-@interface BlockQuoteStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)manageBlockquoteColor;
+@interface BlockQuoteStyle : StyleBase
 @end
 
 @interface CodeBlockStyle : StyleBase

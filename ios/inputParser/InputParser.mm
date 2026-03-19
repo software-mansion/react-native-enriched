@@ -89,7 +89,7 @@
         } else if (inBlockQuote) {
           BlockQuoteStyle *bqStyle = _input->stylesDict[@(BlockQuote)];
           BOOL detected =
-              [bqStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+              [bqStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -157,7 +157,7 @@
             [previousActiveStyles containsObject:@([H5Style getStyleType])] ||
             [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
             [previousActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])] ||
+                containsObject:@([BlockQuoteStyle getType])] ||
             [previousActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [previousActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
@@ -193,9 +193,8 @@
           [result appendString:@"\n</ol>"];
         }
         // handle ending blockquotes
-        if (inBlockQuote &&
-            ![currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])]) {
+        if (inBlockQuote && ![currentActiveStyles
+                                containsObject:@([BlockQuoteStyle getType])]) {
           inBlockQuote = NO;
           [result appendString:@"\n</blockquote>"];
         }
@@ -229,8 +228,7 @@
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
-            [currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])]) {
+            [currentActiveStyles containsObject:@([BlockQuoteStyle getType])]) {
           inBlockQuote = YES;
           [result appendString:@"\n<blockquote>"];
         }
@@ -259,8 +257,7 @@
             [currentActiveStyles containsObject:@([H4Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H5Style getStyleType])] ||
             [currentActiveStyles containsObject:@([H6Style getStyleType])] ||
-            [currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])] ||
+            [currentActiveStyles containsObject:@([BlockQuoteStyle getType])] ||
             [currentActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getStyleType])]) {
@@ -403,7 +400,7 @@
                    containsObject:@([OrderedListStyle getType])]) {
       [result appendString:@"\n</ol>"];
     } else if ([previousActiveStyles
-                   containsObject:@([BlockQuoteStyle getStyleType])]) {
+                   containsObject:@([BlockQuoteStyle getType])]) {
       [result appendString:@"\n</blockquote>"];
     } else if ([previousActiveStyles
                    containsObject:@([CodeBlockStyle getType])]) {
@@ -584,7 +581,7 @@
     } else {
       return @"li";
     }
-  } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
+  } else if ([style isEqualToNumber:@([BlockQuoteStyle getType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
     return @"p";
@@ -1371,7 +1368,7 @@
     } else if ([tagName isEqualToString:@"ol"]) {
       [styleArr addObject:@([OrderedListStyle getType])];
     } else if ([tagName isEqualToString:@"blockquote"]) {
-      [styleArr addObject:@([BlockQuoteStyle getStyleType])];
+      [styleArr addObject:@([BlockQuoteStyle getType])];
     } else if ([tagName isEqualToString:@"codeblock"]) {
       [styleArr addObject:@([CodeBlockStyle getType])];
     } else {
