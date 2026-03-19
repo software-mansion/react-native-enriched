@@ -190,11 +190,31 @@
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
                          input:(id)input {
-  if (range.length != 1 || ![text isEqualToString:@""]) {
+  if (![text isEqualToString:@""]) {
     return NO;
   }
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   if (typedInput == nullptr) {
+    return NO;
+  }
+
+  // Backspace at the very beginning of the input ({0, 0}).
+  // Nothing to delete, but if the first paragraph has a needsZWS style,
+  // remove it.
+  if (range.length == 0 && range.location == 0) {
+    NSRange firstParagraphRange = [typedInput->textView.textStorage.string
+        paragraphRangeForRange:NSMakeRange(0, 0)];
+    for (NSNumber *type in typedInput->stylesDict) {
+      StyleBase *style = typedInput->stylesDict[type];
+      if ([style needsZWS] && [style detect:firstParagraphRange]) {
+        [style remove:firstParagraphRange withDirtyRange:YES];
+        return YES;
+      }
+    }
+    return NO;
+  }
+
+  if (range.length != 1) {
     return NO;
   }
 

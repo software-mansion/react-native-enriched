@@ -1807,11 +1807,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      || [h6Style handleNewlinesInRange:range replacementText:text]
       || [ParagraphAttributesUtils handleBackspaceInRange:range
                                           replacementText:text
-                                                    input:self]
-      //      || [ParagraphAttributesUtils
-      //      handleResetTypingAttributesOnBackspace:range
-      //                                                       replacementText:text
-      //                                                                 input:self]
+                                                    input:self] ||
+      [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
+                                                       replacementText:text
+                                                                 input:self]
       //                                                                 ||
       // CRITICAL: This callback HAS TO be always evaluated last.
       //
