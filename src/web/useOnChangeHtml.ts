@@ -6,13 +6,13 @@ import { makeWebEvent } from './makeWebEvent';
 import getNormalizedHtml from './getNormalizedHtml';
 
 export const useOnChangeHtml = (
-  editor: Editor | null,
+  editor: Editor,
   onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void
 ) => {
   const lastHtmlRef = useRef('');
 
   useEffect(() => {
-    if (!editor || !onChangeHtml) return;
+    if (!onChangeHtml) return;
 
     const handleUpdate = () => {
       const html = getNormalizedHtml(editor);

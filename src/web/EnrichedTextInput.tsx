@@ -11,6 +11,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
+import { useOnChangeText } from './useOnChangeText';
 import getNormalizedHtml from './getNormalizedHtml';
 
 export const EnrichedTextInput = ({
@@ -25,6 +26,7 @@ export const EnrichedTextInput = ({
   onBlur,
   onChangeSelection,
   onKeyPress,
+  onChangeText,
   onChangeHtml,
 }: EnrichedTextInputProps) => {
   const editor = useEditor({
@@ -74,6 +76,7 @@ export const EnrichedTextInput = ({
   });
 
   useOnChangeHtml(editor, onChangeHtml);
+  useOnChangeText(editor, onChangeText);
 
   useImperativeHandle(
     ref,

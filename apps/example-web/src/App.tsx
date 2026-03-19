@@ -4,6 +4,7 @@ import {
   EnrichedTextInput,
   type EnrichedTextInputInstance,
   type OnKeyPressEvent,
+  type OnChangeTextEvent,
   type OnChangeSelectionEvent,
 } from 'react-native-enriched';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -26,6 +27,10 @@ function App() {
 
   const handleKeyPress = (e: NativeSyntheticEvent<OnKeyPressEvent>) => {
     console.log('[EnrichedTextInput] onKeyPress', e.nativeEvent.key);
+  };
+
+  const handleOnChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
+    console.log('[EnrichedTextInput] onChangeText', e.nativeEvent.value);
   };
 
   const handleOnChangeHtml = (e: NativeSyntheticEvent<{ value: string }>) => {
@@ -63,6 +68,7 @@ function App() {
             onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyPress={handleKeyPress}
+            onChangeText={handleOnChangeText}
             onChangeSelection={handleChangeSelection}
             onChangeHtml={handleOnChangeHtml}
           />
