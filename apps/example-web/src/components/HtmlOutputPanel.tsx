@@ -1,3 +1,5 @@
+import './HtmlOutputPanel.css';
+
 interface HtmlOutputPanelProps {
   html: string;
 }

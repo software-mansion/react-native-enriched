@@ -1,3 +1,5 @@
+import './EditorActions.css';
+
 interface EditorActionsProps {
   showHtmlOutput: boolean;
   onFocus: () => void;
