@@ -1550,6 +1550,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   BOOL onlySelectionChanged =
       textView.selectedRange.length == 0 &&
       [_recentInputString isEqualToString:currentString];
+  // We want to remember which attributes were removed as long as we stay at the
+  // same position. This prevents a removed attribute from being re-applied from
+  // the preceding character right after we toggled it off
   [attributesManager clearRemovedTypingAttributes];
   [attributesManager
       manageTypingAttributesWithOnlySelection:onlySelectionChanged];
