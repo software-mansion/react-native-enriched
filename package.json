@@ -2,8 +2,8 @@
   "name": "react-native-enriched",
   "version": "0.5.2",
   "description": "Rich Text Editor component for React Native",
-  "source": "./src/index.tsx",
-  "main": "./lib/module/index.js",
+  "source": "./src/index.native.tsx",
+  "main": "./lib/module/index.native.js",
   "types": "./lib/typescript/src/index.native.d.ts",
   "sideEffects": false,
   "exports": {
