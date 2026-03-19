@@ -3,6 +3,10 @@ import type {
   EnrichedTextInputInstance,
   EnrichedTextInputProps,
 } from '../types';
+import { useEditor, EditorContent } from '@tiptap/react';
+import Document from '@tiptap/extension-document';
+import Paragraph from '@tiptap/extension-paragraph';
+import Text from '@tiptap/extension-text';
 
 export const EnrichedTextInput = ({
   ref,
@@ -43,6 +47,10 @@ export const EnrichedTextInput = ({
       setNativeProps: () => {},
     })
   );
+  const editor = useEditor({
+    extensions: [Document, Paragraph, Text],
+    content: defaultValue,
+  });
 
-  return <textarea defaultValue={defaultValue} />;
+  return <EditorContent editor={editor} />;
 };

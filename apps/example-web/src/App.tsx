@@ -4,7 +4,7 @@ import { EnrichedTextInput } from 'react-native-enriched';
 function App() {
   return (
     <div className="container">
-      <EnrichedTextInput defaultValue="Hello from web!" />
+      <EnrichedTextInput defaultValue="<p>Hello from web!</p><p>A quick brown fox jumps over the lazy dog</p>" />
     </div>
   );
 }
