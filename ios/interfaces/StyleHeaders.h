@@ -52,14 +52,10 @@
 - (NSValue *)getActiveMentionRange;
 @end
 
-@interface HeadingStyleBase : NSObject <BaseStyleProtocol> {
-  id input;
-}
+@interface HeadingStyleBase : StyleBase
 - (CGFloat)getHeadingFontSize;
 - (BOOL)isHeadingBold;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)handleImproperHeadings;
-@property(nonatomic, assign) CGFloat lastAppliedFontSize;
 @end
 
 @interface H1Style : HeadingStyleBase

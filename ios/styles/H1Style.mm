@@ -2,16 +2,19 @@
 #import "StyleHeaders.h"
 
 @implementation H1Style
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return H1;
 }
-+ (BOOL)isParagraphStyle {
+- (NSString *)getValue {
+  return @"h1";
+}
+- (BOOL)isParagraph {
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  return [((EnrichedTextInputView *)input)->config h1FontSize];
+  return [self.input->config h1FontSize];
 }
 - (BOOL)isHeadingBold {
-  return [((EnrichedTextInputView *)input)->config h1Bold];
+  return [self.input->config h1Bold];
 }
 @end

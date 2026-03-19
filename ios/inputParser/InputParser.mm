@@ -150,12 +150,12 @@
                 containsObject:@([UnorderedListStyle getType])] ||
             [previousActiveStyles
                 containsObject:@([OrderedListStyle getType])] ||
-            [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H4Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H5Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
+            [previousActiveStyles containsObject:@([H1Style getType])] ||
+            [previousActiveStyles containsObject:@([H2Style getType])] ||
+            [previousActiveStyles containsObject:@([H3Style getType])] ||
+            [previousActiveStyles containsObject:@([H4Style getType])] ||
+            [previousActiveStyles containsObject:@([H5Style getType])] ||
+            [previousActiveStyles containsObject:@([H6Style getType])] ||
             [previousActiveStyles
                 containsObject:@([BlockQuoteStyle getType])] ||
             [previousActiveStyles containsObject:@([CodeBlockStyle getType])] ||
@@ -251,12 +251,12 @@
                 containsObject:@([UnorderedListStyle getType])] ||
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getType])] ||
-            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H4Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H5Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H6Style getStyleType])] ||
+            [currentActiveStyles containsObject:@([H1Style getType])] ||
+            [currentActiveStyles containsObject:@([H2Style getType])] ||
+            [currentActiveStyles containsObject:@([H3Style getType])] ||
+            [currentActiveStyles containsObject:@([H4Style getType])] ||
+            [currentActiveStyles containsObject:@([H5Style getType])] ||
+            [currentActiveStyles containsObject:@([H6Style getType])] ||
             [currentActiveStyles containsObject:@([BlockQuoteStyle getType])] ||
             [currentActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [currentActiveStyles
@@ -408,18 +408,12 @@
     } else if ([previousActiveStyles
                    containsObject:@([CheckboxListStyle getStyleType])]) {
       [result appendString:@"\n</ul>"];
-    } else if ([previousActiveStyles
-                   containsObject:@([H1Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H2Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H3Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H4Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H5Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H6Style getStyleType])]) {
+    } else if ([previousActiveStyles containsObject:@([H1Style getType])] ||
+               [previousActiveStyles containsObject:@([H2Style getType])] ||
+               [previousActiveStyles containsObject:@([H3Style getType])] ||
+               [previousActiveStyles containsObject:@([H4Style getType])] ||
+               [previousActiveStyles containsObject:@([H5Style getType])] ||
+               [previousActiveStyles containsObject:@([H6Style getType])]) {
       // do nothing, heading closing tag has already been appended
     } else {
       [result appendString:@"</p>"];
@@ -552,17 +546,17 @@
     } else {
       return @"mention";
     }
-  } else if ([style isEqualToNumber:@([H1Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H1Style getType])]) {
     return @"h1";
-  } else if ([style isEqualToNumber:@([H2Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H2Style getType])]) {
     return @"h2";
-  } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H3Style getType])]) {
     return @"h3";
-  } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H4Style getType])]) {
     return @"h4";
-  } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H5Style getType])]) {
     return @"h5";
-  } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H6Style getType])]) {
     return @"h6";
   } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
              [style isEqualToNumber:@([OrderedListStyle getType])]) {
@@ -1344,17 +1338,17 @@
     } else if ([[tagName substringWithRange:NSMakeRange(0, 1)]
                    isEqualToString:@"h"]) {
       if ([tagName isEqualToString:@"h1"]) {
-        [styleArr addObject:@([H1Style getStyleType])];
+        [styleArr addObject:@([H1Style getType])];
       } else if ([tagName isEqualToString:@"h2"]) {
-        [styleArr addObject:@([H2Style getStyleType])];
+        [styleArr addObject:@([H2Style getType])];
       } else if ([tagName isEqualToString:@"h3"]) {
-        [styleArr addObject:@([H3Style getStyleType])];
+        [styleArr addObject:@([H3Style getType])];
       } else if ([tagName isEqualToString:@"h4"]) {
-        [styleArr addObject:@([H4Style getStyleType])];
+        [styleArr addObject:@([H4Style getType])];
       } else if ([tagName isEqualToString:@"h5"]) {
-        [styleArr addObject:@([H5Style getStyleType])];
+        [styleArr addObject:@([H5Style getType])];
       } else if ([tagName isEqualToString:@"h6"]) {
-        [styleArr addObject:@([H6Style getStyleType])];
+        [styleArr addObject:@([H6Style getType])];
       }
     } else if ([tagName isEqualToString:@"ul"]) {
       if ([self isUlCheckboxList:params]) {
