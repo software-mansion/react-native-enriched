@@ -105,8 +105,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //        [[UnderlineStyle alloc] initWithInput:self],
     @([StrikethroughStyle getType]) :
         [[StrikethroughStyle alloc] initWithInput:self],
-    //    @([InlineCodeStyle getStyleType]) :
-    //        [[InlineCodeStyle alloc] initWithInput:self],
+    @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithInput:self],
     //    @([LinkStyle getStyleType]) : [[LinkStyle alloc] initWithInput:self],
     //    @([MentionStyle getStyleType]) : [[MentionStyle alloc]
     //    initWithInput:self],
@@ -132,8 +131,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getType]) : @[],
     //    @([UnderlineStyle getStyleType]) : @[],
     @([StrikethroughStyle getType]) : @[],
-    //    @([InlineCodeStyle getStyleType]) :
-    //        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ],
+    @([InlineCodeStyle getType]) : @[
+      //      @([LinkStyle getStyleType]), @([MentionStyle getStyleType])
+    ],
     //    @([LinkStyle getStyleType]) : @[
     //      @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]),
     //      @([MentionStyle getStyleType])
@@ -218,8 +218,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      @([BoldStyle getStyleType]), @([UnderlineStyle getStyleType]),
       @([ItalicStyle getType]), @([StrikethroughStyle getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]),
-      //      @([InlineCodeStyle getStyleType]),
+      @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
       //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
       //      @([CheckboxListStyle getStyleType])
     ],
@@ -233,26 +232,27 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //    @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType])
     //    ],
     @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    //    @([InlineCodeStyle getStyleType]) :
-    //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
-    //        ],
+    @([InlineCodeStyle getType]) : @[
+      @([CodeBlockStyle getType]),
+      //      @([ImageStyle getStyleType])
+    ],
     //    @([LinkStyle getStyleType]) :
     //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
     //        ],
     //    @([MentionStyle getStyleType]) :
     //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
     //        ],
-    //    @([H1Style getStyleType]) : @[],
-    //    @([H2Style getStyleType]) : @[],
-    //    @([H3Style getStyleType]) : @[],
-    //    @([H4Style getStyleType]) : @[],
-    //    @([H5Style getStyleType]) : @[],
-    //    @([H6Style getStyleType]) : @[],
-    //    @([UnorderedListStyle getStyleType]) : @[],
-    //    @([OrderedListStyle getStyleType]) : @[],
+    @([H1Style getType]) : @[],
+    @([H2Style getType]) : @[],
+    @([H3Style getType]) : @[],
+    @([H4Style getType]) : @[],
+    @([H5Style getType]) : @[],
+    @([H6Style getType]) : @[],
+    @([UnorderedListStyle getType]) : @[],
+    @([OrderedListStyle getType]) : @[],
     //    @([CheckboxListStyle getStyleType]) : @[],
-    //    @([BlockQuoteStyle getStyleType]) : @[],
-    //    @([CodeBlockStyle getStyleType]) : @[],
+    @([BlockQuoteStyle getType]) : @[],
+    @([CodeBlockStyle getType]) : @[],
     //    @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
   } mutableCopy];
 
@@ -1025,8 +1025,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .isUnderline = [self isStyleActive:[UnderlineStyle
           //           getStyleType]],
           .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
-          //           .isInlineCode = [self isStyleActive:[InlineCodeStyle
-          //           getStyleType]],
+          .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
           //           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
           //           .isMention = [self isStyleActive:[MentionStyle
           //           getStyleType]],
@@ -1051,8 +1050,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           //           .underline = GET_STYLE_STATE([UnderlineStyle
           //           getStyleType]),
           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
-          //           .inlineCode = GET_STYLE_STATE([InlineCodeStyle
-          //           getStyleType]),
+          .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
           //           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
           //           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
           .h1 = GET_STYLE_STATE([H1Style getType]),
@@ -1152,10 +1150,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  }
   else if ([commandName isEqualToString:@"toggleStrikeThrough"]) {
     [self toggleRegularStyle:[StrikethroughStyle getType]];
+  } else if ([commandName isEqualToString:@"toggleInlineCode"]) {
+    [self toggleRegularStyle:[InlineCodeStyle getType]];
   }
-  //  else if ([commandName isEqualToString:@"toggleInlineCode"]) {
-  //    [self toggleRegularStyle:[InlineCodeStyle getStyleType]];
-  //  } else if ([commandName isEqualToString:@"addLink"]) {
+  //  else if ([commandName isEqualToString:@"addLink"]) {
   //    NSInteger start = [((NSNumber *)args[0]) integerValue];
   //    NSInteger end = [((NSNumber *)args[1]) integerValue];
   //    NSString *text = (NSString *)args[2];

@@ -492,7 +492,7 @@
     return @"u";
   } else if ([style isEqualToNumber:@([StrikethroughStyle getType])]) {
     return @"s";
-  } else if ([style isEqualToNumber:@([InlineCodeStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([InlineCodeStyle getType])]) {
     return @"code";
   } else if ([style isEqualToNumber:@([LinkStyle getStyleType])]) {
     if (openingTag) {
@@ -1272,7 +1272,7 @@
     } else if ([tagName isEqualToString:@"s"]) {
       [styleArr addObject:@([StrikethroughStyle getType])];
     } else if ([tagName isEqualToString:@"code"]) {
-      [styleArr addObject:@([InlineCodeStyle getStyleType])];
+      [styleArr addObject:@([InlineCodeStyle getType])];
     } else if ([tagName isEqualToString:@"a"]) {
       NSRegularExpression *hrefRegex =
           [NSRegularExpression regularExpressionWithPattern:@"href=\".+\""

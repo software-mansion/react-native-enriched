@@ -397,7 +397,7 @@ static NSString *const AutomaticLinkAttributeName =
   }
 
   InlineCodeStyle *inlineCodeStyle =
-      [_input->stylesDict objectForKey:@([InlineCodeStyle getStyleType])];
+      [_input->stylesDict objectForKey:@([InlineCodeStyle getType])];
   MentionStyle *mentionStyle =
       [_input->stylesDict objectForKey:@([MentionStyle getStyleType])];
   CodeBlockStyle *codeBlockStyle =
@@ -413,7 +413,7 @@ static NSString *const AutomaticLinkAttributeName =
   }
 
   // we don't recognize links among inline code
-  if ([inlineCodeStyle anyOccurence:wordRange]) {
+  if ([inlineCodeStyle any:wordRange]) {
     return;
   }
 

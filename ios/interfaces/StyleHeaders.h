@@ -17,8 +17,7 @@
 @interface StrikethroughStyle : StyleBase
 @end
 
-@interface InlineCodeStyle : NSObject <BaseStyleProtocol>
-- (void)handleNewlines;
+@interface InlineCodeStyle : StyleBase
 @end
 
 @interface LinkStyle : NSObject <BaseStyleProtocol>
