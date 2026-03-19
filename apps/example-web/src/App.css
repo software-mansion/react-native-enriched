@@ -1,5 +1,143 @@
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+* {
+  box-sizing: border-box;
 }
+
+:root {
+  --text-primary: #1a1a1a;
+  --text-secondary: #333;
+  --text-muted: #555;
+  --border-color: #ccc;
+  --surface: #fff;
+  --surface-subtle: #f8f8f8;
+  --surface-hover: #f0f0f0;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--text-primary);
+}
+
+.container {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn {
+  flex: 1;
+  padding: 8px 0;
+  white-space: nowrap;
+}
+
+.btn,
+.set-value-btn {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background 0.1s;
+}
+
+.btn:hover,
+.set-value-btn:hover {
+  background: var(--surface-hover);
+}
+
+.editor-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  cursor: text;
+}
+
+.editor-content {
+  padding: 12px 14px;
+  min-height: 120px;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-content .tiptap {
+  outline: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-content .tiptap .ProseMirror {
+  outline: none;
+  flex: 1;
+  min-height: 120px;
+  cursor: text;
+}
+
+.set-value-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.set-value-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: monospace;
+  outline: none;
+}
+
+.set-value-input:focus {
+  border-color: #93c5fd;
+}
+
+.set-value-btn {
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+.html-output {
+  margin-top: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-subtle);
+}
+
+.html-output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--surface-hover);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.html-output-pre {
+  margin: 0;
+  padding: 12px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+}
+

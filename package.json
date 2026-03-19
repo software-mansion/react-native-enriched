@@ -98,6 +98,7 @@
     "@tiptap/extension-document": "^3.20.4",
     "@tiptap/extension-paragraph": "^3.20.4",
     "@tiptap/extension-text": "^3.20.4",
+    "@tiptap/extensions": "^3.20.4",
     "@tiptap/pm": "^3.20.4",
     "@tiptap/react": "^3.20.4",
     "@types/jest": "^29.5.5",
@@ -123,6 +124,7 @@
     "@tiptap/extension-document": ">=3.20.4",
     "@tiptap/extension-paragraph": ">=3.20.4",
     "@tiptap/extension-text": ">=3.20.4",
+    "@tiptap/extensions": ">=3.20.4",
     "@tiptap/pm": ">=3.20.4",
     "@tiptap/react": ">=3.20.4",
     "react": "*",
@@ -139,6 +141,9 @@
       "optional": true
     },
     "@tiptap/extension-text": {
+      "optional": true
+    },
+    "@tiptap/extensions": {
       "optional": true
     },
     "@tiptap/pm": {

@@ -4043,6 +4043,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extensions@npm:^3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extensions@npm:3.20.4"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+    "@tiptap/pm": ^3.20.4
+  checksum: 1340c80416401df835ce0e7e6560bf730c92433405dee9774df5cb81be840e12deca5d4c9edb1d6f8cf9252b32751b8aad95e68a464e2661547ebad00dac4b76
+  languageName: node
+  linkType: hard
+
 "@tiptap/pm@npm:^3.20.4":
   version: 3.20.4
   resolution: "@tiptap/pm@npm:3.20.4"
@@ -12270,6 +12280,7 @@ __metadata:
     "@tiptap/extension-document": ^3.20.4
     "@tiptap/extension-paragraph": ^3.20.4
     "@tiptap/extension-text": ^3.20.4
+    "@tiptap/extensions": ^3.20.4
     "@tiptap/pm": ^3.20.4
     "@tiptap/react": ^3.20.4
     "@types/node": ^24.10.1
@@ -12306,6 +12317,7 @@ __metadata:
     "@tiptap/extension-document": ^3.20.4
     "@tiptap/extension-paragraph": ^3.20.4
     "@tiptap/extension-text": ^3.20.4
+    "@tiptap/extensions": ^3.20.4
     "@tiptap/pm": ^3.20.4
     "@tiptap/react": ^3.20.4
     "@types/jest": ^29.5.5
@@ -12330,6 +12342,7 @@ __metadata:
     "@tiptap/extension-document": ">=3.20.4"
     "@tiptap/extension-paragraph": ">=3.20.4"
     "@tiptap/extension-text": ">=3.20.4"
+    "@tiptap/extensions": ">=3.20.4"
     "@tiptap/pm": ">=3.20.4"
     "@tiptap/react": ">=3.20.4"
     react: "*"
@@ -12342,6 +12355,8 @@ __metadata:
     "@tiptap/extension-paragraph":
       optional: true
     "@tiptap/extension-text":
+      optional: true
+    "@tiptap/extensions":
       optional: true
     "@tiptap/pm":
       optional: true
