@@ -9,7 +9,7 @@
 }
 
 - (NSString *)getValue {
-  return @"codeblock";
+  return @"EnrichedCodeBlock";
 }
 
 - (BOOL)isParagraph {

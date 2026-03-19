@@ -10,7 +10,7 @@
 }
 
 - (NSString *)getValue {
-  return @"UnorderedList";
+  return @"EnrichedUnorderedList";
 }
 
 - (BOOL)isParagraph {

@@ -6,7 +6,7 @@
   return H1;
 }
 - (NSString *)getValue {
-  return @"h1";
+  return @"EnrichedH1";
 }
 - (BOOL)isParagraph {
   return YES;

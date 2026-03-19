@@ -10,7 +10,7 @@
 }
 
 - (NSString *)getValue {
-  return NSTextListMarkerDecimal;
+  return @"EnrichedOrderedList";
 }
 
 - (BOOL)isParagraph {

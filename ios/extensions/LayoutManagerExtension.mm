@@ -293,7 +293,7 @@ static void const *kInputKey = &kInputKey;
 
                                      if ([markerFormat
                                              isEqualToString:
-                                                 NSTextListMarkerDecimal]) {
+                                                 @"EnrichedOrderedList"]) {
                                        NSString *marker = [self
                                            getDecimalMarkerForList:typedInput
                                                          charIndex:
@@ -308,7 +308,8 @@ static void const *kInputKey = &kInputKey;
                                                    usedRect:usedRect];
                                      } else if ([markerFormat
                                                     isEqualToString:
-                                                        @"UnorderedList"]) {
+                                                        @"EnrichedUnorderedLis"
+                                                        @"t"]) {
                                        [self drawBullet:typedInput
                                                  origin:origin
                                                usedRect:usedRect];

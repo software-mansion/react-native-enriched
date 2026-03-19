@@ -9,7 +9,7 @@
 }
 
 - (NSString *)getValue {
-  return @"blockquote";
+  return @"EnrichedBlockQuote";
 }
 
 - (BOOL)isParagraph {
