@@ -225,6 +225,13 @@
 - (void)applyStyling:(NSRange)range {
 }
 
+// Called during dirty range re-application to restore a style from a saved
+// StylePair
+- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+  NSRange range = [pair.rangeValue rangeValue];
+  [self add:range withTyping:NO withDirtyRange:NO];
+}
+
 // Gets a custom attribtue entry for the typingAttributes.
 // Only used with inline styles.
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range {

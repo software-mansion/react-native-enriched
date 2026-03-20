@@ -248,21 +248,17 @@ static void const *kInputKey = &kInputKey;
       typedInput->stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *olStyle =
       typedInput->stylesDict[@([OrderedListStyle getType])];
-  // CheckboxListStyle *cbStyle =
-  //     typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-  if (ulStyle == nullptr && olStyle == nullptr) {
+  CheckboxListStyle *cbStyle =
+      typedInput->stylesDict[@([CheckboxListStyle getType])];
+  if (ulStyle == nullptr || olStyle == nullptr || cbStyle == nullptr) {
     return;
   }
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  if (ulStyle != nullptr) {
-    [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
-  }
-  if (olStyle != nullptr) {
-    [allLists addObjectsFromArray:[olStyle all:visibleCharRange]];
-  }
-  // [allLists addObjectsFromArray:[cbStyle
-  // findAllOccurences:visibleCharRange]];
+
+  [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
+  [allLists addObjectsFromArray:[olStyle all:visibleCharRange]];
+  [allLists addObjectsFromArray:[cbStyle all:visibleCharRange]];
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
@@ -373,7 +369,7 @@ static void const *kInputKey = &kInputKey;
         markerFormat:(NSString *)markerFormat
               origin:(CGPoint)origin
             usedRect:(CGRect)usedRect {
-  BOOL isChecked = [markerFormat isEqualToString:@"{checkbox:1}"];
+  BOOL isChecked = [markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
   UIImage *image = isChecked ? typedInput->config.checkboxCheckedImage
                              : typedInput->config.checkboxUncheckedImage;

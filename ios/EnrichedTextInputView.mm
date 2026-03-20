@@ -118,8 +118,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[UnorderedListStyle alloc] initWithInput:self],
     @([OrderedListStyle getType]) :
         [[OrderedListStyle alloc] initWithInput:self],
-    // @([CheckboxListStyle getStyleType]) :
-    //         [[CheckboxListStyle alloc] initWithInput:self],
+    @([CheckboxListStyle getType]) :
+        [[CheckboxListStyle alloc] initWithInput:self],
     @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithInput:self],
     @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
     //    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
@@ -145,71 +145,66 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([H2Style getType]) : @[
       @([H1Style getType]), @([H3Style getType]), @([H4Style getType]),
       @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([H3Style getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H4Style getType]),
       @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([H4Style getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([H5Style getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([H6Style getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     @([UnorderedListStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
       @([OrderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
     ],
     @([OrderedListStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
     ],
-    //    @([CheckboxListStyle getStyleType]) : @[
-    //      @([H1Style getType]), @([H2Style getType]),
-    //      @([H3Style getType]), @([H4Style getType]),
-    //      @([H5Style getType]), @([H6Style getType]),
-    //      @([UnorderedListStyle getStyleType]), @([OrderedListStyle
-    //      getStyleType]),
-    //      @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])
-    //    ],
+    @([CheckboxListStyle getType]) : @[
+      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
+      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
+      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
+      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType])
+    ],
     @([BlockQuoteStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([CodeBlockStyle getType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
     ],
     @([CodeBlockStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
@@ -219,7 +214,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
       //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
-      //      @([CheckboxListStyle getStyleType])
+      @([CheckboxListStyle getType])
     ],
     //    @([ImageStyle getStyleType]) :
     //        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
@@ -248,7 +243,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([H6Style getType]) : @[],
     @([UnorderedListStyle getType]) : @[],
     @([OrderedListStyle getType]) : @[],
-    //    @([CheckboxListStyle getStyleType]) : @[],
+    @([CheckboxListStyle getType]) : @[],
     @([BlockQuoteStyle getType]) : @[],
     @([CodeBlockStyle getType]) : @[],
     //    @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
@@ -1017,52 +1012,48 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeStateDeprecated({
-          .isBold = [self isStyleActive:[BoldStyle getType]],
-          .isItalic = [self isStyleActive:[ItalicStyle getType]],
-          .isUnderline = [self isStyleActive:[UnderlineStyle getType]],
-          .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
-          .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
-          //           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-          //           .isMention = [self isStyleActive:[MentionStyle
-          //           getStyleType]],
-          .isH1 = [self isStyleActive:[H1Style getType]],
-          .isH2 = [self isStyleActive:[H2Style getType]],
-          .isH3 = [self isStyleActive:[H3Style getType]],
-          .isH4 = [self isStyleActive:[H4Style getType]],
-          .isH5 = [self isStyleActive:[H5Style getType]],
-          .isH6 = [self isStyleActive:[H6Style getType]],
-          .isUnorderedList = [self isStyleActive:[UnorderedListStyle getType]],
-          .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
-          .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getType]],
-          .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
-          //           .isImage = [self isStyleActive:[ImageStyle
-          //           getStyleType]],
-          //           .isCheckboxList =
-          //               [self isStyleActive:[CheckboxListStyle getStyleType]]
-      });
-      emitter->onChangeState({
-          .bold = GET_STYLE_STATE([BoldStyle getType]),
-          .italic = GET_STYLE_STATE([ItalicStyle getType]),
-          .underline = GET_STYLE_STATE([UnderlineStyle getType]),
-          .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
-          .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
-          //           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
-          //           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
-          .h1 = GET_STYLE_STATE([H1Style getType]),
-          .h2 = GET_STYLE_STATE([H2Style getType]),
-          .h3 = GET_STYLE_STATE([H3Style getType]),
-          .h4 = GET_STYLE_STATE([H4Style getType]),
-          .h5 = GET_STYLE_STATE([H5Style getType]),
-          .h6 = GET_STYLE_STATE([H6Style getType]),
-          .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
-          .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
-          .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
-          .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
-          //           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
-          //           .checkboxList = GET_STYLE_STATE([CheckboxListStyle
-          //           getStyleType])
-      });
+      emitter->onChangeStateDeprecated(
+          {.isBold = [self isStyleActive:[BoldStyle getType]],
+           .isItalic = [self isStyleActive:[ItalicStyle getType]],
+           .isUnderline = [self isStyleActive:[UnderlineStyle getType]],
+           .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
+           .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
+           //           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
+           //           .isMention = [self isStyleActive:[MentionStyle
+           //           getStyleType]],
+           .isH1 = [self isStyleActive:[H1Style getType]],
+           .isH2 = [self isStyleActive:[H2Style getType]],
+           .isH3 = [self isStyleActive:[H3Style getType]],
+           .isH4 = [self isStyleActive:[H4Style getType]],
+           .isH5 = [self isStyleActive:[H5Style getType]],
+           .isH6 = [self isStyleActive:[H6Style getType]],
+           .isUnorderedList = [self isStyleActive:[UnorderedListStyle getType]],
+           .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
+           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getType]],
+           .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
+           //           .isImage = [self isStyleActive:[ImageStyle
+           //           getStyleType]],
+           .isCheckboxList = [self isStyleActive:[CheckboxListStyle getType]]});
+      emitter->onChangeState(
+          {.bold = GET_STYLE_STATE([BoldStyle getType]),
+           .italic = GET_STYLE_STATE([ItalicStyle getType]),
+           .underline = GET_STYLE_STATE([UnderlineStyle getType]),
+           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
+           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
+           //           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
+           //           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+           .h1 = GET_STYLE_STATE([H1Style getType]),
+           .h2 = GET_STYLE_STATE([H2Style getType]),
+           .h3 = GET_STYLE_STATE([H3Style getType]),
+           .h4 = GET_STYLE_STATE([H4Style getType]),
+           .h5 = GET_STYLE_STATE([H5Style getType]),
+           .h6 = GET_STYLE_STATE([H6Style getType]),
+           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
+           .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
+           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
+           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
+           //           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])});
     }
   }
 
@@ -1176,11 +1167,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleRegularStyle:[UnorderedListStyle getType]];
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
     [self toggleRegularStyle:[OrderedListStyle getType]];
-  }
-  //  else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
-  //    BOOL checked = [args[0] boolValue];
-  //    [self toggleCheckboxList:checked];
-  else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
+  } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
+    BOOL checked = [args[0] boolValue];
+    [self toggleCheckboxList:checked];
+  } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
     [self toggleRegularStyle:[BlockQuoteStyle getType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
     [self toggleRegularStyle:[CodeBlockStyle getType]];
@@ -1381,23 +1371,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 //  }
 //}
 
-// - (void)toggleCheckboxList:(BOOL)checked {
-//   CheckboxListStyle *checkboxListStyleClass =
-//       (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
-//   if (checkboxListStyleClass == nullptr) {
-//     return;
-//   }
-//   // we always pass whole paragraph/s range to these styles
-//   NSRange paragraphRange = [textView.textStorage.string
-//       paragraphRangeForRange:textView.selectedRange];
-
-//   if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getStyleType]
-//                                     range:paragraphRange]) {
-//     [checkboxListStyleClass applyStyleWithCheckedValue:checked
-//                                                inRange:paragraphRange];
-//     [self anyTextMayHaveBeenModified];
-//   }
-// }
+- (void)toggleCheckboxList:(BOOL)checked {
+  CheckboxListStyle *style =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
+  if (style == nullptr) {
+    return;
+  }
+  NSRange range = [textView.textStorage.string
+      paragraphRangeForRange:textView.selectedRange];
+  if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getType]
+                                    range:range]) {
+    [style toggleWithChecked:checked range:range];
+    [self anyTextMayHaveBeenModified];
+  }
+}
 
 // - (void)addLinkAt:(NSInteger)start
 //               end:(NSInteger)end
@@ -1739,8 +1726,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getType])];
-  //  CheckboxListStyle *cbLStyle = stylesDict[@([CheckboxListStyle
-  //  getStyleType])]; BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle
+  CheckboxListStyle *cbLStyle =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
+  //  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle
   //  getStyleType])]; CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle
   //  getStyleType])]; LinkStyle *linkStyle = stylesDict[@([LinkStyle
   //  getStyleType])]; MentionStyle *mentionStyle = stylesDict[@([MentionStyle
@@ -1761,9 +1749,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                   replacementText:text
                                             input:self] ||
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
-      [oStyle tryHandlingListShorcutInRange:range replacementText:text]
-      //      || [cbLStyle handleBackspaceInRange:range replacementText:text]
-      //      || [cbLStyle handleNewlinesInRange:range replacementText:text]
+      [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [cbLStyle handleNewlinesInRange:range replacementText:text]
       //      || [bqStyle handleBackspaceInRange:range replacementText:text]
       //      || [cbStyle handleBackspaceInRange:range replacementText:text]
       //      || [linkStyle handleLeadingLinkReplacement:range
@@ -1891,7 +1878,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   case TextBlockTapKindCheckbox: {
     CheckboxListStyle *checkboxStyle =
-        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
 
     if (checkboxStyle) {
       NSUInteger charIndex = (NSUInteger)gr.characterIndex;
