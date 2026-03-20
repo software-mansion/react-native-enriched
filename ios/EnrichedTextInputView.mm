@@ -1738,7 +1738,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self handleKeyPressInRange:text range:range];
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getType])];
-  //  OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
+  OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getType])];
   //  CheckboxListStyle *cbLStyle = stylesDict[@([CheckboxListStyle
   //  getStyleType])]; BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle
   //  getStyleType])]; CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle
@@ -1759,13 +1759,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // ZWS backspace handling for paragraph styles
       [ZeroWidthSpaceUtils handleBackspaceInRange:range
                                   replacementText:text
-                                            input:self]
-      //      || [uStyle handleBackspaceInRange:range replacementText:text]
-      //      || [uStyle tryHandlingListShorcutInRange:range
-      //      replacementText:text]
-      //      || [oStyle handleBackspaceInRange:range replacementText:text]
-      //      || [oStyle tryHandlingListShorcutInRange:range
-      //      replacementText:text]
+                                            input:self] ||
+      [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
+      [oStyle tryHandlingListShorcutInRange:range replacementText:text]
       //      || [cbLStyle handleBackspaceInRange:range replacementText:text]
       //      || [cbLStyle handleNewlinesInRange:range replacementText:text]
       //      || [bqStyle handleBackspaceInRange:range replacementText:text]
