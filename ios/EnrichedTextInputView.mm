@@ -1,6 +1,7 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
 #import "ImageAttachment.h"
+#import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
 #import "RCTFabricComponentsPlugins.h"
@@ -51,6 +52,7 @@ using namespace facebook::react;
   BOOL _emitTextChange;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   NSArray<NSDictionary *> *_contextMenuItems;
+  NSString *_submitBehavior;
 }
 
 // MARK: - Component utils
@@ -836,6 +838,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  if (newViewProps.returnKeyType != oldViewProps.returnKeyType) {
+    NSString *str = [NSString fromCppString:newViewProps.returnKeyType];
+
+    textView.returnKeyType =
+        [KeyboardUtils getUIReturnKeyTypeFromReturnKeyType:str];
+  }
+
+  if (newViewProps.submitBehavior != oldViewProps.submitBehavior) {
+    _submitBehavior = [NSString fromCppString:newViewProps.submitBehavior];
+  }
+
   // autoCapitalize
   if (newViewProps.autoCapitalize != oldViewProps.autoCapitalize) {
     NSString *str = [NSString fromCppString:newViewProps.autoCapitalize];
@@ -1192,6 +1205,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return false;
 }
 
+- (bool)textInputShouldReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"];
+}
+
+- (bool)textInputShouldSubmitOnReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"] ||
+         [_submitBehavior isEqualToString:@"submit"];
+}
+
 - (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
   NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
   if (![blocksArr containsObject:@(blocking)]) {
@@ -1349,6 +1371,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   return actualIndex;
+}
+
+- (void)emitOnSubmitEdittingEvent {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSString *stringToBeEmitted = [[textView.textStorage.string
+        stringByReplacingOccurrencesOfString:@"\u200B"
+                                  withString:@""] copy];
+
+    emitter->onSubmitEditing({
+        .text = [stringToBeEmitted toCppString],
+    });
+  }
 }
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text
@@ -1969,6 +2004,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  // Check if the user pressed "Enter"
+  if ([text isEqualToString:@"\n"]) {
+    const bool shouldSubmit = [self textInputShouldSubmitOnReturn];
+    const bool shouldReturn = [self textInputShouldReturn];
+
+    if (shouldSubmit) {
+      [self emitOnSubmitEdittingEvent];
+    }
+
+    if (shouldReturn) {
+      [textView endEditing:NO];
+    }
+
+    if (shouldSubmit || shouldReturn) {
+      return NO;
+    }
+  }
+
   recentlyChangedRange = NSMakeRange(range.location, text.length);
   [self handleKeyPressInRange:text range:range];
 
