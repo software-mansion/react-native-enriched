@@ -55,5 +55,6 @@ export interface HtmlStyle {
     gapWidth?: number;
     marginLeft?: number;
     boxColor?: ColorValue;
+    paragraphSpacing?: number;
   };
 }

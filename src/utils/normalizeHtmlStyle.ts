@@ -68,6 +68,7 @@ const defaultStyle: Required<HtmlStyle> = {
     gapWidth: 16,
     marginLeft: 16,
     boxColor: 'blue',
+    paragraphSpacing: 0,
   },
 };
 
