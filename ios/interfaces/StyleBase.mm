@@ -56,42 +56,52 @@
     isPresent ? [self remove:actualRange withDirtyRange:YES]
               : [self add:actualRange withTyping:YES withDirtyRange:YES];
   } else {
-    isPresent ? [self removeTyping] : [self addTyping];
+    isPresent ? [self removeTyping] : [self addTypingWithValue:[self getValue]];
   }
 }
 
 - (void)add:(NSRange)range
         withTyping:(BOOL)withTyping
     withDirtyRange:(BOOL)withDirtyRange {
+  [self add:range
+           withValue:[self getValue]
+          withTyping:withTyping
+      withDirtyRange:withDirtyRange];
+}
+
+- (void)add:(NSRange)range
+         withValue:(NSString *)value
+        withTyping:(BOOL)withTyping
+    withDirtyRange:(BOOL)withDirtyRange {
   NSRange actualRange = [self actualUsedRange:range];
 
   if (![self isParagraph]) {
     [_input->textView.textStorage addAttribute:[self getKey]
-                                         value:[self getValue]
+                                         value:value
                                          range:actualRange];
   } else {
     [_input->textView.textStorage
         enumerateAttribute:NSParagraphStyleAttributeName
                    inRange:actualRange
                    options:0
-                usingBlock:^(id _Nullable value, NSRange range,
+                usingBlock:^(id _Nullable existingValue, NSRange subRange,
                              BOOL *_Nonnull stop) {
                   NSMutableParagraphStyle *pStyle =
-                      [(NSParagraphStyle *)value mutableCopy];
+                      [(NSParagraphStyle *)existingValue mutableCopy];
                   if (pStyle == nullptr)
                     return;
-                  pStyle.textLists = @[ [[NSTextList alloc]
-                      initWithMarkerFormat:[self getValue]
-                                   options:0] ];
+                  pStyle.textLists =
+                      @[ [[NSTextList alloc] initWithMarkerFormat:value
+                                                          options:0] ];
                   [_input->textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
-                             range:range];
+                             range:subRange];
                 }];
 
     // Only paragraph styles need additional typing attributes when toggling.
     if (withTyping) {
-      [self addTyping];
+      [self addTypingWithValue:value];
     }
   }
 
@@ -112,17 +122,17 @@
         enumerateAttribute:NSParagraphStyleAttributeName
                    inRange:actualRange
                    options:0
-                usingBlock:^(id _Nullable value, NSRange range,
+                usingBlock:^(id _Nullable existingValue, NSRange subRange,
                              BOOL *_Nonnull stop) {
                   NSMutableParagraphStyle *pStyle =
-                      [(NSParagraphStyle *)value mutableCopy];
+                      [(NSParagraphStyle *)existingValue mutableCopy];
                   if (pStyle == nullptr)
                     return;
                   pStyle.textLists = @[];
                   [_input->textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
-                             range:range];
+                             range:subRange];
                 }];
 
     // Paragraph styles also need typing attributes removal.
@@ -135,18 +145,17 @@
   }
 }
 
-- (void)addTyping {
+- (void)addTypingWithValue:(NSString *)value {
   NSMutableDictionary *newTypingAttrs =
       [_input->textView.typingAttributes mutableCopy];
 
   if (![self isParagraph]) {
-    newTypingAttrs[[self getKey]] = [self getValue];
+    newTypingAttrs[[self getKey]] = value;
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists =
-        @[ [[NSTextList alloc] initWithMarkerFormat:[self getValue]
-                                            options:0] ];
+    pStyle.textLists = @[ [[NSTextList alloc] initWithMarkerFormat:value
+                                                           options:0] ];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 

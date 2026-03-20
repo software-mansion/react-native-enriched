@@ -68,42 +68,11 @@
                  range:(NSRange)range
             withTyping:(BOOL)withTyping
         withDirtyRange:(BOOL)withDirtyRange {
-  NSRange actualRange = [self actualUsedRange:range];
-  NSString *markerFormat =
-      checked ? @"EnrichedCheckbox1" : @"EnrichedCheckbox0";
-  NSTextList *checkboxMarker =
-      [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0];
-
-  [self.input->textView.textStorage
-      enumerateAttribute:NSParagraphStyleAttributeName
-                 inRange:actualRange
-                 options:0
-              usingBlock:^(id _Nullable value, NSRange range,
-                           BOOL *_Nonnull stop) {
-                NSMutableParagraphStyle *pStyle =
-                    [(NSParagraphStyle *)value mutableCopy];
-                if (pStyle == nullptr)
-                  return;
-                pStyle.textLists = @[ checkboxMarker ];
-                [self.input->textView.textStorage
-                    addAttribute:NSParagraphStyleAttributeName
-                           value:pStyle
-                           range:range];
-              }];
-
-  if (withTyping) {
-    NSMutableDictionary *typingAttrs =
-        [self.input->textView.typingAttributes mutableCopy];
-    NSMutableParagraphStyle *pStyle =
-        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = @[ checkboxMarker ];
-    typingAttrs[NSParagraphStyleAttributeName] = pStyle;
-    self.input->textView.typingAttributes = typingAttrs;
-  }
-
-  if (withDirtyRange) {
-    [self.input->attributesManager addDirtyRange:actualRange];
-  }
+  NSString *value = checked ? @"EnrichedCheckbox1" : @"EnrichedCheckbox0";
+  [self add:range
+           withValue:value
+          withTyping:withTyping
+      withDirtyRange:withDirtyRange];
 }
 
 // During dirty range re-application the default add: would use getValue

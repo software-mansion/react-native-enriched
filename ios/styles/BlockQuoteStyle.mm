@@ -45,14 +45,14 @@
   UIColor *bqColor = [self.input->config blockquoteColor];
   [self.input->textView.textStorage addAttribute:NSForegroundColorAttributeName
                                            value:bqColor
-                                           range:fullRange];
+                                           range:range];
   [self.input->textView.textStorage addAttribute:NSUnderlineColorAttributeName
                                            value:bqColor
-                                           range:fullRange];
+                                           range:range];
   [self.input->textView.textStorage
       addAttribute:NSStrikethroughColorAttributeName
              value:bqColor
-             range:fullRange];
+             range:range];
 }
 
 @end

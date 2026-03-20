@@ -46,7 +46,7 @@
   [self.input->textView.textStorage
       addAttribute:NSForegroundColorAttributeName
              value:[self.input->config codeBlockFgColor]
-             range:fullRange];
+             range:range];
 }
 
 @end

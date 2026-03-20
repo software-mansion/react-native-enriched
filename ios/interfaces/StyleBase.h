@@ -19,8 +19,12 @@
 - (void)add:(NSRange)range
         withTyping:(BOOL)withTyping
     withDirtyRange:(BOOL)withDirtyRange;
+- (void)add:(NSRange)range
+         withValue:(NSString *)value
+        withTyping:(BOOL)withTyping
+    withDirtyRange:(BOOL)withDirtyRange;
 - (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange;
-- (void)addTyping;
+- (void)addTypingWithValue:(NSString *)value;
 - (void)removeTyping;
 - (BOOL)styleCondition:(id)value range:(NSRange)range;
 - (BOOL)detect:(NSRange)range;
