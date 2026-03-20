@@ -12,8 +12,8 @@
         "types": "./lib/typescript/src/index.native.d.ts",
         "default": "./lib/module/index.native.js"
       },
-      "types": "./lib/typescript/src/index.d.ts",
-      "default": "./lib/module/index.js"
+      "types": "./lib/typescript/src/index.native.d.ts",
+      "default": "./lib/module/index.native.js"
     },
     "./package.json": "./package.json"
   },
