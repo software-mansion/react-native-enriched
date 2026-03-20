@@ -51,6 +51,7 @@
   for (const auto &obj : folly.items()) {
     if (obj.first.isString() && obj.second.isObject()) {
       std::string key = obj.first.asString();
+      if (key == "__rules__") continue; // handled by getStyleRulesFromFollyDynamic
       MentionStyleProps *props = [MentionStyleProps
           getSingleMentionStylePropsFromFollyDynamic:obj.second];
       dict[[NSString fromCppString:key]] = props;
@@ -58,6 +59,41 @@
   }
 
   return dict;
+}
+
++ (NSArray *)getStyleRulesFromFollyDynamic:(folly::dynamic)folly {
+  if (!folly.count("__rules__") || !folly["__rules__"].isArray()) {
+    return @[];
+  }
+
+  NSMutableArray *rules = [[NSMutableArray alloc] init];
+  for (const auto &ruleObj : folly["__rules__"]) {
+    if (!ruleObj.isObject()) continue;
+
+    // Parse match dict
+    NSMutableDictionary *match = [[NSMutableDictionary alloc] init];
+    if (ruleObj.count("match") && ruleObj["match"].isObject()) {
+      for (const auto &kv : ruleObj["match"].items()) {
+        if (kv.first.isString() && kv.second.isString()) {
+          match[[NSString fromCppString:kv.first.asString()]] =
+              [NSString fromCppString:kv.second.asString()];
+        }
+      }
+    }
+
+    // Parse style
+    MentionStyleProps *style = nil;
+    if (ruleObj.count("style") && ruleObj["style"].isObject()) {
+      style = [MentionStyleProps
+          getSingleMentionStylePropsFromFollyDynamic:ruleObj["style"]];
+    }
+
+    if (match.count > 0 && style != nil) {
+      [rules addObject:@{@"match" : match, @"style" : style}];
+    }
+  }
+
+  return rules;
 }
 
 @end

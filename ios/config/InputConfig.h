@@ -79,7 +79,10 @@
 - (TextDecorationLineEnum)linkDecorationLine;
 - (void)setLinkDecorationLine:(TextDecorationLineEnum)newValue;
 - (void)setMentionStyleProps:(NSDictionary *)newValue;
+- (void)setMentionStyleRules:(NSArray *)newValue;
 - (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator;
+- (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator
+                                          attributes:(NSString *)attributes;
 - (UIColor *)codeBlockFgColor;
 - (void)setCodeBlockFgColor:(UIColor *)newValue;
 - (UIColor *)codeBlockBgColor;

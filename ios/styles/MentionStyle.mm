@@ -191,7 +191,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   params.attributes = attributes;
 
   MentionStyleProps *styleProps =
-      [_input->config mentionStylePropsForIndicator:indicator];
+      [_input->config mentionStylePropsForIndicator:indicator
+                                         attributes:attributes];
 
   NSMutableDictionary *newAttrs = [@{
     MentionAttributeName : params,
@@ -231,7 +232,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   _blockMentionEditing = YES;
 
   MentionStyleProps *styleProps =
-      [_input->config mentionStylePropsForIndicator:params.indicator];
+      [_input->config mentionStylePropsForIndicator:params.indicator
+                                         attributes:params.attributes];
 
   NSMutableDictionary *newAttrs = [@{
     MentionAttributeName : params,
