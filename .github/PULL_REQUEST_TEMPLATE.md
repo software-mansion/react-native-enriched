@@ -29,3 +29,8 @@ Include any visual proof that helps reviewers understand the change — UI updat
 | ------- | :---------: |
 | iOS     |    ✅❌     |
 | Android |    ✅❌     |
+
+## Checklist
+
+- [ ] E2E tests are passing
+- [ ] Required E2E tests have been added (if applicable)
