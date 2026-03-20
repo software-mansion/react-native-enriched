@@ -1,0 +1,48 @@
+appId: swmansion.enriched.example
+---
+# Visually validates rendering of all list types
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-ordered-list"
+- inputText: "First"
+- pressKey: Enter
+- inputText: "Second"
+- pressKey: Enter
+- tapOn:
+    id: "toolbar-ordered-list"
+
+- inputText: "Normal"
+- pressKey: Enter
+
+- tapOn:
+    id: "toolbar-unordered-list"
+- inputText: "First"
+- pressKey: Enter
+- inputText: "Second"
+- pressKey: Enter
+- tapOn:
+    id: "toolbar-unordered-list"
+
+- inputText: "Normal"
+- pressKey: Enter
+
+- tapOn:
+    id: "toolbar-checkbox-list"
+- inputText: "First"
+- pressKey: Enter
+- inputText: "Second"
+
+- tapOn:
+    id: "size-max-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "paragraph_styles_lists"

@@ -1,0 +1,24 @@
+appId: swmansion.enriched.example
+---
+
+- tapOn:
+    id: "toolbar-link"
+
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "link-modal-submit-button"
+    timeout: 10000
+
+- tapOn:
+    id: "link-modal-text-input"
+
+- inputText: ${LINK_TEXT}
+
+- tapOn:
+    id: "link-modal-url-input"
+
+- inputText: ${LINK_URL}
+
+- tapOn:
+    id: "link-modal-submit-button"

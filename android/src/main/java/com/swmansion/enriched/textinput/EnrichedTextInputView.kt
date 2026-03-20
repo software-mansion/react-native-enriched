@@ -413,6 +413,7 @@ class EnrichedTextInputView :
       // Scroll to the last line of text
       setSelection(text?.length ?: 0)
     }
+    layoutManager.invalidateLayout()
   }
 
   fun setCustomSelection(
