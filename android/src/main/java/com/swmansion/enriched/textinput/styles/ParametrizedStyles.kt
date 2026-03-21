@@ -225,11 +225,6 @@ class ParametrizedStyles(
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
     val mentionRegex = Regex("^($indicatorsPattern)\\w*")
 
-    val spans = spannable.getSpans(currentWord.start, currentWord.end, EnrichedInputMentionSpan::class.java)
-    for (span in spans) {
-      spannable.removeSpan(span)
-    }
-
     var indicator: String
     var finalStart: Int
     val finalEnd = currentWord.end
@@ -257,6 +252,25 @@ class ParametrizedStyles(
       // Current word is a mention -> use it
       finalStart = currentWord.start
       indicator = mentionIndicatorRegex.find(currentWord.text)?.value ?: ""
+    }
+
+    // Mirror iOS conflicting-styles behaviour: check the full candidate range for
+    // a finalized mention span. If the span's stored text still matches what is in
+    // the buffer the mention is intact — block the event (covers HTML-loaded
+    // mentions and typing adjacent to a freshly-selected mention).
+    // If the span is stale (user edited inside it), remove it and record mentionStart
+    // so setMentionSpan can replace text correctly when the user picks a new mention.
+    val rangeSpans = spannable.getSpans(finalStart, finalEnd, EnrichedInputMentionSpan::class.java)
+    for (span in rangeSpans) {
+      val spanStart = spannable.getSpanStart(span)
+      val spanEnd = spannable.getSpanEnd(span)
+      val currentSpanText = spannable.subSequence(spanStart, spanEnd).toString()
+      if (currentSpanText == span.getText()) {
+        mentionHandler.endMention()
+        return
+      }
+      spannable.removeSpan(span)
+      mentionStart = spanStart
     }
 
     // Extract text without indicator
