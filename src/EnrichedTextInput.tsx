@@ -53,6 +53,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   setValue: (value: string) => void;
   setSelection: (start: number, end: number) => void;
   getHTML: () => Promise<string>;
+  insertValue: (text: string, start: number, end: number) => void;
 
   // Text formatting commands
   toggleBold: () => void;
@@ -388,6 +389,9 @@ export const EnrichedTextInput = ({
     },
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
+    },
+    insertValue: (text, start, end) => {
+      Commands.insertValue(nullthrows(nativeRef.current), text, start, end);
     },
   }));
 
