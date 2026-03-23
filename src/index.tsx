@@ -9,6 +9,7 @@ export type {
   OnChangeSelectionEvent,
   OnKeyPressEvent,
   OnPasteImagesEvent,
+  OnSubmitEditing,
   HtmlStyle,
   MentionStyleProperties,
   FocusEvent,

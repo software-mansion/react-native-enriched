@@ -3,6 +3,7 @@ import type {
   ColorValue,
   NativeMethods,
   NativeSyntheticEvent,
+  ReturnKeyTypeOptions,
   TargetedEvent,
   TextStyle,
   ViewProps,
@@ -207,6 +208,10 @@ export interface OnPasteImagesEvent {
   }[];
 }
 
+export interface OnSubmitEditing {
+  text: string;
+}
+
 // Component types
 
 export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
@@ -282,6 +287,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
+  returnKeyType?: ReturnKeyTypeOptions;
+  returnKeyLabel?: string;
+  submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
   onFocus?: (e: FocusEvent) => void;
   onBlur?: (e: BlurEvent) => void;
   onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
@@ -294,6 +302,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onEndMention?: (indicator: string) => void;
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
+  onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
   /**

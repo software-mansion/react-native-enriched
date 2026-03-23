@@ -71,6 +71,10 @@ export const EnrichedTextInput = ({
   onEndMention,
   onChangeSelection,
   onKeyPress,
+  onSubmitEditing,
+  returnKeyType,
+  returnKeyLabel,
+  submitBehavior,
   contextMenuItems,
   androidExperimentalSynchronousEvents = false,
   useHtmlNormalizer = false,
@@ -345,6 +349,10 @@ export const EnrichedTextInput = ({
       onInputKeyPress={onKeyPress}
       contextMenuItems={nativeContextMenuItems}
       onContextMenuItemPress={handleContextMenuItemPress}
+      onSubmitEditing={onSubmitEditing}
+      returnKeyType={returnKeyType}
+      returnKeyLabel={returnKeyLabel}
+      submitBehavior={submitBehavior}
       androidExperimentalSynchronousEvents={
         androidExperimentalSynchronousEvents
       }
