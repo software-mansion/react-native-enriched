@@ -267,8 +267,7 @@ export interface OnChangeMentionEvent {
   text: string;
 }
 
-export interface BaseEnrichedTextInputProps
-  extends Omit<ViewProps, 'children'> {
+export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   ref?: RefObject<EnrichedTextInputInstance | null>;
   autoFocus?: boolean;
   editable?: boolean;

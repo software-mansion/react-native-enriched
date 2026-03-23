@@ -26,13 +26,11 @@ import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from '../utils/regexParser';
 import { nullthrows } from '../utils/nullthrows';
 import type {
-  BaseEnrichedTextInputProps,
   ContextMenuItem,
+  EnrichedTextInputProps,
   OnLinkDetected,
   OnMentionDetected,
 } from '../types';
-
-export interface EnrichedTextInputProps extends BaseEnrichedTextInputProps {}
 
 const warnMentionIndicators = (indicator: string) => {
   console.warn(

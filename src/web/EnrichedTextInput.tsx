@@ -1,10 +1,8 @@
 import { useImperativeHandle } from 'react';
 import type {
-  BaseEnrichedTextInputProps,
   EnrichedTextInputInstance,
+  EnrichedTextInputProps,
 } from '../types';
-
-export interface EnrichedTextInputProps extends BaseEnrichedTextInputProps {}
 
 export const EnrichedTextInput = ({
   ref,
