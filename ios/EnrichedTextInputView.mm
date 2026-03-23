@@ -1521,8 +1521,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   MentionStyle *mentionStyleClass =
       (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass != nullptr) {
-    [mentionStyleClass manageMentionTypingAttributes];
-
     if ([_recentInputString isEqualToString:currentString]) {
       [mentionStyleClass manageMentionEditing];
     }

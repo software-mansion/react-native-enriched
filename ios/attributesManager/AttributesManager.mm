@@ -89,7 +89,7 @@
           return aPara ? NSOrderedAscending : NSOrderedDescending;
         }];
 
-    // Apply visual styling and re-apply meta-attributes following the saved
+    // re-apply meta-attributes and apply visual styling following the saved
     // occurences.
     for (NSNumber *styleType in sortedStyleTypes) {
       StyleBase *style = _input->stylesDict[styleType];
@@ -98,8 +98,8 @@
 
       for (StylePair *stylePair in presentStyles[styleType]) {
         NSRange occurenceRange = [stylePair.rangeValue rangeValue];
-        [style applyStyling:occurenceRange];
         [style reapplyAttributesFromStylePair:stylePair];
+        [style applyStyling:occurenceRange];
       }
     }
   }

@@ -12,10 +12,6 @@
   return None;
 }
 
-+ (StyleType)getStyleType {
-  return [self getType];
-}
-
 // This method gets overridden
 - (NSString *)getKey {
   if ([self isParagraph]) {
