@@ -1,6 +1,6 @@
+#import "AttributeEntry.h"
 #import "ColorExtension.h"
 #import "EnrichedTextInputView.h"
-#import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
@@ -10,130 +10,158 @@
 static NSString *const MentionAttributeName = @"MentionAttributeName";
 
 @implementation MentionStyle {
-  EnrichedTextInputView *_input;
   NSValue *_activeMentionRange;
   NSString *_activeMentionIndicator;
   BOOL _blockMentionEditing;
 }
 
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return Mention;
 }
 
-+ (BOOL)isParagraphStyle {
+- (NSString *)getKey {
+  return MentionAttributeName;
+}
+
+- (BOOL)isParagraph {
   return NO;
 }
 
 - (instancetype)initWithInput:(id)input {
-  self = [super init];
-  _input = (EnrichedTextInputView *)input;
-  _activeMentionRange = nullptr;
-  _activeMentionIndicator = nullptr;
-  _blockMentionEditing = NO;
+  self = [super initWithInput:(EnrichedTextInputView *)input];
+  if (self) {
+    _activeMentionRange = nullptr;
+    _activeMentionIndicator = nullptr;
+    _blockMentionEditing = NO;
+  }
   return self;
 }
 
-- (void)applyStyle:(NSRange)range {
+- (void)applyStyling:(NSRange)range {
   // no-op for mentions
 }
 
-- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
-  // no-op for mentions
+- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+  NSRange range = [pair.rangeValue rangeValue];
+  MentionParams *params = (MentionParams *)pair.styleValue;
+  if (params == nullptr) {
+    return;
+  }
+  [self applyMentionParams:params toStorageRange:range];
 }
 
-- (void)addTypingAttributes {
-  // no-op for mentions
+- (AttributeEntry *)getEntryIfPresent:(NSRange)range {
+  return nullptr;
+}
+
+- (void)toggle:(NSRange)range {
 }
 
 // we have to make sure all mentions get removed properly
-- (void)removeAttributes:(NSRange)range {
+- (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
   BOOL someMentionHadUnderline = NO;
 
-  NSArray<StylePair *> *mentions = [self findAllOccurences:range];
-  [_input->textView.textStorage beginEditing];
+  NSArray<StylePair *> *mentions = [self all:range];
+  [self.input->textView.textStorage beginEditing];
   for (StylePair *pair in mentions) {
     NSRange mentionRange =
         [self getFullMentionRangeAt:[pair.rangeValue rangeValue].location];
-    [_input->textView.textStorage removeAttribute:MentionAttributeName
-                                            range:mentionRange];
-    [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:mentionRange];
-    [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:mentionRange];
-    [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName
-                                         value:[_input->config primaryColor]
-                                         range:mentionRange];
-    [_input->textView.textStorage removeAttribute:NSBackgroundColorAttributeName
-                                            range:mentionRange];
+    [self.input->textView.textStorage removeAttribute:MentionAttributeName
+                                                range:mentionRange];
+    [self.input->textView.textStorage
+        addAttribute:NSForegroundColorAttributeName
+               value:[self.input->config primaryColor]
+               range:mentionRange];
+    [self.input->textView.textStorage
+        addAttribute:NSUnderlineColorAttributeName
+               value:[self.input->config primaryColor]
+               range:mentionRange];
+    [self.input->textView.textStorage
+        addAttribute:NSStrikethroughColorAttributeName
+               value:[self.input->config primaryColor]
+               range:mentionRange];
+    [self.input->textView.textStorage
+        removeAttribute:NSBackgroundColorAttributeName
+                  range:mentionRange];
 
-    if ([self stylePropsWithParams:pair.styleValue].decorationLine ==
+    MentionParams *pairParams = (MentionParams *)pair.styleValue;
+    if ([self stylePropsWithParams:pairParams].decorationLine ==
         DecorationUnderline) {
-      [_input->textView.textStorage
+      [self.input->textView.textStorage
           removeAttribute:NSUnderlineStyleAttributeName
                     range:mentionRange];
       someMentionHadUnderline = YES;
     }
+    if (withDirtyRange) {
+      [self.input->attributesManager addDirtyRange:mentionRange];
+    }
   }
-  [_input->textView.textStorage endEditing];
+  [self.input->textView.textStorage endEditing];
 
-  // remove typing attributes as well
   NSMutableDictionary *newTypingAttrs =
-      [_input->textView.typingAttributes mutableCopy];
+      [self.input->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] =
-      [_input->config primaryColor];
-  newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config primaryColor];
+      [self.input->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] =
+      [self.input->config primaryColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] =
-      [_input->config primaryColor];
+      [self.input->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
   if (someMentionHadUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
   }
-  _input->textView.typingAttributes = newTypingAttrs;
+  self.input->textView.typingAttributes = newTypingAttrs;
 }
 
 // used for conflicts, we have to remove the whole mention
-- (void)removeTypingAttributes {
+- (void)removeTyping {
   NSRange mentionRange =
-      [self getFullMentionRangeAt:_input->textView.selectedRange.location];
-  [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage removeAttribute:MentionAttributeName
-                                          range:mentionRange];
-  [_input->textView.textStorage addAttribute:NSForegroundColorAttributeName
-                                       value:[_input->config primaryColor]
-                                       range:mentionRange];
-  [_input->textView.textStorage addAttribute:NSUnderlineColorAttributeName
-                                       value:[_input->config primaryColor]
-                                       range:mentionRange];
-  [_input->textView.textStorage addAttribute:NSStrikethroughColorAttributeName
-                                       value:[_input->config primaryColor]
-                                       range:mentionRange];
-  [_input->textView.textStorage removeAttribute:NSBackgroundColorAttributeName
-                                          range:mentionRange];
+      [self getFullMentionRangeAt:self.input->textView.selectedRange.location];
+  [self.input->textView.textStorage beginEditing];
+  [self.input->textView.textStorage removeAttribute:MentionAttributeName
+                                              range:mentionRange];
+  [self.input->textView.textStorage
+      addAttribute:NSForegroundColorAttributeName
+             value:[self.input->config primaryColor]
+             range:mentionRange];
+  [self.input->textView.textStorage
+      addAttribute:NSUnderlineColorAttributeName
+             value:[self.input->config primaryColor]
+             range:mentionRange];
+  [self.input->textView.textStorage
+      addAttribute:NSStrikethroughColorAttributeName
+             value:[self.input->config primaryColor]
+             range:mentionRange];
+  [self.input->textView.textStorage
+      removeAttribute:NSBackgroundColorAttributeName
+                range:mentionRange];
 
   MentionParams *params = [self getMentionParamsAt:mentionRange.location];
   if ([self stylePropsWithParams:params].decorationLine ==
       DecorationUnderline) {
-    [_input->textView.textStorage removeAttribute:NSUnderlineStyleAttributeName
-                                            range:mentionRange];
+    [self.input->textView.textStorage
+        removeAttribute:NSUnderlineStyleAttributeName
+                  range:mentionRange];
   }
-  [_input->textView.textStorage endEditing];
+  [self.input->textView.textStorage endEditing];
 
   // remove typing attributes as well
   NSMutableDictionary *newTypingAttrs =
-      [_input->textView.typingAttributes mutableCopy];
+      [self.input->textView.typingAttributes mutableCopy];
   newTypingAttrs[NSForegroundColorAttributeName] =
-      [_input->config primaryColor];
-  newTypingAttrs[NSUnderlineColorAttributeName] = [_input->config primaryColor];
+      [self.input->config primaryColor];
+  newTypingAttrs[NSUnderlineColorAttributeName] =
+      [self.input->config primaryColor];
   newTypingAttrs[NSStrikethroughColorAttributeName] =
-      [_input->config primaryColor];
+      [self.input->config primaryColor];
   [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
   if ([self stylePropsWithParams:params].decorationLine ==
       DecorationUnderline) {
     [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
   }
-  _input->textView.typingAttributes = newTypingAttrs;
+  self.input->textView.typingAttributes = newTypingAttrs;
+
+  [self.input->attributesManager didRemoveTypingAttribute:[self getKey]];
 }
 
 - (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
@@ -141,35 +169,32 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   return params != nullptr;
 }
 
-- (BOOL)detectStyle:(NSRange)range {
+- (BOOL)detect:(NSRange)range {
   if (range.length >= 1) {
-    return [OccurenceUtils detect:MentionAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value range:range];
-                    }];
-  } else {
-    return [self getMentionParamsAt:range.location] != nullptr;
+    return [super detect:range];
   }
+  return [self getMentionParamsAt:range.location] != nullptr;
 }
 
-- (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:MentionAttributeName
-                   withInput:_input
-                     inRange:range
-               withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value range:range];
-               }];
-}
+- (void)applyMentionParams:(MentionParams *)params
+            toStorageRange:(NSRange)range {
+  MentionStyleProps *styleProps =
+      [self.input->config mentionStylePropsForIndicator:params.indicator];
 
-- (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:MentionAttributeName
-                   withInput:_input
-                     inRange:range
-               withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value range:range];
-               }];
+  NSMutableDictionary *newAttrs = [@{
+    MentionAttributeName : params,
+    NSForegroundColorAttributeName : styleProps.color,
+    NSUnderlineColorAttributeName : styleProps.color,
+    NSStrikethroughColorAttributeName : styleProps.color,
+    NSBackgroundColorAttributeName :
+        [styleProps.backgroundColor colorWithAlphaIfNotTransparent:0.4],
+  } mutableCopy];
+
+  if (styleProps.decorationLine == DecorationUnderline) {
+    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+  }
+
+  [self.input->textView.textStorage addAttributes:newAttrs range:range];
 }
 
 // MARK: - Public non-standard methods
@@ -181,8 +206,6 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     return;
   }
 
-  // we block callbacks resulting from manageMentionEditing while we tamper with
-  // them here
   _blockMentionEditing = YES;
 
   MentionParams *params = [[MentionParams alloc] init];
@@ -190,75 +213,42 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   params.indicator = indicator;
   params.attributes = attributes;
 
-  MentionStyleProps *styleProps =
-      [_input->config mentionStylePropsForIndicator:indicator];
-
-  NSMutableDictionary *newAttrs = [@{
-    MentionAttributeName : params,
-    NSForegroundColorAttributeName : styleProps.color,
-    NSUnderlineColorAttributeName : styleProps.color,
-    NSStrikethroughColorAttributeName : styleProps.color,
-    NSBackgroundColorAttributeName :
-        [styleProps.backgroundColor colorWithAlphaIfNotTransparent:0.4],
-  } mutableCopy];
-
-  if (styleProps.decorationLine == DecorationUnderline) {
-    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
-  }
-
   // add a single space after the mention
   NSString *newText = [NSString stringWithFormat:@"%@ ", text];
   NSRange rangeToBeReplaced = [_activeMentionRange rangeValue];
   [TextInsertionUtils replaceText:newText
                                at:rangeToBeReplaced
              additionalAttributes:nullptr
-                            input:_input
+                            input:self.input
                     withSelection:YES];
 
   // THEN, add the attributes to not apply them on the space
-  [_input->textView.textStorage
-      addAttributes:newAttrs
-              range:NSMakeRange(rangeToBeReplaced.location, text.length)];
-
+  NSRange mentionRange = NSMakeRange(rangeToBeReplaced.location, text.length);
+  [self applyMentionParams:params toStorageRange:mentionRange];
+  [self.input->attributesManager addDirtyRange:mentionRange];
   // mention editing should finish
   [self removeActiveMentionRange];
 
-  // unlock editing
   _blockMentionEditing = NO;
 }
 
 - (void)addMentionAtRange:(NSRange)range params:(MentionParams *)params {
   _blockMentionEditing = YES;
 
-  MentionStyleProps *styleProps =
-      [_input->config mentionStylePropsForIndicator:params.indicator];
-
-  NSMutableDictionary *newAttrs = [@{
-    MentionAttributeName : params,
-    NSForegroundColorAttributeName : styleProps.color,
-    NSUnderlineColorAttributeName : styleProps.color,
-    NSStrikethroughColorAttributeName : styleProps.color,
-    NSBackgroundColorAttributeName :
-        [styleProps.backgroundColor colorWithAlphaIfNotTransparent:0.4],
-  } mutableCopy];
-
-  if (styleProps.decorationLine == DecorationUnderline) {
-    newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
-  }
-
-  [_input->textView.textStorage addAttributes:newAttrs range:range];
+  [self applyMentionParams:params toStorageRange:range];
+  [self.input->attributesManager addDirtyRange:range];
 
   _blockMentionEditing = NO;
 }
 
 - (void)startMentionWithIndicator:(NSString *)indicator {
-  NSRange currentRange = _input->textView.selectedRange;
+  NSRange currentRange = self.input->textView.selectedRange;
 
   BOOL addSpaceBefore = NO;
   BOOL addSpaceAfter = NO;
 
   if (currentRange.location > 0) {
-    unichar charBefore = [_input->textView.textStorage.string
+    unichar charBefore = [self.input->textView.textStorage.string
         characterAtIndex:(currentRange.location - 1)];
     if (![[NSCharacterSet whitespaceAndNewlineCharacterSet]
             characterIsMember:charBefore]) {
@@ -267,8 +257,8 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   }
 
   if (currentRange.location + currentRange.length <
-      _input->textView.textStorage.string.length) {
-    unichar charAfter = [_input->textView.textStorage.string
+      self.input->textView.textStorage.string.length) {
+    unichar charAfter = [self.input->textView.textStorage.string
         characterAtIndex:(currentRange.location + currentRange.length)];
     if (![[NSCharacterSet whitespaceAndNewlineCharacterSet]
             characterIsMember:charAfter]) {
@@ -287,18 +277,18 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     [TextInsertionUtils insertText:finalString
                                 at:currentRange.location
               additionalAttributes:nullptr
-                             input:_input
+                             input:self.input
                      withSelection:NO];
   } else {
     [TextInsertionUtils replaceText:finalString
                                  at:currentRange
                additionalAttributes:nullptr
-                              input:_input
+                              input:self.input
                       withSelection:NO];
   }
 
-  [_input->textView reactFocus];
-  _input->textView.selectedRange = newSelect;
+  [self.input->textView reactFocus];
+  self.input->textView.selectedRange = newSelect;
 }
 
 // handles removing no longer valid mentions
@@ -308,18 +298,17 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   // any number of spaces, which makes one mention any number of words long
 
   NSRange wholeText =
-      NSMakeRange(0, _input->textView.textStorage.string.length);
-  // get menntions in ascending range.location order
-  NSArray<StylePair *> *mentions = [[self findAllOccurences:wholeText]
+      NSMakeRange(0, self.input->textView.textStorage.string.length);
+  // get mentions in ascending range.location order
+  NSArray<StylePair *> *mentions = [[self all:wholeText]
       sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1,
                                                      id _Nonnull obj2) {
         NSRange range1 = [((StylePair *)obj1).rangeValue rangeValue];
         NSRange range2 = [((StylePair *)obj2).rangeValue rangeValue];
         if (range1.location < range2.location) {
           return NSOrderedAscending;
-        } else {
-          return NSOrderedDescending;
         }
+        return NSOrderedDescending;
       }];
 
   // set of ranges to have their mentions removed - aren't valid anymore
@@ -343,15 +332,15 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     }
 
     // check for text, any modifications to it makes mention invalid
-    NSString *existingText =
-        [_input->textView.textStorage.string substringWithRange:currentRange];
+    NSString *existingText = [self.input->textView.textStorage.string
+        substringWithRange:currentRange];
     if (![existingText isEqualToString:currentText]) {
       [rangesToRemove addObject:[NSValue valueWithRange:currentRange]];
     }
   }
 
   for (NSValue *value in rangesToRemove) {
-    [self removeAttributes:[value rangeValue]];
+    [self remove:[value rangeValue] withDirtyRange:YES];
   }
 }
 
@@ -363,7 +352,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   }
 
   // we don't take longer selections into consideration
-  if (_input->textView.selectedRange.length > 0) {
+  if (self.input->textView.selectedRange.length > 0) {
     [self removeActiveMentionRange];
     return;
   }
@@ -379,16 +368,15 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 
   // get style classes that the mention shouldn't be recognized in, together
   // with other mentions
-  NSArray *conflicts =
-      _input->conflictingStyles[@([MentionStyle getStyleType])];
-  NSArray *blocks = _input->blockingStyles[@([MentionStyle getStyleType])];
+  NSArray *conflicts = self.input->conflictingStyles[@([MentionStyle getType])];
+  NSArray *blocks = self.input->blockingStyles[@([MentionStyle getType])];
   NSArray *allConflicts = [[conflicts arrayByAddingObjectsFromArray:blocks]
-      arrayByAddingObject:@([MentionStyle getStyleType])];
+      arrayByAddingObject:@([MentionStyle getType])];
   BOOL conflictingStyle = NO;
 
   for (NSNumber *styleType in allConflicts) {
-    id<BaseStyleProtocol> styleClass = _input->stylesDict[styleType];
-    if (styleClass != nullptr && [styleClass anyOccurence:candidateRange]) {
+    StyleBase *styleInst = self.input->stylesDict[styleType];
+    if (styleInst != nullptr && [styleInst any:candidateRange]) {
       conflictingStyle = YES;
       break;
     }
@@ -411,48 +399,48 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   BOOL removeAttrs = NO;
   MentionParams *params;
 
-  if (_input->textView.selectedRange.length == 0) {
+  if (self.input->textView.selectedRange.length == 0) {
     // check before
-    if (_input->textView.selectedRange.location >= 1) {
-      if ([self detectStyle:NSMakeRange(
-                                _input->textView.selectedRange.location - 1,
-                                1)]) {
+    if (self.input->textView.selectedRange.location >= 1) {
+      if ([self
+              detect:NSMakeRange(
+                         self.input->textView.selectedRange.location - 1, 1)]) {
         removeAttrs = YES;
         params = [self
-            getMentionParamsAt:_input->textView.selectedRange.location - 1];
+            getMentionParamsAt:self.input->textView.selectedRange.location - 1];
       }
     }
     // check after
-    if (_input->textView.selectedRange.location <
-        _input->textView.textStorage.length) {
-      if ([self detectStyle:NSMakeRange(_input->textView.selectedRange.location,
-                                        1)]) {
+    if (self.input->textView.selectedRange.location <
+        self.input->textView.textStorage.length) {
+      if ([self detect:NSMakeRange(self.input->textView.selectedRange.location,
+                                   1)]) {
         removeAttrs = YES;
-        params =
-            [self getMentionParamsAt:_input->textView.selectedRange.location];
+        params = [self
+            getMentionParamsAt:self.input->textView.selectedRange.location];
       }
     }
   } else {
-    if ([self anyOccurence:_input->textView.selectedRange]) {
+    if ([self any:self.input->textView.selectedRange]) {
       removeAttrs = YES;
     }
   }
 
   if (removeAttrs) {
     NSMutableDictionary *newTypingAttrs =
-        [_input->textView.typingAttributes mutableCopy];
+        [self.input->textView.typingAttributes mutableCopy];
     newTypingAttrs[NSForegroundColorAttributeName] =
-        [_input->config primaryColor];
+        [self.input->config primaryColor];
     newTypingAttrs[NSUnderlineColorAttributeName] =
-        [_input->config primaryColor];
+        [self.input->config primaryColor];
     newTypingAttrs[NSStrikethroughColorAttributeName] =
-        [_input->config primaryColor];
+        [self.input->config primaryColor];
     [newTypingAttrs removeObjectForKey:NSBackgroundColorAttributeName];
     if ([self stylePropsWithParams:params].decorationLine ==
         DecorationUnderline) {
       [newTypingAttrs removeObjectForKey:NSUnderlineStyleAttributeName];
     }
-    _input->textView.typingAttributes = newTypingAttrs;
+    self.input->textView.typingAttributes = newTypingAttrs;
   }
 }
 
@@ -461,20 +449,21 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 - (BOOL)handleLeadingMentionReplacement:(NSRange)range
                         replacementText:(NSString *)text {
   // whole textView range gets replaced with a single letter
-  if (_input->textView.textStorage.string.length > 0 &&
+  if (self.input->textView.textStorage.string.length > 0 &&
       NSEqualRanges(
-          range, NSMakeRange(0, _input->textView.textStorage.string.length)) &&
+          range,
+          NSMakeRange(0, self.input->textView.textStorage.string.length)) &&
       text.length == 1) {
     // first character detection is enough for the removal to be done
-    if ([self detectStyle:NSMakeRange(0, 1)]) {
-      [self
-          removeAttributes:NSMakeRange(
-                               0, _input->textView.textStorage.string.length)];
+    if ([self detect:NSMakeRange(0, 1)]) {
+      [self remove:NSMakeRange(0,
+                               self.input->textView.textStorage.string.length)
+          withDirtyRange:YES];
       // do the replacing manually
       [TextInsertionUtils replaceText:text
                                    at:range
                  additionalAttributes:nullptr
-                                input:_input
+                                input:self.input
                         withSelection:YES];
       return YES;
     }
@@ -485,19 +474,19 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 // returns mention params if it exists
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location {
   NSRange mentionRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.input->textView.textStorage.length);
 
   // don't search at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == _input->textView.textStorage.length) {
+  if (searchLocation == self.input->textView.textStorage.length) {
     return nullptr;
   }
 
   MentionParams *value =
-      [_input->textView.textStorage attribute:MentionAttributeName
-                                      atIndex:searchLocation
-                        longestEffectiveRange:&mentionRange
-                                      inRange:inputRange];
+      [self.input->textView.textStorage attribute:MentionAttributeName
+                                          atIndex:searchLocation
+                            longestEffectiveRange:&mentionRange
+                                          inRange:inputRange];
   return value;
 }
 
@@ -508,29 +497,26 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
 // returns full range of a mention at some location
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location {
   NSRange mentionRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.input->textView.textStorage.length);
 
   // get the previous index if possible when at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == _input->textView.textStorage.length) {
+  if (searchLocation == self.input->textView.textStorage.length) {
     if (searchLocation == 0) {
       return mentionRange;
-    } else {
-      searchLocation = searchLocation - 1;
     }
+    searchLocation = searchLocation - 1;
   }
 
-  [_input->textView.textStorage attribute:MentionAttributeName
-                                  atIndex:searchLocation
-                    longestEffectiveRange:&mentionRange
-                                  inRange:inputRange];
+  [self.input->textView.textStorage attribute:MentionAttributeName
+                                      atIndex:searchLocation
+                        longestEffectiveRange:&mentionRange
+                                      inRange:inputRange];
   return mentionRange;
 }
 
-// MARK: - Private non-standard methods
-
 - (MentionStyleProps *)stylePropsWithParams:(MentionParams *)params {
-  return [_input->config mentionStylePropsForIndicator:params.indicator];
+  return [self.input->config mentionStylePropsForIndicator:params.indicator];
 }
 
 // finds if any word/words around current selection are eligible to be edited as
@@ -543,8 +529,9 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
   NSRange finalRange;
 
   // word at the current selection
-  currentWord = [WordsUtils getCurrentWord:_input->textView.textStorage.string
-                                     range:_input->textView.selectedRange];
+  currentWord =
+      [WordsUtils getCurrentWord:self.input->textView.textStorage.string
+                           range:self.input->textView.selectedRange];
   if (currentWord != nullptr) {
     currentWordText = (NSString *)[currentWord objectForKey:@"word"];
     currentWordRange = (NSValue *)[currentWord objectForKey:@"range"];
@@ -554,7 +541,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     // current word exists
     unichar currentFirstChar = [currentWordText characterAtIndex:0];
 
-    if ([[_input->config mentionIndicators]
+    if ([[self.input->config mentionIndicators]
             containsObject:@(currentFirstChar)]) {
       // current word exists and has a mention indicator; no need to check for
       // the previous word
@@ -571,7 +558,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
         return nullptr;
       }
 
-      unichar separatorChar = [_input->textView.textStorage.string
+      unichar separatorChar = [self.input->textView.textStorage.string
           characterAtIndex:previousWordSearchLocation];
       if (![[NSCharacterSet whitespaceCharacterSet]
               characterIsMember:separatorChar]) {
@@ -581,7 +568,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
       }
 
       previousWord = [WordsUtils
-          getCurrentWord:_input->textView.textStorage.string
+          getCurrentWord:self.input->textView.textStorage.string
                    range:NSMakeRange(previousWordSearchLocation, 0)];
 
       if (previousWord != nullptr) {
@@ -592,7 +579,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
         // check for the mention indicators in the previous word
         unichar previousFirstChar = [previousWordText characterAtIndex:0];
 
-        if ([[_input->config mentionIndicators]
+        if ([[self.input->config mentionIndicators]
                 containsObject:@(previousFirstChar)]) {
           // previous word has a proper mention indicator: treat both words as
           // an editable mention
@@ -617,13 +604,13 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     // current word doesn't exist; try getting the previous one
 
     NSInteger previousWordSearchLocation =
-        _input->textView.selectedRange.location - 1;
+        self.input->textView.selectedRange.location - 1;
     if (previousWordSearchLocation < 0) {
       // previous word can't exist
       return nullptr;
     }
 
-    unichar separatorChar = [_input->textView.textStorage.string
+    unichar separatorChar = [self.input->textView.textStorage.string
         characterAtIndex:previousWordSearchLocation];
     if (![[NSCharacterSet whitespaceCharacterSet]
             characterIsMember:separatorChar]) {
@@ -633,7 +620,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     }
 
     previousWord =
-        [WordsUtils getCurrentWord:_input->textView.textStorage.string
+        [WordsUtils getCurrentWord:self.input->textView.textStorage.string
                              range:NSMakeRange(previousWordSearchLocation, 0)];
 
     if (previousWord != nullptr) {
@@ -644,7 +631,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
       // check for the mention indicators in the previous word
       unichar previousFirstChar = [previousWordText characterAtIndex:0];
 
-      if ([[_input->config mentionIndicators]
+      if ([[self.input->config mentionIndicators]
               containsObject:@(previousFirstChar)]) {
         // previous word has a proper mention indicator; treat previous word + a
         // space as a editable mention
@@ -674,7 +661,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
       [text substringWithRange:NSMakeRange(1, text.length - 1)];
   _activeMentionIndicator = indicatorString;
   _activeMentionRange = [NSValue valueWithRange:range];
-  [_input emitOnMentionEvent:indicatorString text:textString];
+  [self.input emitOnMentionEvent:indicatorString text:textString];
 }
 
 // removes stored mention range + indicator, which means that we no longer edit
@@ -684,7 +671,7 @@ static NSString *const MentionAttributeName = @"MentionAttributeName";
     NSString *indicatorCopy = [_activeMentionIndicator copy];
     _activeMentionIndicator = nullptr;
     _activeMentionRange = nullptr;
-    [_input emitOnMentionEvent:indicatorCopy text:nullptr];
+    [self.input emitOnMentionEvent:indicatorCopy text:nullptr];
   }
 }
 

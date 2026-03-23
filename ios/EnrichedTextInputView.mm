@@ -106,8 +106,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[StrikethroughStyle alloc] initWithInput:self],
     @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithInput:self],
     //    @([LinkStyle getStyleType]) : [[LinkStyle alloc] initWithInput:self],
-    //    @([MentionStyle getStyleType]) : [[MentionStyle alloc]
-    //    initWithInput:self],
+    @([MentionStyle getType]) : [[MentionStyle alloc] initWithInput:self],
     @([H1Style getType]) : [[H1Style alloc] initWithInput:self],
     @([H2Style getType]) : [[H2Style alloc] initWithInput:self],
     @([H3Style getType]) : [[H3Style alloc] initWithInput:self],
@@ -131,15 +130,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([UnderlineStyle getType]) : @[],
     @([StrikethroughStyle getType]) : @[],
     @([InlineCodeStyle getType]) : @[
-      //      @([LinkStyle getStyleType]), @([MentionStyle getStyleType])
+      //      @([LinkStyle getStyleType]),
+      @([MentionStyle getType])
     ],
     //    @([LinkStyle getStyleType]) : @[
     //      @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]),
-    //      @([MentionStyle getStyleType])
+    //      @([MentionStyle getType])
     //    ],
-    //    @([MentionStyle getStyleType]) :
-    //        @[ @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType])
-    //        ],
+    @([MentionStyle getType]) : @[
+      @([InlineCodeStyle getType]),
+      //      @([LinkStyle getStyleType])
+    ],
     @([H1Style getType]) : @[
       @([H2Style getType]), @([H3Style getType]), @([H4Style getType]),
       @([H5Style getType]), @([H6Style getType]),
@@ -213,7 +214,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([ItalicStyle getType]), @([StrikethroughStyle getType]),
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
-      //      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
+      @([MentionStyle getType]),
+      //      @([LinkStyle getStyleType]),
       @([CheckboxListStyle getType])
     ],
     //    @([ImageStyle getStyleType]) :
@@ -232,9 +234,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //    @([LinkStyle getStyleType]) :
     //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
     //        ],
-    //    @([MentionStyle getStyleType]) :
-    //        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType])
-    //        ],
+    @([MentionStyle getType]) : @[
+      @([CodeBlockStyle getType]),
+      //      @([ImageStyle getStyleType])
+    ],
     @([H1Style getType]) : @[],
     @([H2Style getType]) : @[],
     @([H3Style getType]) : @[],
@@ -907,9 +910,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  LinkData *detectedLinkData;
   //  NSRange detectedLinkRange = NSMakeRange(0, 0);
   //
-  //  // data for onMentionDetected event
-  //  MentionParams *detectedMentionParams;
-  //  NSRange detectedMentionRange = NSMakeRange(0, 0);
+  // data for onMentionDetected event
+  MentionParams *detectedMentionParams = nullptr;
+  NSRange detectedMentionRange = NSMakeRange(0, 0);
 
   for (NSNumber *type in stylesDict) {
     StyleBase *style = stylesDict[type];
@@ -974,35 +977,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     //      }
     //    }
     //
-    //    // onMentionDetected event
-    //    if (isActive && [type intValue] == [MentionStyle getStyleType]) {
-    //      // get mention data
-    //      MentionParams *candidateMentionParams;
-    //      NSRange candidateMentionRange = NSMakeRange(0, 0);
-    //      MentionStyle *mentionStyleClass =
-    //          (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-    //      if (mentionStyleClass != nullptr) {
-    //        candidateMentionParams = [mentionStyleClass
-    //            getMentionParamsAt:textView.selectedRange.location];
-    //        candidateMentionRange = [mentionStyleClass
-    //            getFullMentionRangeAt:textView.selectedRange.location];
-    //      }
-    //
-    //      if (wasActive == NO) {
-    //        // selection was changed from a non-mention to a mention
-    //        detectedMentionParams = candidateMentionParams;
-    //        detectedMentionRange = candidateMentionRange;
-    //      } else if (![_recentlyActiveMentionParams.text
-    //                     isEqualToString:candidateMentionParams.text] ||
-    //                 ![_recentlyActiveMentionParams.attributes
-    //                     isEqualToString:candidateMentionParams.attributes] ||
-    //                 !NSEqualRanges(_recentlyActiveMentionRange,
-    //                                candidateMentionRange)) {
-    //        // selection changed from one mention to another
-    //        detectedMentionParams = candidateMentionParams;
-    //        detectedMentionRange = candidateMentionRange;
-    //      }
-    //    }
+    // onMentionDetected event
+    if (isActive && [type intValue] == [MentionStyle getType]) {
+      // get mention data
+      MentionParams *candidateMentionParams;
+      NSRange candidateMentionRange = NSMakeRange(0, 0);
+      MentionStyle *mentionStyleClass =
+          (MentionStyle *)stylesDict[@([MentionStyle getType])];
+      if (mentionStyleClass != nullptr) {
+        candidateMentionParams = [mentionStyleClass
+            getMentionParamsAt:textView.selectedRange.location];
+        candidateMentionRange = [mentionStyleClass
+            getFullMentionRangeAt:textView.selectedRange.location];
+      }
+
+      if (wasActive == NO) {
+        // selection was changed from a non-mention to a mention
+        detectedMentionParams = candidateMentionParams;
+        detectedMentionRange = candidateMentionRange;
+      } else if (![_recentlyActiveMentionParams.text
+                     isEqualToString:candidateMentionParams.text] ||
+                 ![_recentlyActiveMentionParams.attributes
+                     isEqualToString:candidateMentionParams.attributes] ||
+                 !NSEqualRanges(_recentlyActiveMentionRange,
+                                candidateMentionRange)) {
+        // selection changed from one mention to another
+        detectedMentionParams = candidateMentionParams;
+        detectedMentionRange = candidateMentionRange;
+      }
+    }
   }
 
   if (updateNeeded) {
@@ -1019,8 +1022,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
            .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
            //           .isLink = [self isStyleActive:[LinkStyle getStyleType]],
-           //           .isMention = [self isStyleActive:[MentionStyle
-           //           getStyleType]],
+           .isMention = [self isStyleActive:[MentionStyle getType]],
            .isH1 = [self isStyleActive:[H1Style getType]],
            .isH2 = [self isStyleActive:[H2Style getType]],
            .isH3 = [self isStyleActive:[H3Style getType]],
@@ -1041,7 +1043,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
            .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
            //           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
-           //           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
+           .mention = GET_STYLE_STATE([MentionStyle getType]),
            .h1 = GET_STYLE_STATE([H1Style getType]),
            .h2 = GET_STYLE_STATE([H2Style getType]),
            .h3 = GET_STYLE_STATE([H3Style getType]),
@@ -1064,15 +1066,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //                            range:detectedLinkRange];
   //  }
   //
-  //  if (detectedMentionParams != nullptr) {
-  //    // emit onMentionDetected event
-  //    [self emitOnMentionDetectedEvent:detectedMentionParams.text
-  //                           indicator:detectedMentionParams.indicator
-  //                          attributes:detectedMentionParams.attributes];
-  //
-  //    _recentlyActiveMentionParams = detectedMentionParams;
-  //    _recentlyActiveMentionRange = detectedMentionRange;
-  //  }
+  if (detectedMentionParams != nullptr) {
+    [self emitOnMentionDetectedEvent:detectedMentionParams.text
+                           indicator:detectedMentionParams.indicator
+                          attributes:detectedMentionParams.attributes];
+
+    _recentlyActiveMentionParams = detectedMentionParams;
+    _recentlyActiveMentionRange = detectedMentionRange;
+  }
   //
   //  // emit onChangeHtml event if needed
   //  [self tryEmittingOnChangeHtmlEvent];
@@ -1143,15 +1144,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //    NSString *text = (NSString *)args[2];
   //    NSString *url = (NSString *)args[3];
   //    [self addLinkAt:start end:end text:text url:url];
-  //  } else if ([commandName isEqualToString:@"addMention"]) {
-  //    NSString *indicator = (NSString *)args[0];
-  //    NSString *text = (NSString *)args[1];
-  //    NSString *attributes = (NSString *)args[2];
-  //    [self addMention:indicator text:text attributes:attributes];
-  //  } else if ([commandName isEqualToString:@"startMention"]) {
-  //    NSString *indicator = (NSString *)args[0];
-  //    [self startMentionWithIndicator:indicator];
-  else if ([commandName isEqualToString:@"toggleH1"]) {
+  else if ([commandName isEqualToString:@"addMention"]) {
+    NSString *indicator = (NSString *)args[0];
+    NSString *text = (NSString *)args[1];
+    NSString *attributes = (NSString *)args[2];
+    [self addMention:indicator text:text attributes:attributes];
+  } else if ([commandName isEqualToString:@"startMention"]) {
+    NSString *indicator = (NSString *)args[0];
+    [self startMentionWithIndicator:indicator];
+  } else if ([commandName isEqualToString:@"toggleH1"]) {
     [self toggleRegularStyle:[H1Style getType]];
   } else if ([commandName isEqualToString:@"toggleH2"]) {
     [self toggleRegularStyle:[H2Style getType]];
@@ -1280,30 +1281,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 //  }
 //}
 //
-//- (void)emitOnMentionDetectedEvent:(NSString *)text
-//                         indicator:(NSString *)indicator
-//                        attributes:(NSString *)attributes {
-//  auto emitter = [self getEventEmitter];
-//  if (emitter != nullptr) {
-//    emitter->onMentionDetected({.text = [text toCppString],
-//                                .indicator = [indicator toCppString],
-//                                .payload = [attributes toCppString]});
-//  }
-//}
-//
-//- (void)emitOnMentionEvent:(NSString *)indicator text:(NSString *)text {
-//  auto emitter = [self getEventEmitter];
-//  if (emitter != nullptr) {
-//    if (text != nullptr) {
-//      folly::dynamic fdStr = [text toCppString];
-//      emitter->onMention({.indicator = [indicator toCppString], .text =
-//      fdStr});
-//    } else {
-//      folly::dynamic nul = nullptr;
-//      emitter->onMention({.indicator = [indicator toCppString], .text = nul});
-//    }
-//  }
-//}
+- (void)emitOnMentionDetectedEvent:(NSString *)text
+                         indicator:(NSString *)indicator
+                        attributes:(NSString *)attributes {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    emitter->onMentionDetected({.text = [text toCppString],
+                                .indicator = [indicator toCppString],
+                                .payload = [attributes toCppString]});
+  }
+}
+
+- (void)emitOnMentionEvent:(NSString *)indicator text:(NSString *)text {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    if (text != nullptr) {
+      folly::dynamic fdStr = [text toCppString];
+      emitter->onMention({.indicator = [indicator toCppString], .text = fdStr});
+    } else {
+      folly::dynamic nul = nullptr;
+      emitter->onMention({.indicator = [indicator toCppString], .text = nul});
+    }
+  }
+}
 
 //- (void)tryEmittingOnChangeHtmlEvent {
 //  if (!_emitHtml || textView.markedTextRange != nullptr) {
@@ -1409,26 +1409,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 //   }
 // }
 
-// - (void)addMention:(NSString *)indicator
-//               text:(NSString *)text
-//         attributes:(NSString *)attributes {
-//   MentionStyle *mentionStyleClass =
-//       (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-//   if (mentionStyleClass == nullptr) {
-//     return;
-//   }
-//   if ([mentionStyleClass getActiveMentionRange] == nullptr) {
-//     return;
-//   }
+- (void)addMention:(NSString *)indicator
+              text:(NSString *)text
+        attributes:(NSString *)attributes {
+  MentionStyle *mentionStyleClass =
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
+  if (mentionStyleClass == nullptr) {
+    return;
+  }
+  if ([mentionStyleClass getActiveMentionRange] == nullptr) {
+    return;
+  }
 
-//   if ([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType]
-//                                     range:[[mentionStyleClass
-//                                               getActiveMentionRange]
-//                                               rangeValue]]) {
-//     [mentionStyleClass addMention:indicator text:text attributes:attributes];
-//     [self anyTextMayHaveBeenModified];
-//   }
-// }
+  if ([self handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                    range:[[mentionStyleClass
+                                              getActiveMentionRange]
+                                              rangeValue]]) {
+    [mentionStyleClass addMention:indicator text:text attributes:attributes];
+    [self anyTextMayHaveBeenModified];
+  }
+}
 
 // - (void)addImage:(NSString *)uri width:(float)width height:(float)height {
 //   ImageStyle *imageStyleClass =
@@ -1444,19 +1444,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 //   }
 // }
 
-// - (void)startMentionWithIndicator:(NSString *)indicator {
-//   MentionStyle *mentionStyleClass =
-//       (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-//   if (mentionStyleClass == nullptr) {
-//     return;
-//   }
+- (void)startMentionWithIndicator:(NSString *)indicator {
+  MentionStyle *mentionStyleClass =
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
+  if (mentionStyleClass == nullptr) {
+    return;
+  }
 
-//   if ([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType]
-//                                     range:textView.selectedRange]) {
-//     [mentionStyleClass startMentionWithIndicator:indicator];
-//     [self anyTextMayHaveBeenModified];
-//   }
-// }
+  if ([self handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                    range:textView.selectedRange]) {
+    [mentionStyleClass startMentionWithIndicator:indicator];
+    [self anyTextMayHaveBeenModified];
+  }
+}
 
 // returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
@@ -1518,19 +1518,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //  }
   NSString *currentString = [textView.textStorage.string copy];
 
-  //  // mention typing attribtues fix and active editing
-  //  MentionStyle *mentionStyleClass =
-  //      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-  //  if (mentionStyleClass != nullptr) {
-  //    [mentionStyleClass manageMentionTypingAttributes];
-  //
-  //    // mention editing runs if only a selection was done (no text change)
-  //    // otherwise we would double-emit with a second call in the
-  //    // anyTextMayHaveBeenModified method
-  //    if ([_recentInputString isEqualToString:currentString]) {
-  //      [mentionStyleClass manageMentionEditing];
-  //    }
-  //  }
+  MentionStyle *mentionStyleClass =
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
+  if (mentionStyleClass != nullptr) {
+    [mentionStyleClass manageMentionTypingAttributes];
+
+    if ([_recentInputString isEqualToString:currentString]) {
+      [mentionStyleClass manageMentionEditing];
+    }
+  }
 
   // attributes manager handles proper typingAttributes at all times to properly
   // extend meta-attributes
@@ -1617,13 +1613,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   //    [h6Style handleImproperHeadings];
   //  }
   //
-  //  // mentions management: removal and editing
-  //  MentionStyle *mentionStyleClass =
-  //      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
-  //  if (mentionStyleClass != nullptr) {
-  //    [mentionStyleClass handleExistingMentions];
-  //    [mentionStyleClass manageMentionEditing];
-  //  }
+  MentionStyle *mentionStyleClass =
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
+  if (mentionStyleClass != nullptr) {
+    [mentionStyleClass handleExistingMentions];
+    [mentionStyleClass manageMentionEditing];
+  }
 
   // placholder management
   [textView updatePlaceholderVisibility];
@@ -1728,10 +1723,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getType])];
   CheckboxListStyle *cbLStyle =
       (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
+  MentionStyle *mentionStyle =
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
   //  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle
   //  getStyleType])]; CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle
   //  getStyleType])]; LinkStyle *linkStyle = stylesDict[@([LinkStyle
-  //  getStyleType])]; MentionStyle *mentionStyle = stylesDict[@([MentionStyle
   //  getStyleType])]; H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
   //  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
   //  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
@@ -1754,12 +1750,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       //      || [bqStyle handleBackspaceInRange:range replacementText:text]
       //      || [cbStyle handleBackspaceInRange:range replacementText:text]
       //      || [linkStyle handleLeadingLinkReplacement:range
-      //      replacementText:text] || [mentionStyle
-      //      handleLeadingMentionReplacement:range
-      //                                    replacementText:text]
-      || [(HeadingStyleBase *)stylesDict[@([H1Style getType])]
-             handleNewlinesInRange:range
-                   replacementText:text] ||
+      //      replacementText:text]
+      || (mentionStyle != nullptr &&
+          [mentionStyle handleLeadingMentionReplacement:range
+                                        replacementText:text]) ||
+      [(HeadingStyleBase *)stylesDict[@([H1Style getType])]
+          handleNewlinesInRange:range
+                replacementText:text] ||
       [(HeadingStyleBase *)stylesDict[@([H2Style getType])]
           handleNewlinesInRange:range
                 replacementText:text] ||

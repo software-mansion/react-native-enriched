@@ -508,10 +508,10 @@
     } else {
       return @"a";
     }
-  } else if ([style isEqualToNumber:@([MentionStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([MentionStyle getType])]) {
     if (openingTag) {
       MentionStyle *mentionStyle =
-          (MentionStyle *)_input->stylesDict[@([MentionStyle getStyleType])];
+          (MentionStyle *)_input->stylesDict[@([MentionStyle getType])];
       if (mentionStyle != nullptr) {
         MentionParams *params = [mentionStyle getMentionParamsAt:location];
         // attributes can theoretically be nullptr
@@ -642,7 +642,7 @@
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
-    id<BaseStyleProtocol> baseStyle = _input->stylesDict[styleType];
+    id baseStyle = _input->stylesDict[styleType];
     // range must be taking offest into consideration because processed styles'
     // ranges are relative to only the new text while we need absolute ranges
     // relative to the whole existing text
@@ -664,7 +664,7 @@
                                     range:styleRange
                                    manual:isManual
                             withSelection:NO];
-      } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
+      } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange
                                                 params:params];
@@ -1298,7 +1298,7 @@
                                                  hrefRange.length - 7)];
       stylePair.styleValue = url;
     } else if ([tagName isEqualToString:@"mention"]) {
-      [styleArr addObject:@([MentionStyle getStyleType])];
+      [styleArr addObject:@([MentionStyle getType])];
       // extract html expression into dict using some regex
       NSMutableDictionary *paramsDict = [[NSMutableDictionary alloc] init];
       NSString *pattern = @"(\\w+)=\"([^\"]*)\"";

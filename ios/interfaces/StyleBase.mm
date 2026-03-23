@@ -12,6 +12,10 @@
   return None;
 }
 
++ (StyleType)getStyleType {
+  return [self getType];
+}
+
 // This method gets overridden
 - (NSString *)getKey {
   if ([self isParagraph]) {
@@ -98,11 +102,10 @@
                              value:pStyle
                              range:subRange];
                 }];
+  }
 
-    // Only paragraph styles need additional typing attributes when toggling.
-    if (withTyping) {
-      [self addTypingWithValue:value];
-    }
+  if (withTyping) {
+    [self addTypingWithValue:value];
   }
 
   // Notify attributes manager of styling to be re-done if needed.
@@ -134,10 +137,8 @@
                              value:pStyle
                              range:subRange];
                 }];
-
-    // Paragraph styles also need typing attributes removal.
-    [self removeTyping];
   }
+  [self removeTyping];
 
   // Notify attributes manager of styling to be re-done if needed.
   if (withDirtyRange) {

@@ -112,10 +112,10 @@
     NSRange leftRange = [typedInput->textView.textStorage.string
         paragraphRangeForRange:NSMakeRange(range.location, 0)];
 
-    id<BaseStyleProtocol> leftParagraphStyle = nullptr;
+    StyleBase *leftParagraphStyle = nullptr;
     for (NSNumber *key in typedInput->stylesDict) {
-      id<BaseStyleProtocol> style = typedInput->stylesDict[key];
-      if ([[style class] isParagraphStyle] && [style detectStyle:leftRange]) {
+      StyleBase *style = typedInput->stylesDict[key];
+      if ([style isParagraph] && [style detect:leftRange]) {
         leftParagraphStyle = style;
       }
     }
@@ -133,7 +133,7 @@
     NSRange rightRange = [typedInput->textView.textStorage.string
         paragraphRangeForRange:NSMakeRange(rightRangeStart, 1)];
 
-    StyleType type = [[leftParagraphStyle class] getStyleType];
+    StyleType type = [[leftParagraphStyle class] getType];
 
     NSArray *conflictingStyles = [typedInput
         getPresentStyleTypesFrom:typedInput->conflictingStyles[@(type)]
@@ -145,14 +145,12 @@
         [conflictingStyles arrayByAddingObjectsFromArray:blockingStyles];
 
     for (NSNumber *style in allToBeRemoved) {
-      id<BaseStyleProtocol> styleClass = typedInput->stylesDict[style];
+      StyleBase *styleToRemove = typedInput->stylesDict[style];
 
-      // for ranges, we need to remove each occurence
-      NSArray<StylePair *> *allOccurences =
-          [styleClass findAllOccurences:rightRange];
+      NSArray<StylePair *> *allOccurences = [styleToRemove all:rightRange];
 
       for (StylePair *pair in allOccurences) {
-        [styleClass removeAttributes:[pair.rangeValue rangeValue]];
+        [styleToRemove remove:[pair.rangeValue rangeValue] withDirtyRange:YES];
       }
     }
 

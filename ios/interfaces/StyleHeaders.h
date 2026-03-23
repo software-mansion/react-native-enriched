@@ -35,7 +35,7 @@
                      replacementText:(NSString *)text;
 @end
 
-@interface MentionStyle : NSObject <BaseStyleProtocol>
+@interface MentionStyle : StyleBase
 - (void)addMention:(NSString *)indicator
               text:(NSString *)text
         attributes:(NSString *)attributes;
