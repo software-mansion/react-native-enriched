@@ -50,7 +50,7 @@ export const EnrichedTextInput = ({
   ref,
   autoFocus = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoFocus,
   editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
-  mentionIndicators = ['@'],
+  mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.mentionIndicators.slice(),
   defaultValue,
   placeholder,
   placeholderTextColor,
@@ -58,7 +58,7 @@ export const EnrichedTextInput = ({
   selectionColor,
   style,
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
-  htmlStyle = {},
+  htmlStyle = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.htmlStyle,
   linkRegex: _linkRegex,
   onFocus,
   onBlur,
@@ -77,8 +77,8 @@ export const EnrichedTextInput = ({
   returnKeyLabel,
   submitBehavior,
   contextMenuItems,
-  androidExperimentalSynchronousEvents = false,
-  useHtmlNormalizer = false,
+  androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.androidExperimentalSynchronousEvents,
+  useHtmlNormalizer = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.useHtmlNormalizer,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   ...rest
 }: EnrichedTextInputProps) => {
