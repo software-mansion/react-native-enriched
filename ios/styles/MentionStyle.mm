@@ -7,7 +7,7 @@
 #import "WordsUtils.h"
 
 // custom NSAttributedStringKey to differentiate from links
-static NSString *const MentionAttributeName = @"MentionAttributeName";
+static NSString *const MentionAttributeName = @"EnrichedMention";
 
 @implementation MentionStyle {
   NSValue *_activeMentionRange;

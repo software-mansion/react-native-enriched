@@ -1,5 +1,4 @@
 #pragma once
-#import "BaseStyleProtocol.h"
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -100,7 +99,7 @@
 @interface CodeBlockStyle : StyleBase
 @end
 
-@interface ImageStyle : NSObject <BaseStyleProtocol>
+@interface ImageStyle : StyleBase
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData

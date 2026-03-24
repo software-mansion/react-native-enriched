@@ -134,7 +134,7 @@
 
         // append closing tags
         for (NSNumber *style in sortedEndedStyles) {
-          if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+          if ([style isEqualToNumber:@([ImageStyle getType])]) {
             continue;
           }
           NSString *tagContent =
@@ -329,7 +329,7 @@
 
       // append closing tags
       for (NSNumber *style in sortedEndedStyles) {
-        if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+        if ([style isEqualToNumber:@([ImageStyle getType])]) {
           continue;
         }
         NSString *tagContent = [self tagContentForStyle:style
@@ -352,10 +352,10 @@
         NSString *tagContent = [self tagContentForStyle:style
                                              openingTag:YES
                                                location:currentRange.location];
-        if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+        if ([style isEqualToNumber:@([ImageStyle getType])]) {
           [result
               appendString:[NSString stringWithFormat:@"<%@/>", tagContent]];
-          [currentActiveStyles removeObject:@([ImageStyle getStyleType])];
+          [currentActiveStyles removeObject:@([ImageStyle getType])];
         } else {
           [result appendString:[NSString stringWithFormat:@"<%@>", tagContent]];
         }
@@ -382,7 +382,7 @@
 
     // append closing tags
     for (NSNumber *style in sortedEndedStyles) {
-      if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+      if ([style isEqualToNumber:@([ImageStyle getType])]) {
         continue;
       }
       NSString *tagContent = [self
@@ -472,10 +472,10 @@
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
     return @"i";
-  } else if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([ImageStyle getType])]) {
     if (openingTag) {
       ImageStyle *imageStyle =
-          (ImageStyle *)_input->stylesDict[@([ImageStyle getStyleType])];
+          (ImageStyle *)_input->stylesDict[@([ImageStyle getType])];
       if (imageStyle != nullptr) {
         ImageData *data = [imageStyle getImageDataAt:location];
         if (data != nullptr && data.uri != nullptr) {
@@ -642,7 +642,7 @@
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
-    id baseStyle = _input->stylesDict[styleType];
+    StyleBase *baseStyle = _input->stylesDict[styleType];
     // range must be taking offest into consideration because processed styles'
     // ranges are relative to only the new text while we need absolute ranges
     // relative to the whole existing text
@@ -652,7 +652,7 @@
 
     // of course any changes here need to take blocks and conflicts into
     // consideration
-    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType]
+    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getType]
                                         range:styleRange]) {
       if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
         NSString *text =
@@ -668,7 +668,7 @@
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange
                                                 params:params];
-      } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
+      } else if ([styleType isEqualToNumber:@([ImageStyle getType])]) {
         ImageData *imgData = (ImageData *)stylePair.styleValue;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
@@ -700,7 +700,9 @@
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
-        [baseStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
+        [baseStyle add:styleRange
+                withTyping:shouldAddTypingAttr
+            withDirtyRange:YES];
       }
     }
   }
@@ -1230,7 +1232,7 @@
       }
 
       NSRange srcRange = match.range;
-      [styleArr addObject:@([ImageStyle getStyleType])];
+      [styleArr addObject:@([ImageStyle getType])];
       // cut only the uri from the src="..." string
       NSString *uri =
           [params substringWithRange:NSMakeRange(srcRange.location + 5,

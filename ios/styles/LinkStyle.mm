@@ -7,9 +7,8 @@
 #import "UIView+React.h"
 #import "WordsUtils.h"
 
-static NSString *const ManualLinkAttributeName = @"ManualLinkAttributeName";
-static NSString *const AutomaticLinkAttributeName =
-    @"AutomaticLinkAttributeName";
+static NSString *const ManualLinkAttributeName = @"EnrichedManualLink";
+static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 
 @implementation LinkStyle
 

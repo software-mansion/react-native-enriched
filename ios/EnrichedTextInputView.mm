@@ -121,7 +121,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [[CheckboxListStyle alloc] initWithInput:self],
     @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithInput:self],
     @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
-    //    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
+    @([ImageStyle getType]) : [[ImageStyle alloc] initWithInput:self]
   };
 
   conflictingStyles = @{
@@ -213,8 +213,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       @([MentionStyle getType]), @([LinkStyle getType]),
       @([CheckboxListStyle getType])
     ],
-    //    @([ImageStyle getStyleType]) :
-    //        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
+    @([ImageStyle getType]) :
+        @[ @([LinkStyle getType]), @([MentionStyle getType]) ]
   };
 
   blockingStyles = [@{
@@ -222,18 +222,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([UnderlineStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([InlineCodeStyle getType]) : @[
-      @([CodeBlockStyle getType]),
-      //      @([ImageStyle getStyleType])
-    ],
-    @([LinkStyle getType]) : @[
-      @([CodeBlockStyle getType]),
-      //  @([ImageStyle getStyleType])
-    ],
-    @([MentionStyle getType]) : @[
-      @([CodeBlockStyle getType]),
-      //      @([ImageStyle getStyleType])
-    ],
+    @([InlineCodeStyle getType]) :
+        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
+    @([LinkStyle getType]) :
+        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
+    @([MentionStyle getType]) :
+        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
     @([H1Style getType]) : @[],
     @([H2Style getType]) : @[],
     @([H3Style getType]) : @[],
@@ -245,7 +239,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     @([CheckboxListStyle getType]) : @[],
     @([BlockQuoteStyle getType]) : @[],
     @([CodeBlockStyle getType]) : @[],
-    //    @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
+    @([ImageStyle getType]) : @[ @([InlineCodeStyle getType]) ]
   } mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
@@ -1025,8 +1019,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
            .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getType]],
            .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
-           //           .isImage = [self isStyleActive:[ImageStyle
-           //           getStyleType]],
+           .isImage = [self isStyleActive:[ImageStyle getType]],
            .isCheckboxList = [self isStyleActive:[CheckboxListStyle getType]]});
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getType]),
@@ -1046,7 +1039,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
-           //           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
+           .image = GET_STYLE_STATE([ImageStyle getType]),
            .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])});
     }
   }
@@ -1165,15 +1158,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self toggleRegularStyle:[BlockQuoteStyle getType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
     [self toggleRegularStyle:[CodeBlockStyle getType]];
-  }
-  //  else if ([commandName isEqualToString:@"addImage"]) {
-  //    NSString *uri = (NSString *)args[0];
-  //    CGFloat imgWidth = [(NSNumber *)args[1] floatValue];
-  //    CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
-  //
-  //    [self addImage:uri width:imgWidth height:imgHeight];
-  //  }
-  else if ([commandName isEqualToString:@"setSelection"]) {
+  } else if ([commandName isEqualToString:@"addImage"]) {
+    NSString *uri = (NSString *)args[0];
+    CGFloat imgWidth = [(NSNumber *)args[1] floatValue];
+    CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
+
+    [self addImage:uri width:imgWidth height:imgHeight];
+  } else if ([commandName isEqualToString:@"setSelection"]) {
     NSInteger start = [((NSNumber *)args[0]) integerValue];
     NSInteger end = [((NSNumber *)args[1]) integerValue];
     [self setCustomSelection:start end:end];
@@ -1419,19 +1410,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-// - (void)addImage:(NSString *)uri width:(float)width height:(float)height {
-//   ImageStyle *imageStyleClass =
-//       (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
-//   if (imageStyleClass == nullptr) {
-//     return;
-//   }
+- (void)addImage:(NSString *)uri width:(float)width height:(float)height {
+  ImageStyle *imageStyleClass =
+      (ImageStyle *)stylesDict[@([ImageStyle getType])];
+  if (imageStyleClass == nullptr) {
+    return;
+  }
 
-//   if ([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType]
-//                                     range:textView.selectedRange]) {
-//     [imageStyleClass addImage:uri width:width height:height];
-//     [self anyTextMayHaveBeenModified];
-//   }
-// }
+  if ([self handleStyleBlocksAndConflicts:[ImageStyle getType]
+                                    range:textView.selectedRange]) {
+    [imageStyleClass addImage:uri width:width height:height];
+    [self anyTextMayHaveBeenModified];
+  }
+}
 
 - (void)startMentionWithIndicator:(NSString *)indicator {
   MentionStyle *mentionStyleClass =
@@ -1687,10 +1678,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                             input:self] ||
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
-      [cbLStyle handleNewlinesInRange:range replacementText:text]
-      //      || [bqStyle handleBackspaceInRange:range replacementText:text]
-      //      || [cbStyle handleBackspaceInRange:range replacementText:text]
-      ||
+      [cbLStyle handleNewlinesInRange:range replacementText:text] ||
       (linkStyle != nullptr && [linkStyle handleLeadingLinkReplacement:range
                                                        replacementText:text]) ||
       (mentionStyle != nullptr &&
@@ -1876,29 +1864,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 // MARK: - Media attachments delegate
 
-//- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
-//  NSTextStorage *storage = textView.textStorage;
-//  NSRange fullRange = NSMakeRange(0, storage.length);
-//
-//  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
-//
-//  [storage enumerateAttribute:NSAttachmentAttributeName
-//                      inRange:fullRange
-//                      options:0
-//                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-//                     if (value == attachment) {
-//                       foundRange = range;
-//                       *stop = YES;
-//                     }
-//                   }];
-//
-//  if (foundRange.location == NSNotFound) {
-//    return;
-//  }
-//
-//  [storage edited:NSTextStorageEditedAttributes
-//               range:foundRange
-//      changeInLength:0];
-//}
+- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
+  NSTextStorage *storage = textView.textStorage;
+  NSRange fullRange = NSMakeRange(0, storage.length);
+
+  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
+
+  [storage enumerateAttribute:NSAttachmentAttributeName
+                      inRange:fullRange
+                      options:0
+                   usingBlock:^(id value, NSRange range, BOOL *stop) {
+                     if (value == attachment) {
+                       foundRange = range;
+                       *stop = YES;
+                     }
+                   }];
+
+  if (foundRange.location == NSNotFound) {
+    return;
+  }
+
+  [storage edited:NSTextStorageEditedAttributes
+               range:foundRange
+      changeInLength:0];
+}
 
 @end
