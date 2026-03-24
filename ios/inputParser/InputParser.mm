@@ -494,10 +494,10 @@
     return @"s";
   } else if ([style isEqualToNumber:@([InlineCodeStyle getType])]) {
     return @"code";
-  } else if ([style isEqualToNumber:@([LinkStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([LinkStyle getType])]) {
     if (openingTag) {
       LinkStyle *linkStyle =
-          (LinkStyle *)_input->stylesDict[@([LinkStyle getStyleType])];
+          (LinkStyle *)_input->stylesDict[@([LinkStyle getType])];
       if (linkStyle != nullptr) {
         LinkData *data = [linkStyle getLinkDataAt:location];
         if (data != nullptr && data.url != nullptr) {
@@ -654,7 +654,7 @@
     // consideration
     if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType]
                                         range:styleRange]) {
-      if ([styleType isEqualToNumber:@([LinkStyle getStyleType])]) {
+      if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
         NSString *text =
             [_input->textView.textStorage.string substringWithRange:styleRange];
         NSString *url = (NSString *)stylePair.styleValue;
@@ -1291,7 +1291,7 @@
       }
 
       NSRange hrefRange = match.range;
-      [styleArr addObject:@([LinkStyle getStyleType])];
+      [styleArr addObject:@([LinkStyle getType])];
       // cut only the url from the href="..." string
       NSString *url =
           [params substringWithRange:NSMakeRange(hrefRange.location + 6,

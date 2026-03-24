@@ -20,7 +20,7 @@
 @interface InlineCodeStyle : StyleBase
 @end
 
-@interface LinkStyle : NSObject <BaseStyleProtocol>
+@interface LinkStyle : StyleBase
 - (void)addLink:(NSString *)text
               url:(NSString *)url
             range:(NSRange)range
@@ -28,7 +28,6 @@
     withSelection:(BOOL)withSelection;
 - (LinkData *)getLinkDataAt:(NSUInteger)location;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
-- (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (BOOL)handleLeadingLinkReplacement:(NSRange)range
@@ -43,7 +42,6 @@
 - (void)startMentionWithIndicator:(NSString *)indicator;
 - (void)handleExistingMentions;
 - (void)manageMentionEditing;
-- (void)manageMentionTypingAttributes;
 - (BOOL)handleLeadingMentionReplacement:(NSRange)range
                         replacementText:(NSString *)text;
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
