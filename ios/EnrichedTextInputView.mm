@@ -1058,9 +1058,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
   }
-  //
-  //  // emit onChangeHtml event if needed
-  //  [self tryEmittingOnChangeHtmlEvent];
+  // emit onChangeHtml event if needed
+  [self tryEmittingOnChangeHtmlEvent];
 }
 
 - (bool)isStyleActive:(StyleType)type {
@@ -1106,12 +1105,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self focus];
   } else if ([commandName isEqualToString:@"blur"]) {
     [self blur];
-  }
-  //  else if ([commandName isEqualToString:@"setValue"]) {
-  //    NSString *value = (NSString *)args[0];
-  //    [self setValue:value];
-  //  }
-  else if ([commandName isEqualToString:@"toggleBold"]) {
+  } else if ([commandName isEqualToString:@"setValue"]) {
+    NSString *value = (NSString *)args[0];
+    [self setValue:value];
+  } else if ([commandName isEqualToString:@"toggleBold"]) {
     [self toggleRegularStyle:[BoldStyle getType]];
   } else if ([commandName isEqualToString:@"toggleItalic"]) {
     [self toggleRegularStyle:[ItalicStyle getType]];
@@ -1168,11 +1165,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSInteger start = [((NSNumber *)args[0]) integerValue];
     NSInteger end = [((NSNumber *)args[1]) integerValue];
     [self setCustomSelection:start end:end];
+  } else if ([commandName isEqualToString:@"requestHTML"]) {
+    NSInteger requestId = [((NSNumber *)args[0]) integerValue];
+    [self requestHTML:requestId];
   }
-  //  else if ([commandName isEqualToString:@"requestHTML"]) {
-  //    NSInteger requestId = [((NSNumber *)args[0]) integerValue];
-  //    [self requestHTML:requestId];
-  //  }
 }
 
 - (std::shared_ptr<EnrichedTextInputViewEventEmitter>)getEventEmitter {
@@ -1193,21 +1189,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [textView reactFocus];
 }
 
-//- (void)setValue:(NSString *)value {
-//  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
-//  if (initiallyProcessedHtml == nullptr) {
-//    // just plain text
-//    textView.text = value;
-//  } else {
-//    // we've got some seemingly proper html
-//    [parser replaceWholeFromHtml:initiallyProcessedHtml];
-//  }
-//
-//  // set recentlyChangedRange and check for changes
-//  recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
-//  textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
-//  [self anyTextMayHaveBeenModified];
-//}
+- (void)setValue:(NSString *)value {
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
+  if (initiallyProcessedHtml == nullptr) {
+    // just plain text
+    textView.text = value;
+  } else {
+    // we've got some seemingly proper html
+    [parser replaceWholeFromHtml:initiallyProcessedHtml];
+  }
+
+  // set recentlyChangedRange and check for changes
+  recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
+  textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
+  [self anyTextMayHaveBeenModified];
+}
 
 - (void)setCustomSelection:(NSInteger)visibleStart end:(NSInteger)visibleEnd {
   NSString *text = textView.textStorage.string;
@@ -1286,38 +1282,38 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-//- (void)tryEmittingOnChangeHtmlEvent {
-//  if (!_emitHtml || textView.markedTextRange != nullptr) {
-//    return;
-//  }
-//  auto emitter = [self getEventEmitter];
-//  if (emitter != nullptr) {
-//    NSString *htmlOutput = [parser
-//        parseToHtmlFromRange:NSMakeRange(0,
-//                                         textView.textStorage.string.length)];
-//    // make sure html really changed
-//    if (![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
-//      _recentlyEmittedHtml = htmlOutput;
-//      emitter->onChangeHtml({.value = [htmlOutput toCppString]});
-//    }
-//  }
-//}
+- (void)tryEmittingOnChangeHtmlEvent {
+  if (!_emitHtml || textView.markedTextRange != nullptr) {
+    return;
+  }
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSString *htmlOutput = [parser
+        parseToHtmlFromRange:NSMakeRange(0,
+                                         textView.textStorage.string.length)];
+    // make sure html really changed
+    if (![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
+      _recentlyEmittedHtml = htmlOutput;
+      emitter->onChangeHtml({.value = [htmlOutput toCppString]});
+    }
+  }
+}
 
-//- (void)requestHTML:(NSInteger)requestId {
-//  auto emitter = [self getEventEmitter];
-//  if (emitter != nullptr) {
-//    @try {
-//      NSString *htmlOutput = [parser
-//          parseToHtmlFromRange:NSMakeRange(0,
-//                                           textView.textStorage.string.length)];
-//      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
-//                                    .html = [htmlOutput toCppString]});
-//    } @catch (NSException *exception) {
-//      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
-//                                    .html = folly::dynamic(nullptr)});
-//    }
-//  }
-//}
+- (void)requestHTML:(NSInteger)requestId {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    @try {
+      NSString *htmlOutput = [parser
+          parseToHtmlFromRange:NSMakeRange(0,
+                                           textView.textStorage.string.length)];
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = [htmlOutput toCppString]});
+    } @catch (NSException *exception) {
+      emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
+                                    .html = folly::dynamic(nullptr)});
+    }
+  }
+}
 
 - (void)emitOnKeyPressEvent:(NSString *)key {
   auto emitter = [self getEventEmitter];
@@ -1339,18 +1335,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self anyTextMayHaveBeenModified];
   }
 }
-
-//- (void)toggleParagraphStyle:(StyleType)type {
-//  id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
-//  // we always pass whole paragraph/s range to these styles
-//  NSRange paragraphRange = [textView.textStorage.string
-//      paragraphRangeForRange:textView.selectedRange];
-//
-//  if ([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
-//    [styleClass applyStyle:paragraphRange];
-//    [self anyTextMayHaveBeenModified];
-//  }
-//}
 
 - (void)toggleCheckboxList:(BOOL)checked {
   CheckboxListStyle *style =
@@ -1658,14 +1642,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   MentionStyle *mentionStyle =
       (MentionStyle *)stylesDict[@([MentionStyle getType])];
   LinkStyle *linkStyle = (LinkStyle *)stylesDict[@([LinkStyle getType])];
-  //  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle
-  //  getStyleType])]; CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle
-  //  getStyleType])]; H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
-  //  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
-  //  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
-  //  H4Style *h4Style = stylesDict[@([H4Style getStyleType])];
-  //  H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
-  //  H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
+  H1Style *h1Style = stylesDict[@([H1Style getType])];
+  H2Style *h2Style = stylesDict[@([H2Style getType])];
+  H3Style *h3Style = stylesDict[@([H3Style getType])];
+  H4Style *h4Style = stylesDict[@([H4Style getType])];
+  H5Style *h5Style = stylesDict[@([H5Style getType])];
+  H6Style *h6Style = stylesDict[@([H6Style getType])];
 
   // some of the changes these checks do could interfere with later checks and
   // cause a crash so here I rely on short circuiting evaluation of the logical
@@ -1679,46 +1661,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [cbLStyle handleNewlinesInRange:range replacementText:text] ||
-      (linkStyle != nullptr && [linkStyle handleLeadingLinkReplacement:range
-                                                       replacementText:text]) ||
-      (mentionStyle != nullptr &&
-       [mentionStyle handleLeadingMentionReplacement:range
-                                     replacementText:text]) ||
-      [(HeadingStyleBase *)stylesDict[@([H1Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
-      [(HeadingStyleBase *)stylesDict[@([H2Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
-      [(HeadingStyleBase *)stylesDict[@([H3Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
-      [(HeadingStyleBase *)stylesDict[@([H4Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
-      [(HeadingStyleBase *)stylesDict[@([H5Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
-      [(HeadingStyleBase *)stylesDict[@([H6Style getType])]
-          handleNewlinesInRange:range
-                replacementText:text] ||
+      [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
+      [mentionStyle handleLeadingMentionReplacement:range
+                                    replacementText:text] ||
+      [h1Style handleNewlinesInRange:range replacementText:text] ||
+      [h2Style handleNewlinesInRange:range replacementText:text] ||
+      [h3Style handleNewlinesInRange:range replacementText:text] ||
+      [h4Style handleNewlinesInRange:range replacementText:text] ||
+      [h5Style handleNewlinesInRange:range replacementText:text] ||
+      [h6Style handleNewlinesInRange:range replacementText:text] ||
       [ParagraphAttributesUtils handleBackspaceInRange:range
                                        replacementText:text
                                                  input:self] ||
       [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
                                                        replacementText:text
                                                                  input:self]
-      //                                                                 ||
-      // CRITICAL: This callback HAS TO be always evaluated last.
+
+      //       CRITICAL: This callback HAS TO be always evaluated last.
       //
-      // This function is the "Generic Fallback": if no specific style claims
-      // the backspace action to change its state, only then do we proceed to
-      // physically delete the newline and merge paragraphs.
-      //      || [ParagraphAttributesUtils
-      //      handleParagraphStylesMergeOnBackspace:range
-      //                                                      replacementText:text
-      //                                                                input:self]
-  ) {
+      //       This function is the "Generic Fallback": if no specific style
+      //       claims the backspace action to change its state, only then do we
+      //       proceed to physically delete the newline and merge paragraphs.
+      ||
+      [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
+                                                      replacementText:text
+                                                                input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }
