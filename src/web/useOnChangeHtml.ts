@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
 import type { OnChangeHtmlEvent } from '../types';
 import type { NativeSyntheticEvent } from 'react-native';
-import { makeWebEvent } from './makeWebEvent';
+import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import getNormalizedHtml from './getNormalizedHtml';
 
 export const useOnChangeHtml = (
@@ -19,13 +19,14 @@ export const useOnChangeHtml = (
 
       if (html !== lastHtmlRef.current) {
         lastHtmlRef.current = html;
-        onChangeHtml(makeWebEvent({ value: html }));
+        onChangeHtml(adaptWebToNativeEvent(null, { value: html }));
       }
     };
 
     handleUpdate();
 
     editor.on('transaction', handleUpdate);
+    editor.on('transaction', () => {});
 
     return () => {
       editor.off('transaction', handleUpdate);

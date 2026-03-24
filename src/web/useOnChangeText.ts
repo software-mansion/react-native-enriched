@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { type Editor } from '@tiptap/react';
 import type { OnChangeTextEvent } from '../types';
 import type { NativeSyntheticEvent } from 'react-native';
-import { makeWebEvent } from './makeWebEvent';
+import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 
 export const useOnChangeText = (
   editor: Editor,
@@ -18,7 +18,7 @@ export const useOnChangeText = (
 
       if (text !== lastTextRef.current) {
         lastTextRef.current = text;
-        onChangeText(makeWebEvent({ value: text }));
+        onChangeText(adaptWebToNativeEvent(null, { value: text }));
       }
     };
 

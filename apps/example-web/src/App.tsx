@@ -6,6 +6,8 @@ import {
   type OnKeyPressEvent,
   type OnChangeTextEvent,
   type OnChangeSelectionEvent,
+  type FocusEvent,
+  type BlurEvent,
 } from 'react-native-enriched';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
@@ -17,31 +19,31 @@ function App() {
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
 
-  const handleFocus = () => {
-    console.log('[EnrichedTextInput] onFocus');
+  const handleFocus = (e: FocusEvent) => {
+    console.log('[EnrichedTextInput] onFocus', e);
   };
 
-  const handleBlur = () => {
-    console.log('[EnrichedTextInput] onBlur');
+  const handleBlur = (e: BlurEvent) => {
+    console.log('[EnrichedTextInput] onBlur', e);
   };
 
   const handleKeyPress = (e: NativeSyntheticEvent<OnKeyPressEvent>) => {
-    console.log('[EnrichedTextInput] onKeyPress', e.nativeEvent.key);
+    console.log('[EnrichedTextInput] onKeyPress event', e);
   };
 
   const handleOnChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
-    console.log('[EnrichedTextInput] onChangeText', e.nativeEvent.value);
+    console.log('[EnrichedTextInput] onChangeText event', e);
   };
 
   const handleOnChangeHtml = (e: NativeSyntheticEvent<{ value: string }>) => {
-    console.log('[EnrichedTextInput] onChangeHtml', e.nativeEvent.value);
+    console.log('[EnrichedTextInput] onChangeHtml event', e);
     setCurrentHtml(e.nativeEvent.value);
   };
 
   const handleChangeSelection = (
     e: NativeSyntheticEvent<OnChangeSelectionEvent>
   ) => {
-    console.log('[EnrichedTextInput] onChangeSelection', e.nativeEvent);
+    console.log('[EnrichedTextInput] onChangeSelection event', e);
   };
 
   return (

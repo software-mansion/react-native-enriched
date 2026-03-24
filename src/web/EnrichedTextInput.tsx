@@ -4,7 +4,7 @@ import type {
   EnrichedTextInputInstance,
   EnrichedTextInputProps,
 } from '../types';
-import { makeBlurEvent, makeFocusEvent, makeWebEvent } from './makeWebEvent';
+import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -43,11 +43,11 @@ export const EnrichedTextInput = ({
     content: defaultValue,
     editable: editable,
     autofocus: autoFocus,
-    onFocus: () => {
-      onFocus?.(makeFocusEvent());
+    onFocus: ({ event }) => {
+      onFocus?.(adaptWebToNativeEvent(event, { target: -1 }));
     },
-    onBlur: () => {
-      onBlur?.(makeBlurEvent());
+    onBlur: ({ event }) => {
+      onBlur?.(adaptWebToNativeEvent(event, { target: -1 }));
     },
     onSelectionUpdate: ({ editor: _editor }) => {
       const { state } = _editor;
@@ -58,7 +58,7 @@ export const EnrichedTextInput = ({
       const clampedTo = Math.min(state.doc.content.size - 1, to);
 
       onChangeSelection?.(
-        makeWebEvent({
+        adaptWebToNativeEvent(null, {
           start: clampedFrom - 1,
           end: clampedTo - 1,
           text: state.doc.textBetween(clampedFrom, clampedTo),
@@ -67,7 +67,7 @@ export const EnrichedTextInput = ({
     },
     editorProps: {
       handleKeyPress: (_, event) => {
-        onKeyPress?.(makeWebEvent({ key: event.key }));
+        onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
         return false;
       },
       attributes: {
