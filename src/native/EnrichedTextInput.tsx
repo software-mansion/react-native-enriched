@@ -1,6 +1,5 @@
 import {
   type Component,
-  type RefObject,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -10,147 +9,28 @@ import { useCallback } from 'react';
 import EnrichedTextInputNativeComponent, {
   Commands,
   type NativeProps,
-  type OnChangeHtmlEvent,
-  type OnChangeSelectionEvent,
-  type OnChangeStateEvent,
-  type OnChangeTextEvent,
   type OnContextMenuItemPressEvent,
-  type OnLinkDetected,
   type OnMentionEvent,
-  type OnMentionDetected,
   type OnMentionDetectedInternal,
   type OnRequestHtmlResultEvent,
-  type OnKeyPressEvent,
-  type OnPasteImagesEvent,
-  type OnSubmitEditing,
-} from './spec/EnrichedTextInputNativeComponent';
+} from '../spec/EnrichedTextInputNativeComponent';
 import type {
-  ColorValue,
   HostInstance,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
   NativeMethods,
   NativeSyntheticEvent,
-  ReturnKeyTypeOptions,
-  TargetedEvent,
-  TextStyle,
-  ViewProps,
-  ViewStyle,
 } from 'react-native';
-import { normalizeHtmlStyle } from './utils/normalizeHtmlStyle';
-import { toNativeRegexConfig } from './utils/regexParser';
-import { nullthrows } from './utils/nullthrows';
-import type { HtmlStyle } from './types';
-
-export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
-export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
-
-export interface EnrichedTextInputInstance extends NativeMethods {
-  // General commands
-  focus: () => void;
-  blur: () => void;
-  setValue: (value: string) => void;
-  setSelection: (start: number, end: number) => void;
-  getHTML: () => Promise<string>;
-
-  // Text formatting commands
-  toggleBold: () => void;
-  toggleItalic: () => void;
-  toggleUnderline: () => void;
-  toggleStrikeThrough: () => void;
-  toggleInlineCode: () => void;
-  toggleH1: () => void;
-  toggleH2: () => void;
-  toggleH3: () => void;
-  toggleH4: () => void;
-  toggleH5: () => void;
-  toggleH6: () => void;
-  toggleCodeBlock: () => void;
-  toggleBlockQuote: () => void;
-  toggleOrderedList: () => void;
-  toggleUnorderedList: () => void;
-  toggleCheckboxList: (checked: boolean) => void;
-  setLink: (start: number, end: number, text: string, url: string) => void;
-  removeLink: (start: number, end: number) => void;
-  setImage: (src: string, width: number, height: number) => void;
-  startMention: (indicator: string) => void;
-  setMention: (
-    indicator: string,
-    text: string,
-    attributes?: Record<string, string>
-  ) => void;
-}
-
-export interface ContextMenuItem {
-  text: string;
-  onPress: ({
-    text,
-    selection,
-    styleState,
-  }: {
-    text: string;
-    selection: { start: number; end: number };
-    styleState: OnChangeStateEvent;
-  }) => void;
-  visible?: boolean;
-}
-
-export interface OnChangeMentionEvent {
-  indicator: string;
-  text: string;
-}
-
-export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
-  ref?: RefObject<EnrichedTextInputInstance | null>;
-  autoFocus?: boolean;
-  editable?: boolean;
-  mentionIndicators?: string[];
-  defaultValue?: string;
-  placeholder?: string;
-  placeholderTextColor?: ColorValue;
-  cursorColor?: ColorValue;
-  selectionColor?: ColorValue;
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  htmlStyle?: HtmlStyle;
-  style?: ViewStyle | TextStyle;
-  scrollEnabled?: boolean;
-  linkRegex?: RegExp | null;
-  returnKeyType?: ReturnKeyTypeOptions;
-  returnKeyLabel?: string;
-  submitBehavior?: 'submit' | 'blurAndSubmit' | 'newline';
-  onFocus?: (e: FocusEvent) => void;
-  onBlur?: (e: BlurEvent) => void;
-  onChangeText?: (e: NativeSyntheticEvent<OnChangeTextEvent>) => void;
-  onChangeHtml?: (e: NativeSyntheticEvent<OnChangeHtmlEvent>) => void;
-  onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void;
-  onLinkDetected?: (e: OnLinkDetected) => void;
-  onMentionDetected?: (e: OnMentionDetected) => void;
-  onStartMention?: (indicator: string) => void;
-  onChangeMention?: (e: OnChangeMentionEvent) => void;
-  onEndMention?: (indicator: string) => void;
-  onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
-  onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
-  onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
-  onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
-  contextMenuItems?: ContextMenuItem[];
-  /**
-   * If true, Android will use experimental synchronous events.
-   * This will prevent from input flickering when updating component size.
-   * However, this is an experimental feature, which has not been thoroughly tested.
-   * We may decide to enable it by default in a future release.
-   * Disabled by default.
-   */
-  androidExperimentalSynchronousEvents?: boolean;
-  /**
-   * If true, external HTML (e.g. from Google Docs, Word, web pages) will be
-   * normalized through the HTML normalizer before being applied.
-   * This converts arbitrary HTML into the canonical tag subset that the enriched
-   * parser understands.
-   * Disabled by default.
-   */
-  useHtmlNormalizer?: boolean;
-}
+import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
+import { toNativeRegexConfig } from '../utils/regexParser';
+import { nullthrows } from '../utils/nullthrows';
+import type {
+  ContextMenuItem,
+  EnrichedTextInputProps,
+  OnLinkDetected,
+  OnMentionDetected,
+} from '../types';
 
 const warnMentionIndicators = (indicator: string) => {
   console.warn(
@@ -416,7 +296,11 @@ export const EnrichedTextInput = ({
   ) => {
     const { text, indicator, payload } = e.nativeEvent;
     const attributes = JSON.parse(payload) as Record<string, string>;
-    onMentionDetected?.({ text, indicator, attributes });
+    onMentionDetected?.({
+      text,
+      indicator,
+      attributes,
+    } satisfies OnMentionDetected);
   };
 
   const handleRequestHtmlResult = (
