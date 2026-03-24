@@ -25,7 +25,7 @@ import type {
 import { normalizeHtmlStyle } from '../utils/normalizeHtmlStyle';
 import { toNativeRegexConfig } from '../utils/regexParser';
 import { nullthrows } from '../utils/nullthrows';
-import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/enrichedTextInputDefaultProps';
+import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import type {
   ContextMenuItem,
   EnrichedTextInputProps,

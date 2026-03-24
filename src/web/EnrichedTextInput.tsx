@@ -13,7 +13,7 @@ import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import getNormalizedHtml from './getNormalizedHtml';
-import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/enrichedTextInputDefaultProps';
+import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 
 export const EnrichedTextInput = ({
   ref,
