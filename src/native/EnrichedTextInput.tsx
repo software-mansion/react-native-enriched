@@ -48,7 +48,7 @@ type HtmlRequest = {
 
 export const EnrichedTextInput = ({
   ref,
-  autoFocus = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoFocus,
+  autoFocus,
   editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
   mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.mentionIndicators.slice(),
   defaultValue,

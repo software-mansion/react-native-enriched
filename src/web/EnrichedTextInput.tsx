@@ -18,7 +18,7 @@ import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDef
 export const EnrichedTextInput = ({
   ref,
   defaultValue,
-  autoFocus = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoFocus,
+  autoFocus,
   editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
   placeholder,
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
