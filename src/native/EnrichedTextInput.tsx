@@ -76,6 +76,7 @@ export const EnrichedTextInput = ({
   returnKeyLabel,
   submitBehavior,
   contextMenuItems,
+  textShortcuts,
   androidExperimentalSynchronousEvents = false,
   useHtmlNormalizer = false,
   scrollEnabled = true,
@@ -348,6 +349,7 @@ export const EnrichedTextInput = ({
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
       contextMenuItems={nativeContextMenuItems}
+      textShortcuts={textShortcuts ?? []}
       onContextMenuItemPress={handleContextMenuItemPress}
       onSubmitEditing={onSubmitEditing}
       returnKeyType={returnKeyType}

@@ -1,5 +1,6 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
+#import "TextInsertionUtils.h"
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
@@ -761,6 +762,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // useHtmlNormalizer
   if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
     useHtmlNormalizer = newViewProps.useHtmlNormalizer;
+  }
+
+  // textShortcuts
+  if (newViewProps.textShortcuts != oldViewProps.textShortcuts) {
+    NSMutableArray *shortcuts = [NSMutableArray new];
+    for (const auto &item : newViewProps.textShortcuts) {
+      NSString *type = item.type.has_value()
+          ? [NSString fromCppString:item.type.value()]
+          : @"block";
+      [shortcuts addObject:@{
+        @"trigger" : [NSString fromCppString:item.trigger],
+        @"style" : [NSString fromCppString:item.style],
+        @"type" : type
+      }];
+    }
+    textShortcuts = shortcuts;
   }
 
   // default value - must be set before placeholder to make sure it correctly
@@ -2001,6 +2018,219 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
++ (NSNumber *_Nullable)styleTypeForName:(NSString *)name {
+  static NSDictionary<NSString *, NSNumber *> *map = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    map = @{
+      @"h1" : @(H1),
+      @"h2" : @(H2),
+      @"h3" : @(H3),
+      @"h4" : @(H4),
+      @"h5" : @(H5),
+      @"h6" : @(H6),
+      @"blockquote" : @(BlockQuote),
+      @"codeblock" : @(CodeBlock),
+      @"unordered_list" : @(UnorderedList),
+      @"ordered_list" : @(OrderedList),
+      @"checkbox_list" : @(CheckboxList),
+    };
+  });
+  return map[name];
+}
+
+- (BOOL)tryHandlingTextShortcutInRange:(NSRange)range
+                       replacementText:(NSString *)text {
+  if (textShortcuts == nil || textShortcuts.count == 0) {
+    return NO;
+  }
+
+  NSString *fullText = textView.textStorage.string;
+  NSRange paragraphRange = [fullText paragraphRangeForRange:range];
+
+  for (NSDictionary *shortcut in textShortcuts) {
+    NSString *shortcutType = shortcut[@"type"];
+    if ([shortcutType isEqualToString:@"inline"]) {
+      continue;
+    }
+
+    NSString *trigger = shortcut[@"trigger"];
+    NSString *styleName = shortcut[@"style"];
+    if (trigger == nil || styleName == nil || trigger.length == 0) {
+      continue;
+    }
+
+    NSString *lastTriggerChar =
+        [trigger substringFromIndex:trigger.length - 1];
+    NSString *prefixBeforeCursor =
+        [trigger substringToIndex:trigger.length - 1];
+
+    if (![text isEqualToString:lastTriggerChar]) {
+      continue;
+    }
+
+    NSInteger charsBeforeCursor = range.location - paragraphRange.location;
+    if (charsBeforeCursor != (NSInteger)prefixBeforeCursor.length) {
+      continue;
+    }
+
+    if (prefixBeforeCursor.length > 0) {
+      NSString *paragraphPrefix =
+          [fullText substringWithRange:NSMakeRange(paragraphRange.location,
+                                                   prefixBeforeCursor.length)];
+      if (![paragraphPrefix isEqualToString:prefixBeforeCursor]) {
+        continue;
+      }
+    }
+
+    NSNumber *styleType =
+        [EnrichedTextInputView styleTypeForName:styleName];
+    if (styleType == nil) {
+      continue;
+    }
+
+    if ([self handleStyleBlocksAndConflicts:(StyleType)[styleType integerValue]
+                                      range:paragraphRange]) {
+      blockEmitting = YES;
+      [TextInsertionUtils
+              replaceText:@""
+                       at:NSMakeRange(paragraphRange.location,
+                                      prefixBeforeCursor.length)
+       additionalAttributes:nullptr
+                    input:self
+            withSelection:YES];
+      blockEmitting = NO;
+
+      id<BaseStyleProtocol> style = stylesDict[styleType];
+      if (style != nil) {
+        NSRange newParagraphRange = NSMakeRange(
+            paragraphRange.location,
+            paragraphRange.length - prefixBeforeCursor.length);
+        [style addAttributes:newParagraphRange withTypingAttr:YES];
+      }
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
++ (NSNumber *_Nullable)inlineStyleTypeForName:(NSString *)name {
+  static NSDictionary<NSString *, NSNumber *> *map = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    map = @{
+      @"bold" : @(Bold),
+      @"italic" : @(Italic),
+      @"underline" : @(Underline),
+      @"strikethrough" : @(Strikethrough),
+      @"inline_code" : @(InlineCode),
+    };
+  });
+  return map[name];
+}
+
+- (BOOL)tryHandlingInlineShortcutInRange:(NSRange)range
+                         replacementText:(NSString *)text {
+  if (textShortcuts == nil || textShortcuts.count == 0) {
+    return NO;
+  }
+
+  NSString *fullText = textView.textStorage.string;
+
+  for (NSDictionary *shortcut in textShortcuts) {
+    NSString *shortcutType = shortcut[@"type"];
+    if (![shortcutType isEqualToString:@"inline"]) {
+      continue;
+    }
+
+    NSString *trigger = shortcut[@"trigger"];
+    NSString *styleName = shortcut[@"style"];
+    if (trigger == nil || styleName == nil || trigger.length == 0) {
+      continue;
+    }
+
+    NSString *lastTriggerChar =
+        [trigger substringFromIndex:trigger.length - 1];
+    if (![text isEqualToString:lastTriggerChar]) {
+      continue;
+    }
+
+    NSInteger delimPrefixLen = trigger.length - 1;
+    if (delimPrefixLen > 0) {
+      if ((NSInteger)range.location < delimPrefixLen) {
+        continue;
+      }
+      NSString *beforeCursor =
+          [fullText substringWithRange:NSMakeRange(range.location - delimPrefixLen,
+                                                   delimPrefixLen)];
+      if (![beforeCursor isEqualToString:
+              [trigger substringToIndex:delimPrefixLen]]) {
+        continue;
+      }
+    }
+
+    NSInteger closeDelimStart = range.location - delimPrefixLen;
+
+    NSRange searchRange = NSMakeRange(0, closeDelimStart);
+    NSRange openRange = [fullText rangeOfString:trigger
+                                        options:NSBackwardsSearch
+                                          range:searchRange];
+    if (openRange.location == NSNotFound) {
+      continue;
+    }
+
+    NSInteger contentStart = openRange.location + trigger.length;
+    NSInteger contentEnd = closeDelimStart;
+    if (contentEnd <= contentStart) {
+      continue;
+    }
+
+    NSRange paragraphRange = [fullText paragraphRangeForRange:range];
+    if (openRange.location < paragraphRange.location) {
+      continue;
+    }
+
+    NSNumber *styleType =
+        [EnrichedTextInputView inlineStyleTypeForName:styleName];
+    if (styleType == nil) {
+      continue;
+    }
+
+    blockEmitting = YES;
+
+    if (delimPrefixLen > 0) {
+      [TextInsertionUtils
+              replaceText:@""
+                       at:NSMakeRange(closeDelimStart, delimPrefixLen)
+       additionalAttributes:nullptr
+                    input:self
+            withSelection:NO];
+      contentEnd -= delimPrefixLen;
+    }
+
+    [TextInsertionUtils
+            replaceText:@""
+                     at:openRange
+     additionalAttributes:nullptr
+                  input:self
+          withSelection:NO];
+    contentStart -= trigger.length;
+    contentEnd -= trigger.length;
+
+    blockEmitting = NO;
+
+    textView.selectedRange = NSMakeRange(contentStart, contentEnd - contentStart);
+    [self toggleRegularStyle:(StyleType)[styleType integerValue]];
+
+    textView.selectedRange = NSMakeRange(contentEnd, 0);
+
+    return YES;
+  }
+
+  return NO;
+}
+
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
@@ -2044,9 +2274,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // expression either way it's not possible to have two of them come off at the
   // same time
   if ([uStyle handleBackspaceInRange:range replacementText:text] ||
-      [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle handleBackspaceInRange:range replacementText:text] ||
-      [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [cbLStyle handleBackspaceInRange:range replacementText:text] ||
       [cbLStyle handleNewlinesInRange:range replacementText:text] ||
       [bqStyle handleBackspaceInRange:range replacementText:text] ||
@@ -2083,6 +2311,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
                                                       replacementText:text
                                                                 input:self]) {
+    [self anyTextMayHaveBeenModified];
+    return NO;
+  }
+
+  // Check configurable text shortcuts (block: "# " → h1, inline: `code` → inline_code)
+  if ([self tryHandlingTextShortcutInRange:range replacementText:text] ||
+      [self tryHandlingInlineShortcutInRange:range replacementText:text]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }

@@ -306,6 +306,21 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
   /**
+   * Configure text shortcuts that auto-convert typed patterns into styles.
+   *
+   * Two types of shortcuts are supported:
+   *
+   * **Block shortcuts** (type: 'block', default):
+   * Trigger at the start of a paragraph. E.g. typing "# " converts the line to H1.
+   * - style: "h1"-"h6", "blockquote", "codeblock", "unordered_list", "ordered_list", "checkbox_list"
+   *
+   * **Inline shortcuts** (type: 'inline'):
+   * Trigger when a closing delimiter is typed around text. E.g. typing `code` applies inline code.
+   * The trigger is the delimiter string (e.g. "`", "**", "*", "~~").
+   * - style: "bold", "italic", "strikethrough", "inline_code"
+   */
+  textShortcuts?: Array<{ trigger: string; style: string; type?: 'block' | 'inline' }>;
+  /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
    * However, this is an experimental feature, which has not been thoroughly tested.
