@@ -45,6 +45,15 @@ type HtmlRequest = {
   reject: (error: Error) => void;
 };
 
+/**
+ * Default text shortcuts matching the previously hardcoded behavior.
+ * Consumers can override by passing their own textShortcuts prop.
+ */
+const DEFAULT_TEXT_SHORTCUTS: Array<{ trigger: string; style: string }> = [
+  { trigger: '- ', style: 'unordered_list' },
+  { trigger: '1.', style: 'ordered_list' },
+];
+
 export const EnrichedTextInput = ({
   ref,
   autoFocus,
@@ -349,7 +358,7 @@ export const EnrichedTextInput = ({
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
       contextMenuItems={nativeContextMenuItems}
-      textShortcuts={textShortcuts ?? []}
+      textShortcuts={textShortcuts ?? DEFAULT_TEXT_SHORTCUTS}
       onContextMenuItemPress={handleContextMenuItemPress}
       onSubmitEditing={onSubmitEditing}
       returnKeyType={returnKeyType}

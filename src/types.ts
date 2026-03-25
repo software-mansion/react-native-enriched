@@ -318,6 +318,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Trigger when a closing delimiter is typed around text. E.g. typing `code` applies inline code.
    * The trigger is the delimiter string (e.g. "`", "**", "*", "~~").
    * - style: "bold", "italic", "strikethrough", "inline_code"
+   *
+   * Defaults to `[{ trigger: '- ', style: 'unordered_list' }, { trigger: '1.', style: 'ordered_list' }]`
+   * to match the previously built-in behavior. Pass an empty array to disable all shortcuts.
    */
   textShortcuts?: Array<{ trigger: string; style: string; type?: 'block' | 'inline' }>;
   /**
