@@ -1670,6 +1670,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   MentionStyle *mentionStyleClass =
       (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass != nullptr) {
+    // mention editing runs if only a selection was done (no text change)
+    // otherwise we would double-emit with a second call in the
+    // anyTextMayHaveBeenModified method
     if ([_recentInputString isEqualToString:currentString]) {
       [mentionStyleClass manageMentionEditing];
     }

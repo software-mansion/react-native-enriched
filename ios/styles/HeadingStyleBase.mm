@@ -46,15 +46,19 @@
               }];
 }
 
+// used to make sure headings dont persist after a newline is placed
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {
+  // in a heading and a new text ends with a newline
   if ([self detect:self.input->textView.selectedRange] && text.length > 0 &&
       [[NSCharacterSet newlineCharacterSet]
           characterIsMember:[text characterAtIndex:text.length - 1]]) {
+    // do the replacement manually
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
                               input:self.input
                       withSelection:YES];
+    // remove the attributes at the new selection
     [self remove:self.input->textView.selectedRange withDirtyRange:YES];
     return YES;
   }
