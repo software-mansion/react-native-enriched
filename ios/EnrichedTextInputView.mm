@@ -1,6 +1,5 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
-#import "TextInsertionUtils.h"
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
@@ -9,6 +8,7 @@
 #import "StringExtension.h"
 #import "StyleHeaders.h"
 #import "TextBlockTapGestureRecognizer.h"
+#import "TextInsertionUtils.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -768,9 +768,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.textShortcuts != oldViewProps.textShortcuts) {
     NSMutableArray *shortcuts = [NSMutableArray new];
     for (const auto &item : newViewProps.textShortcuts) {
-      NSString *type = item.type.has_value()
-          ? [NSString fromCppString:item.type.value()]
-          : @"block";
+      NSString *type =
+          item.type.empty() ? @"block" : [NSString fromCppString:item.type];
       [shortcuts addObject:@{
         @"trigger" : [NSString fromCppString:item.trigger],
         @"style" : [NSString fromCppString:item.style],
@@ -2060,8 +2059,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       continue;
     }
 
-    NSString *lastTriggerChar =
-        [trigger substringFromIndex:trigger.length - 1];
+    NSString *lastTriggerChar = [trigger substringFromIndex:trigger.length - 1];
     NSString *prefixBeforeCursor =
         [trigger substringToIndex:trigger.length - 1];
 
@@ -2083,8 +2081,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       }
     }
 
-    NSNumber *styleType =
-        [EnrichedTextInputView styleTypeForName:styleName];
+    NSNumber *styleType = [EnrichedTextInputView styleTypeForName:styleName];
     if (styleType == nil) {
       continue;
     }
@@ -2092,20 +2089,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if ([self handleStyleBlocksAndConflicts:(StyleType)[styleType integerValue]
                                       range:paragraphRange]) {
       blockEmitting = YES;
-      [TextInsertionUtils
-              replaceText:@""
-                       at:NSMakeRange(paragraphRange.location,
-                                      prefixBeforeCursor.length)
-       additionalAttributes:nullptr
-                    input:self
-            withSelection:YES];
+      [TextInsertionUtils replaceText:@""
+                                   at:NSMakeRange(paragraphRange.location,
+                                                  prefixBeforeCursor.length)
+                 additionalAttributes:nullptr
+                                input:self
+                        withSelection:YES];
       blockEmitting = NO;
 
       id<BaseStyleProtocol> style = stylesDict[styleType];
       if (style != nil) {
-        NSRange newParagraphRange = NSMakeRange(
-            paragraphRange.location,
-            paragraphRange.length - prefixBeforeCursor.length);
+        NSRange newParagraphRange =
+            NSMakeRange(paragraphRange.location,
+                        paragraphRange.length - prefixBeforeCursor.length);
         [style addAttributes:newParagraphRange withTypingAttr:YES];
       }
       return YES;
@@ -2150,8 +2146,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       continue;
     }
 
-    NSString *lastTriggerChar =
-        [trigger substringFromIndex:trigger.length - 1];
+    NSString *lastTriggerChar = [trigger substringFromIndex:trigger.length - 1];
     if (![text isEqualToString:lastTriggerChar]) {
       continue;
     }
@@ -2161,11 +2156,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       if ((NSInteger)range.location < delimPrefixLen) {
         continue;
       }
-      NSString *beforeCursor =
-          [fullText substringWithRange:NSMakeRange(range.location - delimPrefixLen,
-                                                   delimPrefixLen)];
-      if (![beforeCursor isEqualToString:
-              [trigger substringToIndex:delimPrefixLen]]) {
+      NSString *beforeCursor = [fullText
+          substringWithRange:NSMakeRange(range.location - delimPrefixLen,
+                                         delimPrefixLen)];
+      if (![beforeCursor
+              isEqualToString:[trigger substringToIndex:delimPrefixLen]]) {
         continue;
       }
     }
@@ -2201,26 +2196,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     if (delimPrefixLen > 0) {
       [TextInsertionUtils
-              replaceText:@""
-                       at:NSMakeRange(closeDelimStart, delimPrefixLen)
-       additionalAttributes:nullptr
-                    input:self
-            withSelection:NO];
+                   replaceText:@""
+                            at:NSMakeRange(closeDelimStart, delimPrefixLen)
+          additionalAttributes:nullptr
+                         input:self
+                 withSelection:NO];
       contentEnd -= delimPrefixLen;
     }
 
-    [TextInsertionUtils
-            replaceText:@""
-                     at:openRange
-     additionalAttributes:nullptr
-                  input:self
-          withSelection:NO];
+    [TextInsertionUtils replaceText:@""
+                                 at:openRange
+               additionalAttributes:nullptr
+                              input:self
+                      withSelection:NO];
     contentStart -= trigger.length;
     contentEnd -= trigger.length;
 
     blockEmitting = NO;
 
-    textView.selectedRange = NSMakeRange(contentStart, contentEnd - contentStart);
+    textView.selectedRange =
+        NSMakeRange(contentStart, contentEnd - contentStart);
     [self toggleRegularStyle:(StyleType)[styleType integerValue]];
 
     textView.selectedRange = NSMakeRange(contentEnd, 0);
@@ -2315,7 +2310,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return NO;
   }
 
-  // Check configurable text shortcuts (block: "# " → h1, inline: `code` → inline_code)
+  // Check configurable text shortcuts (block: "# " → h1, inline: `code` →
+  // inline_code)
   if ([self tryHandlingTextShortcutInRange:range replacementText:text] ||
       [self tryHandlingInlineShortcutInRange:range replacementText:text]) {
     [self anyTextMayHaveBeenModified];
