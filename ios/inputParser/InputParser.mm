@@ -789,18 +789,24 @@
       if (normalized != nil) {
         fixedHtml = normalized;
       }
-    } else {
-      // in other case we are most likely working with some external html - try
-      // getting the styles from between body tags
-      NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
-      NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
+    }
 
-      if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
-        NSInteger newStart = openingBodyRange.location + 7;
-        NSInteger newEnd = closingBodyRange.location - 1;
-        fixedHtml = [htmlWithoutSpaces
-            substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
-      }
+    // Additionally, try getting the content from between body tags if there are
+    // some:
+
+    // Firstly make sure there are no newlines between them.
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<body>\n"
+                                                     withString:@"<body>"];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"\n</body>"
+                                                     withString:@"</body>"];
+    // Then, if there actually are body tags, use the content between them.
+    NSRange openingBodyRange = [htmlWithoutSpaces rangeOfString:@"<body>"];
+    NSRange closingBodyRange = [htmlWithoutSpaces rangeOfString:@"</body>"];
+    if (openingBodyRange.length != 0 && closingBodyRange.length != 0) {
+      NSInteger newStart = openingBodyRange.location + 6;
+      NSInteger newEnd = closingBodyRange.location - 1;
+      fixedHtml = [htmlWithoutSpaces
+          substringWithRange:NSMakeRange(newStart, newEnd - newStart + 1)];
     }
   }
 
@@ -1406,21 +1412,18 @@
       mentionParams.attributes = formattedAttrsString;
 
       stylePair.styleValue = mentionParams;
-    } else if ([[tagName substringWithRange:NSMakeRange(0, 1)]
-                   isEqualToString:@"h"]) {
-      if ([tagName isEqualToString:@"h1"]) {
-        [styleArr addObject:@([H1Style getStyleType])];
-      } else if ([tagName isEqualToString:@"h2"]) {
-        [styleArr addObject:@([H2Style getStyleType])];
-      } else if ([tagName isEqualToString:@"h3"]) {
-        [styleArr addObject:@([H3Style getStyleType])];
-      } else if ([tagName isEqualToString:@"h4"]) {
-        [styleArr addObject:@([H4Style getStyleType])];
-      } else if ([tagName isEqualToString:@"h5"]) {
-        [styleArr addObject:@([H5Style getStyleType])];
-      } else if ([tagName isEqualToString:@"h6"]) {
-        [styleArr addObject:@([H6Style getStyleType])];
-      }
+    } else if ([tagName isEqualToString:@"h1"]) {
+      [styleArr addObject:@([H1Style getStyleType])];
+    } else if ([tagName isEqualToString:@"h2"]) {
+      [styleArr addObject:@([H2Style getStyleType])];
+    } else if ([tagName isEqualToString:@"h3"]) {
+      [styleArr addObject:@([H3Style getStyleType])];
+    } else if ([tagName isEqualToString:@"h4"]) {
+      [styleArr addObject:@([H4Style getStyleType])];
+    } else if ([tagName isEqualToString:@"h5"]) {
+      [styleArr addObject:@([H5Style getStyleType])];
+    } else if ([tagName isEqualToString:@"h6"]) {
+      [styleArr addObject:@([H6Style getStyleType])];
     } else if ([tagName isEqualToString:@"ul"]) {
       if ([self isUlCheckboxList:params]) {
         [styleArr addObject:@([CheckboxListStyle getStyleType])];

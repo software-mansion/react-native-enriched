@@ -1,0 +1,19 @@
+appId: swmansion.enriched.example
+---
+# "PR #405 - fix(ios): mention parsing"
+# Verifies that mentions with single-quoted HTML attributes are parsed and styled correctly.
+
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+      VALUE: "<mention text='@John Doe' indicator='@' id='1' type='user'>@John Doe</mention>"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "mention_parsing_single_quoted_attributes"
