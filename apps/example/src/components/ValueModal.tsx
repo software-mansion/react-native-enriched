@@ -1,60 +1,64 @@
 import { type FC, useState } from 'react';
-import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from './Button';
 import { Icon } from './Icon';
+import { ModalShell } from './ModalShell';
 
-interface LinkModalProps {
+interface ValueModalProps {
   isOpen: boolean;
+  avoidKeyboard?: boolean;
   onClose: () => void;
   onSubmit: (value: string) => void;
 }
 
-export const ValueModal: FC<LinkModalProps> = ({
+export const ValueModal: FC<ValueModalProps> = ({
   isOpen,
+  avoidKeyboard,
   onClose,
   onSubmit,
 }) => {
   const [value, setValue] = useState('');
 
   const handleSave = () => {
+    Keyboard.dismiss();
     onSubmit(value);
   };
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent>
-      <View style={styles.container}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Icon name="close" color="rgb(0, 26, 114)" size={20} />
-            </Pressable>
-          </View>
-          <View style={styles.content}>
-            <TextInput
-              multiline
-              placeholder="New value"
-              style={styles.input}
-              onChangeText={setValue}
-            />
-            <Button
-              title="Set Value"
-              onPress={handleSave}
-              style={styles.saveButton}
-            />
-          </View>
+    <ModalShell isOpen={isOpen} avoidKeyboard={avoidKeyboard}>
+      <View style={styles.modal}>
+        <View style={styles.header}>
+          <Pressable
+            testID="value-modal-close-button"
+            onPress={onClose}
+            style={styles.closeButton}
+          >
+            <Icon name="close" color="rgb(0, 26, 114)" size={20} />
+          </Pressable>
+        </View>
+        <View style={styles.content}>
+          <TextInput
+            testID="value-modal-input"
+            multiline
+            placeholder="New value"
+            style={styles.input}
+            onChangeText={setValue}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Button
+            testID="value-modal-submit-button"
+            title="Set Value"
+            onPress={handleSave}
+            style={styles.saveButton}
+          />
         </View>
       </View>
-    </Modal>
+    </ModalShell>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgb(0, 0, 0, 0.5)',
-  },
   modal: {
     width: 300,
     height: 400,

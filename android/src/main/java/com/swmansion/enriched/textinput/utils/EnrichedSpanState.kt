@@ -246,11 +246,12 @@ class EnrichedSpanState(
     payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
     payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
     payload.putMap("checkboxList", getStyleState(activeStyles, EnrichedSpans.CHECKBOX_LIST))
+    payload.putString("alignment", view.getCurrentAlignment())
 
     return payload
   }
 
-  private fun emitStateChangeEvent() {
+  internal fun emitStateChangeEvent() {
     val context = view.context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)

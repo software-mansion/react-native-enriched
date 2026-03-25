@@ -53,7 +53,7 @@ interface ContextMenuItem {
 
 | Type                | Default Value | Platform |
 | ------------------- | ------------- | -------- |
-| `ContextMenuItem[]` | []             | iOS      |
+| `ContextMenuItem[]` | []            | iOS      |
 
 > [!NOTE]
 > On iOS items appear in array order, before the system items (Copy/Paste/Cut).
@@ -110,7 +110,7 @@ With this approach you can customize what patterns should be recognized as links
 Keep in mind that not all JS regex features are supported, for example variable-width lookbehinds won't work.
 
 | Type     | Default Value                 | Platform |
-|----------|-------------------------------|----------|
+| -------- | ----------------------------- | -------- |
 | `RegExp` | default native platform regex | Both     |
 
 > [!TIP]
@@ -121,7 +121,7 @@ Keep in mind that not all JS regex features are supported, for example variable-
 Callback that's called whenever the input loses focused (is blurred).
 
 | Type         | Platform |
-|--------------|----------|
+| ------------ | -------- |
 | `() => void` | Both     |
 
 ### `onChangeHtml`
@@ -139,7 +139,7 @@ interface OnChangeHtmlEvent {
 - `value` is the new HTML.
 
 | Type                                                       | Platform |
-|------------------------------------------------------------|----------|
+| ---------------------------------------------------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeHtmlEvent>) => void` | Both     |
 
 > [!TIP]
@@ -164,7 +164,7 @@ interface OnChangeMentionEvent {
 - `text` contains whole text that has been typed after the indicator.
 
 | Type                                    | Platform |
-|-----------------------------------------|----------|
+| --------------------------------------- | -------- |
 | `(event: OnChangeMentionEvent) => void` | Both     |
 
 ### `onChangeSelection`
@@ -186,7 +186,7 @@ interface OnChangeSelectionEvent {
 - `text` is the input's text in the current selection.
 
 | Type                                                            | Platform |
-|-----------------------------------------------------------------|----------|
+| --------------------------------------------------------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeSelectionEvent>) => void` | Both     |
 
 ### `onChangeState`
@@ -302,7 +302,7 @@ interface OnChangeStateEvent {
 - `alignment` indicates the current text alignment of the paragraph at the cursor position. Possible values: `'left'`, `'center'`, `'right'`, `'justify'`.
 
 | Type                                                        | Platform |
-|-------------------------------------------------------------|----------|
+| ----------------------------------------------------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
 
 ### `onChangeText`
@@ -320,7 +320,7 @@ interface OnChangeTextEvent {
 - `value` is the new text value of the input.
 
 | Type                                                       | Platform |
-|------------------------------------------------------------|----------|
+| ---------------------------------------------------------- | -------- |
 | `(event: NativeSyntheticEvent<OnChangeTextEvent>) => void` | Both     |
 
 > [!TIP]
@@ -333,7 +333,7 @@ Callback that is called when the user no longer edits a mention actively - has m
 - `indicator` is the indicator of the mention that was being edited.
 
 | Type                          | Platform |
-|-------------------------------|----------|
+| ----------------------------- | -------- |
 | `(indicator: string) => void` | Both     |
 
 ### `onFocus`
@@ -341,7 +341,7 @@ Callback that is called when the user no longer edits a mention actively - has m
 Callback that's called whenever the input is focused.
 
 | Type         | Platform |
-|--------------|----------|
+| ------------ | -------- |
 | `() => void` | Both     |
 
 ### `onLinkDetected`
@@ -365,7 +365,7 @@ interface OnLinkDetected {
 - `end` is the first index after the ending index of the link.
 
 | Type                              | Platform |
-|-----------------------------------|----------|
+| --------------------------------- | -------- |
 | `(event: OnLinkDetected) => void` | Both     |
 
 ### `onMentionDetected`
@@ -387,7 +387,7 @@ interface OnMentionDetected {
 - `attributes` are the additional user-defined attributes that are being stored with the mention.
 
 | Type                                 | Platform |
-|--------------------------------------|----------|
+| ------------------------------------ | -------- |
 | `(event: OnMentionDetected) => void` | Both     |
 
 ### `onStartMention`
@@ -397,7 +397,7 @@ Callback that gets called whenever a mention editing starts (after placing the i
 - `indicator` is the indicator of the mention that begins editing.
 
 | Type                          | Platform |
-|-------------------------------|----------|
+| ----------------------------- | -------- |
 | `(indicator: string) => void` | Both     |
 
 ### `onKeyPress`
@@ -411,7 +411,7 @@ export interface OnKeyPressEvent {
 ```
 
 | Type                                                     | Platform |
-|----------------------------------------------------------|----------|
+| -------------------------------------------------------- | -------- |
 | `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
 
 ### `OnPasteImages`
@@ -502,7 +502,7 @@ If true, Android will use experimental synchronous events. This will prevent fro
 If true, external HTML pasted/inserted into the input (e.g. from Google Docs, Word, or web pages) will be normalized into the canonical tag subset that the enriched parser understands. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
 
 | Type   | Default Value | Platform |
-| ------ | ------------- |----------|
+| ------ | ------------- | -------- |
 | `bool` | `false`       | Both     |
 
 ## Ref Methods
@@ -619,12 +619,17 @@ Sets the selection at the given indexes.
 ### `.setTextAlignment()`
 
 ```ts
-setTextAlignment: (alignment: 'left' | 'center' | 'right' | 'justify' | 'default') => void;
+setTextAlignment: (
+  alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+) => void;
 ```
 
-Sets text alignment for the paragraph(s) at the current selection. When inside a list, the alignment is applied to all contiguous list items.
+Sets the text alignment for the current selection or paragraph.
 
-- `alignment` - the desired text alignment. Use `'default'` to reset to the system natural alignment.
+- `alignment: 'left' | 'center' | 'right' | 'justify' | 'default'` - the alignment to apply.
+
+> [!NOTE]
+> Text justification (`justify`) is currently not supported on Android and will fallback to `default` alignment.
 
 ### `.startMention()`
 

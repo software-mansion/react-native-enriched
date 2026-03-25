@@ -1,0 +1,34 @@
+appId: swmansion.enriched.example
+---
+# PR #428 - fix(android): merging and splitting paragraph styles Verifies that
+# toggling off a paragraph style on one line does not affect the style of
+# adjacent lines
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-quote"
+
+- inputText: "1"
+- pressKey: Enter
+- inputText: "2"
+- pressKey: Enter
+- inputText: "3"
+
+# Tap on the second line
+- tapOn:
+    id: "editor-input"
+    point: "40%,50%"
+
+- tapOn:
+    id: "toolbar-quote"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "paragraph_style_toggle"

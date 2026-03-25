@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { EnrichedTextInput } from 'react-native-enriched';
 import { Button } from '../components/Button';
@@ -19,6 +20,7 @@ interface TestScreenProps {
 
 export function TestScreen({ onSwitch }: TestScreenProps) {
   const editor = useEditorState();
+  const [sizeMode, setSizeMode] = useState<'base' | 'max'>('base');
 
   return (
     <>
@@ -45,12 +47,22 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
             style={styles.button}
             testID="clear-button"
           />
+          <Button
+            title={sizeMode === 'max' ? 'Base' : 'Max'}
+            onPress={() => setSizeMode(sizeMode === 'max' ? 'base' : 'max')}
+            style={styles.button}
+            testID="size-max-button"
+          />
         </View>
         <View style={styles.editor} testID="editor-container">
           <EnrichedTextInput
             ref={editor.ref}
             mentionIndicators={['@', '#']}
-            style={styles.editorInput}
+            style={
+              sizeMode === 'max'
+                ? { ...styles.editorInput, ...styles.editorInputMax }
+                : styles.editorInput
+            }
             htmlStyle={htmlStyle}
             placeholder="Type something here..."
             placeholderTextColor="rgb(0, 26, 114)"
@@ -103,6 +115,7 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
         </View>
       </ScrollView>
       <LinkModal
+        avoidKeyboard
         isOpen={editor.isLinkModalOpen}
         editedText={
           editor.insideCurrentLink
@@ -114,11 +127,13 @@ export function TestScreen({ onSwitch }: TestScreenProps) {
         onClose={editor.closeLinkModal}
       />
       <ImageModal
+        avoidKeyboard
         isOpen={editor.isImageModalOpen}
         onSubmit={editor.selectImage}
         onClose={editor.closeImageModal}
       />
       <ValueModal
+        avoidKeyboard
         isOpen={editor.isValueModalOpen}
         onSubmit={editor.submitSetValue}
         onClose={editor.closeValueModal}
@@ -179,5 +194,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Regular',
     paddingVertical: 12,
     paddingHorizontal: 14,
+  },
+  editorInputMax: {
+    maxHeight: 400,
   },
 });

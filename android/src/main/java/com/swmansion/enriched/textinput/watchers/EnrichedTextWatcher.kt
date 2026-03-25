@@ -1,11 +1,13 @@
 package com.swmansion.enriched.textinput.watchers
 
 import android.text.Editable
+import android.text.Spannable
 import android.text.TextWatcher
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
+import com.swmansion.enriched.textinput.spans.EnrichedAlignmentPlaceholderSpan
 
 class EnrichedTextWatcher(
   private val view: EnrichedTextInputView,
@@ -13,6 +15,7 @@ class EnrichedTextWatcher(
   private var endCursorPosition: Int = 0
   private var startCursorPosition: Int = 0
   private var previousTextLength: Int = 0
+  private var deletedAlignmentPlaceholder: Boolean = false
 
   override fun beforeTextChanged(
     s: CharSequence?,
@@ -21,6 +24,11 @@ class EnrichedTextWatcher(
     after: Int,
   ) {
     previousTextLength = s?.length ?: 0
+    deletedAlignmentPlaceholder = false
+    if (count > 0 && s is Spannable) {
+      val placeholders = s.getSpans(start, start + count, EnrichedAlignmentPlaceholderSpan::class.java)
+      deletedAlignmentPlaceholder = placeholders.isNotEmpty()
+    }
   }
 
   override fun onTextChanged(
@@ -41,6 +49,7 @@ class EnrichedTextWatcher(
 
     if (view.isDuringTransaction) return
     applyStyles(s)
+    view.applyTypingAlignmentIfNeeded(s, startCursorPosition, endCursorPosition, previousTextLength, deletedAlignmentPlaceholder)
   }
 
   private fun applyStyles(s: Editable) {

@@ -49,9 +49,9 @@ open class EnrichedUnorderedListSpan(
       paint.style = Paint.Style.FILL
 
       val bulletRadius = enrichedStyle.ulBulletSize / 2f
-      val fm = paint.fontMetricsInt
-      val yPosition = baseline + (fm.ascent + fm.descent) / 2f
-      val xPosition = x + dir * bulletRadius + enrichedStyle.ulMarginLeft
+      val yPosition = (top + bottom) / 2f
+      val markerBaseX = if (dir > 0) 0 else x
+      val xPosition = markerBaseX + dir * bulletRadius + enrichedStyle.ulMarginLeft
 
       canvas.drawCircle(xPosition, yPosition, bulletRadius, paint)
 

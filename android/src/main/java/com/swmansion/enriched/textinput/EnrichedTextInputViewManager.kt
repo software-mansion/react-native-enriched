@@ -421,14 +421,13 @@ class EnrichedTextInputViewManager :
   ) {
     view?.requestHTML(requestId)
   }
-
+  
   override fun setTextAlignment(
     view: EnrichedTextInputView?,
     alignment: String,
   ) {
-    TODO("Not yet implemented")
+    view?.setTextAlignment(alignment)
   }
-
   override fun measure(
     context: Context,
     localData: ReadableMap?,
