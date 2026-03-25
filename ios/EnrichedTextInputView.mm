@@ -1543,8 +1543,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 - (void)removeLinkAt:(NSInteger)start end:(NSInteger)end {
-  LinkStyle *linkStyleClass =
-      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getType])];
   if (linkStyleClass == nullptr) {
     return;
   }
@@ -1561,7 +1560,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSInteger rangeLength = MAX(start, end) - rangeStart;
   NSRange linkRange = NSMakeRange(rangeStart, rangeLength);
 
-  [linkStyleClass removeAttributes:linkRange];
+  [linkStyleClass remove:linkRange withDirtyRange:YES];
   [self anyTextMayHaveBeenModified];
 }
 
@@ -2018,14 +2017,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                                                 input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
-  }
-
-  // Tapping near a link causes iOS to re-derive typingAttributes from
-  // character attributes after textViewDidChangeSelection returns, undoing
-  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
-  // before insertion, so new text never inherits link styling.
-  if (linkStyle != nullptr) {
-    [linkStyle manageLinkTypingAttributes];
   }
 
   return YES;

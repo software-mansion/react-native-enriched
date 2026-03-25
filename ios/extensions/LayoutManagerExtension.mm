@@ -318,7 +318,8 @@ static void const *kInputKey = &kInputKey;
                                                  origin:origin
                                                usedRect:textUsedRect];
                                      } else if ([markerFormat
-                                                    hasPrefix:@"{checkbox"]) {
+                                                    hasPrefix:
+                                                        @"EnrichedCheckbox"]) {
                                        [self drawCheckbox:typedInput
                                              markerFormat:markerFormat
                                                    origin:origin
