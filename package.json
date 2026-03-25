@@ -5,8 +5,13 @@
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "react-native": {
+        "types": "./lib/typescript/src/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -20,6 +25,14 @@
     "cpp",
     "*.podspec",
     "react-native.config.js",
+    "!src/web",
+    "!src/index.web.tsx",
+    "!lib/module/web",
+    "!lib/module/index.web.js",
+    "!lib/module/index.web.js.map",
+    "!lib/typescript/src/web",
+    "!lib/typescript/src/index.web.d.ts",
+    "!lib/typescript/src/index.web.d.ts.map",
     "!ios/build",
     "!android/build",
     "!android/gradle",
