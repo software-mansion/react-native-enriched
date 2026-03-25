@@ -23,6 +23,42 @@ Tells input to automatically capitalize certain characters.
 | -------------------------------------------------- | ------------- | -------- |
 | `'none' \| 'sentences' \| 'words' \| 'characters'` | `'sentences'` | Both     |
 
+### `contextMenuItems`
+
+An array of custom items to display in the native text editing menu. Each item specifies a title, visibility flag, and a callback that fires when the item is tapped.
+
+The `onPress` callback receives a single object argument with the following properties:
+
+- `text` - the currently selected text.
+- `selection` - an object with `start` and `end` indices of the current selection.
+- `styleState` - the latest `OnChangeStateEvent` payload reflecting active styles at the time of the tap.
+
+Item type:
+
+```ts
+interface ContextMenuItem {
+  text: string;
+  onPress: (args: {
+    text: string;
+    selection: { start: number; end: number };
+    styleState: OnChangeStateEvent;
+  }) => void;
+  visible?: boolean;
+}
+```
+
+- `text` is the title displayed in the menu.
+- `onPress` is the callback invoked when the item is tapped.
+- `visible` controls whether the item is shown. Defaults to `true`.
+
+| Type                | Default Value | Platform |
+| ------------------- | ------------- | -------- |
+| `ContextMenuItem[]` | []             | iOS      |
+
+> [!NOTE]
+> On iOS items appear in array order, before the system items (Copy/Paste/Cut).
+> On Android, there is no guaranteed order and custom items may be displayed in a submenu, depending on the device manufacturer.
+
 ### `cursorColor`
 
 When provided it will set the color of the cursor (or "caret") in the component.
@@ -267,43 +303,6 @@ interface OnChangeStateEvent {
 |-------------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
 
-### `onChangeStateDeprecated`
-
-> [!WARNING]
-> Callback is here just to provide easier migration to newest enriched versions and will be removed in future releases.
-
-Callback that gets called when any of the styles within the selection changes.
-
-Payload has a bool flag for each style:
-
-```ts
-interface OnChangeStateDeprecatedEvent {
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
-  isStrikeThrough: boolean;
-  isInlineCode: boolean;
-  isH1: boolean;
-  isH2: boolean;
-  isH3: boolean;
-  isH4: boolean;
-  isH5: boolean;
-  isH6: boolean;
-  isCodeBlock: boolean;
-  isBlockQuote: boolean;
-  isOrderedList: boolean;
-  isUnorderedList: boolean;
-  isCheckboxList: boolean;
-  isLink: boolean;
-  isImage: boolean;
-  isMention: boolean;
-}
-```
-
-| Type                                                                  | Platform |
-|-----------------------------------------------------------------------|----------|
-| `(event: NativeSyntheticEvent<OnChangeStateDeprecatedEvent>) => void` | Both     |
-
 ### `onChangeText`
 
 Callback called when any text changes occur in the input.
@@ -413,6 +412,27 @@ export interface OnKeyPressEvent {
 |----------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnKeyPressEvent>) => void` | Both     |
 
+### `OnPasteImages`
+
+Callback invoked when the user pastes one or more images or GIFs into the input.
+
+- `images` - is an array of objects containing the details (URI, MIME type, and dimensions) for each pasted image/GIF.
+
+```ts
+export interface OnPasteImagesEvent {
+  images: {
+    uri: string;
+    type: string;
+    width: Float;
+    height: Float;
+  }[];
+}
+```
+
+| Type                                                        | Platform |
+| ----------------------------------------------------------- | -------- |
+| `(event: NativeSyntheticEvent<OnPasteImagesEvent>) => void` | Both     |
+
 ### `placeholder`
 
 The placeholder text that is displayed in the input if nothing has been typed yet. Disappears when something is typed.
@@ -455,7 +475,9 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontFamily
 - fontSize
 - fontWeight
+- lineHeight
 - fontStyle only on Android
+- lineHeight only on iOS
 
 | Type                                                                                                               | Default Value | Platform |
 | ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
@@ -472,6 +494,14 @@ If true, Android will use experimental synchronous events. This will prevent fro
 | Type   | Default Value | Platform |
 | ------ | ------------- | -------- |
 | `bool` | `false`       | Android  |
+
+### `useHtmlNormalizer` - EXPERIMENTAL
+
+If true, external HTML pasted/inserted into the input (e.g. from Google Docs, Word, or web pages) will be normalized into the canonical tag subset that the enriched parser understands. However, this is an experimental feature, which has not been thoroughly tested. We may decide to enable it by default in a future release.
+
+| Type   | Default Value | Platform |
+| ------ | ------------- |----------|
+| `bool` | `false`       | Both     |
 
 ## Ref Methods
 
@@ -535,6 +565,17 @@ Sets the link at the given place with a given displayed text and URL. Link will 
 - `end: number` - first index behind the new link's ending index.
 - `text: string` - displayed text of the link.
 - `url: string` - URL of the link.
+
+### `.removeLink()`
+
+```ts
+removeLink: (start: number, end: number) => void;
+```
+
+Removes link styling from any links found within the given range. The text content is preserved, only the link attributes are stripped. Out-of-bounds values are clamped to valid range.
+
+- `start: number` - the starting index of the range to remove links from.
+- `end: number` - first index behind the range's ending index.
 
 ### `.setMention()`
 
@@ -795,9 +836,6 @@ interface MentionStyleProperties {
 
 - `fontSize` is the size of the heading's font. Defaults to `32` for `H1`, `24` for `H2`, `20` for `H3`, `16` for `H4`, `14` for `H5`, `12` for `H6`.
 - `bold` defines whether the heading should be bolded, defaults to `false`.
-
-> [!NOTE]
-> On iOS, the headings cannot have same `fontSize` as the component's `fontSize`. Doing so results in unexpected behavior.
 
 ### blockquote
 

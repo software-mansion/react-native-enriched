@@ -108,6 +108,9 @@ class ParagraphStyles(
     spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
   }
 
+  // Removes spans of the given type in the specified range.
+  // If the removed span intersects with the range, it will be split and the remaining part will be re-applied after the removal
+  // Returns true if any spans were removed, false otherwise
   private fun <T> removeSpansForRange(
     spannable: Spannable,
     start: Int,
@@ -115,21 +118,24 @@ class ParagraphStyles(
     clazz: Class<T>,
   ): Boolean {
     val ssb = spannable as SpannableStringBuilder
-    var finalStart = start
-    var finalEnd = end
-
     val spans = ssb.getSpans(start, end, clazz)
     if (spans.isEmpty()) return false
 
     for (span in spans) {
-      finalStart = ssb.getSpanStart(span).coerceAtMost(finalStart)
-      finalEnd = ssb.getSpanEnd(span).coerceAtLeast(finalEnd)
-
+      val spanStart = ssb.getSpanStart(span)
+      val spanEnd = ssb.getSpanEnd(span)
       ssb.removeSpan(span)
+
+      if (spanStart < start) {
+        setSpan(ssb, clazz, spanStart, start - 1)
+      }
+
+      if (spanEnd > end) {
+        setSpan(ssb, clazz, end + 1, spanEnd)
+      }
     }
 
-    ssb.removeZWS(finalStart, finalEnd)
-
+    ssb.removeZWS(start, end)
     return true
   }
 
@@ -215,11 +221,7 @@ class ParagraphStyles(
     }
 
     val currSpan = currParagraphSpans[0]
-    val nextSpan = getNextParagraphSpan(s, end, type)
-
-    if (nextSpan == null) {
-      return
-    }
+    val nextSpan = getNextParagraphSpan(s, end, type) ?: return
 
     val newStart = s.getSpanStart(currSpan)
     val newEnd = s.getSpanEnd(nextSpan)
@@ -341,9 +343,12 @@ class ParagraphStyles(
           continue
         }
 
+        // If removing text at the beginning of the line, we want to remove the span for the whole paragraph
         if (isBackspace) {
-          endCursorPosition -= 1
+          val currentParagraphBounds = s.getParagraphBounds(endCursorPosition)
+          removeSpansForRange(s, currentParagraphBounds.first, currentParagraphBounds.second, config.clazz)
           spanState.setStart(style, null)
+          continue
         } else {
           s.insert(endCursorPosition, EnrichedConstants.ZWS_STRING)
           endCursorPosition += 1

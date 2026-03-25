@@ -106,7 +106,7 @@
 
   [self addWithChecked:!isCurrentlyChecked
                  range:paragraphRange
-            withTyping:YES
+            withTyping:NO
         withDirtyRange:YES];
 }
 

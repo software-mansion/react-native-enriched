@@ -1,0 +1,32 @@
+name: Test C++
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cpp/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'cpp/**'
+  merge_group:
+    types:
+      - checks_requested
+
+jobs:
+  test-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build cpp/build --parallel
+
+      - name: Run tests
+        run: ctest --test-dir cpp/build --output-on-failure

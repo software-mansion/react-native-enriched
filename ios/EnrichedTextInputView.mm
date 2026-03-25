@@ -1,6 +1,8 @@
 #import "EnrichedTextInputView.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
+#import "ImageAttachment.h"
+#import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
 #import "RCTFabricComponentsPlugins.h"
@@ -49,6 +51,9 @@ using namespace facebook::react;
   UIColor *_placeholderColor;
   BOOL _emitFocusBlur;
   BOOL _emitTextChange;
+  NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
+  NSArray<NSDictionary *> *_contextMenuItems;
+  NSString *_submitBehavior;
 }
 
 // MARK: - Component utils
@@ -75,7 +80,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _props = defaultProps;
     [self setDefaults];
     [self setupTextView];
-    [self addSubview:textView];
+    [self setupPlaceholderLabel];
+    self.contentView = textView;
   }
   return self;
 }
@@ -243,6 +249,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
+  _attachmentViews = [[NSMutableDictionary alloc] init];
   attributesManager = [[AttributesManager alloc] initWithInput:self];
 }
 
@@ -262,6 +269,25 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [textView addGestureRecognizer:[[TextBlockTapGestureRecognizer alloc]
                                      initWithInput:self
                                             action:@selector(onTextBlockTap:)]];
+}
+
+- (void)setupPlaceholderLabel {
+  _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [textView addSubview:_placeholderLabel];
+  [NSLayoutConstraint activateConstraints:@[
+    [_placeholderLabel.leadingAnchor
+        constraintEqualToAnchor:textView.leadingAnchor],
+    [_placeholderLabel.widthAnchor
+        constraintEqualToAnchor:textView.widthAnchor],
+    [_placeholderLabel.topAnchor constraintEqualToAnchor:textView.topAnchor],
+    [_placeholderLabel.bottomAnchor
+        constraintEqualToAnchor:textView.bottomAnchor]
+  ]];
+  _placeholderLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+  _placeholderLabel.text = @"";
+  _placeholderLabel.hidden = YES;
+  _placeholderLabel.adjustsFontForContentSizeCategory = YES;
 }
 
 // MARK: - Props
@@ -303,6 +329,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     } else {
       [newConfig setPrimaryFontSize:nullptr];
     }
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.lineHeight != oldViewProps.lineHeight) {
+    [newConfig setPrimaryLineHeight:newViewProps.lineHeight];
     stylePropChanged = YES;
   }
 
@@ -685,6 +716,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // now set the new config
     config = newConfig;
 
+    // fill the typing attributes with style props
+    defaultTypingAttributes[NSForegroundColorAttributeName] =
+        [config primaryColor];
+    defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
+    defaultTypingAttributes[NSUnderlineColorAttributeName] =
+        [config primaryColor];
+    defaultTypingAttributes[NSStrikethroughColorAttributeName] =
+        [config primaryColor];
+    NSMutableParagraphStyle *defaultPStyle =
+        [[NSMutableParagraphStyle alloc] init];
+    defaultPStyle.minimumLineHeight = [config scaledPrimaryLineHeight];
+    defaultTypingAttributes[NSParagraphStyleAttributeName] = defaultPStyle;
+
     // no emitting during styles reload
     blockEmitting = YES;
 
@@ -697,23 +741,23 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     blockEmitting = NO;
 
-    // fill the typing attributes with style props
-    defaultTypingAttributes[NSForegroundColorAttributeName] =
-        [config primaryColor];
-    defaultTypingAttributes[NSFontAttributeName] = [config primaryFont];
-    defaultTypingAttributes[NSUnderlineColorAttributeName] =
-        [config primaryColor];
-    defaultTypingAttributes[NSStrikethroughColorAttributeName] =
-        [config primaryColor];
-    defaultTypingAttributes[NSParagraphStyleAttributeName] =
-        [[NSParagraphStyle alloc] init];
     textView.typingAttributes = defaultTypingAttributes;
     textView.selectedRange = prevSelectedRange;
+
+    // make sure the newest lineHeight is applied
+    [self refreshLineHeight];
+    // update the placeholder as well
+    [self refreshPlaceholderLabelStyles];
   }
 
   // editable
   if (newViewProps.editable != textView.editable) {
     textView.editable = newViewProps.editable;
+  }
+
+  // useHtmlNormalizer
+  if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
+    useHtmlNormalizer = newViewProps.useHtmlNormalizer;
   }
 
   // default value - must be set before placeholder to make sure it correctly
@@ -736,14 +780,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // placeholderTextColor
   if (newViewProps.placeholderTextColor != oldViewProps.placeholderTextColor) {
-    textView.placeholderColor =
-        RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
+    // some real color
+    if (isColorMeaningful(newViewProps.placeholderTextColor)) {
+      _placeholderColor =
+          RCTUIColorFromSharedColor(newViewProps.placeholderTextColor);
+    } else {
+      _placeholderColor = nullptr;
+    }
+    [self refreshPlaceholderLabelStyles];
   }
 
   // placeholder
   if (newViewProps.placeholder != oldViewProps.placeholder) {
-    [textView
-        setPlaceholderText:[NSString fromCppString:newViewProps.placeholder]];
+    _placeholderLabel.text = [NSString fromCppString:newViewProps.placeholder];
+    [self refreshPlaceholderLabelStyles];
+    // additionally show placeholder on first mount if it should be there
+    if (isFirstMount && textView.text.length == 0) {
+      [self setPlaceholderLabelShown:YES];
+    }
   }
 
   // mention indicators
@@ -781,6 +835,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  if (newViewProps.returnKeyType != oldViewProps.returnKeyType) {
+    NSString *str = [NSString fromCppString:newViewProps.returnKeyType];
+
+    textView.returnKeyType =
+        [KeyboardUtils getUIReturnKeyTypeFromReturnKeyType:str];
+  }
+
+  if (newViewProps.submitBehavior != oldViewProps.submitBehavior) {
+    _submitBehavior = [NSString fromCppString:newViewProps.submitBehavior];
+  }
+
   // autoCapitalize
   if (newViewProps.autoCapitalize != oldViewProps.autoCapitalize) {
     NSString *str = [NSString fromCppString:newViewProps.autoCapitalize];
@@ -811,6 +876,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // isOnChangeTextSet
   _emitTextChange = newViewProps.isOnChangeTextSet;
 
+  // contextMenuItems
+  bool contextMenuChanged = newViewProps.contextMenuItems.size() !=
+                            oldViewProps.contextMenuItems.size();
+  if (!contextMenuChanged) {
+    for (size_t i = 0; i < newViewProps.contextMenuItems.size(); i++) {
+      if (newViewProps.contextMenuItems[i].text !=
+          oldViewProps.contextMenuItems[i].text) {
+        contextMenuChanged = true;
+        break;
+      }
+    }
+  }
+  if (contextMenuChanged) {
+    NSMutableArray<NSString *> *items = [NSMutableArray new];
+    for (const auto &item : newViewProps.contextMenuItems) {
+      [items addObject:[NSString fromCppString:item.text]];
+    }
+    _contextMenuItems = [items copy];
+  }
+
   [super updateProps:props oldProps:oldProps];
   // run the changes callback
   [self anyTextMayHaveBeenModified];
@@ -819,17 +904,93 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (isFirstMount && newViewProps.autoFocus) {
     [textView reactFocus];
   }
-  [textView updatePlaceholderVisibility];
 }
 
-- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
-           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics {
-  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
+- (void)setPlaceholderLabelShown:(BOOL)shown {
+  if (shown) {
+    [self refreshPlaceholderLabelStyles];
+    _placeholderLabel.hidden = NO;
+  } else {
+    _placeholderLabel.hidden = YES;
+  }
+}
 
-  textView.frame = UIEdgeInsetsInsetRect(
-      self.bounds, RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.borderWidth));
-  textView.textContainerInset = RCTUIEdgeInsetsFromEdgeInsets(
-      layoutMetrics.contentInsets - layoutMetrics.borderWidth);
+- (void)refreshPlaceholderLabelStyles {
+  NSMutableDictionary *newAttrs = [defaultTypingAttributes mutableCopy];
+  if (_placeholderColor != nullptr) {
+    newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
+  }
+  NSAttributedString *newAttrStr =
+      [[NSAttributedString alloc] initWithString:_placeholderLabel.text
+                                      attributes:newAttrs];
+  _placeholderLabel.attributedText = newAttrStr;
+}
+
+- (void)refreshLineHeight {
+  [textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:NSMakeRange(0, textView.textStorage.string.length)
+                 options:0
+              usingBlock:^(id _Nullable value, NSRange range,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle =
+                    [(NSParagraphStyle *)value mutableCopy];
+                if (pStyle == nil)
+                  return;
+                pStyle.minimumLineHeight = [config scaledPrimaryLineHeight];
+                [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                             value:pStyle
+                                             range:range];
+              }];
+}
+
+// MARK: - Measuring and states
+
+- (CGSize)measureSize:(CGFloat)maxWidth {
+  // copy the the whole attributed string
+  NSMutableAttributedString *currentStr = [[NSMutableAttributedString alloc]
+      initWithAttributedString:textView.textStorage];
+
+  // edge case: empty input should still be of a height of a single line, so we
+  // add a mock "I" character
+  if ([currentStr length] == 0) {
+    [currentStr
+        appendAttributedString:[[NSAttributedString alloc]
+                                   initWithString:@"I"
+                                       attributes:textView.typingAttributes]];
+  }
+
+  // edge case: input with only a zero width space should still be of a height
+  // of a single line, so we add a mock "I" character
+  if ([currentStr length] == 1 &&
+      [[currentStr.string substringWithRange:NSMakeRange(0, 1)]
+          isEqualToString:@"\u200B"]) {
+    [currentStr
+        appendAttributedString:[[NSAttributedString alloc]
+                                   initWithString:@"I"
+                                       attributes:textView.typingAttributes]];
+  }
+
+  // edge case: trailing newlines aren't counted towards height calculations, so
+  // we add a mock "I" character
+  if (currentStr.length > 0) {
+    unichar lastChar =
+        [currentStr.string characterAtIndex:currentStr.length - 1];
+    if ([[NSCharacterSet newlineCharacterSet] characterIsMember:lastChar]) {
+      [currentStr
+          appendAttributedString:[[NSAttributedString alloc]
+                                     initWithString:@"I"
+                                         attributes:defaultTypingAttributes]];
+    }
+  }
+
+  CGRect boundingBox =
+      [currentStr boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
+                               options:NSStringDrawingUsesLineFragmentOrigin |
+                                       NSStringDrawingUsesFontLeading
+                               context:nullptr];
+
+  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
 }
 
 // make sure the newest state is kept in _state property
@@ -842,42 +1003,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // componentView) so we need to run a single height calculation for any
   // initial values
   if (oldState == nullptr) {
-    [self commitSize:textView.textContainer.size];
+    [self tryUpdatingHeight];
   }
 }
 
-- (void)commitSize:(CGSize)size {
+- (void)tryUpdatingHeight {
   if (_state == nullptr) {
     return;
   }
-
+  _componentViewHeightUpdateCounter++;
   auto selfRef = wrapManagedObjectWeakly(self);
-  facebook::react::Size newSize{.width = size.width, .height = size.height};
   _state->updateState(
-      facebook::react::EnrichedTextInputViewState(newSize, selfRef));
-}
-
-- (CGSize)measureInitialSizeWithMaxWidth:(CGFloat)maxWidth {
-  NSTextContainer *container = textView.textContainer;
-  NSLayoutManager *layoutManager = textView.layoutManager;
-
-  container.size = CGSizeMake(maxWidth, CGFLOAT_MAX);
-
-  [layoutManager ensureLayoutForTextContainer:container];
-
-  CGRect used = [layoutManager usedRectForTextContainer:container];
-  CGFloat height = ceil(used.size.height);
-
-  // Empty text fallback
-  if (textView.textStorage.length == 0) {
-    UIFont *font =
-        textView.typingAttributes[NSFontAttributeName] ?: textView.font;
-    if (font) {
-      height = ceil(font.lineHeight);
-    }
-  }
-
-  return CGSizeMake(maxWidth, height);
+      EnrichedTextInputViewState(_componentViewHeightUpdateCounter, selfRef));
 }
 
 // MARK: - Active styles
@@ -1001,26 +1138,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
 
-      emitter->onChangeStateDeprecated(
-          {.isBold = [self isStyleActive:[BoldStyle getType]],
-           .isItalic = [self isStyleActive:[ItalicStyle getType]],
-           .isUnderline = [self isStyleActive:[UnderlineStyle getType]],
-           .isStrikeThrough = [self isStyleActive:[StrikethroughStyle getType]],
-           .isInlineCode = [self isStyleActive:[InlineCodeStyle getType]],
-           .isLink = [self isStyleActive:[LinkStyle getType]],
-           .isMention = [self isStyleActive:[MentionStyle getType]],
-           .isH1 = [self isStyleActive:[H1Style getType]],
-           .isH2 = [self isStyleActive:[H2Style getType]],
-           .isH3 = [self isStyleActive:[H3Style getType]],
-           .isH4 = [self isStyleActive:[H4Style getType]],
-           .isH5 = [self isStyleActive:[H5Style getType]],
-           .isH6 = [self isStyleActive:[H6Style getType]],
-           .isUnorderedList = [self isStyleActive:[UnorderedListStyle getType]],
-           .isOrderedList = [self isStyleActive:[OrderedListStyle getType]],
-           .isBlockQuote = [self isStyleActive:[BlockQuoteStyle getType]],
-           .isCodeBlock = [self isStyleActive:[CodeBlockStyle getType]],
-           .isImage = [self isStyleActive:[ImageStyle getType]],
-           .isCheckboxList = [self isStyleActive:[CheckboxListStyle getType]]});
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getType]),
            .italic = GET_STYLE_STATE([ItalicStyle getType]),
@@ -1082,6 +1199,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return false;
 }
 
+- (bool)textInputShouldReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"];
+}
+
+- (bool)textInputShouldSubmitOnReturn {
+  return [_submitBehavior isEqualToString:@"blurAndSubmit"] ||
+         [_submitBehavior isEqualToString:@"submit"];
+}
+
 - (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
   NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
   if (![blocksArr containsObject:@(blocking)]) {
@@ -1124,6 +1250,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *text = (NSString *)args[2];
     NSString *url = (NSString *)args[3];
     [self addLinkAt:start end:end text:text url:url];
+  } else if ([commandName isEqualToString:@"removeLink"]) {
+    NSInteger start = [((NSNumber *)args[0]) integerValue];
+    NSInteger end = [((NSNumber *)args[1]) integerValue];
+    [self removeLinkAt:start end:end];
   } else if ([commandName isEqualToString:@"addMention"]) {
     NSString *indicator = (NSString *)args[0];
     NSString *text = (NSString *)args[1];
@@ -1237,6 +1367,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return actualIndex;
 }
 
+- (void)emitOnSubmitEdittingEvent {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSString *stringToBeEmitted = [[textView.textStorage.string
+        stringByReplacingOccurrencesOfString:@"\u200B"
+                                  withString:@""] copy];
+
+    emitter->onSubmitEditing({
+        .text = [stringToBeEmitted toCppString],
+    });
+  }
+}
+
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
                           range:(NSRange)range {
@@ -1255,6 +1398,32 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         .start = static_cast<int>(range.location),
         .end = static_cast<int>(range.location + range.length),
     });
+  }
+}
+
+- (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    std::vector<EnrichedTextInputViewEventEmitter::OnPasteImagesImages>
+        imagesVector;
+    imagesVector.reserve(images.count);
+
+    for (NSDictionary *img in images) {
+      NSString *uri = img[@"uri"];
+      NSString *type = img[@"type"];
+      double width = [img[@"width"] doubleValue];
+      double height = [img[@"height"] doubleValue];
+
+      EnrichedTextInputViewEventEmitter::OnPasteImagesImages imageStruct = {
+          .uri = [uri toCppString],
+          .type = [type toCppString],
+          .width = width,
+          .height = height};
+
+      imagesVector.push_back(imageStruct);
+    }
+
+    emitter->onPasteImages({.images = imagesVector});
   }
 }
 
@@ -1371,6 +1540,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
               withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
+}
+
+- (void)removeLinkAt:(NSInteger)start end:(NSInteger)end {
+  LinkStyle *linkStyleClass =
+      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  if (linkStyleClass == nullptr) {
+    return;
+  }
+
+  NSInteger textLength = (NSInteger)textView.textStorage.length;
+  if (start < 0) {
+    start = 0;
+  }
+  if (end > textLength) {
+    end = textLength;
+  }
+
+  NSInteger rangeStart = MIN(start, end);
+  NSInteger rangeLength = MAX(start, end) - rangeStart;
+  NSRange linkRange = NSMakeRange(rangeStart, rangeLength);
+
+  [linkStyleClass removeAttributes:linkRange];
+  [self anyTextMayHaveBeenModified];
 }
 
 - (void)addMention:(NSString *)indicator
@@ -1537,7 +1729,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // placholder management
-  [textView updatePlaceholderVisibility];
+  if (!_placeholderLabel.hidden && textView.textStorage.string.length > 0) {
+    [self setPlaceholderLabelShown:NO];
+  } else if (textView.textStorage.string.length == 0 &&
+             _placeholderLabel.hidden) {
+    [self setPlaceholderLabelShown:YES];
+  }
 
   if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // modified words handling
@@ -1575,8 +1772,57 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // all the visible (not meta) attributes handling in the ranges that could
   // have changed
   [attributesManager handleDirtyRangesStyling];
+  // update height on each character change
+  [self tryUpdatingHeight];
   // update active styles as well
   [self tryUpdatingActiveStyles];
+  [self layoutAttachments];
+  // update drawing - schedule debounced relayout
+  [self scheduleRelayoutIfNeeded];
+}
+
+// Debounced relayout helper - coalesces multiple requests into one per runloop
+// tick
+- (void)scheduleRelayoutIfNeeded {
+  // Cancel any previously scheduled invocation to debounce
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                           selector:@selector(_performRelayout)
+                                             object:nil];
+  // Schedule on next runloop cycle
+  [self performSelector:@selector(_performRelayout)
+             withObject:nil
+             afterDelay:0];
+}
+
+- (void)_performRelayout {
+  if (!textView) {
+    return;
+  }
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSRange wholeRange =
+        NSMakeRange(0, self->textView.textStorage.string.length);
+    NSRange actualRange = NSMakeRange(0, 0);
+    [self->textView.layoutManager
+        invalidateLayoutForCharacterRange:wholeRange
+                     actualCharacterRange:&actualRange];
+    [self->textView.layoutManager ensureLayoutForCharacterRange:actualRange];
+    [self->textView.layoutManager
+        invalidateDisplayForCharacterRange:wholeRange];
+
+    // We have to explicitly set contentSize
+    // That way textView knows if content overflows and if should be scrollable
+    // We recall measureSize here because value returned from previous
+    // measureSize may not be up-to date at that point
+    CGSize measuredSize = [self measureSize:self->textView.frame.size.width];
+    self->textView.contentSize = measuredSize;
+  });
+}
+
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+  // used to run all lifecycle callbacks
+  [self anyTextMayHaveBeenModified];
 }
 
 // MARK: - Delegate methods
@@ -1611,6 +1857,72 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (UIMenu *)textView:(UITextView *)tv
+    editMenuForTextInRange:(NSRange)range
+          suggestedActions:(NSArray<UIMenuElement *> *)suggestedActions
+    API_AVAILABLE(ios(16.0)) {
+  if (_contextMenuItems == nil || _contextMenuItems.count == 0) {
+    return [UIMenu menuWithChildren:suggestedActions];
+  }
+
+  NSMutableArray<UIMenuElement *> *customActions = [NSMutableArray new];
+
+  for (NSString *title in _contextMenuItems) {
+    __weak EnrichedTextInputView *weakSelf = self;
+
+    UIAction *action =
+        [UIAction actionWithTitle:title
+                            image:nil
+                       identifier:nil
+                          handler:^(__kindof UIAction *_Nonnull action) {
+                            [weakSelf emitOnContextMenuItemPressEvent:title];
+                          }];
+    [customActions addObject:action];
+  }
+
+  [customActions addObjectsFromArray:suggestedActions];
+  return [UIMenu menuWithChildren:customActions];
+}
+
+- (void)emitOnContextMenuItemPressEvent:(NSString *)itemText {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    NSRange selectedRange = textView.selectedRange;
+    NSString *selectedText = @"";
+    if (selectedRange.length > 0) {
+      selectedText =
+          [textView.textStorage.string substringWithRange:selectedRange];
+    }
+
+    emitter->onContextMenuItemPress(
+        {.itemText = [itemText toCppString],
+         .selectedText = [selectedText toCppString],
+         .selectionStart = static_cast<int>(selectedRange.location),
+         .selectionEnd =
+             static_cast<int>(selectedRange.location + selectedRange.length),
+         .styleState = {
+             .bold = GET_STYLE_STATE([BoldStyle getType]),
+             .italic = GET_STYLE_STATE([ItalicStyle getType]),
+             .underline = GET_STYLE_STATE([UnderlineStyle getType]),
+             .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
+             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
+             .h1 = GET_STYLE_STATE([H1Style getType]),
+             .h2 = GET_STYLE_STATE([H2Style getType]),
+             .h3 = GET_STYLE_STATE([H3Style getType]),
+             .h4 = GET_STYLE_STATE([H4Style getType]),
+             .h5 = GET_STYLE_STATE([H5Style getType]),
+             .h6 = GET_STYLE_STATE([H6Style getType]),
+             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
+             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
+             .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
+             .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
+             .link = GET_STYLE_STATE([LinkStyle getType]),
+             .image = GET_STYLE_STATE([ImageStyle getType]),
+             .mention = GET_STYLE_STATE([MentionStyle getType]),
+             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])}});
+  }
+}
+
 - (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
 
@@ -1632,6 +1944,24 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  // Check if the user pressed "Enter"
+  if ([text isEqualToString:@"\n"]) {
+    const bool shouldSubmit = [self textInputShouldSubmitOnReturn];
+    const bool shouldReturn = [self textInputShouldReturn];
+
+    if (shouldSubmit) {
+      [self emitOnSubmitEdittingEvent];
+    }
+
+    if (shouldReturn) {
+      [textView endEditing:NO];
+    }
+
+    if (shouldSubmit || shouldReturn) {
+      return NO;
+    }
+  }
+
   recentlyChangedRange = NSMakeRange(range.location, text.length);
   [self handleKeyPressInRange:text range:range];
 
@@ -1690,6 +2020,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return NO;
   }
 
+  // Tapping near a link causes iOS to re-derive typingAttributes from
+  // character attributes after textViewDidChangeSelection returns, undoing
+  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
+  // before insertion, so new text never inherits link styling.
+  if (linkStyle != nullptr) {
+    [linkStyle manageLinkTypingAttributes];
+  }
+
   return YES;
 }
 
@@ -1745,7 +2083,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     defaultTypingAttributes = newTypingAttrs;
     textView.typingAttributes = defaultTypingAttributes;
 
-    [textView refreshPlaceholder];
+    [self refreshPlaceholderLabelStyles];
 
     NSRange prevSelectedRange = textView.selectedRange;
 
@@ -1854,6 +2192,107 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [storage edited:NSTextStorageEditedAttributes
                range:foundRange
       changeInLength:0];
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self layoutAttachments];
+  });
 }
 
+// MARK: - Image/GIF Overlay Management
+
+- (void)layoutAttachments {
+  NSTextStorage *storage = textView.textStorage;
+  NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
+      [NSMutableDictionary dictionary];
+
+  // Iterate over the entire text to find ImageAttachments
+  [storage enumerateAttribute:NSAttachmentAttributeName
+                      inRange:NSMakeRange(0, storage.length)
+                      options:0
+                   usingBlock:^(id value, NSRange range, BOOL *stop) {
+                     if ([value isKindOfClass:[ImageAttachment class]]) {
+                       ImageAttachment *attachment = (ImageAttachment *)value;
+
+                       CGRect rect = [self frameForAttachment:attachment
+                                                      atRange:range];
+
+                       // Get or Create the UIImageView for this specific
+                       // attachment key
+                       NSValue *key =
+                           [NSValue valueWithNonretainedObject:attachment];
+                       UIImageView *imgView = _attachmentViews[key];
+
+                       if (!imgView) {
+                         // It doesn't exist yet, create it
+                         imgView = [[UIImageView alloc] initWithFrame:rect];
+                         imgView.contentMode = UIViewContentModeScaleAspectFit;
+                         imgView.tintColor = [UIColor labelColor];
+
+                         // Add it directly to the TextView
+                         [textView addSubview:imgView];
+                       }
+
+                       // Update position (in case text moved/scrolled)
+                       if (!CGRectEqualToRect(imgView.frame, rect)) {
+                         imgView.frame = rect;
+                       }
+                       UIImage *targetImage =
+                           attachment.storedAnimatedImage ?: attachment.image;
+
+                       // Only set if different to avoid resetting the animation
+                       // loop
+                       if (imgView.image != targetImage) {
+                         imgView.image = targetImage;
+                       }
+
+                       // Ensure it is visible on top
+                       imgView.hidden = NO;
+                       [textView bringSubviewToFront:imgView];
+
+                       activeAttachmentViews[key] = imgView;
+                       // Remove from the old map so we know it has been claimed
+                       [_attachmentViews removeObjectForKey:key];
+                     }
+                   }];
+
+  // Everything remaining in _attachmentViews is dead or off-screen
+  for (UIImageView *danglingView in _attachmentViews.allValues) {
+    [danglingView removeFromSuperview];
+  }
+  _attachmentViews = activeAttachmentViews;
+}
+
+- (CGRect)frameForAttachment:(ImageAttachment *)attachment
+                     atRange:(NSRange)range {
+  NSLayoutManager *layoutManager = textView.layoutManager;
+  NSTextContainer *textContainer = textView.textContainer;
+  NSTextStorage *storage = textView.textStorage;
+
+  NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range
+                                             actualCharacterRange:NULL];
+  CGRect glyphRect = [layoutManager boundingRectForGlyphRange:glyphRange
+                                              inTextContainer:textContainer];
+
+  CGRect lineRect =
+      [layoutManager lineFragmentRectForGlyphAtIndex:glyphRange.location
+                                      effectiveRange:NULL];
+  CGSize attachmentSize = attachment.bounds.size;
+
+  UIFont *font = [storage attribute:NSFontAttributeName
+                            atIndex:range.location
+                     effectiveRange:NULL];
+  if (!font) {
+    font = [config primaryFont];
+  }
+
+  // Calculate (Baseline Alignment)
+  CGFloat targetY =
+      CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
+  CGRect rect =
+      CGRectMake(glyphRect.origin.x + textView.textContainerInset.left,
+                 targetY + textView.textContainerInset.top,
+                 attachmentSize.width, attachmentSize.height);
+
+  return CGRectIntegral(rect);
+}
 @end

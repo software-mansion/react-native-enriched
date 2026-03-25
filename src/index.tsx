@@ -1,12 +1,20 @@
-export * from './EnrichedTextInput';
+export { EnrichedTextInput } from './native/EnrichedTextInput';
 export type {
+  EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
-  OnChangeStateDeprecatedEvent,
   OnLinkDetected,
   OnMentionDetected,
   OnChangeSelectionEvent,
   OnKeyPressEvent,
-} from './spec/EnrichedTextInputNativeComponent';
-export type { HtmlStyle, MentionStyleProperties } from './types';
+  OnPasteImagesEvent,
+  OnSubmitEditing,
+  HtmlStyle,
+  MentionStyleProperties,
+  FocusEvent,
+  BlurEvent,
+  EnrichedTextInputInstance,
+  ContextMenuItem,
+  OnChangeMentionEvent,
+} from './types';

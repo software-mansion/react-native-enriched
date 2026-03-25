@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/6963e203-38c8-4209-b1b2-1ff65f6765f9" alt="react-native-enriched by Software Mansion" width="100%">
+<img src="https://github.com/user-attachments/assets/c8ba03bc-4ea8-48f4-9566-02ebac0c19d3" alt="react-native-enriched by Software Mansion" width="100%">
 
 # react-native-enriched
 
@@ -30,6 +30,7 @@ We can help you build your next dream product –
 - [Inline Images](#inline-images)
 - [Style Detection](#style-detection)
 - [Other Events](#other-events)
+- [Context Menu Items](#context-menu-items)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
 - [API Reference](#api-reference)
 - [Known limitations](#known-limitations)
@@ -40,7 +41,8 @@ We can help you build your next dream product –
 ## Prerequisites
 
 - `react-native-enriched` currently supports only Android and iOS platforms
-- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.79`, `0.80`, `0.81`, `0.82` and `0.83`
+- It works only with [the React Native New Architecture (Fabric)](https://reactnative.dev/architecture/landing-page) and supports following React Native releases: `0.81`, `0.82`, `0.83` and `0.84`.
+- If you would like to use `react-native-enriched` in React Native `0.79` or `0.80` use `react-native-enriched 0.4.x`.
 
 ## Installation
 
@@ -105,8 +107,8 @@ export default function App() {
         style={styles.input}
       />
       <Button
-        title={stylesState?.isBold ? 'Unbold' : 'Bold'}
-        color={stylesState?.isBold ? 'green' : 'gray'}
+        title={stylesState?.bold.isActive ? 'Unbold' : 'Bold'}
+        color={stylesState?.bold.isActive ? 'green' : 'gray'}
         onPress={() => ref.current?.toggleBold()}
       />
     </View>
@@ -230,6 +232,30 @@ You can find some examples in the [usage section](#usage) or in the example app.
 - [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
 - [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
 - [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
+- [onPasteImages](docs/API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
+
+## Context Menu Items
+
+> **Note:** This feature is currently supported on Android and iOS 16+.
+
+You can extend the native text editing menu with custom items using the [contextMenuItems](docs/API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
+
+```tsx
+<EnrichedTextInput
+  ref={ref}
+  contextMenuItems={[
+    {
+      text: 'Paste Link',
+      onPress: ({ text, selection, styleState }) => {
+        if (!styleState.link.isBlocking) {
+          ref.current?.setLink(selection.start, selection.end, text, url);
+        }
+      },
+      visible: true,
+    },
+  ]}
+/>
+```
 
 ## Customizing \<EnrichedTextInput /> styles
 

@@ -1,0 +1,63 @@
+appId: swmansion.enriched.example
+# Tests basic scrollability 
+---
+
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- inputText: "Line one"
+- pressKey: Enter
+- inputText: "Line two"
+- pressKey: Enter
+- inputText: "Line three"
+- pressKey: Enter
+- inputText: "Line four"
+- pressKey: Enter
+- inputText: "Line five"
+- pressKey: Enter
+- inputText: "Line six"
+- pressKey: Enter
+- inputText: "Line seven"
+- pressKey: Enter
+- inputText: "Line eight"
+- pressKey: Enter
+- inputText: "Line nine"
+- pressKey: Enter
+- inputText: "Line ten"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "scroll_after_typing_long_content_bottom"
+
+- tapOn:
+    id: "focus-button"
+
+- swipe:
+    from:
+      id: "editor-input"
+    direction: DOWN
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "scroll_after_typing_long_content_top"
+
+- tapOn:
+    id: "editor-input"
+    point: "0%,0%"
+
+- swipe:
+    from:
+      id: "editor-input"
+    direction: UP
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "scroll_after_typing_long_content_bottom"

@@ -1,0 +1,59 @@
+appId: swmansion.enriched.example
+---
+# PR #306 - fix: handle conflicts between paragraphs
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-code-block"
+- inputText: "Code text"
+- pressKey: Enter
+
+- tapOn:
+    id: "toolbar-code-block"
+- tapOn:
+    id: "toolbar-heading-1"
+- inputText: "H1"
+
+# Position cursor at start of H1 line
+- tapOn:
+    id: "editor-input"
+    point: "5%,75%"
+
+- pressKey: Backspace
+
+- runFlow:
+    when:
+        platform: "android"
+    commands:
+        - pressKey: Backspace
+- inputText: " "
+
+- tapOn:
+    id: "editor-input"
+    point: "75%, 50%"
+
+- pressKey: Enter
+- tapOn:
+    id: "toolbar-code-block"
+
+- tapOn:
+    id: "toolbar-inline-code"
+- inputText: "Inline code"
+
+- tapOn:
+    id:  "editor-input"
+    point: "5%, 75%"
+
+- pressKey: Backspace
+- inputText: " "
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "conflicting_paragraph_merge"
