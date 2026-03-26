@@ -50,10 +50,11 @@ fi
 
 AVD_CONFIG="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
 if [ -f "$AVD_CONFIG" ]; then
-  sed -i '' 's/^hw\.keyboard=.*/hw.keyboard=yes/' "$AVD_CONFIG"
+  sed -i.bak 's/^hw\.keyboard=.*/hw.keyboard=yes/' "$AVD_CONFIG"
   grep -q "^hw.keyboard=" "$AVD_CONFIG" || echo "hw.keyboard=yes" >> "$AVD_CONFIG"
-  sed -i '' 's/^hw\.mainKeys=.*/hw.mainKeys=yes/' "$AVD_CONFIG"
+  sed -i.bak 's/^hw\.mainKeys=.*/hw.mainKeys=yes/' "$AVD_CONFIG"
   grep -q "^hw.mainKeys=" "$AVD_CONFIG" || echo "hw.mainKeys=yes" >> "$AVD_CONFIG"
+  rm -f "$AVD_CONFIG.bak"
 fi
 
 if pgrep -f "emulator.*${AVD_NAME}" > /dev/null 2>&1; then
@@ -63,7 +64,11 @@ if pgrep -f "emulator.*${AVD_NAME}" > /dev/null 2>&1; then
 fi
 
 echo "Starting emulator '$AVD_NAME'..."
-emulator "@${AVD_NAME}" -port "$PORT" > /dev/null 2>&1 &
+EMULATOR_ARGS=("@${AVD_NAME}" -port "$PORT")
+if [ -n "${CI:-}" ]; then
+  EMULATOR_ARGS+=(-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim)
+fi
+emulator "${EMULATOR_ARGS[@]}" > /dev/null 2>&1 &
 
 echo "Waiting for emulator ($SERIAL) to connect to ADB..."
 if ! timeout 120 adb -s "$SERIAL" wait-for-device; then
