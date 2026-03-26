@@ -58,7 +58,7 @@ case "$PLATFORM" in
   *)       echo "Error: --platform must be ios or android" >&2; exit 1 ;;
 esac
 
-DEVICE_ID=$("$SETUP" | tee /dev/tty | grep "^DEVICE_ID=" | cut -d= -f2)
+DEVICE_ID=$("$SETUP" | tee /dev/stderr | grep "^DEVICE_ID=" | cut -d= -f2)
 
 app_installed() {
   if [ "$PLATFORM" = ios ]; then
