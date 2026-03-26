@@ -221,24 +221,24 @@
           [result appendString:@"\n</ul>"];
         }
 
-        NSString *styleAttr = [self prepareStyleAttrStr:currentRange.location
-                                           isOpeningTag:YES];
+        NSString *cssStyleString =
+            [self prepareCssStyleString:currentRange.location isOpeningTag:YES];
 
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
                 containsObject:@([UnorderedListStyle getStyleType])]) {
           inUnorderedList = YES;
-          [result
-              appendString:[NSString stringWithFormat:@"\n<ul%@>", styleAttr]];
+          [result appendString:[NSString stringWithFormat:@"\n<ul%@>",
+                                                          cssStyleString]];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getStyleType])]) {
           inOrderedList = YES;
-          [result
-              appendString:[NSString stringWithFormat:@"\n<ol%@>", styleAttr]];
+          [result appendString:[NSString stringWithFormat:@"\n<ol%@>",
+                                                          cssStyleString]];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
@@ -261,7 +261,7 @@
           inCheckboxList = YES;
           [result appendString:[NSString stringWithFormat:
                                              @"\n<ul data-type=\"checkbox\"%@>",
-                                             styleAttr]];
+                                             cssStyleString]];
         }
 
         // don't add the <p> tag if some paragraph styles are present
@@ -283,7 +283,8 @@
                 containsObject:@([CheckboxListStyle getStyleType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:[NSString stringWithFormat:@"<p%@>", styleAttr]];
+          [result appendString:[NSString
+                                   stringWithFormat:@"<p%@>", cssStyleString]];
         }
       }
 
@@ -495,8 +496,8 @@
 - (NSString *)tagContentForStyle:(NSNumber *)style
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location {
-  NSString *styleAttr = [self prepareStyleAttrStr:location
-                                     isOpeningTag:openingTag];
+  NSString *cssStyleString = [self prepareCssStyleString:location
+                                            isOpeningTag:openingTag];
 
   if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
     return @"b";
@@ -577,17 +578,17 @@
       return @"mention";
     }
   } else if ([style isEqualToNumber:@([H1Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h1%@", styleAttr];
+    return [NSString stringWithFormat:@"h1%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H2Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h2%@", styleAttr];
+    return [NSString stringWithFormat:@"h2%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h3%@", styleAttr];
+    return [NSString stringWithFormat:@"h3%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h4%@", styleAttr];
+    return [NSString stringWithFormat:@"h4%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h5%@", styleAttr];
+    return [NSString stringWithFormat:@"h5%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
-    return [NSString stringWithFormat:@"h6%@", styleAttr];
+    return [NSString stringWithFormat:@"h6%@", cssStyleString];
   } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
              [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
     return @"li";
@@ -607,7 +608,8 @@
     }
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
-    return [NSString stringWithFormat:@"p%@", styleAttr];
+    // blockquotes and codeblock use <p> tags the same way lists use <li>
+    return [NSString stringWithFormat:@"p%@", cssStyleString];
   }
   return @"";
 }
@@ -1486,8 +1488,8 @@
   }
 }
 
-- (NSString *)prepareStyleAttrStr:(NSInteger)location
-                     isOpeningTag:(BOOL)isOpeningTag {
+- (NSString *)prepareCssStyleString:(NSInteger)location
+                       isOpeningTag:(BOOL)isOpeningTag {
   if (!isOpeningTag) {
     return @"";
   }
@@ -1526,15 +1528,7 @@
     // (left|center|right|justify)
     NSString *value =
         [[params substringWithRange:[match rangeAtIndex:1]] lowercaseString];
-
-    if ([value isEqualToString:@"center"])
-      return NSTextAlignmentCenter;
-    if ([value isEqualToString:@"right"])
-      return NSTextAlignmentRight;
-    if ([value isEqualToString:@"justify"])
-      return NSTextAlignmentJustified;
-    if ([value isEqualToString:@"left"])
-      return NSTextAlignmentLeft;
+    return [AlignmentUtils stringToAlignment:value];
   }
 
   return NSTextAlignmentNatural;
@@ -1549,7 +1543,8 @@
 
     [AlignmentUtils setAlignment:entry.alignment
                         forRange:finalRange
-                         inInput:_input];
+                         inInput:_input
+                  withTypingAttr:NO];
   }
 }
 

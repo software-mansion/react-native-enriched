@@ -6,26 +6,18 @@
 
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input {
-  NSTextAlignment alignment = NSTextAlignmentNatural;
-
-  if ([alignStr isEqualToString:@"left"]) {
-    alignment = NSTextAlignmentLeft;
-  } else if ([alignStr isEqualToString:@"center"]) {
-    alignment = NSTextAlignmentCenter;
-  } else if ([alignStr isEqualToString:@"right"]) {
-    alignment = NSTextAlignmentRight;
-  } else if ([alignStr isEqualToString:@"justify"]) {
-    alignment = NSTextAlignmentJustified;
-  }
+  NSTextAlignment alignment = [AlignmentUtils stringToAlignment:alignStr];
 
   [AlignmentUtils setAlignment:alignment
                       forRange:input->textView.selectedRange
-                       inInput:input];
+                       inInput:input
+                withTypingAttr:YES];
 }
 
 + (void)setAlignment:(NSTextAlignment)alignment
             forRange:(NSRange)forRange
-             inInput:(EnrichedTextInputView *)input {
+             inInput:(EnrichedTextInputView *)input
+      withTypingAttr:(BOOL)withTypingAttr {
   UITextView *textView = input->textView;
   // Expand the range if we are inside a List
   NSRange targetRange = [AlignmentUtils expandRangeToContiguousList:forRange
@@ -57,12 +49,14 @@
   [textView.textStorage endEditing];
 
   // Update Typing Attributes
-  NSMutableDictionary *typingAttrs = [textView.typingAttributes mutableCopy];
-  NSMutableParagraphStyle *typingStyle =
-      [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-  typingStyle.alignment = alignment;
-  typingAttrs[NSParagraphStyleAttributeName] = typingStyle;
-  textView.typingAttributes = typingAttrs;
+  if (withTypingAttr) {
+    NSMutableDictionary *typingAttrs = [textView.typingAttributes mutableCopy];
+    NSMutableParagraphStyle *typingStyle =
+        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
+    typingStyle.alignment = alignment;
+    typingAttrs[NSParagraphStyleAttributeName] = typingStyle;
+    textView.typingAttributes = typingAttrs;
+  }
 
   [input anyTextMayHaveBeenModified];
 }
@@ -81,6 +75,25 @@
   default:
     return @"left";
   }
+}
+
++ (NSTextAlignment)stringToAlignment:(NSString *)alignmentString {
+  NSString *normalized = [alignmentString lowercaseString];
+
+  if ([normalized isEqualToString:@"left"]) {
+    return NSTextAlignmentLeft;
+  }
+  if ([normalized isEqualToString:@"center"]) {
+    return NSTextAlignmentCenter;
+  }
+  if ([normalized isEqualToString:@"right"]) {
+    return NSTextAlignmentRight;
+  }
+  if ([normalized isEqualToString:@"justify"]) {
+    return NSTextAlignmentJustified;
+  }
+
+  return NSTextAlignmentNatural;
 }
 
 + (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input {

@@ -8,9 +8,12 @@
 
 + (void)setAlignment:(NSTextAlignment)alignment
             forRange:(NSRange)range
-             inInput:(EnrichedTextInputView *)input;
+             inInput:(EnrichedTextInputView *)input
+      withTypingAttr:(BOOL)withTypingAttr;
 
 + (NSString *)alignmentToString:(NSTextAlignment)alignment;
+
++ (NSTextAlignment)stringToAlignment:(NSString *)alignmentString;
 
 + (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input;
 
