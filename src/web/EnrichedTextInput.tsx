@@ -12,7 +12,10 @@ import Text from '@tiptap/extension-text';
 import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
-import getNormalizedHtml from './getNormalizedHtml';
+import {
+  prepareHtmlForTiptap,
+  normalizeHtmlFromTiptap,
+} from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 
 export const EnrichedTextInput = ({
@@ -40,7 +43,8 @@ export const EnrichedTextInput = ({
         showOnlyWhenEditable: true,
       }),
     ],
-    content: defaultValue,
+    content:
+      defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue,
     editable: editable,
     autofocus: autoFocus,
     onFocus: ({ event }) => {
@@ -84,7 +88,8 @@ export const EnrichedTextInput = ({
     (): EnrichedTextInputInstance => ({
       focus: () => editor.commands.focus(),
       blur: () => editor.commands.blur(),
-      setValue: (value: string) => editor.commands.setContent(value),
+      setValue: (value: string) =>
+        editor.commands.setContent(prepareHtmlForTiptap(value)),
       setSelection: (start, end) => {
         editor
           .chain()
@@ -92,7 +97,7 @@ export const EnrichedTextInput = ({
           .setTextSelection({ from: start + 1, to: end + 1 })
           .run();
       },
-      getHTML: () => Promise.resolve(getNormalizedHtml(editor)),
+      getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
       toggleBold: () => {},
       toggleItalic: () => {},
       toggleUnderline: () => {},
