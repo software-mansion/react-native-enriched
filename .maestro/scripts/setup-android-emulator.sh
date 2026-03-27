@@ -34,18 +34,28 @@ if ! sdkmanager --list_installed 2>/dev/null | grep -q "system-images;android-${
   sdkmanager "$SYSTEM_IMAGE"
 fi
 
+# Pixel 9 screen specs injected into config.ini only when the native profile isn't available.
+PIXEL_9_LCD_WIDTH="1080"
+PIXEL_9_LCD_HEIGHT="2424"
+PIXEL_9_LCD_DENSITY="422"
+
+AVD_DEVICE_PROFILE="$DEVICE_ID"
+PATCH_PIXEL9_DIMENSIONS=""
 if ! avdmanager list device -c | grep -qx "$DEVICE_ID"; then
-  echo "Error: Device definition '$DEVICE_ID' not found."
-  exit 1
+  AVD_DEVICE_PROFILE="pixel_7"
+  PATCH_PIXEL9_DIMENSIONS="true"
+  if ! avdmanager list device -c | grep -qx "$AVD_DEVICE_PROFILE"; then
+    echo "Error: Neither '$DEVICE_ID' nor fallback '$AVD_DEVICE_PROFILE' device definition found."
+    exit 1
+  fi
+  echo "Warning: '$DEVICE_ID' not found, using '$AVD_DEVICE_PROFILE' as base and patching Pixel 9 screen dimensions."
 fi
 
 if ! avdmanager list avd -c | grep -qx "${AVD_NAME}"; then
   echo "Creating AVD '$AVD_NAME'..."
-  echo "no" | avdmanager create avd \
-    --name "$AVD_NAME" \
-    --device "$DEVICE_ID" \
-    --package "$SYSTEM_IMAGE" \
-    --skin "$DEVICE_ID"
+  CREATE_CMD=(avdmanager create avd --name "$AVD_NAME" --device "$AVD_DEVICE_PROFILE" --package "$SYSTEM_IMAGE")
+  [ -z "$PATCH_PIXEL9_DIMENSIONS" ] && CREATE_CMD+=(--skin "$DEVICE_ID")
+  echo "no" | "${CREATE_CMD[@]}"
 fi
 
 AVD_CONFIG="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
@@ -54,6 +64,16 @@ if [ -f "$AVD_CONFIG" ]; then
   grep -q "^hw.keyboard=" "$AVD_CONFIG" || echo "hw.keyboard=yes" >> "$AVD_CONFIG"
   sed -i.bak 's/^hw\.mainKeys=.*/hw.mainKeys=yes/' "$AVD_CONFIG"
   grep -q "^hw.mainKeys=" "$AVD_CONFIG" || echo "hw.mainKeys=yes" >> "$AVD_CONFIG"
+  # Only patch screen dimensions when using the fallback profile; the native pixel_9
+  # profile already sets the correct values via the skin.
+  if [ -n "$PATCH_PIXEL9_DIMENSIONS" ]; then
+    sed -i.bak "s/^hw\.lcd\.width=.*/hw.lcd.width=${PIXEL_9_LCD_WIDTH}/" "$AVD_CONFIG"
+    grep -q "^hw.lcd.width=" "$AVD_CONFIG" || echo "hw.lcd.width=${PIXEL_9_LCD_WIDTH}" >> "$AVD_CONFIG"
+    sed -i.bak "s/^hw\.lcd\.height=.*/hw.lcd.height=${PIXEL_9_LCD_HEIGHT}/" "$AVD_CONFIG"
+    grep -q "^hw.lcd.height=" "$AVD_CONFIG" || echo "hw.lcd.height=${PIXEL_9_LCD_HEIGHT}" >> "$AVD_CONFIG"
+    sed -i.bak "s/^hw\.lcd\.density=.*/hw.lcd.density=${PIXEL_9_LCD_DENSITY}/" "$AVD_CONFIG"
+    grep -q "^hw.lcd.density=" "$AVD_CONFIG" || echo "hw.lcd.density=${PIXEL_9_LCD_DENSITY}" >> "$AVD_CONFIG"
+  fi
   rm -f "$AVD_CONFIG.bak"
 fi
 
