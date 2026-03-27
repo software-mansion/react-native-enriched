@@ -64,5 +64,8 @@
 }
 
 .modal-submit-btn {
-  width: 75%;
+  width: auto;
+  flex: none;
+  padding: 10px 28px;
+  font-size: 15px;
 }
