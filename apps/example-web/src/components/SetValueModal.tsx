@@ -40,7 +40,7 @@ export function SetValueModal({ onSetValue, onClose }: SetValueModalProps) {
             autoCorrect="off"
             spellCheck={false}
           />
-          <button className="modal-submit-btn" onClick={handleSubmit}>
+          <button className="btn modal-submit-btn" onClick={handleSubmit}>
             Set Value
           </button>
         </div>

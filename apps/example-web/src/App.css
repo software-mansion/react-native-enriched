@@ -69,3 +69,26 @@ body {
   min-height: 120px;
   cursor: text;
 }
+
+.btn {
+  flex: 1;
+  padding: 16px;
+  white-space: nowrap;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+  transition: opacity 0.1s;
+}
+
+.btn-full {
+  width: 100%;
+  flex: none;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn:active { opacity: 0.8; }
+.btn:disabled { background: darkgray; cursor: default; }
