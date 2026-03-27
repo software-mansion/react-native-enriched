@@ -12,7 +12,7 @@
   return None;
 }
 
-// This method gets overridden
+// This method gets overridden for inline styles
 - (NSString *)getKey {
   if ([self isParagraph]) {
     return NSParagraphStyleAttributeName;
