@@ -42,7 +42,7 @@ fi
 # Pixel 9 screen specs injected into config.ini only when the native profile isn't available.
 PIXEL_9_LCD_WIDTH="1080"
 PIXEL_9_LCD_HEIGHT="2424"
-PIXEL_9_LCD_DENSITY="422"
+PIXEL_9_LCD_DENSITY="420"
 
 AVD_DEVICE_PROFILE="$DEVICE_ID"
 PATCH_PIXEL9_DIMENSIONS=""
