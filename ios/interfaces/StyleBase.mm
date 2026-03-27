@@ -228,8 +228,7 @@
 }
 
 // This method gets overridden
-- (void)applyStyling:(NSRange)range {
-}
+- (void)applyStyling:(NSRange)range {}
 
 // Called during dirty range re-application to restore a style from a saved
 // StylePair
