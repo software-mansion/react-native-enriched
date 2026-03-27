@@ -46,11 +46,11 @@ fi
 
 if ! avdmanager list avd -c | grep -qx "${AVD_NAME}"; then
   echo "Creating AVD '$AVD_NAME'..."
-  echo "no" | avdmanager create avd \
-    --name "$AVD_NAME" \
-    --device "$DEVICE_ID" \
-    --package "$SYSTEM_IMAGE" \
-    --skin "$DEVICE_ID"
+  CREATE_CMD=(avdmanager create avd --name "$AVD_NAME" --device "$DEVICE_ID" --package "$SYSTEM_IMAGE")
+  # Skin is cosmetic (phone frame). Skip it on CI since the runner has no skin files
+  # and the emulator runs headless anyway.
+  [ -z "${CI:-}" ] && CREATE_CMD+=(--skin "$DEVICE_ID")
+  echo "no" | "${CREATE_CMD[@]}"
 fi
 
 AVD_CONFIG="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
