@@ -1,12 +1,18 @@
 #import "ImageAttachment.h"
 #import "ImageExtension.h"
 
+// NSTextStorage frequently recreates NSTextAttachment objects during attribute
+// invalidation (e.g. on every keystroke). Without this cache each recreation
+// would trigger a fresh async network/disk load, causing images to flicker or
+// disappear temporarily. Caching by URI ensures that once an image is loaded it
+// is reused instantly for all subsequent attachment instances with the same
+// URI
 static NSCache<NSString *, UIImage *> *ImageAttachmentCache(void) {
   static NSCache<NSString *, UIImage *> *cache = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     cache = [[NSCache alloc] init];
-    cache.totalCostLimit = 50 * 1024 * 1024; // 50 MB
+    cache.totalCostLimit = 100 * 1024 * 1024; // 100 MB
   });
   return cache;
 }

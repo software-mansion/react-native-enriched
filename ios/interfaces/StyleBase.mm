@@ -178,6 +178,8 @@
   _input->textView.typingAttributes = newTypingAttrs;
 }
 
+// custom styles (e.g. ImageStyle, MentionStyle) will likely need to override
+// this method
 - (BOOL)styleCondition:(id)value range:(NSRange)range {
   if (![self isParagraph]) {
     NSString *valueString = (NSString *)value;
@@ -228,7 +230,8 @@
 }
 
 // This method gets overridden
-- (void)applyStyling:(NSRange)range {}
+- (void)applyStyling:(NSRange)range {
+}
 
 // Called during dirty range re-application to restore a style from a saved
 // StylePair
