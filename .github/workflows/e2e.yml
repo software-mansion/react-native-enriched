@@ -67,7 +67,6 @@ jobs:
           xcode-version: latest-stable
 
       - name: Restore cocoapods
-        if: env.turbo_cache_hit != 1
         id: cocoapods-cache
         uses: actions/cache/restore@v4
         with:
@@ -78,7 +77,7 @@ jobs:
             ${{ runner.os }}-cocoapods-
 
       - name: Install cocoapods
-        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd apps/example/ios
           pod install
@@ -86,12 +85,21 @@ jobs:
           NO_FLIPPER: 1
 
       - name: Cache cocoapods
-        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
             **/ios/Pods
           key: ${{ steps.cocoapods-cache.outputs.cache-key }}
+
+      - name: Restore Xcode DerivedData
+        uses: actions/cache/restore@v4
+        id: derived-data-cache
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-data-${{ hashFiles('ios/**', 'apps/example/ios/**', 'cpp/**', 'src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-derived-data-
 
       - name: Install Maestro CLI
         run: |
@@ -103,6 +111,13 @@ jobs:
 
       - name: Run E2E tests
         run: yarn test:e2e:ios
+
+      - name: Cache Xcode DerivedData
+        if: steps.derived-data-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ steps.derived-data-cache.outputs.cache-primary-key }}
 
       - name: Upload test artifacts
         if: failure()
