@@ -20,6 +20,11 @@ if [ -z "$ANDROID_HOME" ]; then
   exit 1
 fi
 
+# Ensure avdmanager and emulator use the same AVD directory regardless of
+# what ANDROID_SDK_HOME is set to on the host (e.g. GitHub Actions runners).
+export ANDROID_AVD_HOME="$HOME/.android/avd"
+mkdir -p "$ANDROID_AVD_HOME"
+
 for tool in sdkmanager avdmanager emulator adb; do
   if ! command -v "$tool" &>/dev/null; then
     echo "Error: '$tool' not found. Ensure Android SDK tools are installed and in PATH."
