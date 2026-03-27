@@ -96,7 +96,7 @@ else
 fi
 
 echo "Waiting for emulator ($SERIAL) to connect to ADB..."
-if ! timeout 300 adb -s "$SERIAL" wait-for-device; then
+if ! timeout 120 adb -s "$SERIAL" wait-for-device; then
   echo "Error: Emulator did not connect to ADB after 120s."
   exit 1
 fi

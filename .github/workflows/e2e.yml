@@ -189,3 +189,4 @@ jobs:
           name: e2e-android-artifacts
           path: |
             .maestro/screenshots/
+            /tmp/emulator.log
