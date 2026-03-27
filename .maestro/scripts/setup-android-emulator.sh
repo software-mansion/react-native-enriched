@@ -76,5 +76,7 @@ until adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | grep -q "^
   sleep 2
 done
 
+adb -s "$SERIAL" shell pm disable-user --user 0 com.google.android.inputmethod.latin
+
 echo "Emulator ready: $AVD_NAME ($SERIAL)"
 echo "DEVICE_ID=$SERIAL"

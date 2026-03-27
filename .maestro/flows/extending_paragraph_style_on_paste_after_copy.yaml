@@ -1,0 +1,45 @@
+appId: swmansion.enriched.example
+tags:
+    - android-only
+---
+- launchApp
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "focus-button"
+
+- inputText: "EADING"
+- doubleTapOn:
+    id: "editor-input"
+    point: "10%, 50%"
+
+- tapOn:
+    id: "android:id/floating_toolbar_menu_item_text"
+    text: "Copy"
+
+# Dismiss toolbar with Copy/Cut etc. options
+- tapOn:
+    id: "editor-input"
+- tapOn:
+    id: "clear-button"
+- tapOn:
+    id: "focus-button"
+
+- tapOn:
+    id: "toolbar-heading-1"
+
+- inputText: "H"
+
+- longPressOn:
+    id: "editor-input"
+    point: "50%, 50%"
+
+- tapOn:
+    id: "android:id/floating_toolbar_menu_item_text"
+    text: "Paste"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+       SCREENSHOT_NAME: "extending_paragraph_style_on_paste_after_copy"

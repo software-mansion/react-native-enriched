@@ -54,6 +54,9 @@ export function DevScreen({ onSwitch }: DevScreenProps) {
             onChangeSelection={(e) =>
               editor.handleSelectionChangeEvent(e.nativeEvent)
             }
+            onSubmitEditing={(e) =>
+              editor.handleSubmitEditingEvent(e.nativeEvent)
+            }
             onKeyPress={(e) => editor.handleKeyPress(e.nativeEvent)}
             androidExperimentalSynchronousEvents={
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS

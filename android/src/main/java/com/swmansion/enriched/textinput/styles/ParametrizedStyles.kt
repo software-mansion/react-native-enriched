@@ -100,9 +100,14 @@ class ParametrizedStyles(
     end: Int,
   ) {
     val regex = view.linkRegex ?: return
-    val contextText = spannable.subSequence(start, end).toString()
+    val textLength = spannable.length
+    val safeStart = minOf(start, end).coerceIn(0, textLength)
+    val safeEnd = maxOf(start, end).coerceIn(0, textLength)
+    if (safeStart >= safeEnd) return
 
-    val spans = spannable.getSpans(start, end, EnrichedInputLinkSpan::class.java)
+    val contextText = spannable.subSequence(safeStart, safeEnd).toString()
+
+    val spans = spannable.getSpans(safeStart, safeEnd, EnrichedInputLinkSpan::class.java)
     for (span in spans) {
       spannable.removeSpan(span)
     }
