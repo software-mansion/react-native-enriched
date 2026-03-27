@@ -1,22 +1,44 @@
+.actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
 .btn-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  width: 100%;
 }
 
 .btn {
   flex: 1;
-  padding: 8px 0;
+  padding: 16px;
   white-space: nowrap;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  font-size: 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-  color: var(--text-secondary);
-  transition: background 0.1s;
+  color: #fff;
+  transition: opacity 0.1s;
+}
+
+.btn-full {
+  width: 100%;
 }
 
 .btn:hover {
-  background: var(--surface-hover);
+  opacity: 0.9;
+}
+
+.btn:active {
+  opacity: 0.8;
+}
+
+.btn:disabled {
+  background: darkgray;
+  cursor: default;
 }

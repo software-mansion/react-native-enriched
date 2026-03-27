@@ -11,13 +11,14 @@ import {
 } from 'react-native-enriched';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
-import { SetHtmlValueControl } from './components/SetHtmlValueControl';
+import { SetValueModal } from './components/SetValueModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 
 function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
+  const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e);
@@ -48,15 +49,7 @@ function App() {
 
   return (
     <div className="container">
-      <EditorActions
-        showHtmlOutput={showHtmlOutput}
-        onFocus={() => ref.current?.focus()}
-        onBlur={() => ref.current?.blur()}
-        onClear={() => ref.current?.setValue('')}
-        onToggleHtml={() => {
-          setShowHtmlOutput((prev) => !prev);
-        }}
-      />
+      <h1 className="app-title">Enriched Text Input</h1>
 
       <div className="editor-wrapper" onClick={() => ref.current?.focus()}>
         <div className="editor-content">
@@ -77,13 +70,37 @@ function App() {
         </div>
       </div>
 
-      <SetHtmlValueControl
-        onSetValue={(value) => {
-          ref.current?.setValue(value);
+      <EditorActions
+        showHtmlOutput={showHtmlOutput}
+        onFocus={() => {
+          ref.current?.focus();
+        }}
+        onBlur={() => {
+          ref.current?.blur();
+        }}
+        onClear={() => {
+          ref.current?.setValue('');
+        }}
+        onToggleHtml={() => {
+          setShowHtmlOutput((prev) => !prev);
+        }}
+        onOpenSetValue={() => {
+          setIsSetValueModalOpen(true);
         }}
       />
 
       {showHtmlOutput && <HtmlOutputPanel html={currentHtml} />}
+
+      {isSetValueModalOpen && (
+        <SetValueModal
+          onSetValue={(value) => {
+            ref.current?.setValue(value);
+          }}
+          onClose={() => {
+            setIsSetValueModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

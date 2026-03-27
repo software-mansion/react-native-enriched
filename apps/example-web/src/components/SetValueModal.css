@@ -1,0 +1,85 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  width: 300px;
+  height: 400px;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgb(0, 26, 114);
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.modal-input {
+  width: 100%;
+  height: 240px;
+  font-size: 15px;
+  border: 1px solid grey;
+  border-radius: 10px;
+  padding: 10px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.modal-input:focus {
+  border-color: rgb(0, 26, 114);
+}
+
+.modal-submit-btn {
+  width: 75%;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgb(0, 26, 114);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+
+.modal-submit-btn:hover {
+  opacity: 0.9;
+}
+
+.modal-submit-btn:active {
+  opacity: 0.8;
+}

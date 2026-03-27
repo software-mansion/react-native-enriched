@@ -3,13 +3,12 @@
 }
 
 :root {
-  --text-primary: #1a1a1a;
-  --text-secondary: #333;
-  --text-muted: #555;
-  --border-color: #ccc;
+  --primary: rgb(0, 26, 114);
+  --primary-muted: rgba(0, 26, 114, 0.3);
+  --primary-pressed: rgba(0, 26, 114, 0.9);
+  --editor-bg: gainsboro;
   --surface: #fff;
-  --surface-subtle: #f8f8f8;
-  --surface-hover: #f0f0f0;
+  --border-color: #ccc;
   --radius-sm: 6px;
   --radius-md: 8px;
 }
@@ -17,27 +16,40 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  color: var(--text-primary);
+  background-color: var(--surface);
+  color: #1a1a1a;
 }
 
 .container {
   max-width: 720px;
-  margin: 40px auto;
-  padding: 0 16px;
+  margin: 0 auto;
+  padding: 60px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary);
+  text-align: center;
+  margin: 0 0 24px;
 }
 
 .editor-wrapper {
-  border: 1px solid var(--border-color);
+  width: 100%;
+  background: var(--editor-bg);
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--surface);
   cursor: text;
+  margin-bottom: 16px;
 }
 
 .editor-content {
   padding: 12px 14px;
   min-height: 120px;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.5;
   outline: none;
   display: flex;
@@ -57,4 +69,3 @@ body {
   min-height: 120px;
   cursor: text;
 }
-
