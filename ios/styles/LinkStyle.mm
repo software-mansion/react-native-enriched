@@ -497,33 +497,6 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   }
 }
 
-// replacing whole input (that starts with a link) with a manually typed letter
-// improperly applies link's attributes to all the following text
-- (BOOL)handleLeadingLinkReplacement:(NSRange)range
-                     replacementText:(NSString *)text {
-  // whole textView range gets replaced with a single letter
-  if (self.input->textView.textStorage.string.length > 0 &&
-      NSEqualRanges(
-          range,
-          NSMakeRange(0, self.input->textView.textStorage.string.length)) &&
-      text.length == 1) {
-    // first character detection is enough for the removal to be done
-    if ([self detect:NSMakeRange(0, 1)]) {
-      [self remove:NSMakeRange(0,
-                               self.input->textView.textStorage.string.length)
-          withDirtyRange:YES];
-      // do the replacing manually
-      [TextInsertionUtils replaceText:text
-                                   at:range
-                 additionalAttributes:nullptr
-                                input:self.input
-                        withSelection:YES];
-      return YES;
-    }
-  }
-  return NO;
-}
-
 // MARK: - Private non-standard methods
 
 // determines whether a given range contains only links pointing to one url

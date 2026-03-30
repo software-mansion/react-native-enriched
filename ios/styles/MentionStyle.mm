@@ -331,33 +331,6 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   [self setActiveMentionRange:candidateRange text:candidateText];
 }
 
-// replacing whole input (that starts with a mention) with a manually typed
-// letter improperly applies mention's attributes to all the following text
-- (BOOL)handleLeadingMentionReplacement:(NSRange)range
-                        replacementText:(NSString *)text {
-  // whole textView range gets replaced with a single letter
-  if (self.input->textView.textStorage.string.length > 0 &&
-      NSEqualRanges(
-          range,
-          NSMakeRange(0, self.input->textView.textStorage.string.length)) &&
-      text.length == 1) {
-    // first character detection is enough for the removal to be done
-    if ([self detect:NSMakeRange(0, 1)]) {
-      [self remove:NSMakeRange(0,
-                               self.input->textView.textStorage.string.length)
-          withDirtyRange:YES];
-      // do the replacing manually
-      [TextInsertionUtils replaceText:text
-                                   at:range
-                 additionalAttributes:nullptr
-                                input:self.input
-                        withSelection:YES];
-      return YES;
-    }
-  }
-  return NO;
-}
-
 // returns mention params if it exists
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location {
   NSRange mentionRange = NSMakeRange(0, 0);

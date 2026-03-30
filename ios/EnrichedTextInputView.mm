@@ -2045,9 +2045,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [cbLStyle handleNewlinesInRange:range replacementText:text] ||
-      [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
-      [mentionStyle handleLeadingMentionReplacement:range
-                                    replacementText:text] ||
       [h1Style handleNewlinesInRange:range replacementText:text] ||
       [h2Style handleNewlinesInRange:range replacementText:text] ||
       [h3Style handleNewlinesInRange:range replacementText:text] ||
