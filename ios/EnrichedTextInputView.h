@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
   BOOL blockEmitting;
 @public
   BOOL useHtmlNormalizer;
+@public
+  NSArray<NSDictionary *> *textShortcuts;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text

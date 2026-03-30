@@ -78,8 +78,8 @@ object EnrichedSpans {
 
   val listSpans: Map<String, ListSpanConfig> =
     mapOf(
-      UNORDERED_LIST to ListSpanConfig(EnrichedInputUnorderedListSpan::class.java, "- "),
-      ORDERED_LIST to ListSpanConfig(EnrichedInputOrderedListSpan::class.java, "1. "),
+      UNORDERED_LIST to ListSpanConfig(EnrichedInputUnorderedListSpan::class.java, null),
+      ORDERED_LIST to ListSpanConfig(EnrichedInputOrderedListSpan::class.java, null),
       CHECKBOX_LIST to ListSpanConfig(EnrichedInputCheckboxListSpan::class.java, null),
     )
 

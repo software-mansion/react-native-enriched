@@ -365,6 +365,7 @@ export interface NativeProps extends ViewProps {
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
   contextMenuItems?: ReadonlyArray<Readonly<ContextMenuItemConfig>>;
+  textShortcuts: ReadonlyArray<Readonly<{ trigger: string; style: string; type?: string }>>;
   returnKeyType?: string;
   returnKeyLabel?: string;
   submitBehavior?: string;

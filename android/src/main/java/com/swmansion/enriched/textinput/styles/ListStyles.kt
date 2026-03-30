@@ -239,6 +239,111 @@ class ListStyles(
     }
   }
 
+  private fun resolveInlineStyleName(name: String): String? = when (name) {
+    "bold" -> EnrichedSpans.BOLD
+    "italic" -> EnrichedSpans.ITALIC
+    "underline" -> EnrichedSpans.UNDERLINE
+    "strikethrough" -> EnrichedSpans.STRIKETHROUGH
+    "inline_code" -> EnrichedSpans.INLINE_CODE
+    else -> null
+  }
+
+  private fun resolveStyleName(name: String): String? = when (name) {
+    "h1" -> EnrichedSpans.H1
+    "h2" -> EnrichedSpans.H2
+    "h3" -> EnrichedSpans.H3
+    "h4" -> EnrichedSpans.H4
+    "h5" -> EnrichedSpans.H5
+    "h6" -> EnrichedSpans.H6
+    "blockquote" -> EnrichedSpans.BLOCK_QUOTE
+    "codeblock" -> EnrichedSpans.CODE_BLOCK
+    "unordered_list" -> EnrichedSpans.UNORDERED_LIST
+    "ordered_list" -> EnrichedSpans.ORDERED_LIST
+    "checkbox_list" -> EnrichedSpans.CHECKBOX_LIST
+    else -> null
+  }
+
+  private fun handleConfigurableShortcuts(
+    s: Editable,
+    endCursorPosition: Int,
+    previousTextLength: Int,
+  ) {
+    val shortcuts = view.textShortcuts
+    if (shortcuts.isEmpty()) return
+    if (previousTextLength >= s.length) return
+
+    val cursorPosition = endCursorPosition.coerceAtMost(s.length)
+    val (start, end) = s.getParagraphBounds(cursorPosition)
+    val paragraphText = s.substring(start, end)
+
+    for ((trigger, styleName, type) in shortcuts) {
+      if (type == "inline") continue
+      if (trigger.isEmpty()) continue
+      if (!paragraphText.startsWith(trigger)) continue
+
+      val resolvedStyle = resolveStyleName(styleName) ?: continue
+
+      s.replace(start, start + trigger.length, EnrichedConstants.ZWS_STRING)
+
+      val listConfig = EnrichedSpans.listSpans[resolvedStyle]
+      if (listConfig != null) {
+        setSpan(s, resolvedStyle, start, start + 1)
+        view.selection?.validateStyles()
+      } else {
+        view.paragraphStyles?.toggleStyle(resolvedStyle)
+      }
+      return
+    }
+  }
+
+  private fun handleInlineShortcuts(
+    s: Editable,
+    endCursorPosition: Int,
+    previousTextLength: Int,
+  ) {
+    val shortcuts = view.textShortcuts
+    if (shortcuts.isEmpty()) return
+    if (previousTextLength >= s.length) return
+
+    val cursorPosition = endCursorPosition.coerceAtMost(s.length)
+    val text = s.toString()
+    val (paraStart, _) = s.getParagraphBounds(cursorPosition)
+
+    for ((trigger, styleName, type) in shortcuts) {
+      if (type != "inline") continue
+      if (trigger.isEmpty()) continue
+
+      val resolvedStyle = resolveInlineStyleName(styleName) ?: continue
+
+      if (cursorPosition < trigger.length) continue
+      val closingDelim = text.substring(cursorPosition - trigger.length, cursorPosition)
+      if (closingDelim != trigger) continue
+
+      val closeDelimStart = cursorPosition - trigger.length
+
+      val searchText = text.substring(paraStart, closeDelimStart)
+      val openIdx = searchText.lastIndexOf(trigger)
+      if (openIdx < 0) continue
+
+      val openAbsolute = paraStart + openIdx
+      val contentStart = openAbsolute + trigger.length
+      val contentEnd = closeDelimStart
+      if (contentEnd <= contentStart) continue
+
+      s.delete(closeDelimStart, cursorPosition)
+      s.delete(openAbsolute, openAbsolute + trigger.length)
+
+      val adjustedStart = openAbsolute
+      val adjustedEnd = contentEnd - trigger.length
+
+      view.setCustomSelection(adjustedStart, adjustedEnd)
+      view.inlineStyles?.toggleStyle(resolvedStyle)
+
+      view.setCustomSelection(adjustedEnd, adjustedEnd)
+      return
+    }
+  }
+
   fun afterTextChanged(
     s: Editable,
     endCursorPosition: Int,
@@ -247,6 +352,8 @@ class ListStyles(
     handleAfterTextChanged(s, EnrichedSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EnrichedSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EnrichedSpans.CHECKBOX_LIST, endCursorPosition, previousTextLength)
+    handleConfigurableShortcuts(s, endCursorPosition, previousTextLength)
+    handleInlineShortcuts(s, endCursorPosition, previousTextLength)
   }
 
   fun getStyleRange(): Pair<Int, Int> = view.selection?.getParagraphSelection() ?: Pair(0, 0)
