@@ -21,30 +21,30 @@ function App() {
   const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
 
   const handleFocus = (e: FocusEvent) => {
-    console.log('[EnrichedTextInput] onFocus', e);
+    console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
   };
 
   const handleBlur = (e: BlurEvent) => {
-    console.log('[EnrichedTextInput] onBlur', e);
+    console.log('[EnrichedTextInput] onBlur', e.nativeEvent);
   };
 
   const handleKeyPress = (e: NativeSyntheticEvent<OnKeyPressEvent>) => {
-    console.log('[EnrichedTextInput] onKeyPress event', e);
+    console.log('[EnrichedTextInput] onKeyPress event', e.nativeEvent);
   };
 
   const handleOnChangeText = (e: NativeSyntheticEvent<OnChangeTextEvent>) => {
-    console.log('[EnrichedTextInput] onChangeText event', e);
+    console.log('[EnrichedTextInput] onChangeText event', e.nativeEvent);
   };
 
   const handleOnChangeHtml = (e: NativeSyntheticEvent<{ value: string }>) => {
-    console.log('[EnrichedTextInput] onChangeHtml event', e);
+    console.log('[EnrichedTextInput] onChangeHtml event', e.nativeEvent);
     setCurrentHtml(e.nativeEvent.value);
   };
 
   const handleChangeSelection = (
     e: NativeSyntheticEvent<OnChangeSelectionEvent>
   ) => {
-    console.log('[EnrichedTextInput] onChangeSelection event', e);
+    console.log('[EnrichedTextInput] onChangeSelection event', e.nativeEvent);
   };
 
   return (
