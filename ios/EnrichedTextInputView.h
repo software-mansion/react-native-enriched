@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
 @public
   NSDictionary<NSNumber *, id> *stylesDict;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
