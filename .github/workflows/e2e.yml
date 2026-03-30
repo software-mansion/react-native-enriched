@@ -1,13 +1,57 @@
 name: E2E Tests
 on:
-  # For nightly runs
-  schedule:
-    - cron: '30 0 * * *'
-  # For manual runs
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  merge_group:
+    types:
+      - checks_requested
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            android:
+              - 'android/**'
+              - 'apps/example/android/**'
+              - 'apps/example/src/**'
+              - 'src/**'
+              - 'cpp/**'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+              - '.maestro/**'
+            ios:
+              - 'ios/**'
+              - 'apps/example/ios/**'
+              - 'apps/example/src/**'
+              - 'src/**'
+              - 'cpp/**'
+              - '*.podspec'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+              - '.maestro/**'
+
   e2e-ios:
+    needs: [changes]
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
@@ -84,6 +128,8 @@ jobs:
             .maestro/screenshots/**/*_diff.png
 
   e2e-android:
+    needs: [changes]
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
