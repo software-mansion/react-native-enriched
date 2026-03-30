@@ -1,26 +1,25 @@
 #pragma once
-#import "BaseStyleProtocol.h"
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
+#import "StyleBase.h"
 
-@interface BoldStyle : NSObject <BaseStyleProtocol>
+@interface BoldStyle : StyleBase
 @end
 
-@interface ItalicStyle : NSObject <BaseStyleProtocol>
+@interface ItalicStyle : StyleBase
 @end
 
-@interface UnderlineStyle : NSObject <BaseStyleProtocol>
+@interface UnderlineStyle : StyleBase
 @end
 
-@interface StrikethroughStyle : NSObject <BaseStyleProtocol>
+@interface StrikethroughStyle : StyleBase
 @end
 
-@interface InlineCodeStyle : NSObject <BaseStyleProtocol>
-- (void)handleNewlines;
+@interface InlineCodeStyle : StyleBase
 @end
 
-@interface LinkStyle : NSObject <BaseStyleProtocol>
+@interface LinkStyle : StyleBase
 - (void)addLink:(NSString *)text
               url:(NSString *)url
             range:(NSRange)range
@@ -28,14 +27,13 @@
     withSelection:(BOOL)withSelection;
 - (LinkData *)getLinkDataAt:(NSUInteger)location;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
-- (void)manageLinkTypingAttributes;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (BOOL)handleLeadingLinkReplacement:(NSRange)range
                      replacementText:(NSString *)text;
 @end
 
-@interface MentionStyle : NSObject <BaseStyleProtocol>
+@interface MentionStyle : StyleBase
 - (void)addMention:(NSString *)indicator
               text:(NSString *)text
         attributes:(NSString *)attributes;
@@ -43,7 +41,6 @@
 - (void)startMentionWithIndicator:(NSString *)indicator;
 - (void)handleExistingMentions;
 - (void)manageMentionEditing;
-- (void)manageMentionTypingAttributes;
 - (BOOL)handleLeadingMentionReplacement:(NSRange)range
                         replacementText:(NSString *)text;
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
@@ -51,14 +48,11 @@
 - (NSValue *)getActiveMentionRange;
 @end
 
-@interface HeadingStyleBase : NSObject <BaseStyleProtocol> {
-  id input;
-}
+@interface HeadingStyleBase : StyleBase
 - (CGFloat)getHeadingFontSize;
 - (NSString *)getHeadingLevelString;
 - (BOOL)isHeadingBold;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
 @end
 
 @interface H1Style : HeadingStyleBase
@@ -79,40 +73,34 @@
 @interface H6Style : HeadingStyleBase
 @end
 
-@interface UnorderedListStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@interface UnorderedListStyle : StyleBase
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range
                       replacementText:(NSString *)text;
 @end
 
-@interface OrderedListStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@interface OrderedListStyle : StyleBase
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range
                       replacementText:(NSString *)text;
 @end
 
-@interface CheckboxListStyle : NSObject <BaseStyleProtocol>
-- (void)applyStyleWithCheckedValue:(BOOL)checked inRange:(NSRange)range;
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (BOOL)getCheckboxStateAt:(NSUInteger)location;
+@interface CheckboxListStyle : StyleBase
+- (void)toggleWithChecked:(BOOL)checked range:(NSRange)range;
+- (void)addWithChecked:(BOOL)checked
+                 range:(NSRange)range
+            withTyping:(BOOL)withTyping
+        withDirtyRange:(BOOL)withDirtyRange;
 - (void)toggleCheckedAt:(NSUInteger)location;
+- (BOOL)getCheckboxStateAt:(NSUInteger)location;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)addAttributesWithCheckedValue:(BOOL)checked
-                              inRange:(NSRange)range
-                       withTypingAttr:(BOOL)withTypingAttr;
 @end
 
-@interface BlockQuoteStyle : NSObject <BaseStyleProtocol>
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
-- (void)manageBlockquoteColor;
+@interface BlockQuoteStyle : StyleBase
 @end
 
-@interface CodeBlockStyle : NSObject <BaseStyleProtocol>
-- (void)manageCodeBlockFontAndColor;
-- (BOOL)handleBackspaceInRange:(NSRange)range replacementText:(NSString *)text;
+@interface CodeBlockStyle : StyleBase
 @end
 
-@interface ImageStyle : NSObject <BaseStyleProtocol>
+@interface ImageStyle : StyleBase
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData

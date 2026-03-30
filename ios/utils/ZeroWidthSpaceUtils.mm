@@ -43,24 +43,16 @@
         continue;
       }
 
-      UnorderedListStyle *ulStyle =
-          input->stylesDict[@([UnorderedListStyle getStyleType])];
-      OrderedListStyle *olStyle =
-          input->stylesDict[@([OrderedListStyle getStyleType])];
-      BlockQuoteStyle *bqStyle =
-          input->stylesDict[@([BlockQuoteStyle getStyleType])];
-      CodeBlockStyle *cbStyle =
-          input->stylesDict[@([CodeBlockStyle getStyleType])];
-      CheckboxListStyle *cbLStyle =
-          input->stylesDict[@([CheckboxListStyle getStyleType])];
-
-      // zero width spaces with no lists/blockquotes/codeblocks on them get
-      // removed
-      if (![ulStyle detectStyle:characterRange] &&
-          ![olStyle detectStyle:characterRange] &&
-          ![bqStyle detectStyle:characterRange] &&
-          ![cbStyle detectStyle:characterRange] &&
-          ![cbLStyle detectStyle:characterRange]) {
+      // zero width spaces with no needsZWS style on them get removed
+      BOOL anyZWSStylePresent = NO;
+      for (NSNumber *type in input->stylesDict) {
+        StyleBase *style = input->stylesDict[type];
+        if ([style needsZWS] && [style detect:characterRange]) {
+          anyZWSStylePresent = YES;
+          break;
+        }
+      }
+      if (!anyZWSStylePresent) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -95,20 +87,29 @@
   }
 }
 
+// Collects active inline (non-paragraph) meta-attributes from the style
+// dictionary so that ZWS characters carry the same meta-attributes that are
+// currently active in the typing attributes.
++ (NSDictionary *)inlineMetaAttributesForInput:(EnrichedTextInputView *)input {
+  NSMutableDictionary *metaAttrs = [NSMutableDictionary new];
+  for (NSNumber *type in input->stylesDict) {
+    StyleBase *style = input->stylesDict[type];
+    if (![style isParagraph]) {
+      AttributeEntry *entry =
+          [style getEntryIfPresent:input->textView.selectedRange];
+      if (entry) {
+        metaAttrs[entry.key] = entry.value;
+      }
+    }
+  }
+  return metaAttrs.count > 0 ? metaAttrs : nullptr;
+}
+
 + (void)addSpacesIfNeededinInput:(EnrichedTextInputView *)input {
-  UnorderedListStyle *ulStyle =
-      input->stylesDict[@([UnorderedListStyle getStyleType])];
-  OrderedListStyle *olStyle =
-      input->stylesDict[@([OrderedListStyle getStyleType])];
-  BlockQuoteStyle *bqStyle =
-      input->stylesDict[@([BlockQuoteStyle getStyleType])];
-  CodeBlockStyle *cbStyle = input->stylesDict[@([CodeBlockStyle getStyleType])];
-  CheckboxListStyle *cbLStyle =
-      input->stylesDict[@([CheckboxListStyle getStyleType])];
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = input->textView.selectedRange;
 
-  for (int i = 0; i < input->textView.textStorage.string.length; i++) {
+  for (NSUInteger i = 0; i < input->textView.textStorage.string.length; i++) {
     unichar character = [input->textView.textStorage.string characterAtIndex:i];
 
     if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
@@ -117,17 +118,23 @@
           paragraphRangeForRange:characterRange];
 
       if (paragraphRange.length == 1) {
-        if ([ulStyle detectStyle:characterRange] ||
-            [olStyle detectStyle:characterRange] ||
-            [bqStyle detectStyle:characterRange] ||
-            [cbStyle detectStyle:characterRange] ||
-            [cbLStyle detectStyle:characterRange]) {
+        BOOL anyZWSStylePresent = NO;
+        for (NSNumber *type in input->stylesDict) {
+          StyleBase *style = input->stylesDict[type];
+          if ([style needsZWS] && [style detect:characterRange]) {
+            anyZWSStylePresent = YES;
+            break;
+          }
+        }
+        if (anyZWSStylePresent) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
       }
     }
   }
+
+  NSDictionary *metaAttrs = [self inlineMetaAttributesForInput:input];
 
   // do the replacing
   NSInteger offset = 0;
@@ -137,7 +144,7 @@
     NSRange replaceRange = NSMakeRange([index integerValue] + offset, 1);
     [TextInsertionUtils replaceText:@"\u200B\n"
                                  at:replaceRange
-               additionalAttributes:nullptr
+               additionalAttributes:metaAttrs
                               input:input
                       withSelection:NO];
     offset += 1;
@@ -154,15 +161,22 @@
   NSRange lastRange = NSMakeRange(input->textView.textStorage.string.length, 0);
   NSRange lastParagraphRange =
       [input->textView.textStorage.string paragraphRangeForRange:lastRange];
-  if (lastParagraphRange.length == 0 &&
-      ([ulStyle detectStyle:lastRange] || [olStyle detectStyle:lastRange] ||
-       [bqStyle detectStyle:lastRange] || [cbStyle detectStyle:lastRange] ||
-       [cbLStyle detectStyle:lastRange])) {
-    [TextInsertionUtils insertText:@"\u200B"
-                                at:lastRange.location
-              additionalAttributes:nullptr
-                             input:input
-                     withSelection:NO];
+  if (lastParagraphRange.length == 0) {
+    BOOL anyZWSStylePresent = NO;
+    for (NSNumber *type in input->stylesDict) {
+      StyleBase *style = input->stylesDict[type];
+      if ([style needsZWS] && [style detect:lastRange]) {
+        anyZWSStylePresent = YES;
+        break;
+      }
+    }
+    if (anyZWSStylePresent) {
+      [TextInsertionUtils insertText:@"\u200B"
+                                  at:lastRange.location
+                additionalAttributes:metaAttrs
+                               input:input
+                       withSelection:NO];
+    }
   }
 
   // fix the selection if needed
@@ -176,11 +190,31 @@
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
                          input:(id)input {
-  if (range.length != 1 || ![text isEqualToString:@""]) {
+  if (![text isEqualToString:@""]) {
     return NO;
   }
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
   if (typedInput == nullptr) {
+    return NO;
+  }
+
+  // Backspace at the very beginning of the input ({0, 0}).
+  // Nothing to delete, but if the first paragraph has a needsZWS style,
+  // remove it.
+  if (range.length == 0 && range.location == 0) {
+    NSRange firstParagraphRange = [typedInput->textView.textStorage.string
+        paragraphRangeForRange:NSMakeRange(0, 0)];
+    for (NSNumber *type in typedInput->stylesDict) {
+      StyleBase *style = typedInput->stylesDict[type];
+      if ([style needsZWS] && [style detect:firstParagraphRange]) {
+        [style remove:firstParagraphRange withDirtyRange:YES];
+        return YES;
+      }
+    }
+    return NO;
+  }
+
+  if (range.length != 1) {
     return NO;
   }
 
@@ -207,52 +241,44 @@
       styleRemovalRange = NSMakeRange(paragraphRange.location, 1);
     }
 
-    // and then remove associated styling
-
-    UnorderedListStyle *ulStyle =
-        typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
-    OrderedListStyle *olStyle =
-        typedInput->stylesDict[@([OrderedListStyle getStyleType])];
-    BlockQuoteStyle *bqStyle =
-        typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
-    CodeBlockStyle *cbStyle =
-        typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
-    CheckboxListStyle *cbLStyle =
-        typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-
-    if ([cbStyle detectStyle:removalRange]) {
-      // code blocks are being handled differently; we want to remove previous
-      // newline if there is a one
-      if (range.location > 0) {
-        removalRange =
-            NSMakeRange(removalRange.location - 1, removalRange.length + 1);
-      }
-      [TextInsertionUtils replaceText:@""
-                                   at:removalRange
-                 additionalAttributes:nullptr
-                                input:typedInput
-                        withSelection:YES];
-      return YES;
-    }
-
+    // remove the ZWS (keep the newline if present)
     [TextInsertionUtils replaceText:@""
                                  at:removalRange
                additionalAttributes:nullptr
                               input:typedInput
                       withSelection:YES];
 
-    if ([ulStyle detectStyle:styleRemovalRange]) {
-      [ulStyle removeAttributes:styleRemovalRange];
-    } else if ([olStyle detectStyle:styleRemovalRange]) {
-      [olStyle removeAttributes:styleRemovalRange];
-    } else if ([bqStyle detectStyle:styleRemovalRange]) {
-      [bqStyle removeAttributes:styleRemovalRange];
-    } else if ([cbLStyle detectStyle:styleRemovalRange]) {
-      [cbLStyle removeAttributes:styleRemovalRange];
+    // and then remove associated styling
+    for (NSNumber *type in typedInput->stylesDict) {
+      StyleBase *style = typedInput->stylesDict[type];
+      if ([style needsZWS] && [style detect:styleRemovalRange]) {
+        [style remove:styleRemovalRange withDirtyRange:YES];
+        break;
+      }
     }
 
     return YES;
   }
+
+  // Backspace at the start of a paragraph that has a ZWS-needing style.
+  // The character being deleted is the newline at the end of the previous
+  // paragraph. Instead of letting iOS merge the two lines, just remove the
+  // style from the current paragraph.
+  if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
+    NSUInteger nextParaStart = NSMaxRange(range);
+    if (nextParaStart < typedInput->textView.textStorage.string.length) {
+      NSRange nextParagraphRange = [typedInput->textView.textStorage.string
+          paragraphRangeForRange:NSMakeRange(nextParaStart, 0)];
+      for (NSNumber *type in typedInput->stylesDict) {
+        StyleBase *style = typedInput->stylesDict[type];
+        if ([style needsZWS] && [style detect:nextParagraphRange]) {
+          [style remove:nextParagraphRange withDirtyRange:YES];
+          return YES;
+        }
+      }
+    }
+  }
+
   return NO;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#import "AttributesManager.h"
 #import "BaseStyleProtocol.h"
 #import "InputConfig.h"
 #import "InputParser.h"
@@ -23,15 +24,19 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   InputParser *parser;
 @public
+  AttributesManager *attributesManager;
+@public
   NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
 @public
-  NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
+  NSDictionary<NSNumber *, id> *stylesDict;
   NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
 @public
   BOOL useHtmlNormalizer;
+@public
+  NSValue *dotReplacementRange;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(NSString *)text
@@ -39,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
                           range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
+- (void)emitOnMentionDetectedEvent:(NSString *)text
+                         indicator:(NSString *)indicator
+                        attributes:(NSString *)attributes;
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
