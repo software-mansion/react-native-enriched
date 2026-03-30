@@ -717,7 +717,7 @@
  * Normalizes external HTML (from Google Docs, Word, web pages, etc.) into our
  * canonical tag subset using the Gumbo-based C++ normalizer.
  *
- * Converts: <strong> → <b>, <em> → <i>, <span style="font-weight:bold"> → <b>,
+ * Converts: strong → b, em → i, span style="font-weight:bold" → b,
  * strips unknown tags while preserving text
  */
 - (NSString *_Nullable)normalizeExternalHtml:(NSString *_Nonnull)html {

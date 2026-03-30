@@ -21,12 +21,9 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  NSRange fullRange =
-      [self.input->textView.textStorage.string paragraphRangeForRange:range];
-
   [self.input->textView.textStorage
       enumerateAttribute:NSFontAttributeName
-                 inRange:fullRange
+                 inRange:range
                  options:0
               usingBlock:^(id _Nullable value, NSRange subRange,
                            BOOL *_Nonnull stop) {

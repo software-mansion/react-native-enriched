@@ -44,15 +44,7 @@
       }
 
       // zero width spaces with no needsZWS style on them get removed
-      BOOL anyZWSStylePresent = NO;
-      for (NSNumber *type in input->stylesDict) {
-        StyleBase *style = input->stylesDict[type];
-        if ([style needsZWS] && [style detect:characterRange]) {
-          anyZWSStylePresent = YES;
-          break;
-        }
-      }
-      if (!anyZWSStylePresent) {
+      if (![self anyZWSStylePresentInRange:characterRange input:input]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -89,7 +81,8 @@
 
 // Collects active inline (non-paragraph) meta-attributes from the style
 // dictionary so that ZWS characters carry the same meta-attributes that are
-// currently active in the typing attributes.
+// currently active in the typing attributes. Only within the currently selected
+// range!
 + (NSDictionary *)inlineMetaAttributesForInput:(EnrichedTextInputView *)input {
   NSMutableDictionary *metaAttrs = [NSMutableDictionary new];
   for (NSNumber *type in input->stylesDict) {
@@ -118,15 +111,7 @@
           paragraphRangeForRange:characterRange];
 
       if (paragraphRange.length == 1) {
-        BOOL anyZWSStylePresent = NO;
-        for (NSNumber *type in input->stylesDict) {
-          StyleBase *style = input->stylesDict[type];
-          if ([style needsZWS] && [style detect:characterRange]) {
-            anyZWSStylePresent = YES;
-            break;
-          }
-        }
-        if (anyZWSStylePresent) {
+        if ([self anyZWSStylePresentInRange:characterRange input:input]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -162,15 +147,7 @@
   NSRange lastParagraphRange =
       [input->textView.textStorage.string paragraphRangeForRange:lastRange];
   if (lastParagraphRange.length == 0) {
-    BOOL anyZWSStylePresent = NO;
-    for (NSNumber *type in input->stylesDict) {
-      StyleBase *style = input->stylesDict[type];
-      if ([style needsZWS] && [style detect:lastRange]) {
-        anyZWSStylePresent = YES;
-        break;
-      }
-    }
-    if (anyZWSStylePresent) {
+    if ([self anyZWSStylePresentInRange:lastRange input:input]) {
       [TextInsertionUtils insertText:@"\u200B"
                                   at:lastRange.location
                 additionalAttributes:metaAttrs
@@ -204,12 +181,8 @@
   if (range.length == 0 && range.location == 0) {
     NSRange firstParagraphRange = [typedInput->textView.textStorage.string
         paragraphRangeForRange:NSMakeRange(0, 0)];
-    for (NSNumber *type in typedInput->stylesDict) {
-      StyleBase *style = typedInput->stylesDict[type];
-      if ([style needsZWS] && [style detect:firstParagraphRange]) {
-        [style remove:firstParagraphRange withDirtyRange:YES];
-        return YES;
-      }
+    if ([self removeZWSStyleInRange:firstParagraphRange input:typedInput]) {
+      return YES;
     }
     return NO;
   }
@@ -249,13 +222,7 @@
                       withSelection:YES];
 
     // and then remove associated styling
-    for (NSNumber *type in typedInput->stylesDict) {
-      StyleBase *style = typedInput->stylesDict[type];
-      if ([style needsZWS] && [style detect:styleRemovalRange]) {
-        [style remove:styleRemovalRange withDirtyRange:YES];
-        break;
-      }
-    }
+    [self removeZWSStyleInRange:styleRemovalRange input:typedInput];
 
     return YES;
   }
@@ -269,16 +236,35 @@
     if (nextParaStart < typedInput->textView.textStorage.string.length) {
       NSRange nextParagraphRange = [typedInput->textView.textStorage.string
           paragraphRangeForRange:NSMakeRange(nextParaStart, 0)];
-      for (NSNumber *type in typedInput->stylesDict) {
-        StyleBase *style = typedInput->stylesDict[type];
-        if ([style needsZWS] && [style detect:nextParagraphRange]) {
-          [style remove:nextParagraphRange withDirtyRange:YES];
-          return YES;
-        }
+      if ([self removeZWSStyleInRange:nextParagraphRange input:typedInput]) {
+        return YES;
       }
     }
   }
 
+  return NO;
+}
+
++ (BOOL)anyZWSStylePresentInRange:(NSRange)range
+                            input:(EnrichedTextInputView *)input {
+  for (NSNumber *type in input->stylesDict) {
+    StyleBase *style = input->stylesDict[type];
+    if ([style needsZWS] && [style detect:range]) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
++ (BOOL)removeZWSStyleInRange:(NSRange)range
+                        input:(EnrichedTextInputView *)input {
+  for (NSNumber *type in input->stylesDict) {
+    StyleBase *style = input->stylesDict[type];
+    if ([style needsZWS] && [style detect:range]) {
+      [style remove:range withDirtyRange:YES];
+      return YES;
+    }
+  }
   return NO;
 }
 

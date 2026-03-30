@@ -1033,7 +1033,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // separately
   NSMutableSet *newBlockedStyles = [_blockedStyles mutableCopy];
 
-// data for onLinkDetected event
+  // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
 
@@ -1162,12 +1162,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   if (detectedLinkData != nullptr) {
+    // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData.text
                               url:detectedLinkData.url
                             range:detectedLinkRange];
   }
 
   if (detectedMentionParams != nullptr) {
+    // emit onMentionDetected event
     [self emitOnMentionDetectedEvent:detectedMentionParams.text
                            indicator:detectedMentionParams.indicator
                           attributes:detectedMentionParams.attributes];
@@ -1683,9 +1685,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   BOOL onlySelectionChanged =
       textView.selectedRange.length == 0 &&
       [_recentInputString isEqualToString:currentString];
-  // We want to remember which attributes were removed as long as we stay at the
-  // same position. This prevents a removed attribute from being re-applied from
-  // the preceding character right after we toggled it off
+  // removedTypingAttributes aren't normally removed during the regular flow
+  // and we do remove them only here - so when we are sure that selection
+  // changed. We want to remember which attributes were removed as long as we
+  // stay at the same position. This prevents a removed attribute from being
+  // re-applied from the preceding character right after we toggled it off.
   [attributesManager clearRemovedTypingAttributes];
   [attributesManager
       manageTypingAttributesWithOnlySelection:onlySelectionChanged];
@@ -1723,6 +1727,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.typingAttributes = defaultTypingAttributes;
   }
 
+  // mentions management: removal and editing
   MentionStyle *mentionStyleClass =
       (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass != nullptr) {
@@ -1983,8 +1988,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // some of the changes these checks do could interfere with later checks and
   // cause a crash so here we rely on short circuiting evaluation of the logical
-  // expression. Either way it's not possible to have two of them come off at the
-  // same time
+  // expression. Either way it's not possible to have two of them come off at
+  // the same time
   if (
       // ZWS backspace handling for paragraph styles
       [ZeroWidthSpaceUtils handleBackspaceInRange:range

@@ -21,14 +21,11 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  NSRange fullRange =
-      [self.input->textView.textStorage.string paragraphRangeForRange:range];
-
   CGFloat indent = [self.input->config blockquoteBorderWidth] +
                    [self.input->config blockquoteGapWidth];
   [self.input->textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
-                 inRange:fullRange
+                 inRange:range
                  options:0
               usingBlock:^(id _Nullable value, NSRange subRange,
                            BOOL *_Nonnull stop) {

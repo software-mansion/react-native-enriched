@@ -35,6 +35,8 @@
   }
 
   NSRange nonNewlineRange = [(NSValue *)paragraphs.firstObject rangeValue];
+  CheckboxListStyle *cbLStyle =
+      typedInput->stylesDict[@([CheckboxListStyle getType])];
 
   // the backspace removes the whole content of a paragraph (possibly more but
   // has to start where the paragraph starts)
@@ -50,6 +52,7 @@
     for (NSNumber *type in typedInput->stylesDict) {
       StyleBase *style = typedInput->stylesDict[type];
       if ([style needsZWS] && [style detect:nonNewlineRange]) {
+        BOOL isCurrentlyChecked = [cbLStyle getCheckboxStateAt:range.location];
         [TextInsertionUtils replaceText:text
                                      at:range
                    additionalAttributes:nullptr
@@ -57,9 +60,17 @@
                           withSelection:YES];
         typedInput->textView.typingAttributes =
             typedInput->defaultTypingAttributes;
-        [style add:NSMakeRange(range.location, 0)
-                withTyping:YES
-            withDirtyRange:YES];
+
+        if (style == cbLStyle) {
+          [cbLStyle addWithChecked:isCurrentlyChecked
+                             range:NSMakeRange(range.location, 0)
+                        withTyping:YES
+                    withDirtyRange:YES];
+        } else {
+          [style add:NSMakeRange(range.location, 0)
+                  withTyping:YES
+              withDirtyRange:YES];
+        }
         return YES;
       }
     }
@@ -160,6 +171,7 @@
   for (NSNumber *style in allToBeRemoved) {
     StyleBase *styleToRemove = typedInput->stylesDict[style];
 
+    // for ranges, we need to remove each occurence
     NSArray<StylePair *> *allOccurences = [styleToRemove all:rightRange];
 
     for (StylePair *pair in allOccurences) {

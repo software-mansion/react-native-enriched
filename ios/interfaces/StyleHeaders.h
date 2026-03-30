@@ -50,7 +50,6 @@
 
 @interface HeadingStyleBase : StyleBase
 - (CGFloat)getHeadingFontSize;
-- (NSString *)getHeadingLevelString;
 - (BOOL)isHeadingBold;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
 @end

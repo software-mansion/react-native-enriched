@@ -16,9 +16,10 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  NSDictionary *styles =
-      @{NSStrikethroughStyleAttributeName : @(NSUnderlineStyleSingle)};
-  [self.input->textView.textStorage addAttributes:styles range:range];
+  [self.input->textView.textStorage addAttributes:@{
+    NSStrikethroughStyleAttributeName : @(NSUnderlineStyleSingle)
+  }
+                                            range:range];
 }
 
 @end
