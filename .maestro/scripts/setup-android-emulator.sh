@@ -74,11 +74,7 @@ if [ -n "${CI:-}" ]; then
   EMULATOR_ARGS+=(-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim)
 fi
 
-if [ -n "${CI:-}" ]; then
-  emulator "${EMULATOR_ARGS[@]}" > /tmp/emulator.log 2>&1 &
-else
-  emulator "${EMULATOR_ARGS[@]}" > /dev/null 2>&1 &
-fi
+emulator "${EMULATOR_ARGS[@]}" > /dev/null 2>&1 &
 
 echo "Waiting for emulator ($SERIAL) to connect to ADB..."
 if ! timeout 120 adb -s "$SERIAL" wait-for-device; then
