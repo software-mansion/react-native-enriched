@@ -43,7 +43,7 @@
 
     // for styles that need ZWS (lists, quotes, etc.) we do the following:
     // - manually do the removing
-    // - reset typing attribtues so that the previous line styles don't get
+    // - reset typing attributes so that the previous line styles don't get
     // applied
     // - reapply the paragraph style that was present so that a zero width space
     // appears here
