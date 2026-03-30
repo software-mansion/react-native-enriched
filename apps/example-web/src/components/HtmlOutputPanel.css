@@ -1,0 +1,32 @@
+.html-output {
+  margin-top: 12px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: gainsboro;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.html-output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(0, 26, 114, 0.08);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.html-output-pre {
+  margin: 0;
+  padding: 10px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #1a1a1a;
+}

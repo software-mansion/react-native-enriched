@@ -1,0 +1,13 @@
+.actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}

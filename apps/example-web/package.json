@@ -10,6 +10,13 @@
     "lint": "eslint . --ext ts,tsx"
   },
   "dependencies": {
+    "@tiptap/core": "^3.20.4",
+    "@tiptap/extension-document": "^3.20.4",
+    "@tiptap/extension-paragraph": "^3.20.4",
+    "@tiptap/extension-text": "^3.20.4",
+    "@tiptap/extensions": "^3.20.4",
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/react": "^3.20.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
