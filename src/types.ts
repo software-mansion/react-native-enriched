@@ -174,6 +174,7 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  alignment: string;
 }
 
 export interface OnLinkDetected {
@@ -250,6 +251,9 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     indicator: string,
     text: string,
     attributes?: Record<string, string>
+  ) => void;
+  setTextAlignment: (
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
   ) => void;
 }
 
