@@ -1033,7 +1033,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // separately
   NSMutableSet *newBlockedStyles = [_blockedStyles mutableCopy];
 
-  //  // data for onLinkDetected event
+// data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
 
