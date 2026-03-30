@@ -5,5 +5,6 @@
 
 @property NSString *text;
 @property NSString *url;
+@property BOOL isManual;
 
 @end

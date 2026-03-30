@@ -1193,6 +1193,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData.text
                               url:detectedLinkData.url
+                         isManual:detectedLinkData.isManual
                             range:detectedLinkRange];
   }
 
@@ -1428,6 +1429,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)emitOnLinkDetectedEvent:(NSString *)text
                             url:(NSString *)url
+                       isManual:(BOOL)isManual
                           range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
@@ -1435,6 +1437,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     LinkData *newLinkData = [[LinkData alloc] init];
     newLinkData.text = text;
     newLinkData.url = url;
+    newLinkData.isManual = isManual;
     _recentlyActiveLinkData = newLinkData;
     _recentlyActiveLinkRange = range;
 

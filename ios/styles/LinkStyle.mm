@@ -49,14 +49,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   if ([styleValue isKindOfClass:[LinkData class]]) {
     LinkData *linkData = (LinkData *)styleValue;
     url = linkData.url;
-    manual = linkData.text == nullptr
-                 ? YES
-                 : ![linkData.text isEqualToString:linkData.url];
-  } else if ([styleValue isKindOfClass:[NSString class]]) {
-    url = (NSString *)styleValue;
-    NSString *textInRange =
-        [self.input->textView.textStorage.string substringWithRange:range];
-    manual = ![textInRange isEqualToString:url];
+    manual = linkData.isManual;
   }
   if (url == nullptr) {
     return;
@@ -132,19 +125,47 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
         anyMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
           withInput:self.input
             inRange:range
-      withCondition:^BOOL(id _Nullable value, NSRange r) {
-        return [self styleCondition:value range:r];
+      withCondition:^BOOL(id _Nullable value, NSRange subrange) {
+        return [self styleCondition:value range:subrange];
       }];
 }
 
 - (NSArray<StylePair *> *)all:(NSRange)range {
-  return [OccurenceUtils
-        allMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
-          withInput:self.input
-            inRange:range
-      withCondition:^BOOL(id _Nullable value, NSRange r) {
-        return [self styleCondition:value range:r];
-      }];
+  NSMutableArray<StylePair *> *result = [[NSMutableArray alloc] init];
+  [self collectPairsForKey:ManualLinkAttributeName
+                  isManual:YES
+                   inRange:range
+                      into:result];
+  [self collectPairsForKey:AutomaticLinkAttributeName
+                  isManual:NO
+                   inRange:range
+                      into:result];
+  return result;
+}
+
+- (void)collectPairsForKey:(NSString *)key
+                  isManual:(BOOL)isManual
+                   inRange:(NSRange)range
+                      into:(NSMutableArray<StylePair *> *)result {
+  NSArray<StylePair *> *pairs =
+      [OccurenceUtils all:key
+                withInput:self.input
+                  inRange:range
+            withCondition:^BOOL(id _Nullable value, NSRange subrange) {
+              return [self styleCondition:value range:subrange];
+            }];
+
+  for (StylePair *pair in pairs) {
+    LinkData *data = [[LinkData alloc] init];
+    data.url = (NSString *)pair.styleValue;
+    data.text = [self.input->textView.textStorage.string
+        substringWithRange:[pair.rangeValue rangeValue]];
+    data.isManual = isManual;
+    StylePair *newPair = [[StylePair alloc] init];
+    newPair.rangeValue = pair.rangeValue;
+    newPair.styleValue = data;
+    [result addObject:newPair];
+  }
 }
 
 - (void)applyLinkMetaForUrl:(NSString *)url
@@ -269,6 +290,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   data.url = linkUrl;
   data.text =
       [self.input->textView.textStorage.string substringWithRange:linkRange];
+  data.isManual = (manualUrl != nullptr);
   return data;
 }
 
@@ -401,6 +423,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
       // emit onLinkDetected if style was added
       [self.input emitOnLinkDetectedEvent:word
                                       url:regexPassedUrl
+                                 isManual:NO
                                     range:wordRange];
     }
   } else if ([self any:wordRange]) {

@@ -35,12 +35,6 @@
                          withCondition:(BOOL(NS_NOESCAPE ^
                                              _Nonnull)(id _Nullable value,
                                                        NSRange range))condition;
-+ (NSArray<StylePair *> *_Nullable)
-      allMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          inRange:(NSRange)range
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition;
 + (NSArray *_Nonnull)getRangesWithout:(NSArray<NSNumber *> *_Nonnull)types
                             withInput:(EnrichedTextInputView *_Nonnull)input
                               inRange:(NSRange)range;

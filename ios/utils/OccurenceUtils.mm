@@ -150,32 +150,6 @@
   return occurences;
 }
 
-+ (NSArray<StylePair *> *_Nullable)
-      allMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-        withInput:(EnrichedTextInputView *_Nonnull)input
-          inRange:(NSRange)range
-    withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
-                                                NSRange range))condition {
-  __block NSMutableArray<StylePair *> *occurences =
-      [[NSMutableArray<StylePair *> alloc] init];
-  for (NSString *key in keys) {
-    [input->textView.textStorage
-        enumerateAttribute:key
-                   inRange:range
-                   options:0
-                usingBlock:^(id _Nullable value, NSRange range,
-                             BOOL *_Nonnull stop) {
-                  if (condition(value, range)) {
-                    StylePair *pair = [[StylePair alloc] init];
-                    pair.rangeValue = [NSValue valueWithRange:range];
-                    pair.styleValue = value;
-                    [occurences addObject:pair];
-                  }
-                }];
-  }
-  return occurences;
-}
-
 + (NSArray *_Nonnull)getRangesWithout:(NSArray<NSNumber *> *_Nonnull)types
                             withInput:(EnrichedTextInputView *_Nonnull)input
                               inRange:(NSRange)range {

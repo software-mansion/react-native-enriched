@@ -659,12 +659,13 @@
       if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
         NSString *text =
             [_input->textView.textStorage.string substringWithRange:styleRange];
-        NSString *url = (NSString *)stylePair.styleValue;
-        BOOL isManual = ![text isEqualToString:url];
+        LinkData *linkData = (LinkData *)stylePair.styleValue;
+        NSString *url = linkData.url;
+        linkData.isManual = ![text isEqualToString:url];
         [((LinkStyle *)baseStyle) addLink:text
                                       url:url
                                     range:styleRange
-                                   manual:isManual
+                                   manual:linkData.isManual
                             withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
@@ -1331,7 +1332,9 @@
       NSString *url =
           [params substringWithRange:NSMakeRange(hrefRange.location + 6,
                                                  hrefRange.length - 7)];
-      stylePair.styleValue = url;
+      LinkData *linkData = [[LinkData alloc] init];
+      linkData.url = url;
+      stylePair.styleValue = linkData;
     } else if ([tagName isEqualToString:@"mention"]) {
       [styleArr addObject:@([MentionStyle getType])];
       // extract html expression into dict using some regex
