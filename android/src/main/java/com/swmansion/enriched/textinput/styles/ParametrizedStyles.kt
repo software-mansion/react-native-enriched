@@ -61,7 +61,7 @@ class ParametrizedStyles(
     }
 
     val spanEnd = start + text.length
-    val span = EnrichedInputLinkSpan(url, view.htmlStyle)
+    val span = EnrichedInputLinkSpan(url, view.htmlStyle, true)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
     spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
@@ -109,6 +109,7 @@ class ParametrizedStyles(
 
     val spans = spannable.getSpans(safeStart, safeEnd, EnrichedInputLinkSpan::class.java)
     for (span in spans) {
+      if (span.getIsManual()) continue
       spannable.removeSpan(span)
     }
 
@@ -132,9 +133,16 @@ class ParametrizedStyles(
         val spanStart = start + wordStart + linkStart
         val spanEnd = start + wordStart + linkEnd
 
-        val span = EnrichedInputLinkSpan(matcher.group(), view.htmlStyle)
         val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(spanStart, spanEnd)
 
+        // Do not overwrite a manual link span with an auto-detected one
+        val overlappingManual =
+          spannable
+            .getSpans(safeStart, safeEnd, EnrichedInputLinkSpan::class.java)
+            .any { it.getIsManual() }
+        if (overlappingManual) continue
+
+        val span = EnrichedInputLinkSpan(matcher.group(), view.htmlStyle)
         spannable.setSpan(
           span,
           safeStart,

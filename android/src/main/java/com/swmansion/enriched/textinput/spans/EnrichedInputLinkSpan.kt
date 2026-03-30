@@ -7,9 +7,10 @@ import com.swmansion.enriched.textinput.styles.HtmlStyle
 class EnrichedInputLinkSpan(
   private val url: String,
   htmlStyle: HtmlStyle,
-) : EnrichedLinkSpan(url, htmlStyle),
+  private val isManual: Boolean = false,
+) : EnrichedLinkSpan(url, htmlStyle, isManual),
   EnrichedInputSpan {
   override val dependsOnHtmlStyle: Boolean = true
 
-  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedInputLinkSpan = EnrichedInputLinkSpan(url, htmlStyle)
+  override fun rebuildWithStyle(htmlStyle: HtmlStyle): EnrichedInputLinkSpan = EnrichedInputLinkSpan(url, htmlStyle, isManual)
 }
