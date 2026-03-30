@@ -99,6 +99,8 @@
 - (void)setCheckboxListMarginLeft:(CGFloat)newValue;
 - (UIColor *)checkboxListBoxColor;
 - (void)setCheckboxListBoxColor:(UIColor *)newValue;
+- (CGFloat)checkboxListParagraphSpacing;
+- (void)setCheckboxListParagraphSpacing:(CGFloat)newValue;
 - (UIImage *)checkboxCheckedImage;
 - (UIImage *)checkboxUncheckedImage;
 @end
