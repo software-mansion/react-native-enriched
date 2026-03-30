@@ -31,7 +31,9 @@ if [ "$STATE" != "(Booted)" ]; then
   xcrun simctl boot "$UDID"
 fi
 
-open -a Simulator
+if [ -z "${CI:-}" ]; then
+  open -a Simulator
+fi
 
 echo "Simulator ready: $DEVICE_NAME ($UDID)"
 echo "DEVICE_ID=$UDID"

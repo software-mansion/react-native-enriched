@@ -2,7 +2,7 @@
 set -euo pipefail
 
 API_LEVEL="36"
-DEVICE_ID="pixel_9"
+DEVICE_ID="pixel_7"
 ARCH=$(uname -m)
 if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   ABI="arm64-v8a"
@@ -11,7 +11,7 @@ else
 fi
 TAG="google_apis_playstore"
 SYSTEM_IMAGE="system-images;android-${API_LEVEL};${TAG};${ABI}"
-AVD_NAME="Pixel9-API${API_LEVEL}-Enriched"
+AVD_NAME="Pixel7-API${API_LEVEL}-Enriched"
 PORT=5570
 SERIAL="emulator-${PORT}"
 
@@ -19,6 +19,11 @@ if [ -z "$ANDROID_HOME" ]; then
   echo "Error: ANDROID_HOME is not set. Set it to your Android SDK directory."
   exit 1
 fi
+
+# Ensure avdmanager and emulator use the same AVD directory regardless of
+# what ANDROID_SDK_HOME is set to on the host (e.g. GitHub Actions runners).
+export ANDROID_AVD_HOME="$HOME/.android/avd"
+mkdir -p "$ANDROID_AVD_HOME"
 
 for tool in sdkmanager avdmanager emulator adb; do
   if ! command -v "$tool" &>/dev/null; then
@@ -41,19 +46,20 @@ fi
 
 if ! avdmanager list avd -c | grep -qx "${AVD_NAME}"; then
   echo "Creating AVD '$AVD_NAME'..."
-  echo "no" | avdmanager create avd \
-    --name "$AVD_NAME" \
-    --device "$DEVICE_ID" \
-    --package "$SYSTEM_IMAGE" \
-    --skin "$DEVICE_ID"
+  CREATE_CMD=(avdmanager create avd --name "$AVD_NAME" --device "$DEVICE_ID" --package "$SYSTEM_IMAGE")
+  # Skin is cosmetic (phone frame). Skip it on CI since the runner has no skin files
+  # and the emulator runs headless anyway.
+  [ -z "${CI:-}" ] && CREATE_CMD+=(--skin "$DEVICE_ID")
+  echo "no" | "${CREATE_CMD[@]}"
 fi
 
 AVD_CONFIG="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
 if [ -f "$AVD_CONFIG" ]; then
-  sed -i '' 's/^hw\.keyboard=.*/hw.keyboard=yes/' "$AVD_CONFIG"
+  sed -i.bak 's/^hw\.keyboard=.*/hw.keyboard=yes/' "$AVD_CONFIG"
   grep -q "^hw.keyboard=" "$AVD_CONFIG" || echo "hw.keyboard=yes" >> "$AVD_CONFIG"
-  sed -i '' 's/^hw\.mainKeys=.*/hw.mainKeys=yes/' "$AVD_CONFIG"
+  sed -i.bak 's/^hw\.mainKeys=.*/hw.mainKeys=yes/' "$AVD_CONFIG"
   grep -q "^hw.mainKeys=" "$AVD_CONFIG" || echo "hw.mainKeys=yes" >> "$AVD_CONFIG"
+  rm -f "$AVD_CONFIG.bak"
 fi
 
 if pgrep -f "emulator.*${AVD_NAME}" > /dev/null 2>&1; then
@@ -63,7 +69,16 @@ if pgrep -f "emulator.*${AVD_NAME}" > /dev/null 2>&1; then
 fi
 
 echo "Starting emulator '$AVD_NAME'..."
-emulator "@${AVD_NAME}" -port "$PORT" > /dev/null 2>&1 &
+EMULATOR_ARGS=("@${AVD_NAME}" -port "$PORT")
+if [ -n "${CI:-}" ]; then
+  EMULATOR_ARGS+=(-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim)
+fi
+
+if [ -n "${CI:-}" ]; then
+  emulator "${EMULATOR_ARGS[@]}" > /tmp/emulator.log 2>&1 &
+else
+  emulator "${EMULATOR_ARGS[@]}" > /dev/null 2>&1 &
+fi
 
 echo "Waiting for emulator ($SERIAL) to connect to ADB..."
 if ! timeout 120 adb -s "$SERIAL" wait-for-device; then
