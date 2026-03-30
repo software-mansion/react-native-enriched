@@ -44,9 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
                           range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
-- (void)emitOnMentionDetectedEvent:(NSString *)text
-                         indicator:(NSString *)indicator
-                        attributes:(NSString *)attributes;
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;

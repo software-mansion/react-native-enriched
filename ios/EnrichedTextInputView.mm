@@ -263,8 +263,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   textView.layoutManager.input = self;
   textView.textStorage.delegate = self;
 
-  textView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   textView.adjustsFontForContentSizeCategory = YES;
   [textView addGestureRecognizer:[[TextBlockTapGestureRecognizer alloc]
                                      initWithInput:self
@@ -371,10 +369,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH1Bold:newViewProps.htmlStyle.h1.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h1.bold ? [self addStyleBlock:H1 to:Bold]
-                                   : [self removeStyleBlock:H1 from:Bold];
-    newViewProps.htmlStyle.h1.bold ? [self addStyleConflict:Bold to:H1]
-                                   : [self removeStyleConflict:Bold from:H1];
+    if (newViewProps.htmlStyle.h1.bold) {
+      [self addStyleBlock:H1 to:Bold];
+      [self addStyleConflict:Bold to:H1];
+    } else {
+      [self removeStyleBlock:H1 from:Bold];
+      [self removeStyleConflict:Bold from:H1];
+    }
 
     stylePropChanged = YES;
   }
@@ -389,10 +390,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH2Bold:newViewProps.htmlStyle.h2.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h2.bold ? [self addStyleBlock:H2 to:Bold]
-                                   : [self removeStyleBlock:H2 from:Bold];
-    newViewProps.htmlStyle.h2.bold ? [self addStyleConflict:Bold to:H2]
-                                   : [self removeStyleConflict:Bold from:H2];
+    if (newViewProps.htmlStyle.h2.bold) {
+      [self addStyleBlock:H2 to:Bold];
+      [self addStyleConflict:Bold to:H2];
+    } else {
+      [self removeStyleBlock:H2 from:Bold];
+      [self removeStyleConflict:Bold from:H2];
+    }
 
     stylePropChanged = YES;
   }
@@ -407,10 +411,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h3.bold ? [self addStyleBlock:H3 to:Bold]
-                                   : [self removeStyleBlock:H3 from:Bold];
-    newViewProps.htmlStyle.h3.bold ? [self addStyleConflict:Bold to:H3]
-                                   : [self removeStyleConflict:Bold from:H3];
+    if (newViewProps.htmlStyle.h3.bold) {
+      [self addStyleBlock:H3 to:Bold];
+      [self addStyleConflict:Bold to:H3];
+    } else {
+      [self removeStyleBlock:H3 from:Bold];
+      [self removeStyleConflict:Bold from:H3];
+    }
 
     stylePropChanged = YES;
   }
@@ -425,10 +432,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH4Bold:newViewProps.htmlStyle.h4.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h4.bold ? [self addStyleBlock:H4 to:Bold]
-                                   : [self removeStyleBlock:H4 from:Bold];
-    newViewProps.htmlStyle.h4.bold ? [self addStyleConflict:Bold to:H4]
-                                   : [self removeStyleConflict:Bold from:H4];
+    if (newViewProps.htmlStyle.h4.bold) {
+      [self addStyleBlock:H4 to:Bold];
+      [self addStyleConflict:Bold to:H4];
+    } else {
+      [self removeStyleBlock:H4 from:Bold];
+      [self removeStyleConflict:Bold from:H4];
+    }
 
     stylePropChanged = YES;
   }
@@ -443,10 +453,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH5Bold:newViewProps.htmlStyle.h5.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h5.bold ? [self addStyleBlock:H5 to:Bold]
-                                   : [self removeStyleBlock:H5 from:Bold];
-    newViewProps.htmlStyle.h5.bold ? [self addStyleConflict:Bold to:H5]
-                                   : [self removeStyleConflict:Bold from:H5];
+    if (newViewProps.htmlStyle.h5.bold) {
+      [self addStyleBlock:H5 to:Bold];
+      [self addStyleConflict:Bold to:H5];
+    } else {
+      [self removeStyleBlock:H5 from:Bold];
+      [self removeStyleConflict:Bold from:H5];
+    }
 
     stylePropChanged = YES;
   }
@@ -461,10 +474,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [newConfig setH6Bold:newViewProps.htmlStyle.h6.bold];
 
     // Update style blocks and conflicts for bold
-    newViewProps.htmlStyle.h6.bold ? [self addStyleBlock:H6 to:Bold]
-                                   : [self removeStyleBlock:H6 from:Bold];
-    newViewProps.htmlStyle.h6.bold ? [self addStyleConflict:Bold to:H6]
-                                   : [self removeStyleConflict:Bold from:H6];
+    if (newViewProps.htmlStyle.h6.bold) {
+      [self addStyleBlock:H6 to:Bold];
+      [self addStyleConflict:Bold to:H6];
+    } else {
+      [self removeStyleBlock:H6 from:Bold];
+      [self removeStyleConflict:Bold from:H6];
+    }
 
     stylePropChanged = YES;
   }

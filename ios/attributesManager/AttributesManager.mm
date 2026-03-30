@@ -98,7 +98,7 @@
 
       for (StylePair *stylePair in presentStyles[styleType]) {
         NSRange occurenceRange = [stylePair.rangeValue rangeValue];
-        [style reapplyAttributesFromStylePair:stylePair];
+        [style reapplyFromStylePair:stylePair];
         [style applyStyling:occurenceRange];
       }
     }

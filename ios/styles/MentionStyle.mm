@@ -64,7 +64,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   [self.input->textView.textStorage addAttributes:newAttrs range:range];
 }
 
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+- (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   MentionParams *params = (MentionParams *)pair.styleValue;
   if (params == nullptr) {
@@ -73,6 +73,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   [self applyMentionMeta:params range:range];
 }
 
+// we don't want the mention to be extended, thus returning nullptr here.
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range {
   return nullptr;
 }

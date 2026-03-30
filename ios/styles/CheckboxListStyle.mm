@@ -78,7 +78,7 @@
 // During dirty range re-application the default add: would use getValue
 // (EnrichedCheckbox0) and lose the checked state. Instead, read the original
 // marker format from the saved StylePair
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+- (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSParagraphStyle *savedPStyle = (NSParagraphStyle *)pair.styleValue;
   BOOL checked =

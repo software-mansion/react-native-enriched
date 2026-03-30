@@ -146,14 +146,13 @@
   NSRange lastRange = NSMakeRange(input->textView.textStorage.string.length, 0);
   NSRange lastParagraphRange =
       [input->textView.textStorage.string paragraphRangeForRange:lastRange];
-  if (lastParagraphRange.length == 0) {
-    if ([self anyZWSStylePresentInRange:lastRange input:input]) {
-      [TextInsertionUtils insertText:@"\u200B"
-                                  at:lastRange.location
-                additionalAttributes:metaAttrs
-                               input:input
-                       withSelection:NO];
-    }
+  if (lastParagraphRange.length == 0 &&
+      [self anyZWSStylePresentInRange:lastRange input:input]) {
+    [TextInsertionUtils insertText:@"\u200B"
+                                at:lastRange.location
+              additionalAttributes:metaAttrs
+                             input:input
+                     withSelection:NO];
   }
 
   // fix the selection if needed

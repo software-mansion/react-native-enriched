@@ -31,6 +31,6 @@
 - (BOOL)any:(NSRange)range;
 - (NSArray<StylePair *> *)all:(NSRange)range;
 - (void)applyStyling:(NSRange)range;
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair;
+- (void)reapplyFromStylePair:(StylePair *)pair;
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range;
 @end

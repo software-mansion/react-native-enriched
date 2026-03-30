@@ -41,7 +41,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   [self.input->textView.textStorage addAttributes:newAttrs range:range];
 }
 
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+- (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSString *url = nullptr;
   BOOL manual = YES;
@@ -64,6 +64,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   [self applyLinkMetaForUrl:url manual:manual range:range];
 }
 
+// we don't want the link to be extended, thus returning nullptr here.
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range {
   return nullptr;
 }
@@ -118,8 +119,8 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
         detectMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
              withInput:self.input
                inRange:range
-         withCondition:^BOOL(id _Nullable value, NSRange r) {
-           return [self styleCondition:value range:r];
+         withCondition:^BOOL(id _Nullable value, NSRange subrange) {
+           return [self styleCondition:value range:subrange];
          }];
     return onlyLinks ? [self isSingleLinkIn:range] : NO;
   }
@@ -346,7 +347,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
       enumerateAttribute:ManualLinkAttributeName
                  inRange:wordRange
                  options:0
-              usingBlock:^(id value, NSRange r, BOOL *stop) {
+              usingBlock:^(id value, NSRange subrange, BOOL *stop) {
                 NSString *urlValue = (NSString *)value;
                 if (urlValue != nullptr) {
                   manualLinkPresent = YES;
@@ -469,9 +470,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     NSRange newRange =
         NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
     [self applyLinkMetaForUrl:manualLinkMinValue manual:YES range:newRange];
-    if (newRange.length > 0) {
-      [self.input->attributesManager addDirtyRange:newRange];
-    }
+    [self.input->attributesManager addDirtyRange:newRange];
   }
 }
 
@@ -517,12 +516,13 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
                             withCondition:^BOOL(id _Nullable value, NSRange r) {
                               return [self styleCondition:value range:r];
                             }];
-  BOOL anyManual = [OccurenceUtils any:ManualLinkAttributeName
-                             withInput:self.input
-                               inRange:wordRange
-                         withCondition:^BOOL(id _Nullable value, NSRange r) {
-                           return [self styleCondition:value range:r];
-                         }];
+  BOOL anyManual =
+      [OccurenceUtils any:ManualLinkAttributeName
+                withInput:self.input
+                  inRange:wordRange
+            withCondition:^BOOL(id _Nullable value, NSRange subrange) {
+              return [self styleCondition:value range:subrange];
+            }];
 
   // both manual and automatic links are somewhere - delete!
   if (anyAutomatic && anyManual) {

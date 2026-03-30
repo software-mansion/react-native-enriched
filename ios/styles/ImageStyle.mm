@@ -24,7 +24,7 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
   // no-op for image
 }
 
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+- (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   ImageData *imageData = (ImageData *)pair.styleValue;
   if (imageData == nullptr || range.length == 0) {

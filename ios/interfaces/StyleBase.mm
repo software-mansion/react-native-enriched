@@ -235,7 +235,7 @@
 
 // Called during dirty range re-application to restore a style from a saved
 // StylePair
-- (void)reapplyAttributesFromStylePair:(StylePair *)pair {
+- (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   [self add:range withTyping:NO withDirtyRange:NO];
 }
