@@ -34,6 +34,8 @@ if [ "$(printf '%s\n' "$MIN_MAESTRO_VERSION" "$MAESTRO_VERSION" | sort -V | head
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCREENSHOT_ROOT="$REPO_ROOT/.maestro/screenshots"
 BUNDLE_ID="swmansion.enriched.example"
 
 PLATFORM=""
@@ -80,8 +82,8 @@ else
   echo "=== App ($BUNDLE_ID) already installed, skipping build ==="
 fi
 
-EXTRA=""
-[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="--env UPDATE_SCREENSHOTS=true"
+EXTRA="--env SCREENSHOT_ROOT=$SCREENSHOT_ROOT"
+[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="$EXTRA --env UPDATE_SCREENSHOTS=true"
 
 # Exclude tests tagged for the other platform.
 case "$PLATFORM" in
