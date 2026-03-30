@@ -85,6 +85,15 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
+  "dependencies": {
+    "@tiptap/core": "^3.20.4",
+    "@tiptap/extension-document": "^3.20.4",
+    "@tiptap/extension-paragraph": "^3.20.4",
+    "@tiptap/extension-text": "^3.20.4",
+    "@tiptap/extensions": "^3.20.4",
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/react": "^3.20.4"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/compat": "^1.2.7",
@@ -94,15 +103,9 @@
     "@react-native-community/cli": "20.0.0",
     "@react-native/eslint-config": "^0.81.0",
     "@release-it/conventional-changelog": "^9.0.2",
-    "@tiptap/core": "^3.20.4",
-    "@tiptap/extension-document": "^3.20.4",
-    "@tiptap/extension-paragraph": "^3.20.4",
-    "@tiptap/extension-text": "^3.20.4",
-    "@tiptap/extensions": "^3.20.4",
-    "@tiptap/pm": "^3.20.4",
-    "@tiptap/react": "^3.20.4",
     "@types/jest": "^29.5.5",
     "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "clang-format": "^1.8.0",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
@@ -120,38 +123,8 @@
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
-    "@tiptap/core": ">=3.20.4",
-    "@tiptap/extension-document": ">=3.20.4",
-    "@tiptap/extension-paragraph": ">=3.20.4",
-    "@tiptap/extension-text": ">=3.20.4",
-    "@tiptap/extensions": ">=3.20.4",
-    "@tiptap/pm": ">=3.20.4",
-    "@tiptap/react": ">=3.20.4",
     "react": "*",
     "react-native": "*"
-  },
-  "peerDependenciesMeta": {
-    "@tiptap/core": {
-      "optional": true
-    },
-    "@tiptap/extension-document": {
-      "optional": true
-    },
-    "@tiptap/extension-paragraph": {
-      "optional": true
-    },
-    "@tiptap/extension-text": {
-      "optional": true
-    },
-    "@tiptap/extensions": {
-      "optional": true
-    },
-    "@tiptap/pm": {
-      "optional": true
-    },
-    "@tiptap/react": {
-      "optional": true
-    }
   },
   "workspaces": [
     "apps/example",

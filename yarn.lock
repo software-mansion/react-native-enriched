@@ -4282,7 +4282,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^19.2.3":
+"@types/react-dom@npm:^19.1.0, @types/react-dom@npm:^19.2.3":
   version: 19.2.3
   resolution: "@types/react-dom@npm:19.2.3"
   peerDependencies:
@@ -12276,13 +12276,6 @@ __metadata:
   resolution: "react-native-enriched-web-example@workspace:apps/example-web"
   dependencies:
     "@eslint/js": ^9.39.1
-    "@tiptap/core": ^3.20.4
-    "@tiptap/extension-document": ^3.20.4
-    "@tiptap/extension-paragraph": ^3.20.4
-    "@tiptap/extension-text": ^3.20.4
-    "@tiptap/extensions": ^3.20.4
-    "@tiptap/pm": ^3.20.4
-    "@tiptap/react": ^3.20.4
     "@types/node": ^24.10.1
     "@types/react": ^19.1.0
     "@types/react-dom": ^19.2.3
@@ -12322,6 +12315,7 @@ __metadata:
     "@tiptap/react": ^3.20.4
     "@types/jest": ^29.5.5
     "@types/react": ^19.1.0
+    "@types/react-dom": ^19.1.0
     clang-format: ^1.8.0
     commitlint: ^19.6.1
     del-cli: ^5.1.0
@@ -12338,30 +12332,8 @@ __metadata:
     turbo: ^1.10.7
     typescript: ^5.8.3
   peerDependencies:
-    "@tiptap/core": ">=3.20.4"
-    "@tiptap/extension-document": ">=3.20.4"
-    "@tiptap/extension-paragraph": ">=3.20.4"
-    "@tiptap/extension-text": ">=3.20.4"
-    "@tiptap/extensions": ">=3.20.4"
-    "@tiptap/pm": ">=3.20.4"
-    "@tiptap/react": ">=3.20.4"
     react: "*"
     react-native: "*"
-  peerDependenciesMeta:
-    "@tiptap/core":
-      optional: true
-    "@tiptap/extension-document":
-      optional: true
-    "@tiptap/extension-paragraph":
-      optional: true
-    "@tiptap/extension-text":
-      optional: true
-    "@tiptap/extensions":
-      optional: true
-    "@tiptap/pm":
-      optional: true
-    "@tiptap/react":
-      optional: true
   languageName: unknown
   linkType: soft
 
