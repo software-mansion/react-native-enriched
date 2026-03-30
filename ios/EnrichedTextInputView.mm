@@ -1982,8 +1982,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   H6Style *h6Style = stylesDict[@([H6Style getType])];
 
   // some of the changes these checks do could interfere with later checks and
-  // cause a crash so here I rely on short circuiting evaluation of the logical
-  // expression either way it's not possible to have two of them come off at the
+  // cause a crash so here we rely on short circuiting evaluation of the logical
+  // expression. Either way it's not possible to have two of them come off at the
   // same time
   if (
       // ZWS backspace handling for paragraph styles
