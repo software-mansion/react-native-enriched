@@ -87,6 +87,9 @@ function App() {
         onOpenSetValue={() => {
           setIsSetValueModalOpen(true);
         }}
+        onSetSelection={(start, end) => {
+          ref.current?.setSelection(start, end);
+        }}
       />
 
       {showHtmlOutput && <HtmlOutputPanel html={currentHtml} />}

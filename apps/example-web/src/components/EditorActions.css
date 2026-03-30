@@ -11,3 +11,12 @@
   gap: 8px;
   width: 100%;
 }
+
+.sel-input {
+  width: 70px;
+  padding: 4px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}

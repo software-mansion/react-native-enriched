@@ -165,6 +165,7 @@ export function useEditorState() {
   };
 
   const handleSelectionChangeEvent = (sel: OnChangeSelectionEvent) => {
+    console.log('Selection changed:', sel);
     setSelection(sel);
   };
 
@@ -237,6 +238,10 @@ export function useEditorState() {
     console.log('Submitted editing:', e.text);
   };
 
+  const handleSetSelection = (start: number, end: number) => {
+    ref.current?.setSelection(start, end);
+  };
+
   return {
     ref,
     stylesState,
@@ -278,5 +283,6 @@ export function useEditorState() {
     submitLink,
     submitSetValue,
     selectImage,
+    handleSetSelection,
   };
 }

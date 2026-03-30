@@ -1,4 +1,5 @@
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, Text, ScrollView, TextInput } from 'react-native';
 import { EnrichedTextInput } from 'react-native-enriched';
 import { Button } from '../components/Button';
 import { Toolbar } from '../components/Toolbar';
@@ -21,6 +22,8 @@ interface DevScreenProps {
 
 export function DevScreen({ onSwitch }: DevScreenProps) {
   const editor = useEditorState();
+  const [selStart, setSelStart] = useState('0');
+  const [selEnd, setSelEnd] = useState('0');
 
   return (
     <>
@@ -93,6 +96,35 @@ export function DevScreen({ onSwitch }: DevScreenProps) {
           style={styles.valueButton}
           testID="set-value-button"
         />
+        <View style={styles.setSelectionRow}>
+          <TextInput
+            style={styles.selInput}
+            keyboardType="number-pad"
+            value={selStart}
+            onChangeText={setSelStart}
+            placeholder="start"
+            testID="selection-start-input"
+          />
+          <TextInput
+            style={styles.selInput}
+            keyboardType="number-pad"
+            value={selEnd}
+            onChangeText={setSelEnd}
+            placeholder="end"
+            testID="selection-end-input"
+          />
+          <Button
+            title="Set Selection"
+            onPress={() =>
+              editor.handleSetSelection(
+                parseInt(selStart, 10) || 0,
+                parseInt(selEnd, 10) || 0
+              )
+            }
+            style={styles.selButton}
+            testID="set-selection-button"
+          />
+        </View>
         <Button
           title="Test Screen"
           onPress={onSwitch}
@@ -170,6 +202,26 @@ const styles = StyleSheet.create({
   },
   valueButton: {
     width: '100%',
+  },
+  setSelectionRow: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 8,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  selInput: {
+    width: 60,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  selButton: {
+    flex: 1,
   },
   editorInput: {
     marginTop: 24,
