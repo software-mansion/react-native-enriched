@@ -188,4 +188,4 @@ jobs:
         with:
           name: e2e-android-artifacts
           path: |
-            .maestro/screenshots/**/*_diff.png
+            .maestro/screenshots/android/.maestro/screenshots/android/*_diff.png
