@@ -9,6 +9,7 @@ import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 open class EnrichedLinkSpan(
   private val url: String,
   private val enrichedStyle: EnrichedStyle,
+  private val isManual: Boolean,
 ) : ClickableSpan(),
   EnrichedInlineSpan {
   override fun onClick(view: View) {
@@ -23,4 +24,6 @@ open class EnrichedLinkSpan(
   }
 
   fun getUrl(): String = url
+
+  fun getIsManual(): Boolean = isManual
 }
