@@ -23,7 +23,7 @@ export const EnrichedTextInput = ({
   defaultValue,
   autoFocus,
   editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
-  placeholder,
+  placeholder = '',
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   onFocus,
@@ -33,52 +33,57 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
 }: EnrichedTextInputProps) => {
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Placeholder.configure({
-        placeholder: placeholder ?? '',
-        showOnlyWhenEditable: true,
-      }),
-    ],
-    content:
-      defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue,
-    editable: editable,
-    autofocus: autoFocus,
-    onFocus: ({ event }) => {
-      onFocus?.(adaptWebToNativeEvent(event, { target: -1 }));
-    },
-    onBlur: ({ event }) => {
-      onBlur?.(adaptWebToNativeEvent(event, { target: -1 }));
-    },
-    onSelectionUpdate: ({ editor: _editor }) => {
-      const { state } = _editor;
-      const { from, to } = state.selection;
-      // Clamp to valid text positions - AllSelection (Cmd+A) uses from=0, to=doc.content.size
-      // which extends beyond paragraph boundaries, unlike iOS/Android behavior.
-      const clampedFrom = Math.max(1, from);
-      const clampedTo = Math.min(state.doc.content.size - 1, to);
+  const tiptapContent =
+    defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
-      onChangeSelection?.(
-        adaptWebToNativeEvent(null, {
-          start: clampedFrom - 1,
-          end: clampedTo - 1,
-          text: state.doc.textBetween(clampedFrom, clampedTo),
-        })
-      );
-    },
-    editorProps: {
-      handleKeyPress: (_, event) => {
-        onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
-        return false;
+  const editor = useEditor(
+    {
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        Placeholder.configure({
+          placeholder,
+          showOnlyWhenEditable: true,
+        }),
+      ],
+      content: tiptapContent,
+      editable,
+      autofocus: autoFocus,
+      onFocus: ({ event }) => {
+        onFocus?.(adaptWebToNativeEvent(event, { target: -1 }));
       },
-      attributes: {
-        autoCapitalize: autoCapitalize,
+      onBlur: ({ event }) => {
+        onBlur?.(adaptWebToNativeEvent(event, { target: -1 }));
+      },
+      onSelectionUpdate: ({ editor: _editor }) => {
+        const { state } = _editor;
+        const { from, to } = state.selection;
+        // Clamp to valid text positions - AllSelection (Cmd+A) uses from=0, to=doc.content.size
+        // which extends beyond paragraph boundaries, unlike iOS/Android behavior.
+        const clampedFrom = Math.max(1, from);
+        const clampedTo = Math.min(state.doc.content.size - 1, to);
+
+        onChangeSelection?.(
+          adaptWebToNativeEvent(null, {
+            start: clampedFrom - 1,
+            end: clampedTo - 1,
+            text: state.doc.textBetween(clampedFrom, clampedTo),
+          })
+        );
+      },
+      editorProps: {
+        handleKeyPress: (_, event) => {
+          onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
+          return false;
+        },
+        attributes: {
+          autoCapitalize,
+        },
       },
     },
-  });
+    [tiptapContent]
+  );
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);

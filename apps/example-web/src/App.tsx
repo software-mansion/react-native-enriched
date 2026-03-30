@@ -56,9 +56,9 @@ function App() {
           <EnrichedTextInput
             ref={ref}
             placeholder="Type something"
-            autoFocus={true}
-            editable={true}
-            scrollEnabled={true}
+            autoFocus
+            editable
+            scrollEnabled
             autoCapitalize="sentences"
             onFocus={handleFocus}
             onBlur={handleBlur}
