@@ -5,7 +5,7 @@
 
 @implementation HeadingStyleBase
 
-// mock values since H1/2/3/4/5/6Style classes are used
+// mock values since H1/2/3/4/5/6 style classes are used
 + (StyleType)getType {
   return None;
 }
