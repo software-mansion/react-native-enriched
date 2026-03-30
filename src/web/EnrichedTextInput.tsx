@@ -5,6 +5,7 @@ import type {
   EnrichedTextInputProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
+import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -59,18 +60,11 @@ export const EnrichedTextInput = ({
       onSelectionUpdate: ({ editor: _editor }) => {
         const { state } = _editor;
         const { from, to } = state.selection;
-        // Clamp to valid text positions - AllSelection (Cmd+A) uses from=0, to=doc.content.size
-        // which extends beyond paragraph boundaries, unlike iOS/Android behavior.
-        const clampedFrom = Math.max(1, from);
-        const clampedTo = Math.min(state.doc.content.size - 1, to);
 
-        onChangeSelection?.(
-          adaptWebToNativeEvent(null, {
-            start: clampedFrom - 1,
-            end: clampedTo - 1,
-            text: state.doc.textBetween(clampedFrom, clampedTo),
-          })
-        );
+        const start = tiptapPosToNativePos(state.doc, from);
+        const end = tiptapPosToNativePos(state.doc, to);
+        const text = state.doc.textBetween(from, to, '\n');
+        onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {
         handleKeyPress: (_, event) => {
@@ -96,10 +90,14 @@ export const EnrichedTextInput = ({
       setValue: (value: string) =>
         editor.commands.setContent(prepareHtmlForTiptap(value)),
       setSelection: (start, end) => {
+        const doc = editor.state.doc;
         editor
           .chain()
           .focus()
-          .setTextSelection({ from: start + 1, to: end + 1 })
+          .setTextSelection({
+            from: nativePosToTiptapPos(doc, start),
+            to: nativePosToTiptapPos(doc, end),
+          })
           .run();
       },
       getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
