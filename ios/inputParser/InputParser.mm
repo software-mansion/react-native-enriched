@@ -659,13 +659,12 @@
       if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
         NSString *text =
             [_input->textView.textStorage.string substringWithRange:styleRange];
-        LinkData *linkData = (LinkData *)stylePair.styleValue;
-        NSString *url = linkData.url;
-        linkData.isManual = ![text isEqualToString:url];
+        NSString *url = ((LinkData *)stylePair.styleValue).url;
+        BOOL isManual = ![text isEqualToString:url];
         [((LinkStyle *)baseStyle) addLink:text
                                       url:url
                                     range:styleRange
-                                   manual:linkData.isManual
+                                   manual:isManual
                             withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
