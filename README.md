@@ -268,7 +268,6 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Known limitations
 
 - Only one level of lists is supported. We currently do not support nested lists.
-- iOS headings can't have the same `fontSize` in their config as input's `fontSize`. Doing so results in incorrect headings behavior.
 
 ## Future Plans
 

@@ -80,7 +80,7 @@ We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live
 
 #### Prerequisites
 
-- **Maestro CLI** (v2.2.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
+- **Maestro CLI** (v2.3.0+) - follow the [Getting Started guide](https://github.com/mobile-dev-inc/maestro?tab=readme-ov-file#getting-started). After installing, ensure `~/.maestro/bin` is in your `PATH`.
 - **iOS** - Xcode. Ensure `xcrun` is available (it ships with Xcode Command Line Tools).
 - **Android** - Android SDK with SDK Command-line Tools, SDK Platform-Tools, Emulator. Set up `ANDROID_HOME` (typically `$HOME/Library/Android/sdk` on macOS) and ensure the following are in your `PATH`:
   - `$ANDROID_HOME/cmdline-tools/latest/bin`
@@ -137,6 +137,13 @@ yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.y
 ```
 
 Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
+
+#### Troubleshooting: flaky Android tests on macOS
+
+macOS may throttle the Android emulator via **App Nap** when its window is not visible (e.g. minimized or behind other windows), which can cause test timeouts. Two workarounds:
+
+1. **Keep the emulator window visible** while tests are running.
+2. **Disable App Nap** for the emulator: `defaults write com.google.android.emulator NSAppSleepDisabled -bool YES` (requires an emulator restart). Note this may drain your battery, so you may want to re-enable it afterwards with `-bool NO`.
 
 ### Commit message convention
 

@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-MIN_MAESTRO_VERSION="2.2.0"
+MIN_MAESTRO_VERSION="2.3.0"
 
 if ! command -v maestro >/dev/null 2>&1; then
   echo "Error: maestro CLI not found." >&2
@@ -34,6 +34,8 @@ if [ "$(printf '%s\n' "$MIN_MAESTRO_VERSION" "$MAESTRO_VERSION" | sort -V | head
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCREENSHOT_ROOT="$REPO_ROOT/.maestro/screenshots"
 BUNDLE_ID="swmansion.enriched.example"
 
 PLATFORM=""
@@ -80,8 +82,19 @@ else
   echo "=== App ($BUNDLE_ID) already installed, skipping build ==="
 fi
 
-EXTRA=""
-[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="--env UPDATE_SCREENSHOTS=true"
+EXTRA="--env SCREENSHOT_ROOT=$SCREENSHOT_ROOT"
+[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="$EXTRA --env UPDATE_SCREENSHOTS=true"
+
+# Exclude tests tagged for the other platform.
+case "$PLATFORM" in
+  ios)     EXTRA="$EXTRA --exclude-tags android-only" ;;
+  android) EXTRA="$EXTRA --exclude-tags ios-only" ;;
+esac
+
+# Maestro resolves addMedia paths by walking the workspace inputs. Since assets
+# live outside the flows directory, always include it so media files are found.
+ASSETS_DIR=".maestro/assets"
+[ -d "$ASSETS_DIR" ] && FLOWS="$ASSETS_DIR $FLOWS"
 
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
