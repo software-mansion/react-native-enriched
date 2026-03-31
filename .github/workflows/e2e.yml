@@ -125,7 +125,7 @@ jobs:
         with:
           name: e2e-ios-artifacts
           path: |
-            .maestro/screenshots/**/*_diff.png
+            .maestro/screenshots/ios/*_diff.png
 
   e2e-android:
     needs: [changes]
@@ -188,4 +188,4 @@ jobs:
         with:
           name: e2e-android-artifacts
           path: |
-            .maestro/screenshots/android/.maestro/screenshots/android/*_diff.png
+            .maestro/screenshots/android/*_diff.png
