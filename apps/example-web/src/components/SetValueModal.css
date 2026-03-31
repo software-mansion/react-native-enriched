@@ -29,9 +29,10 @@
   border-color: var(--primary);
 }
 
-.modal-submit-btn {
+.btn.modal-submit-btn {
   width: auto;
   flex: none;
   padding: 10px 28px;
   font-size: 15px;
+  line-height: 1.2;
 }

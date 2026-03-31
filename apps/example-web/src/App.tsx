@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import './App.css';
 import {
   EnrichedTextInput,
   type EnrichedTextInputInstance,
@@ -12,15 +11,14 @@ import {
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
 import { SetValueModal } from './components/SetValueModal';
-import { SetSelectionModal } from './components/SetSelectionModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
+import './App.css';
 
 function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
   const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
-  const [isSetSelectionModalOpen, setIsSetSelectionModalOpen] = useState(false);
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -89,9 +87,6 @@ function App() {
         onOpenSetValue={() => {
           setIsSetValueModalOpen(true);
         }}
-        onOpenSetSelection={() => {
-          setIsSetSelectionModalOpen(true);
-        }}
       />
 
       {showHtmlOutput && <HtmlOutputPanel html={currentHtml} />}
@@ -103,19 +98,6 @@ function App() {
           }}
           onClose={() => {
             setIsSetValueModalOpen(false);
-          }}
-        />
-      )}
-
-      {isSetSelectionModalOpen && (
-        <SetSelectionModal
-          initialStart={0}
-          initialEnd={0}
-          onSetSelection={(start, end) => {
-            ref.current?.setSelection(start, end);
-          }}
-          onClose={() => {
-            setIsSetSelectionModalOpen(false);
           }}
         />
       )}

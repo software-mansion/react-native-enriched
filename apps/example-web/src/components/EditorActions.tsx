@@ -7,7 +7,6 @@ interface EditorActionsProps {
   onClear: () => void;
   onToggleHtml: () => void;
   onOpenSetValue: () => void;
-  onOpenSetSelection: () => void;
 }
 
 export function EditorActions({
@@ -17,7 +16,6 @@ export function EditorActions({
   onClear,
   onToggleHtml,
   onOpenSetValue,
-  onOpenSetSelection,
 }: EditorActionsProps) {
   return (
     <div className="actions-container" data-testid="editor-actions">
@@ -38,13 +36,6 @@ export function EditorActions({
         onClick={onOpenSetValue}
       >
         Set input's value
-      </button>
-      <button
-        className="btn btn-full"
-        data-testid="open-set-selection-modal-button"
-        onClick={onOpenSetSelection}
-      >
-        Set input's selection
       </button>
       <button
         className="btn btn-full"
