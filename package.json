@@ -65,7 +65,8 @@
     "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace",
     "test:e2e": ".maestro/scripts/run-tests-all.sh",
     "test:e2e:android": ".maestro/scripts/run-tests.sh --platform android",
-    "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios"
+    "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios",
+    "test:e2e:web": "yarn example-web test:e2e"
   },
   "keywords": [
     "react-native",

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build:web": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx"
+    "lint": "eslint . --ext ts,tsx",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^24.10.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.2.3",
@@ -25,6 +27,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "eslint-plugin-react-x": "^2.3.13",
     "globals": "^16.5.0",
+    "playwright": "^1.58.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"

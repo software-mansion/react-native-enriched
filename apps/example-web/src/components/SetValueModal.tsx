@@ -21,16 +21,26 @@ export function SetValueModal({ onSetValue, onClose }: SetValueModalProps) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={handleBackdropClick}>
-      <div className="modal-card">
+    <div
+      className="modal-backdrop"
+      data-testid="set-value-modal-backdrop"
+      onClick={handleBackdropClick}
+    >
+      <div className="modal-card" data-testid="set-value-modal">
         <div className="modal-header">
-          <button className="modal-close" onClick={onClose} aria-label="Close">
+          <button
+            className="modal-close"
+            data-testid="set-value-modal-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
             ✕
           </button>
         </div>
         <div className="modal-content">
           <textarea
             className="modal-input"
+            data-testid="set-value-modal-input"
             placeholder="New value"
             value={value}
             onChange={(e) => {
@@ -40,7 +50,11 @@ export function SetValueModal({ onSetValue, onClose }: SetValueModalProps) {
             autoCorrect="off"
             spellCheck={false}
           />
-          <button className="btn modal-submit-btn" onClick={handleSubmit}>
+          <button
+            className="btn modal-submit-btn"
+            data-testid="set-value-modal-submit"
+            onClick={handleSubmit}
+          >
             Set Value
           </button>
         </div>

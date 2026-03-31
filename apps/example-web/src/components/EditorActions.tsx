@@ -18,22 +18,30 @@ export function EditorActions({
   onOpenSetValue,
 }: EditorActionsProps) {
   return (
-    <div className="actions-container">
-      <div className="btn-row">
-        <button className="btn" onClick={onFocus}>
+    <div className="actions-container" data-testid="editor-actions">
+      <div className="btn-row" data-testid="editor-actions-row">
+        <button className="btn" data-testid="focus-button" onClick={onFocus}>
           Focus
         </button>
-        <button className="btn" onClick={onBlur}>
+        <button className="btn" data-testid="blur-button" onClick={onBlur}>
           Blur
         </button>
-        <button className="btn" onClick={onClear}>
+        <button className="btn" data-testid="clear-button" onClick={onClear}>
           Clear
         </button>
       </div>
-      <button className="btn btn-full" onClick={onOpenSetValue}>
+      <button
+        className="btn btn-full"
+        data-testid="open-set-value-modal-button"
+        onClick={onOpenSetValue}
+      >
         Set input's value
       </button>
-      <button className="btn btn-full" onClick={onToggleHtml}>
+      <button
+        className="btn btn-full"
+        data-testid="toggle-html-button"
+        onClick={onToggleHtml}
+      >
         {showHtmlOutput ? 'Hide' : 'Show'} HTML
       </button>
     </div>
