@@ -20,10 +20,8 @@
 @end
 
 @interface LinkStyle : StyleBase
-- (void)addLink:(NSString *)text
-              url:(NSString *)url
+- (void)addLink:(LinkData *)linkData
             range:(NSRange)range
-           manual:(BOOL)manual
     withSelection:(BOOL)withSelection;
 - (LinkData *)getLinkDataAt:(NSUInteger)location;
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;

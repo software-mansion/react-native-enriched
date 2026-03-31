@@ -657,14 +657,9 @@
     if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getType]
                                         range:styleRange]) {
       if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
-        NSString *text =
-            [_input->textView.textStorage.string substringWithRange:styleRange];
-        NSString *url = ((LinkData *)stylePair.styleValue).url;
-        BOOL isManual = ![text isEqualToString:url];
-        [((LinkStyle *)baseStyle) addLink:text
-                                      url:url
+        LinkData *linkData = (LinkData *)stylePair.styleValue;
+        [((LinkStyle *)baseStyle) addLink:linkData
                                     range:styleRange
-                                   manual:isManual
                             withSelection:NO];
       } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
@@ -1331,8 +1326,13 @@
       NSString *url =
           [params substringWithRange:NSMakeRange(hrefRange.location + 6,
                                                  hrefRange.length - 7)];
+      NSString *text = [plainText substringWithRange:tagRangeValue.rangeValue];
+
       LinkData *linkData = [[LinkData alloc] init];
       linkData.url = url;
+      linkData.text = text;
+      linkData.isManual = ![text isEqualToString:url];
+
       stylePair.styleValue = linkData;
     } else if ([tagName isEqualToString:@"mention"]) {
       [styleArr addObject:@([MentionStyle getType])];

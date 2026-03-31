@@ -1,10 +1,11 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@interface LinkData : NSObject
+@interface LinkData : NSObject <NSCopying>
 
-@property NSString *text;
-@property NSString *url;
-@property BOOL isManual;
+@property(nonatomic, copy) NSString *text;
+@property(nonatomic, copy) NSString *url;
+@property(nonatomic, assign) BOOL isManual;
+- (BOOL)isEqualToLinkData:(LinkData *)linkData;
 
 @end

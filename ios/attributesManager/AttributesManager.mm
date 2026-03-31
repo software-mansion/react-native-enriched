@@ -27,11 +27,12 @@
 }
 
 - (void)addDirtyRange:(NSRange)range {
-  if (range.length == 0) {
-    return;
-  }
   [_dirtyRanges addObject:[NSValue valueWithRange:range]];
   _dirtyRanges = [[RangeUtils connectAndDedupeRanges:_dirtyRanges] mutableCopy];
+}
+
+- (NSArray *)getDirtyRanges {
+  return _dirtyRanges;
 }
 
 - (void)shiftDirtyRangesWithEditedRange:(NSRange)editedRange
@@ -55,6 +56,13 @@
 }
 
 - (void)handleDirtyRangesStyling {
+  // Filter out 0 length ranges for styling.
+  NSPredicate *predicate = [NSPredicate
+      predicateWithBlock:^BOOL(NSValue *evaluatedObject, NSDictionary *_) {
+        return [evaluatedObject rangeValue].length > 0;
+      }];
+  [_dirtyRanges filterUsingPredicate:predicate];
+
   for (NSValue *rangeObj in _dirtyRanges) {
     NSRange dirtyRange = [rangeObj rangeValue];
 

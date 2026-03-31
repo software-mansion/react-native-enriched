@@ -1116,10 +1116,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         // we changed selection from non-link to a link
         detectedLinkData = candidateLinkData;
         detectedLinkRange = candidateLinkRange;
-      } else if (![_recentlyActiveLinkData.url
-                     isEqualToString:candidateLinkData.url] ||
-                 ![_recentlyActiveLinkData.text
-                     isEqualToString:candidateLinkData.text] ||
+      } else if (![_recentlyActiveLinkData
+                     isEqualToLinkData:candidateLinkData] ||
                  !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)) {
         // we changed selection from one link to the other or modified
         // current link's text
@@ -1191,10 +1189,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   if (detectedLinkData != nullptr) {
     // emit onLinkeDetected event
-    [self emitOnLinkDetectedEvent:detectedLinkData.text
-                              url:detectedLinkData.url
-                         isManual:detectedLinkData.isManual
-                            range:detectedLinkRange];
+    [self emitOnLinkDetectedEvent:detectedLinkData range:detectedLinkRange];
   }
 
   if (detectedMentionParams != nullptr) {
@@ -1427,23 +1422,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)emitOnLinkDetectedEvent:(NSString *)text
-                            url:(NSString *)url
-                       isManual:(BOOL)isManual
-                          range:(NSRange)range {
+- (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     // update recently active link info
-    LinkData *newLinkData = [[LinkData alloc] init];
-    newLinkData.text = text;
-    newLinkData.url = url;
-    newLinkData.isManual = isManual;
-    _recentlyActiveLinkData = newLinkData;
+    _recentlyActiveLinkData = linkData;
     _recentlyActiveLinkRange = range;
 
     emitter->onLinkDetected({
-        .text = [text toCppString],
-        .url = [url toCppString],
+        .text = [linkData.text toCppString],
+        .url = [linkData.url toCppString],
         .start = static_cast<int>(range.location),
         .end = static_cast<int>(range.location + range.length),
     });
@@ -1582,11 +1570,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSRange linkRange = NSMakeRange(start, end - start);
   if ([self handleStyleBlocksAndConflicts:[LinkStyle getType]
                                     range:linkRange]) {
-    [linkStyleClass addLink:text
-                        url:url
-                      range:linkRange
-                     manual:YES
-              withSelection:YES];
+    LinkData *linkData = [[LinkData alloc] init];
+    linkData.text = text;
+    linkData.url = url;
+    linkData.isManual = YES;
+    [linkStyleClass addLink:linkData range:linkRange withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
 }
@@ -1790,25 +1778,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self setPlaceholderLabelShown:YES];
   }
 
-  if (![textView.textStorage.string isEqualToString:_recentInputString]) {
-    // modified words handling
-    NSArray *modifiedWords =
-        [WordsUtils getAffectedWordsFromText:textView.textStorage.string
-                           modificationRange:recentlyChangedRange];
-    if (modifiedWords != nullptr) {
-      for (NSDictionary *wordDict in modifiedWords) {
-        NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
-        NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+  // modified words handling
+  NSArray *currentDirtyRanges = [attributesManager getDirtyRanges];
+  if (currentDirtyRanges.count > 0) {
+    NSMutableArray *modifiedWords = [[NSMutableArray alloc] init];
 
-        if (wordText == nullptr || wordRange == nullptr) {
-          continue;
-        }
-
-        [self handleWordModificationBasedChanges:wordText
-                                         inRange:[wordRange rangeValue]];
+    for (NSValue *dirtyRangeValue in currentDirtyRanges) {
+      NSRange dirtyRange = [dirtyRangeValue rangeValue];
+      NSArray *words =
+          [WordsUtils getAffectedWordsFromText:textView.textStorage.string
+                             modificationRange:dirtyRange];
+      if (words != nullptr) {
+        [modifiedWords addObjectsFromArray:words];
       }
     }
 
+    for (NSDictionary *wordDict in modifiedWords) {
+      NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
+      NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+
+      if (wordText == nullptr || wordRange == nullptr) {
+        continue;
+      }
+
+      [self handleWordModificationBasedChanges:wordText
+                                       inRange:[wordRange rangeValue]];
+    }
+  }
+
+  if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr && _emitTextChange) {
@@ -2204,8 +2202,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [attributesManager shiftDirtyRangesWithEditedRange:editedRange
                                         changeInLength:delta];
 
-    // Always try adding new dirty range (happens only with editedRange.length >
-    // 0).
+    // Add dirty ranges. We also add zero-length ranges because they are useful
+    // for word modification-based changes.
     [attributesManager addDirtyRange:editedRange];
   }
 }

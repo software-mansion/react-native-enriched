@@ -4,6 +4,7 @@
 #import "InputConfig.h"
 #import "InputParser.h"
 #import "InputTextView.h"
+#import "LinkData.h"
 #import "MediaAttachment.h"
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
@@ -39,10 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSValue *dotReplacementRange;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
-- (void)emitOnLinkDetectedEvent:(NSString *)text
-                            url:(NSString *)url
-                       isManual:(BOOL)isManual
-                          range:(NSRange)range;
+- (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
 - (void)anyTextMayHaveBeenModified;
