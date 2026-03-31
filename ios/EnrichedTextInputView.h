@@ -19,8 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @public
   InputTextView *textView;
 @public
-  NSRange recentlyChangedRange;
-@public
   InputConfig *config;
 @public
   InputParser *parser;

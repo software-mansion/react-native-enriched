@@ -92,7 +92,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
-  recentlyChangedRange = NSMakeRange(0, 0);
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
@@ -1371,8 +1370,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
   }
 
-  // set recentlyChangedRange and check for changes
-  recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
+  // set selectedRange and check for changes
   textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
 }
@@ -2014,16 +2012,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
-  recentlyChangedRange = NSMakeRange(range.location, text.length);
   [self handleKeyPressInRange:text range:range];
 
   UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getType])];
   OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getType])];
   CheckboxListStyle *cbLStyle =
       (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
-  MentionStyle *mentionStyle =
-      (MentionStyle *)stylesDict[@([MentionStyle getType])];
-  LinkStyle *linkStyle = (LinkStyle *)stylesDict[@([LinkStyle getType])];
   H1Style *h1Style = stylesDict[@([H1Style getType])];
   H2Style *h2Style = stylesDict[@([H2Style getType])];
   H3Style *h3Style = stylesDict[@([H3Style getType])];
