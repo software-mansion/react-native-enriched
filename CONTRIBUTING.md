@@ -145,6 +145,28 @@ macOS may throttle the Android emulator via **App Nap** when its window is not v
 1. **Keep the emulator window visible** while tests are running.
 2. **Disable App Nap** for the emulator: `defaults write com.google.android.emulator NSAppSleepDisabled -bool YES` (requires an emulator restart). Note this may drain your battery, so you may want to re-enable it afterwards with `-bool NO`.
 
+### Web E2E tests
+
+We use [Playwright](https://playwright.dev/) for end-to-end testing of the web example. Tests live in `apps/example-web/tests/`.
+
+#### Prerequisites
+
+- Install Playwright browser binaries once before running web E2E tests:
+
+```sh
+yarn example-web playwright install
+```
+
+#### Running Web E2E tests
+
+Run the web E2E suite from the root directory:
+
+```sh
+yarn test:e2e:web
+```
+
+The Playwright config starts the Vite dev server automatically, so you do not need to run `yarn example-web dev` separately.
+
 ### Commit message convention
 
 We follow the [conventional commits specification](https://www.conventionalcommits.org/en) for our commit messages:
@@ -190,6 +212,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn test:e2e`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
+- `yarn test:e2e:web`: run E2E tests on the web example with Playwright.
 
 ### Sending a pull request
 
