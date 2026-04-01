@@ -58,6 +58,7 @@ class HtmlStyle : EnrichedStyle {
   override var ulCheckboxGapWidth: Int = 16
   override var ulCheckboxMarginLeft: Int = 24
   override var ulCheckboxBoxColor: Int = Color.BLACK
+  override var ulCheckboxParagraphSpacing: Int = 0
 
   override var aColor: Int = Color.BLACK
   override var aUnderline: Boolean = true
@@ -130,6 +131,7 @@ class HtmlStyle : EnrichedStyle {
     ulCheckboxGapWidth = parseFloat(ulCheckboxStyle, "gapWidth").toInt()
     ulCheckboxMarginLeft = parseFloat(ulCheckboxStyle, "marginLeft").toInt()
     ulCheckboxBoxColor = parseColor(ulCheckboxStyle, "boxColor")
+    ulCheckboxParagraphSpacing = parseFloat(ulCheckboxStyle, "paragraphSpacing").toInt()
 
     val aStyle = style.getMap("a")
     aColor = parseColor(aStyle, "color")
@@ -307,6 +309,7 @@ class HtmlStyle : EnrichedStyle {
       ulCheckboxGapWidth == other.ulCheckboxGapWidth &&
       ulCheckboxMarginLeft == other.ulCheckboxMarginLeft &&
       ulCheckboxBoxColor == other.ulCheckboxBoxColor &&
+      ulCheckboxParagraphSpacing == other.ulCheckboxParagraphSpacing &&
 
       aColor == other.aColor &&
       aUnderline == other.aUnderline &&
@@ -354,6 +357,7 @@ class HtmlStyle : EnrichedStyle {
     result = 31 * result + ulCheckboxGapWidth.hashCode()
     result = 31 * result + ulCheckboxMarginLeft.hashCode()
     result = 31 * result + ulCheckboxBoxColor.hashCode()
+    result = 31 * result + ulCheckboxParagraphSpacing.hashCode()
 
     result = 31 * result + aColor.hashCode()
     result = 31 * result + aUnderline.hashCode()
