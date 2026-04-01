@@ -1,14 +1,212 @@
 import type { RefObject } from 'react';
 import type {
   ColorValue,
+  DimensionValue,
   NativeMethods,
   NativeSyntheticEvent,
   ReturnKeyTypeOptions,
   TargetedEvent,
   TextStyle,
   ViewProps,
-  ViewStyle,
 } from 'react-native';
+
+// ─── EnrichedInputStyle ────────────────────────────────────────────────────────
+// A flat, hand-written subset of TextStyle (which already extends ViewStyle).
+// Use TextStyle['prop'] for complex types to stay in sync with React Native.
+
+export interface EnrichedInputStyle {
+  // Layout / FlexStyle
+  alignContent?: TextStyle['alignContent'];
+  alignItems?: TextStyle['alignItems'];
+  alignSelf?: TextStyle['alignSelf'];
+  aspectRatio?: number | string;
+  borderBottomWidth?: number;
+  borderEndWidth?: number;
+  borderLeftWidth?: number;
+  borderRightWidth?: number;
+  borderStartWidth?: number;
+  borderTopWidth?: number;
+  borderWidth?: number;
+  bottom?: DimensionValue;
+  boxSizing?: 'border-box' | 'content-box';
+  columnGap?: number | string;
+  direction?: 'inherit' | 'ltr' | 'rtl';
+  display?: 'none' | 'flex' | 'contents';
+  end?: DimensionValue;
+  flex?: number;
+  flexBasis?: DimensionValue;
+  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
+  flexGrow?: number;
+  flexShrink?: number;
+  flexWrap?: 'wrap' | 'nowrap' | 'wrap-reverse';
+  gap?: number | string;
+  height?: DimensionValue;
+  inset?: DimensionValue;
+  insetBlock?: DimensionValue;
+  insetBlockEnd?: DimensionValue;
+  insetBlockStart?: DimensionValue;
+  insetInline?: DimensionValue;
+  insetInlineEnd?: DimensionValue;
+  insetInlineStart?: DimensionValue;
+  justifyContent?: TextStyle['justifyContent'];
+  left?: DimensionValue;
+  margin?: DimensionValue;
+  marginBlock?: DimensionValue;
+  marginBlockEnd?: DimensionValue;
+  marginBlockStart?: DimensionValue;
+  marginBottom?: DimensionValue;
+  marginEnd?: DimensionValue;
+  marginHorizontal?: DimensionValue;
+  marginInline?: DimensionValue;
+  marginInlineEnd?: DimensionValue;
+  marginInlineStart?: DimensionValue;
+  marginLeft?: DimensionValue;
+  marginRight?: DimensionValue;
+  marginStart?: DimensionValue;
+  marginTop?: DimensionValue;
+  marginVertical?: DimensionValue;
+  maxHeight?: DimensionValue;
+  maxWidth?: DimensionValue;
+  minHeight?: DimensionValue;
+  minWidth?: DimensionValue;
+  overflow?: 'visible' | 'hidden' | 'scroll';
+  padding?: DimensionValue;
+  paddingBlock?: DimensionValue;
+  paddingBlockEnd?: DimensionValue;
+  paddingBlockStart?: DimensionValue;
+  paddingBottom?: DimensionValue;
+  paddingEnd?: DimensionValue;
+  paddingHorizontal?: DimensionValue;
+  paddingInline?: DimensionValue;
+  paddingInlineEnd?: DimensionValue;
+  paddingInlineStart?: DimensionValue;
+  paddingLeft?: DimensionValue;
+  paddingRight?: DimensionValue;
+  paddingStart?: DimensionValue;
+  paddingTop?: DimensionValue;
+  paddingVertical?: DimensionValue;
+  position?: 'absolute' | 'relative' | 'static';
+  right?: DimensionValue;
+  rowGap?: number | string;
+  start?: DimensionValue;
+  top?: DimensionValue;
+  width?: DimensionValue;
+  zIndex?: number;
+
+  // Shadows (iOS)
+  shadowColor?: ColorValue;
+  shadowOffset?: TextStyle['shadowOffset'];
+  shadowOpacity?: TextStyle['shadowOpacity'];
+  shadowRadius?: number;
+
+  // Transforms
+  transform?: TextStyle['transform'];
+  transformOrigin?: TextStyle['transformOrigin'];
+  /** @deprecated Use matrix in transform prop instead */
+  transformMatrix?: Array<number>;
+  /** @deprecated Use rotate in transform prop instead */
+  rotation?: TextStyle['rotation'];
+  /** @deprecated Use scaleX in transform prop instead */
+  scaleX?: TextStyle['scaleX'];
+  /** @deprecated Use scaleY in transform prop instead */
+  scaleY?: TextStyle['scaleY'];
+  /** @deprecated Use translateX in transform prop instead */
+  translateX?: TextStyle['translateX'];
+  /** @deprecated Use translateY in transform prop instead */
+  translateY?: TextStyle['translateY'];
+
+  // View appearance
+  backfaceVisibility?: 'visible' | 'hidden';
+  backgroundColor?: ColorValue;
+  borderBlockColor?: ColorValue;
+  borderBlockEndColor?: ColorValue;
+  borderBlockStartColor?: ColorValue;
+  borderBottomColor?: ColorValue;
+  borderBottomEndRadius?: TextStyle['borderBottomEndRadius'];
+  borderBottomLeftRadius?: TextStyle['borderBottomLeftRadius'];
+  borderBottomRightRadius?: TextStyle['borderBottomRightRadius'];
+  borderBottomStartRadius?: TextStyle['borderBottomStartRadius'];
+  borderColor?: ColorValue;
+  /** @platform ios */
+  borderCurve?: 'circular' | 'continuous';
+  borderEndColor?: ColorValue;
+  borderEndEndRadius?: TextStyle['borderEndEndRadius'];
+  borderEndStartRadius?: TextStyle['borderEndStartRadius'];
+  borderLeftColor?: ColorValue;
+  borderRadius?: TextStyle['borderRadius'];
+  borderRightColor?: ColorValue;
+  borderStartColor?: ColorValue;
+  borderStartEndRadius?: TextStyle['borderStartEndRadius'];
+  borderStartStartRadius?: TextStyle['borderStartStartRadius'];
+  borderStyle?: 'solid' | 'dotted' | 'dashed';
+  borderTopColor?: ColorValue;
+  borderTopEndRadius?: TextStyle['borderTopEndRadius'];
+  borderTopLeftRadius?: TextStyle['borderTopLeftRadius'];
+  borderTopRightRadius?: TextStyle['borderTopRightRadius'];
+  borderTopStartRadius?: TextStyle['borderTopStartRadius'];
+  boxShadow?: TextStyle['boxShadow'];
+  cursor?: TextStyle['cursor'];
+  /** @platform android */
+  elevation?: number;
+  experimental_backgroundImage?: TextStyle['experimental_backgroundImage'];
+  filter?: TextStyle['filter'];
+  isolation?: 'auto' | 'isolate';
+  mixBlendMode?: TextStyle['mixBlendMode'];
+  opacity?: TextStyle['opacity'];
+  outlineColor?: ColorValue;
+  outlineOffset?: TextStyle['outlineOffset'];
+  outlineStyle?: 'solid' | 'dotted' | 'dashed';
+  outlineWidth?: TextStyle['outlineWidth'];
+  pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto';
+
+  // Typography
+  color?: ColorValue;
+  fontFamily?: string;
+  fontSize?: number;
+  fontStyle?: 'normal' | 'italic';
+  fontWeight?: TextStyle['fontWeight'];
+  letterSpacing?: number;
+  lineHeight?: number;
+  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify';
+  textDecorationColor?: ColorValue;
+  textDecorationLine?:
+    | 'none'
+    | 'underline'
+    | 'line-through'
+    | 'underline line-through';
+  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed';
+  textShadowColor?: ColorValue;
+  textShadowOffset?: TextStyle['textShadowOffset'];
+  textShadowRadius?: number;
+  textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+  userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all';
+
+  // iOS-only text
+  /** @platform ios */
+  fontVariant?: TextStyle['fontVariant'];
+  /** @platform ios */
+  writingDirection?: 'auto' | 'ltr' | 'rtl';
+
+  // Android-only text
+  /** @platform android */
+  includeFontPadding?: boolean;
+  /** @platform android */
+  textAlignVertical?: 'auto' | 'top' | 'bottom' | 'center';
+  /** @platform android */
+  verticalAlign?: 'auto' | 'top' | 'bottom' | 'middle';
+}
+
+// Compile-time compatibility checks — exported so TypeScript doesn't report them as unused.
+// Each tuple element evaluates to `true` when the interface is in sync with TextStyle,
+// and to `never` (causing a compile error) when it drifts.
+//   [0] Fails if EnrichedInputStyle contains a key that doesn't exist in TextStyle.
+//   [1] Fails if a TextStyle value is no longer assignable to EnrichedInputStyle.
+export type _EnrichedInputStyleCompatChecks = [
+  Exclude<keyof EnrichedInputStyle, keyof TextStyle> extends never
+    ? true
+    : never,
+  TextStyle extends EnrichedInputStyle ? true : never,
+];
 
 interface HeadingStyle {
   fontSize?: number;
@@ -284,7 +482,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
-  style?: ViewStyle | TextStyle;
+  style?: EnrichedInputStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   returnKeyType?: ReturnKeyTypeOptions;

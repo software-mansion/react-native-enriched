@@ -1,5 +1,6 @@
 export { EnrichedTextInput } from './web/EnrichedTextInput';
 export type {
+  EnrichedInputStyle,
   EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,
