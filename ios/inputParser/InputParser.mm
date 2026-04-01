@@ -1185,7 +1185,8 @@
           insideCheckboxList = YES;
         }
 
-        // skip one newline if it was added after opening tags that are in separate lines
+        // skip one newline if it was added after opening tags that are in
+        // separate lines
         if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
             [[NSCharacterSet newlineCharacterSet]
                 characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
