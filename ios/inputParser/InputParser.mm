@@ -830,6 +830,13 @@
         stringByReplacingOccurrencesOfString:@"<codeblock></codeblock>"
                                   withString:@"<codeblock><br></codeblock>"];
 
+    // remove empty ul and ol tags
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ul></ul>"
+                                                     withString:@""];
+
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ol></ol>"
+                                                     withString:@""];
+
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"
                                          inString:fixedHtml
@@ -1204,34 +1211,21 @@
 
         BOOL isBlockTag = [self isBlockTag:currentTagName];
 
-        // Empty block tags (e.g. <ol></ol>, <ul></ul>) have no content so
-        // their opening location matches or exceeds the current plainText
-        // length - skip them entirely to avoid range underflow.
-        NSArray *tagData = ongoingTags[currentTagName];
-        BOOL isEmptyBlockTag = NO;
-        if (isBlockTag && tagData != nil) {
-          NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
-          isEmptyBlockTag = (NSUInteger)tagLocation >= plainText.length;
-        }
-
         // skip one newline that was added before some closing tags that are
         // in separate lines
         if (isBlockTag && plainText.length > 0 &&
             [[NSCharacterSet newlineCharacterSet]
                 characterIsMember:[plainText
                                       characterAtIndex:plainText.length - 1]]) {
-          [plainText
-              deleteCharactersInRange:NSMakeRange(plainText.length - 1, 1)];
+          plainText = [[plainText
+              substringWithRange:NSMakeRange(0, plainText.length - 1)]
+              mutableCopy];
         }
 
-        if (isEmptyBlockTag) {
-          [ongoingTags removeObjectForKey:currentTagName];
-        } else {
-          [self finalizeTagEntry:currentTagName
-                         ongoingTags:ongoingTags
-              initiallyProcessedTags:initiallyProcessedTags
-                           plainText:plainText];
-        }
+        [self finalizeTagEntry:currentTagName
+                       ongoingTags:ongoingTags
+            initiallyProcessedTags:initiallyProcessedTags
+                         plainText:plainText];
       }
       // post-tag cleanup
       closingTag = NO;
