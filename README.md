@@ -24,8 +24,8 @@ We can help you build your next dream product –
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Non Parametrized Styles](#non-parametrized-styles)
 - [Supported Tags](#supported-tags)
+- [Non Parametrized Styles](#non-parametrized-styles)
 - [Links](#links)
 - [Mentions](#mentions)
 - [Inline Images](#inline-images)
@@ -141,31 +141,6 @@ Summary of what happens here:
 - `isBlocking`: Indicates if the style is blocked by another active style (disable the button).
 - `isConflicting`: Indicates if the style is in conflict with another active style.
 
-## Non Parametrized Styles
-
-Supported styles:
-
-- bold
-- italic
-- underline
-- strikethrough
-- inline code
-- H1, H2, H3, H4, H5 and H6 headings
-- codeblock
-- blockquote
-- ordered list
-- unordered list
-- checkbox list
-
-Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
-
-Each call toggles the style within the current text selection. We can still divide styles into two categories based on how they treat the selection:
-
-- Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
-
-- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph, we mean a part of the text between two newlines (enters) or the text's beginning/ending.
-  If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
-
 ## Supported Tags
 
 `react-native-enriched` uses the following HTML tags in its output (via [onChangeHtml](docs/API_REFERENCE.md#onchangehtml)) and accepts them as input (via [setValue](docs/API_REFERENCE.md#setValue)).
@@ -209,6 +184,31 @@ Only one paragraph-level style can be active per paragraph - all paragraph style
 | Codeblock      | `<codeblock>`               | `<p>`                   | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<b>`, `<u>`, `<i>`, `<s>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<code>`, `<mention>`, `<a>` | --         |
 
 Plain text paragraphs are wrapped in `<p>` tags. Empty paragraphs are represented as `<br>`.
+
+## Non Parametrized Styles
+
+Supported styles:
+
+- bold
+- italic
+- underline
+- strikethrough
+- inline code
+- H1, H2, H3, H4, H5 and H6 headings
+- codeblock
+- blockquote
+- ordered list
+- unordered list
+- checkbox list
+
+Each of the styles can be toggled the same way as in the example from [usage section](#usage); call a proper `toggle` function on the component ref.
+
+Each call toggles the style within the current text selection. We can still divide styles into two categories based on how they treat the selection:
+
+- Inline styles (bold, italic, underline, strikethrough, inline code). They are being toggled on exactly the character range that is currently selected. When toggling the style with just the cursor in place (no selection), the style is ready to be used and will be applied to the next characters that the user inputs.
+
+- Paragraph styles (headings, codeblock, blockquote, lists). They are being toggled on the entire paragraph that the selection is in. By paragraph, we mean a part of the text between two newlines (enters) or the text's beginning/ending.
+  If the selection spans more than one paragraph, logically more of them will be affected by the toggle. Toggling these styles with the cursor in place (no selection) makes changes to the very paragraph the cursor is in.
 
 ## Links
 
