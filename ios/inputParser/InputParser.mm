@@ -19,6 +19,12 @@
   return self;
 }
 
+- (BOOL)isBlockTag:(NSString *)tagName {
+  return [tagName isEqualToString:@"ul"] || [tagName isEqualToString:@"ol"] ||
+         [tagName isEqualToString:@"blockquote"] ||
+         [tagName isEqualToString:@"codeblock"];
+}
+
 - (NSString *)parseToHtmlFromRange:(NSRange)range {
   NSInteger offset = range.location;
   NSString *text =
@@ -815,6 +821,15 @@
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
                                                      withString:@"<br>"];
 
+    // add <br> tags inside empty blockquote and codeblock tags
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<blockquote></blockquote>"
+                                  withString:@"<blockquote><br></"
+                                             @"blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<codeblock></codeblock>"
+                                  withString:@"<codeblock><br></codeblock>"];
+
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"
                                          inString:fixedHtml
@@ -1165,11 +1180,12 @@
 
         // skip one newline after opening tags that are in separate lines
         // intentionally
-        if ([currentTagName isEqualToString:@"ul"] ||
-            [currentTagName isEqualToString:@"ol"] ||
-            [currentTagName isEqualToString:@"blockquote"] ||
-            [currentTagName isEqualToString:@"codeblock"]) {
-          i += 1;
+        if ([self isBlockTag:currentTagName]) {
+          if (i + 1 < fixedHtml.length &&
+              [[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
+            i += 1;
+          }
         }
 
         if (isSelfClosing) {
@@ -1188,10 +1204,7 @@
           insideCheckboxList = NO;
         }
 
-        BOOL isBlockTag = [currentTagName isEqualToString:@"ul"] ||
-                          [currentTagName isEqualToString:@"ol"] ||
-                          [currentTagName isEqualToString:@"blockquote"] ||
-                          [currentTagName isEqualToString:@"codeblock"];
+        BOOL isBlockTag = [self isBlockTag:currentTagName];
 
         // Empty block tags (e.g. <ol></ol>, <ul></ul>) have no content so
         // their opening location matches or exceeds the current plainText
@@ -1203,14 +1216,14 @@
           isEmptyBlockTag = (NSUInteger)tagLocation >= plainText.length;
         }
 
-        if (isBlockTag) {
-          // skip one newline that was added before some closing tags that are
-          // in separate lines
-          if (plainText.length > 0) {
-            plainText = [[plainText
-                substringWithRange:NSMakeRange(0, plainText.length - 1)]
-                mutableCopy];
-          }
+        // skip one newline that was added before some closing tags that are
+        // in separate lines
+        if (isBlockTag && plainText.length > 0 &&
+            [[NSCharacterSet newlineCharacterSet]
+                characterIsMember:[plainText
+                                      characterAtIndex:plainText.length - 1]]) {
+          [plainText
+              deleteCharactersInRange:NSMakeRange(plainText.length - 1, 1)];
         }
 
         if (isEmptyBlockTag) {
