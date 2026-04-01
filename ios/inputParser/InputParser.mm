@@ -833,7 +833,9 @@
     // remove empty ul and ol tags
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ul></ul>"
                                                      withString:@""];
-
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<ul data-type=\"checkbox\"></ul>"
+                                  withString:@""];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ol></ol>"
                                                      withString:@""];
 
