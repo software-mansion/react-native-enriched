@@ -4,14 +4,16 @@ const port = process.env.PW_PORT ?? '5173';
 
 export default defineConfig({
   testDir: './tests',
+  outputDir: './test-results',
   timeout: 30_000,
   expect: {
     timeout: 5_000,
   },
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI
-    ? [['list'], ['html', { open: 'never' }]]
-    : [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: './playwright-report' }],
+  ],
 
   use: {
     baseURL: process.env.BASE_URL ?? `http://localhost:${port}`,
@@ -24,7 +26,7 @@ export default defineConfig({
   webServer: {
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    command: `yarn dev -- --host localhost --port ${port}`,
+    command: `yarn workspace react-native-enriched-web-example dev -- --host localhost --port ${port}`,
     url: `http://localhost:${port}`,
   },
 

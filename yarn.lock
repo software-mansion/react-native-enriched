@@ -3017,7 +3017,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.58.2":
+"@playwright/test@npm:1.58.2":
   version: 1.58.2
   resolution: "@playwright/test@npm:1.58.2"
   dependencies:
@@ -3995,7 +3995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/core@npm:^3.20.4":
+"@tiptap/core@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/core@npm:3.20.4"
   peerDependencies:
@@ -4016,7 +4016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-document@npm:^3.20.4":
+"@tiptap/extension-document@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-document@npm:3.20.4"
   peerDependencies:
@@ -4036,7 +4036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-paragraph@npm:^3.20.4":
+"@tiptap/extension-paragraph@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-paragraph@npm:3.20.4"
   peerDependencies:
@@ -4045,7 +4045,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-text@npm:^3.20.4":
+"@tiptap/extension-text@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-text@npm:3.20.4"
   peerDependencies:
@@ -4054,7 +4054,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extensions@npm:^3.20.4":
+"@tiptap/extensions@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extensions@npm:3.20.4"
   peerDependencies:
@@ -4064,7 +4064,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/pm@npm:^3.20.4":
+"@tiptap/pm@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/pm@npm:3.20.4"
   dependencies:
@@ -4090,7 +4090,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/react@npm:^3.20.4":
+"@tiptap/react@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/react@npm:3.20.4"
   dependencies:
@@ -11773,7 +11773,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2, playwright@npm:^1.58.2":
+"playwright@npm:1.58.2":
   version: 1.58.2
   resolution: "playwright@npm:1.58.2"
   dependencies:
@@ -12330,7 +12330,6 @@ __metadata:
   resolution: "react-native-enriched-web-example@workspace:apps/example-web"
   dependencies:
     "@eslint/js": ^9.39.1
-    "@playwright/test": ^1.58.2
     "@types/node": ^24.10.1
     "@types/react": ^19.1.0
     "@types/react-dom": ^19.2.3
@@ -12341,7 +12340,6 @@ __metadata:
     eslint-plugin-react-refresh: ^0.4.24
     eslint-plugin-react-x: ^2.3.13
     globals: ^16.5.0
-    playwright: ^1.58.2
     react: ^19.1.0
     react-dom: ^19.1.0
     typescript: ^5.8.3
@@ -12359,16 +12357,17 @@ __metadata:
     "@eslint/eslintrc": ^3.3.0
     "@eslint/js": ^9.22.0
     "@evilmartians/lefthook": ^1.5.0
+    "@playwright/test": 1.58.2
     "@react-native-community/cli": 20.0.0
     "@react-native/eslint-config": ^0.81.0
     "@release-it/conventional-changelog": ^9.0.2
-    "@tiptap/core": ^3.20.4
-    "@tiptap/extension-document": ^3.20.4
-    "@tiptap/extension-paragraph": ^3.20.4
-    "@tiptap/extension-text": ^3.20.4
-    "@tiptap/extensions": ^3.20.4
-    "@tiptap/pm": ^3.20.4
-    "@tiptap/react": ^3.20.4
+    "@tiptap/core": 3.20.4
+    "@tiptap/extension-document": 3.20.4
+    "@tiptap/extension-paragraph": 3.20.4
+    "@tiptap/extension-text": 3.20.4
+    "@tiptap/extensions": 3.20.4
+    "@tiptap/pm": 3.20.4
+    "@tiptap/react": 3.20.4
     "@types/jest": ^29.5.5
     "@types/react": ^19.1.0
     "@types/react-dom": ^19.1.0
@@ -12379,6 +12378,7 @@ __metadata:
     eslint-config-prettier: ^10.1.1
     eslint-plugin-prettier: ^5.2.3
     jest: ^29.7.0
+    playwright: 1.58.2
     prettier: ^3.0.3
     react: 19.1.0
     react-dom: 19.1.0
