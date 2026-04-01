@@ -715,8 +715,7 @@
                       (NSInteger)textLengthBeforeStyleApplied;
     // Image shifts are already handled by _precedingImageCount during tag
     // finalization.
-    if (delta != 0 &&
-        ![styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
+    if (delta != 0 && ![styleType isEqualToNumber:@([ImageStyle getType])]) {
       zeroWidthSpaceOffset += delta;
     }
   }
