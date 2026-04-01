@@ -1188,21 +1188,39 @@
           insideCheckboxList = NO;
         }
 
-        // skip one newline that was added before some closing tags that are in
-        // separate lines
-        if ([currentTagName isEqualToString:@"ul"] ||
-            [currentTagName isEqualToString:@"ol"] ||
-            [currentTagName isEqualToString:@"blockquote"] ||
-            [currentTagName isEqualToString:@"codeblock"]) {
-          plainText = [[plainText
-              substringWithRange:NSMakeRange(0, plainText.length - 1)]
-              mutableCopy];
+        BOOL isBlockTag = [currentTagName isEqualToString:@"ul"] ||
+                          [currentTagName isEqualToString:@"ol"] ||
+                          [currentTagName isEqualToString:@"blockquote"] ||
+                          [currentTagName isEqualToString:@"codeblock"];
+
+        // Empty block tags (e.g. <ol></ol>, <ul></ul>) have no content so
+        // their opening location matches or exceeds the current plainText
+        // length - skip them entirely to avoid range underflow.
+        NSArray *tagData = ongoingTags[currentTagName];
+        BOOL isEmptyBlockTag = NO;
+        if (isBlockTag && tagData != nil) {
+          NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
+          isEmptyBlockTag = (NSUInteger)tagLocation >= plainText.length;
         }
 
-        [self finalizeTagEntry:currentTagName
-                       ongoingTags:ongoingTags
-            initiallyProcessedTags:initiallyProcessedTags
-                         plainText:plainText];
+        if (isBlockTag) {
+          // skip one newline that was added before some closing tags that are
+          // in separate lines
+          if (plainText.length > 0) {
+            plainText = [[plainText
+                substringWithRange:NSMakeRange(0, plainText.length - 1)]
+                mutableCopy];
+          }
+        }
+
+        if (isEmptyBlockTag) {
+          [ongoingTags removeObjectForKey:currentTagName];
+        } else {
+          [self finalizeTagEntry:currentTagName
+                         ongoingTags:ongoingTags
+              initiallyProcessedTags:initiallyProcessedTags
+                           plainText:plainText];
+        }
       }
       // post-tag cleanup
       closingTag = NO;
