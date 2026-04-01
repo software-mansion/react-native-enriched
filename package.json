@@ -143,6 +143,7 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
+      "<rootDir>/.playwright/",
       "<rootDir>/apps/example-web/"
     ]
   },
