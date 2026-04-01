@@ -2,19 +2,19 @@
 #import "StyleHeaders.h"
 
 @implementation H5Style
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return H5;
 }
-- (NSString *)getHeadingLevelString {
-  return @"H5";
+- (NSString *)getValue {
+  return @"EnrichedH5";
 }
-+ (BOOL)isParagraphStyle {
+- (BOOL)isParagraph {
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  return [((EnrichedTextInputView *)input)->config h5FontSize];
+  return [self.input->config h5FontSize];
 }
 - (BOOL)isHeadingBold {
-  return [((EnrichedTextInputView *)input)->config h5Bold];
+  return [self.input->config h5Bold];
 }
 @end
