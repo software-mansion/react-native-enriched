@@ -63,7 +63,7 @@
     "release": "release-it",
     "android-studio": "open -a 'Android Studio' apps/example/android",
     "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace",
-    "test:e2e": ".maestro/scripts/run-tests-all.sh",
+    "test:e2e:mobile": ".maestro/scripts/run-tests-all.sh",
     "test:e2e:android": ".maestro/scripts/run-tests.sh --platform android",
     "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios",
     "test:e2e:web": "yarn example-web test:e2e"
@@ -87,13 +87,13 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tiptap/core": "^3.20.4",
-    "@tiptap/extension-document": "^3.20.4",
-    "@tiptap/extension-paragraph": "^3.20.4",
-    "@tiptap/extension-text": "^3.20.4",
-    "@tiptap/extensions": "^3.20.4",
-    "@tiptap/pm": "^3.20.4",
-    "@tiptap/react": "^3.20.4"
+    "@tiptap/core": "3.20.4",
+    "@tiptap/extension-document": "3.20.4",
+    "@tiptap/extension-paragraph": "3.20.4",
+    "@tiptap/extension-text": "3.20.4",
+    "@tiptap/extensions": "3.20.4",
+    "@tiptap/pm": "3.20.4",
+    "@tiptap/react": "3.20.4"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
@@ -137,6 +137,10 @@
     "modulePathIgnorePatterns": [
       "<rootDir>/apps/example/node_modules",
       "<rootDir>/lib/"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/apps/example-web/"
     ]
   },
   "commitlint": {
