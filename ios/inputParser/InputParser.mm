@@ -1180,12 +1180,10 @@
 
         // skip one newline after opening tags that are in separate lines
         // intentionally
-        if ([self isBlockTag:currentTagName]) {
-          if (i + 1 < fixedHtml.length &&
-              [[NSCharacterSet newlineCharacterSet]
-                  characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
-            i += 1;
-          }
+        if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
+            [[NSCharacterSet newlineCharacterSet]
+                characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
+          i += 1;
         }
 
         if (isSelfClosing) {
