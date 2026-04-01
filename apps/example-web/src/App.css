@@ -1,5 +1,94 @@
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+* {
+  box-sizing: border-box;
 }
+
+:root {
+  --primary: rgb(0, 26, 114);
+  --primary-muted: rgba(0, 26, 114, 0.3);
+  --primary-pressed: rgba(0, 26, 114, 0.9);
+  --editor-bg: gainsboro;
+  --surface: #fff;
+  --border-color: #ccc;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--surface);
+  color: #1a1a1a;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 60px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+.editor-wrapper {
+  width: 100%;
+  background: var(--editor-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: text;
+  margin-bottom: 16px;
+}
+
+.editor-content {
+  padding: 12px 14px;
+  min-height: 120px;
+  font-size: 18px;
+  line-height: 1.5;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-content .tiptap {
+  outline: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-content .tiptap .ProseMirror {
+  outline: none;
+  flex: 1;
+  min-height: 120px;
+  cursor: text;
+}
+
+.btn {
+  flex: 1;
+  padding: 16px;
+  white-space: nowrap;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+  transition: opacity 0.1s;
+}
+
+.btn-full {
+  width: 100%;
+  flex: none;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn:active { opacity: 0.8; }
+.btn:disabled { background: darkgray; cursor: default; }

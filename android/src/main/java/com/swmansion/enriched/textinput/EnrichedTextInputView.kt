@@ -12,6 +12,7 @@ import android.os.Build
 import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
+import android.text.SpannableString
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
@@ -338,28 +339,37 @@ class EnrichedTextInputView :
   }
 
   fun handleTextPaste(item: ClipData.Item) {
-    val htmlText = item.htmlText
     val currentText = text as Spannable
     val start = selectionStart.coerceAtLeast(0)
     val end = selectionEnd.coerceAtLeast(0)
-
-    if (htmlText != null) {
-      val parsedText = parseText(htmlText)
-      if (parsedText is Spannable) {
-        val finalText = currentText.mergeSpannables(start, end, parsedText)
-        setValue(finalText, false)
-        return
-      }
-    }
-
-    if (item.text == null) return
     val lengthBefore = currentText.length
-    val finalText = currentText.mergeSpannables(start, end, item.text.toString())
-    setValue(finalText)
+
+    val pastedSpannable: Spannable =
+      when {
+        item.htmlText != null -> {
+          val parsed = parseText(item.htmlText)
+          (parsed as? Spannable) ?: return
+        }
+
+        item.text != null -> {
+          SpannableString(item.text.toString())
+        }
+
+        else -> {
+          return
+        }
+      }
+
+    val finalText = currentText.mergeSpannables(start, end, pastedSpannable)
+    setValue(finalText, false)
+
+    // replacement-safe: oldLength - removed + inserted
+    val insertedLength = finalText.length - (lengthBefore - (end - start))
+    val pasteEnd = (start + insertedLength).coerceIn(0, finalText.length)
+    setSelection(pasteEnd)
 
     // Detect links in the newly pasted range
-    val finalEndIndex = start + finalText.length - lengthBefore
-    parametrizedStyles?.detectLinksInRange(finalText, start, finalEndIndex)
+    parametrizedStyles?.detectLinksInRange(finalText, start.coerceAtMost(pasteEnd), pasteEnd)
   }
 
   fun requestFocusProgrammatically() {

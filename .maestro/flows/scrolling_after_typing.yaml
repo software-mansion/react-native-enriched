@@ -43,6 +43,8 @@ appId: swmansion.enriched.example
       id: "editor-input"
     direction: DOWN
 
+- waitForAnimationToEnd
+
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
     env:
@@ -56,6 +58,8 @@ appId: swmansion.enriched.example
     from:
       id: "editor-input"
     direction: UP
+
+- waitForAnimationToEnd
 
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"

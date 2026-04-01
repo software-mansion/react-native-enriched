@@ -2,19 +2,19 @@
 #import "StyleHeaders.h"
 
 @implementation H6Style
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return H6;
 }
-- (NSString *)getHeadingLevelString {
-  return @"H6";
+- (NSString *)getValue {
+  return @"EnrichedH6";
 }
-+ (BOOL)isParagraphStyle {
+- (BOOL)isParagraph {
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  return [((EnrichedTextInputView *)input)->config h6FontSize];
+  return [self.input->config h6FontSize];
 }
 - (BOOL)isHeadingBold {
-  return [((EnrichedTextInputView *)input)->config h6Bold];
+  return [self.input->config h6Bold];
 }
 @end
