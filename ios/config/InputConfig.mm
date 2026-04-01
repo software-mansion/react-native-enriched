@@ -43,6 +43,7 @@
   UIColor *_linkColor;
   TextDecorationLineEnum _linkDecorationLine;
   NSDictionary *_mentionProperties;
+  NSArray *_mentionStyleRules;
   UIColor *_codeBlockFgColor;
   CGFloat _codeBlockBorderRadius;
   UIColor *_codeBlockBgColor;
@@ -104,6 +105,7 @@
   copy->_linkColor = [_linkColor copy];
   copy->_linkDecorationLine = [_linkDecorationLine copy];
   copy->_mentionProperties = [_mentionProperties mutableCopy];
+  copy->_mentionStyleRules = [_mentionStyleRules copy];
   copy->_codeBlockFgColor = [_codeBlockFgColor copy];
   copy->_codeBlockBgColor = [_codeBlockBgColor copy];
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
@@ -468,6 +470,10 @@
   _mentionProperties = [newValue mutableCopy];
 }
 
+- (void)setMentionStyleRules:(NSArray *)newValue {
+  _mentionStyleRules = [newValue copy];
+}
+
 - (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator {
   if (_mentionProperties.count == 1 && _mentionProperties[@"all"] != nullptr) {
     // single props for all the indicators
@@ -480,6 +486,36 @@
   fallbackProps.backgroundColor = [UIColor yellowColor];
   fallbackProps.decorationLine = DecorationUnderline;
   return fallbackProps;
+}
+
+- (MentionStyleProps *)mentionStylePropsForIndicator:(NSString *)indicator
+                                          attributes:(NSString *)attributes {
+  // Check mentionStyleRules first — first matching rule wins
+  if (_mentionStyleRules.count > 0 && attributes.length > 0) {
+    NSData *data = [attributes dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *attrDict =
+        [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+
+    if (attrDict) {
+      for (NSDictionary *rule in _mentionStyleRules) {
+        NSDictionary *match = rule[@"match"];
+        MentionStyleProps *style = rule[@"style"];
+        if (!match || !style) continue;
+
+        BOOL allMatch = YES;
+        for (NSString *key in match) {
+          if (![attrDict[key] isEqualToString:match[key]]) {
+            allMatch = NO;
+            break;
+          }
+        }
+        if (allMatch) return style;
+      }
+    }
+  }
+
+  // Fall back to indicator-based lookup
+  return [self mentionStylePropsForIndicator:indicator];
 }
 
 - (UIColor *)codeBlockFgColor {

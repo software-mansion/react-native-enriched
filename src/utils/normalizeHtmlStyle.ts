@@ -1,6 +1,6 @@
 import { type ColorValue, processColor } from 'react-native';
 import type { HtmlStyleInternal } from '../spec/EnrichedTextInputNativeComponent';
-import type { HtmlStyle, MentionStyleProperties } from '../types';
+import type { HtmlStyle, MentionStyleProperties, MentionStyleRule } from '../types';
 
 const defaultStyle: Required<HtmlStyle> = {
   h1: {
@@ -108,6 +108,20 @@ const convertToHtmlStyleInternal = (
     };
   });
 
+  // Embed mentionStyleRules as __rules__ in the mention dict so they flow
+  // to native through the existing htmlStyle.mention prop (UnsafeMixed).
+  if (style.mentionStyleRules && style.mentionStyleRules.length > 0) {
+    (mentionStyles as any).__rules__ = style.mentionStyleRules.map(
+      (rule: MentionStyleRule) => ({
+        match: rule.match,
+        style: {
+          ...defaultStyle.mention,
+          ...rule.style,
+        },
+      })
+    );
+  }
+
   let markerFontWeight: string | undefined;
   if (style.ol?.markerFontWeight) {
     if (typeof style.ol?.markerFontWeight === 'number') {
@@ -166,6 +180,17 @@ const parseColors = (style: HtmlStyleInternal): HtmlStyleInternal => {
 
     if (tagName === 'mention') {
       for (const [indicator, mentionStyle] of Object.entries(tagStyle)) {
+        // Handle __rules__ array separately from indicator style objects
+        if (indicator === '__rules__' && Array.isArray(mentionStyle)) {
+          tagStyles.__rules__ = (mentionStyle as any[]).map((rule) => ({
+            match: rule.match,
+            style: Object.fromEntries(
+              Object.entries(rule.style).map(([k, v]) => [k, parseStyle(k, v)])
+            ),
+          }));
+          continue;
+        }
+
         tagStyles[indicator] = {};
 
         for (const [styleName, styleValue] of Object.entries(
