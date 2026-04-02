@@ -23,8 +23,8 @@ export interface EnrichedInputStyle {
   borderTopWidth?: number;
   borderWidth?: number;
   bottom?: DimensionValue;
-  boxSizing?: 'border-box' | 'content-box';
-  display?: 'none' | 'flex' | 'contents';
+  boxSizing?: TextStyle['boxSizing'];
+  display?: TextStyle['display'];
   end?: DimensionValue;
   flex?: number;
   flexBasis?: DimensionValue;
