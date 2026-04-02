@@ -21,18 +21,26 @@ static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source,
   CFDictionaryRef const properties =
       CGImageSourceCopyPropertiesAtIndex(source, i, NULL);
   if (properties) {
-    CFDictionaryRef const gifProperties = (CFDictionaryRef)CFDictionaryGetValue(
+    // Try GIF frame delay first
+    CFDictionaryRef formatDict = (CFDictionaryRef)CFDictionaryGetValue(
         properties, kCGImagePropertyGIFDictionary);
-    if (gifProperties) {
-      NSNumber *number = fromCF CFDictionaryGetValue(
-          gifProperties, kCGImagePropertyGIFUnclampedDelayTime);
+    CFStringRef unclampedKey = kCGImagePropertyGIFUnclampedDelayTime;
+    CFStringRef delayKey = kCGImagePropertyGIFDelayTime;
+
+    // Fall back to WebP frame delay
+    if (!formatDict) {
+      formatDict = (CFDictionaryRef)CFDictionaryGetValue(
+          properties, kCGImagePropertyWebPDictionary);
+      unclampedKey = kCGImagePropertyWebPUnclampedDelayTime;
+      delayKey = kCGImagePropertyWebPDelayTime;
+    }
+
+    if (formatDict) {
+      NSNumber *number = fromCF CFDictionaryGetValue(formatDict, unclampedKey);
       if (number == NULL || [number doubleValue] == 0) {
-        number = fromCF CFDictionaryGetValue(gifProperties,
-                                             kCGImagePropertyGIFDelayTime);
+        number = fromCF CFDictionaryGetValue(formatDict, delayKey);
       }
       if ([number doubleValue] > 0) {
-        // Even though the GIF stores the delay as an integer number of
-        // centiseconds, ImageIO “helpfully” converts that to seconds for us.
         delayCentiseconds = (int)lrint([number doubleValue] * 100);
       }
     }
