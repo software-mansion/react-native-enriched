@@ -442,37 +442,30 @@ class EnrichedTextInputView :
     end: Int,
   ) {
     val currentText = text as Editable
+    val textLength = currentText.length
 
-    if (currentText.isEmpty()) {
+    if (textLength == 0) {
       setValue(value)
       return
     }
 
-    var safeStart = start.coerceAtLeast(0)
-    var safeEnd = end.coerceAtLeast(0)
+    val actualStart = getActualIndex(start)
+    val actualEnd = getActualIndex(end)
 
-    val textLength = currentText.length
-    safeStart = safeStart.coerceAtMost(textLength)
-    safeEnd = safeEnd.coerceAtMost(textLength)
-
-    if (safeEnd < safeStart) {
-      return
-    }
+    // Use coerceIn to ensure indices are within [0, textLength] and that start <= end
+    val safeStart = actualStart.coerceIn(0, textLength)
+    val safeEnd = actualEnd.coerceIn(safeStart, textLength)
 
     runAsATransaction {
-      val newText = parseText(value)
+      val newText = parseText(value) as Spannable
 
-      currentText.replace(
-        safeStart,
-        safeEnd,
-        newText,
-      )
+      val finalText = currentText.mergeSpannables(safeStart, safeEnd, newText)
+      setValue(finalText, false)
 
-      observeAsyncImages()
-
-      // Scroll to the last char of inserted text
-      val newCursorPos = (safeStart + newText.length).coerceAtMost(currentText.length)
-      setSelection(newCursorPos)
+      // replacement-safe: oldLength - removed + inserted
+      val insertedLength = finalText.length - (textLength - (safeEnd - safeStart))
+      val insertedEnd = (safeStart + insertedLength).coerceIn(0, finalText.length)
+      setSelection(insertedEnd)
     }
   }
 

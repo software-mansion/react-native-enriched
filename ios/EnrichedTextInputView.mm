@@ -9,6 +9,7 @@
 #import "StringExtension.h"
 #import "StyleHeaders.h"
 #import "TextBlockTapGestureRecognizer.h"
+#import "TextInsertionUtils.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -1406,36 +1407,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
 
-  if (visibleStart < 0) {
-    visibleStart = 0;
-  }
-  if (visibleEnd < 0) {
-    visibleEnd = 0;
-  }
-
-  if (visibleStart > textLength) {
-    visibleStart = textLength;
-  }
-  if (visibleEnd > textLength) {
-    visibleEnd = textLength;
-  }
-
-  if (visibleEnd < visibleStart) {
-    return;
-  }
-
-  NSRange range = NSMakeRange(visibleStart, visibleEnd - visibleStart);
+  // Use MIN/MAX to ensure indices are within [0, textLength]
+  // and that start <= end.
+  NSUInteger start = MIN(MAX(0, (NSUInteger)visibleStart), textLength);
+  NSUInteger end = MIN(MAX(start, (NSUInteger)visibleEnd), textLength);
+  NSRange range = NSMakeRange(start, end - start);
 
   NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
   if (initiallyProcessedHtml == nullptr) {
     // just plain text
-    [textView.textStorage replaceCharactersInRange:range withString:value];
-
-    recentlyChangedRange = range;
-    textView.selectedRange = NSRange(range.location + value.length, 0);
+    range.length > 0 ? [TextInsertionUtils replaceText:value
+                                                    at:range
+                                  additionalAttributes:nil
+                                                 input:self
+                                         withSelection:YES]
+                     : [TextInsertionUtils insertText:value
+                                                   at:range.location
+                                 additionalAttributes:nil
+                                                input:self
+                                        withSelection:YES];
   } else {
     // we've got some seemingly proper html
-    [parser replaceFromHtml:initiallyProcessedHtml range:range];
+    range.length > 0
+        ? [parser replaceFromHtml:initiallyProcessedHtml range:range]
+        : [parser insertFromHtml:initiallyProcessedHtml
+                        location:range.location];
   }
 
   // set recentlyChangedRange and check for changes
