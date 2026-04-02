@@ -2,7 +2,7 @@ import { useImperativeHandle, type CSSProperties } from 'react';
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
-  EnrichedTextInputProps,
+  EnrichedTextInputWebProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
@@ -33,7 +33,7 @@ export const EnrichedTextInput = ({
   onKeyPress,
   onChangeText,
   onChangeHtml,
-}: EnrichedTextInputProps) => {
+}: EnrichedTextInputWebProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
