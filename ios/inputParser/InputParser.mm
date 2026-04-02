@@ -19,6 +19,12 @@
   return self;
 }
 
+- (BOOL)isBlockTag:(NSString *)tagName {
+  return [tagName isEqualToString:@"ul"] || [tagName isEqualToString:@"ol"] ||
+         [tagName isEqualToString:@"blockquote"] ||
+         [tagName isEqualToString:@"codeblock"];
+}
+
 - (NSString *)parseToHtmlFromRange:(NSRange)range {
   NSInteger offset = range.location;
   NSString *text =
@@ -47,8 +53,8 @@
 
     // check each existing style existence
     for (NSNumber *type in _input->stylesDict) {
-      id<BaseStyleProtocol> style = _input->stylesDict[type];
-      if ([style detectStyle:currentRange]) {
+      StyleBase *style = _input->stylesDict[type];
+      if ([style detect:currentRange]) {
         [currentActiveStyles addObject:type];
 
         if (![previousActiveStyles member:type]) {
@@ -72,8 +78,7 @@
         // checked on 0 length range, not on the newline character
         if (inOrderedList) {
           OrderedListStyle *oStyle = _input->stylesDict[@(OrderedList)];
-          BOOL detected =
-              [oStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          BOOL detected = [oStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<li></li>"];
           } else {
@@ -82,8 +87,7 @@
           }
         } else if (inUnorderedList) {
           UnorderedListStyle *uStyle = _input->stylesDict[@(UnorderedList)];
-          BOOL detected =
-              [uStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+          BOOL detected = [uStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<li></li>"];
           } else {
@@ -93,7 +97,7 @@
         } else if (inBlockQuote) {
           BlockQuoteStyle *bqStyle = _input->stylesDict[@(BlockQuote)];
           BOOL detected =
-              [bqStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+              [bqStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -103,7 +107,7 @@
         } else if (inCodeBlock) {
           CodeBlockStyle *cbStyle = _input->stylesDict[@(CodeBlock)];
           BOOL detected =
-              [cbStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+              [cbStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             [result appendString:@"\n<br>"];
           } else {
@@ -113,7 +117,7 @@
         } else if (inCheckboxList) {
           CheckboxListStyle *cbLStyle = _input->stylesDict[@(CheckboxList)];
           BOOL detected =
-              [cbLStyle detectStyle:NSMakeRange(currentRange.location, 0)];
+              [cbLStyle detect:NSMakeRange(currentRange.location, 0)];
           if (detected) {
             BOOL checked = [cbLStyle getCheckboxStateAt:currentRange.location];
             if (checked) {
@@ -138,7 +142,7 @@
 
         // append closing tags
         for (NSNumber *style in sortedEndedStyles) {
-          if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+          if ([style isEqualToNumber:@([ImageStyle getType])]) {
             continue;
           }
           NSString *tagContent =
@@ -151,21 +155,20 @@
 
         // append closing paragraph tag
         if ([previousActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])] ||
+                containsObject:@([UnorderedListStyle getType])] ||
             [previousActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])] ||
-            [previousActiveStyles containsObject:@([H1Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H2Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H3Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H4Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H5Style getStyleType])] ||
-            [previousActiveStyles containsObject:@([H6Style getStyleType])] ||
+                containsObject:@([OrderedListStyle getType])] ||
+            [previousActiveStyles containsObject:@([H1Style getType])] ||
+            [previousActiveStyles containsObject:@([H2Style getType])] ||
+            [previousActiveStyles containsObject:@([H3Style getType])] ||
+            [previousActiveStyles containsObject:@([H4Style getType])] ||
+            [previousActiveStyles containsObject:@([H5Style getType])] ||
+            [previousActiveStyles containsObject:@([H6Style getType])] ||
             [previousActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])] ||
+                containsObject:@([BlockQuoteStyle getType])] ||
+            [previousActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [previousActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])] ||
-            [previousActiveStyles
-                containsObject:@([CheckboxListStyle getStyleType])]) {
+                containsObject:@([CheckboxListStyle getType])]) {
           // do nothing, proper closing paragraph tags have been already
           // appended
         } else {
@@ -186,35 +189,33 @@
         // handle ending unordered list
         if (inUnorderedList &&
             ![currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])]) {
+                containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = NO;
           [result appendString:@"\n</ul>"];
         }
         // handle ending ordered list
         if (inOrderedList &&
             ![currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])]) {
+                containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = NO;
           [result appendString:@"\n</ol>"];
         }
         // handle ending blockquotes
-        if (inBlockQuote &&
-            ![currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])]) {
+        if (inBlockQuote && ![currentActiveStyles
+                                containsObject:@([BlockQuoteStyle getType])]) {
           inBlockQuote = NO;
           [result appendString:@"\n</blockquote>"];
         }
         // handle ending codeblock
         if (inCodeBlock &&
-            ![currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+            ![currentActiveStyles containsObject:@([CodeBlockStyle getType])]) {
           inCodeBlock = NO;
           [result appendString:@"\n</codeblock>"];
         }
         // handle ending checkbox list
         if (inCheckboxList &&
             ![currentActiveStyles
-                containsObject:@([CheckboxListStyle getStyleType])]) {
+                containsObject:@([CheckboxListStyle getType])]) {
           inCheckboxList = NO;
           [result appendString:@"\n</ul>"];
         }
@@ -222,56 +223,52 @@
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])]) {
+                containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = YES;
           [result appendString:@"\n<ul>"];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])]) {
+                containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = YES;
           [result appendString:@"\n<ol>"];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
-            [currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])]) {
+            [currentActiveStyles containsObject:@([BlockQuoteStyle getType])]) {
           inBlockQuote = YES;
           [result appendString:@"\n<blockquote>"];
         }
         // handle starting codeblock
         if (!inCodeBlock &&
-            [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])]) {
+            [currentActiveStyles containsObject:@([CodeBlockStyle getType])]) {
           inCodeBlock = YES;
           [result appendString:@"\n<codeblock>"];
         }
         // handle starting checkbox list
         if (!inCheckboxList &&
             [currentActiveStyles
-                containsObject:@([CheckboxListStyle getStyleType])]) {
+                containsObject:@([CheckboxListStyle getType])]) {
           inCheckboxList = YES;
           [result appendString:@"\n<ul data-type=\"checkbox\">"];
         }
 
         // don't add the <p> tag if some paragraph styles are present
         if ([currentActiveStyles
-                containsObject:@([UnorderedListStyle getStyleType])] ||
+                containsObject:@([UnorderedListStyle getType])] ||
             [currentActiveStyles
-                containsObject:@([OrderedListStyle getStyleType])] ||
-            [currentActiveStyles containsObject:@([H1Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H2Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H3Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H4Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H5Style getStyleType])] ||
-            [currentActiveStyles containsObject:@([H6Style getStyleType])] ||
+                containsObject:@([OrderedListStyle getType])] ||
+            [currentActiveStyles containsObject:@([H1Style getType])] ||
+            [currentActiveStyles containsObject:@([H2Style getType])] ||
+            [currentActiveStyles containsObject:@([H3Style getType])] ||
+            [currentActiveStyles containsObject:@([H4Style getType])] ||
+            [currentActiveStyles containsObject:@([H5Style getType])] ||
+            [currentActiveStyles containsObject:@([H6Style getType])] ||
+            [currentActiveStyles containsObject:@([BlockQuoteStyle getType])] ||
+            [currentActiveStyles containsObject:@([CodeBlockStyle getType])] ||
             [currentActiveStyles
-                containsObject:@([BlockQuoteStyle getStyleType])] ||
-            [currentActiveStyles
-                containsObject:@([CodeBlockStyle getStyleType])] ||
-            [currentActiveStyles
-                containsObject:@([CheckboxListStyle getStyleType])]) {
+                containsObject:@([CheckboxListStyle getType])]) {
           [result appendString:@"\n"];
         } else {
           [result appendString:@"\n<p>"];
@@ -340,7 +337,7 @@
 
       // append closing tags
       for (NSNumber *style in sortedEndedStyles) {
-        if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+        if ([style isEqualToNumber:@([ImageStyle getType])]) {
           continue;
         }
         NSString *tagContent = [self tagContentForStyle:style
@@ -363,10 +360,10 @@
         NSString *tagContent = [self tagContentForStyle:style
                                              openingTag:YES
                                                location:currentRange.location];
-        if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+        if ([style isEqualToNumber:@([ImageStyle getType])]) {
           [result
               appendString:[NSString stringWithFormat:@"<%@/>", tagContent]];
-          [currentActiveStyles removeObject:@([ImageStyle getStyleType])];
+          [currentActiveStyles removeObject:@([ImageStyle getType])];
         } else {
           [result appendString:[NSString stringWithFormat:@"<%@>", tagContent]];
         }
@@ -393,7 +390,7 @@
 
     // append closing tags
     for (NSNumber *style in sortedEndedStyles) {
-      if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+      if ([style isEqualToNumber:@([ImageStyle getType])]) {
         continue;
       }
       NSString *tagContent = [self
@@ -405,33 +402,26 @@
 
     // finish the paragraph
     // handle ending of some paragraph styles
-    if ([previousActiveStyles
-            containsObject:@([UnorderedListStyle getStyleType])]) {
+    if ([previousActiveStyles containsObject:@([UnorderedListStyle getType])]) {
       [result appendString:@"\n</ul>"];
     } else if ([previousActiveStyles
-                   containsObject:@([OrderedListStyle getStyleType])]) {
+                   containsObject:@([OrderedListStyle getType])]) {
       [result appendString:@"\n</ol>"];
     } else if ([previousActiveStyles
-                   containsObject:@([BlockQuoteStyle getStyleType])]) {
+                   containsObject:@([BlockQuoteStyle getType])]) {
       [result appendString:@"\n</blockquote>"];
     } else if ([previousActiveStyles
-                   containsObject:@([CodeBlockStyle getStyleType])]) {
+                   containsObject:@([CodeBlockStyle getType])]) {
       [result appendString:@"\n</codeblock>"];
     } else if ([previousActiveStyles
-                   containsObject:@([CheckboxListStyle getStyleType])]) {
+                   containsObject:@([CheckboxListStyle getType])]) {
       [result appendString:@"\n</ul>"];
-    } else if ([previousActiveStyles
-                   containsObject:@([H1Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H2Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H3Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H4Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H5Style getStyleType])] ||
-               [previousActiveStyles
-                   containsObject:@([H6Style getStyleType])]) {
+    } else if ([previousActiveStyles containsObject:@([H1Style getType])] ||
+               [previousActiveStyles containsObject:@([H2Style getType])] ||
+               [previousActiveStyles containsObject:@([H3Style getType])] ||
+               [previousActiveStyles containsObject:@([H4Style getType])] ||
+               [previousActiveStyles containsObject:@([H5Style getType])] ||
+               [previousActiveStyles containsObject:@([H6Style getType])]) {
       // do nothing, heading closing tag has already been appended
     } else {
       [result appendString:@"</p>"];
@@ -486,14 +476,14 @@
 - (NSString *)tagContentForStyle:(NSNumber *)style
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location {
-  if ([style isEqualToNumber:@([BoldStyle getStyleType])]) {
+  if ([style isEqualToNumber:@([BoldStyle getType])]) {
     return @"b";
-  } else if ([style isEqualToNumber:@([ItalicStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
     return @"i";
-  } else if ([style isEqualToNumber:@([ImageStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([ImageStyle getType])]) {
     if (openingTag) {
       ImageStyle *imageStyle =
-          (ImageStyle *)_input->stylesDict[@([ImageStyle getStyleType])];
+          (ImageStyle *)_input->stylesDict[@([ImageStyle getType])];
       if (imageStyle != nullptr) {
         ImageData *data = [imageStyle getImageDataAt:location];
         if (data != nullptr && data.uri != nullptr) {
@@ -506,16 +496,16 @@
     } else {
       return @"";
     }
-  } else if ([style isEqualToNumber:@([UnderlineStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([UnderlineStyle getType])]) {
     return @"u";
-  } else if ([style isEqualToNumber:@([StrikethroughStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([StrikethroughStyle getType])]) {
     return @"s";
-  } else if ([style isEqualToNumber:@([InlineCodeStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([InlineCodeStyle getType])]) {
     return @"code";
-  } else if ([style isEqualToNumber:@([LinkStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([LinkStyle getType])]) {
     if (openingTag) {
       LinkStyle *linkStyle =
-          (LinkStyle *)_input->stylesDict[@([LinkStyle getStyleType])];
+          (LinkStyle *)_input->stylesDict[@([LinkStyle getType])];
       if (linkStyle != nullptr) {
         LinkData *data = [linkStyle getLinkDataAt:location];
         if (data != nullptr && data.url != nullptr) {
@@ -526,10 +516,10 @@
     } else {
       return @"a";
     }
-  } else if ([style isEqualToNumber:@([MentionStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([MentionStyle getType])]) {
     if (openingTag) {
       MentionStyle *mentionStyle =
-          (MentionStyle *)_input->stylesDict[@([MentionStyle getStyleType])];
+          (MentionStyle *)_input->stylesDict[@([MentionStyle getType])];
       if (mentionStyle != nullptr) {
         MentionParams *params = [mentionStyle getMentionParamsAt:location];
         // attributes can theoretically be nullptr
@@ -564,26 +554,26 @@
     } else {
       return @"mention";
     }
-  } else if ([style isEqualToNumber:@([H1Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H1Style getType])]) {
     return @"h1";
-  } else if ([style isEqualToNumber:@([H2Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H2Style getType])]) {
     return @"h2";
-  } else if ([style isEqualToNumber:@([H3Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H3Style getType])]) {
     return @"h3";
-  } else if ([style isEqualToNumber:@([H4Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H4Style getType])]) {
     return @"h4";
-  } else if ([style isEqualToNumber:@([H5Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H5Style getType])]) {
     return @"h5";
-  } else if ([style isEqualToNumber:@([H6Style getStyleType])]) {
+  } else if ([style isEqualToNumber:@([H6Style getType])]) {
     return @"h6";
-  } else if ([style isEqualToNumber:@([UnorderedListStyle getStyleType])] ||
-             [style isEqualToNumber:@([OrderedListStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
+             [style isEqualToNumber:@([OrderedListStyle getType])]) {
     return @"li";
-  } else if ([style isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([CheckboxListStyle getType])]) {
     if (openingTag) {
       CheckboxListStyle *checkboxListStyleClass =
           (CheckboxListStyle *)
-              _input->stylesDict[@([CheckboxListStyle getStyleType])];
+              _input->stylesDict[@([CheckboxListStyle getType])];
       BOOL checked = [checkboxListStyleClass getCheckboxStateAt:location];
 
       if (checked) {
@@ -593,8 +583,8 @@
     } else {
       return @"li";
     }
-  } else if ([style isEqualToNumber:@([BlockQuoteStyle getStyleType])] ||
-             [style isEqualToNumber:@([CodeBlockStyle getStyleType])]) {
+  } else if ([style isEqualToNumber:@([BlockQuoteStyle getType])] ||
+             [style isEqualToNumber:@([CodeBlockStyle getType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
     return @"p";
   }
@@ -660,7 +650,7 @@
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
-    id<BaseStyleProtocol> baseStyle = _input->stylesDict[styleType];
+    StyleBase *baseStyle = _input->stylesDict[styleType];
     // range must be taking offest into consideration because processed styles'
     // ranges are relative to only the new text while we need absolute ranges
     // relative to the whole existing text
@@ -670,29 +660,23 @@
 
     // of course any changes here need to take blocks and conflicts into
     // consideration
-    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getStyleType]
+    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getType]
                                         range:styleRange]) {
-      if ([styleType isEqualToNumber:@([LinkStyle getStyleType])]) {
-        NSString *text =
-            [_input->textView.textStorage.string substringWithRange:styleRange];
-        NSString *url = (NSString *)stylePair.styleValue;
-        BOOL isManual = ![text isEqualToString:url];
-        [((LinkStyle *)baseStyle) addLink:text
-                                      url:url
+      if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
+        LinkData *linkData = (LinkData *)stylePair.styleValue;
+        [((LinkStyle *)baseStyle) addLink:linkData
                                     range:styleRange
-                                   manual:isManual
                             withSelection:NO];
-      } else if ([styleType isEqualToNumber:@([MentionStyle getStyleType])]) {
+      } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
         MentionParams *params = (MentionParams *)stylePair.styleValue;
         [((MentionStyle *)baseStyle) addMentionAtRange:styleRange
                                                 params:params];
-      } else if ([styleType isEqualToNumber:@([ImageStyle getStyleType])]) {
+      } else if ([styleType isEqualToNumber:@([ImageStyle getType])]) {
         ImageData *imgData = (ImageData *)stylePair.styleValue;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
                                      withSelection:NO];
-      } else if ([styleType
-                     isEqualToNumber:@([CheckboxListStyle getStyleType])]) {
+      } else if ([styleType isEqualToNumber:@([CheckboxListStyle getType])]) {
         NSDictionary *checkboxStates = (NSDictionary *)stylePair.styleValue;
         CheckboxListStyle *cbLStyle = (CheckboxListStyle *)baseStyle;
 
@@ -700,7 +684,10 @@
         // unchecked value
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
-        [cbLStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
+        [cbLStyle addWithChecked:NO
+                           range:styleRange
+                      withTyping:shouldAddTypingAttr
+                  withDirtyRange:YES];
 
         if (!checkboxStates && checkboxStates.count == 0) {
           continue;
@@ -716,7 +703,9 @@
       } else {
         BOOL shouldAddTypingAttr =
             styleRange.location + styleRange.length == plainTextLength;
-        [baseStyle addAttributes:styleRange withTypingAttr:shouldAddTypingAttr];
+        [baseStyle add:styleRange
+                withTyping:shouldAddTypingAttr
+            withDirtyRange:YES];
       }
     }
   }
@@ -729,7 +718,7 @@
  * Normalizes external HTML (from Google Docs, Word, web pages, etc.) into our
  * canonical tag subset using the Gumbo-based C++ normalizer.
  *
- * Converts: <strong> → <b>, <em> → <i>, <span style="font-weight:bold"> → <b>,
+ * Converts: strong → b, em → i, span style="font-weight:bold" → b,
  * strips unknown tags while preserving text
  */
 - (NSString *_Nullable)normalizeExternalHtml:(NSString *_Nonnull)html {
@@ -814,6 +803,24 @@
                                                      withString:@"<br>"];
     fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<br></p>"
                                                      withString:@"<br>"];
+
+    // add <br> tags inside empty blockquote and codeblock tags
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<blockquote></blockquote>"
+                                  withString:@"<blockquote><br></"
+                                             @"blockquote>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<codeblock></codeblock>"
+                                  withString:@"<codeblock><br></codeblock>"];
+
+    // remove empty ul and ol tags
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ul></ul>"
+                                                     withString:@""];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<ul data-type=\"checkbox\"></ul>"
+                                  withString:@""];
+    fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"<ol></ol>"
+                                                     withString:@""];
 
     // tags that have to be in separate lines
     fixedHtml = [self stringByAddingNewlinesToTag:@"<br>"
@@ -1163,12 +1170,11 @@
           insideCheckboxList = YES;
         }
 
-        // skip one newline after opening tags that are in separate lines
-        // intentionally
-        if ([currentTagName isEqualToString:@"ul"] ||
-            [currentTagName isEqualToString:@"ol"] ||
-            [currentTagName isEqualToString:@"blockquote"] ||
-            [currentTagName isEqualToString:@"codeblock"]) {
+        // skip one newline if it was added after opening tags that are in
+        // separate lines
+        if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
+            [[NSCharacterSet newlineCharacterSet]
+                characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
           i += 1;
         }
 
@@ -1188,12 +1194,14 @@
           insideCheckboxList = NO;
         }
 
-        // skip one newline that was added before some closing tags that are in
-        // separate lines
-        if ([currentTagName isEqualToString:@"ul"] ||
-            [currentTagName isEqualToString:@"ol"] ||
-            [currentTagName isEqualToString:@"blockquote"] ||
-            [currentTagName isEqualToString:@"codeblock"]) {
+        BOOL isBlockTag = [self isBlockTag:currentTagName];
+
+        // skip one newline if it was added before some closing tags that are
+        // in separate lines
+        if (isBlockTag && plainText.length > 0 &&
+            [[NSCharacterSet newlineCharacterSet]
+                characterIsMember:[plainText
+                                      characterAtIndex:plainText.length - 1]]) {
           plainText = [[plainText
               substringWithRange:NSMakeRange(0, plainText.length - 1)]
               mutableCopy];
@@ -1259,9 +1267,9 @@
     NSMutableArray *styleArr = [[NSMutableArray alloc] init];
     StylePair *stylePair = [[StylePair alloc] init];
     if ([tagName isEqualToString:@"b"]) {
-      [styleArr addObject:@([BoldStyle getStyleType])];
+      [styleArr addObject:@([BoldStyle getType])];
     } else if ([tagName isEqualToString:@"i"]) {
-      [styleArr addObject:@([ItalicStyle getStyleType])];
+      [styleArr addObject:@([ItalicStyle getType])];
     } else if ([tagName isEqualToString:@"img"]) {
       NSRegularExpression *srcRegex =
           [NSRegularExpression regularExpressionWithPattern:@"src=\"([^\"]+)\""
@@ -1277,7 +1285,7 @@
       }
 
       NSRange srcRange = match.range;
-      [styleArr addObject:@([ImageStyle getStyleType])];
+      [styleArr addObject:@([ImageStyle getType])];
       // cut only the uri from the src="..." string
       NSString *uri =
           [params substringWithRange:NSMakeRange(srcRange.location + 5,
@@ -1317,11 +1325,11 @@
 
       stylePair.styleValue = imageData;
     } else if ([tagName isEqualToString:@"u"]) {
-      [styleArr addObject:@([UnderlineStyle getStyleType])];
+      [styleArr addObject:@([UnderlineStyle getType])];
     } else if ([tagName isEqualToString:@"s"]) {
-      [styleArr addObject:@([StrikethroughStyle getStyleType])];
+      [styleArr addObject:@([StrikethroughStyle getType])];
     } else if ([tagName isEqualToString:@"code"]) {
-      [styleArr addObject:@([InlineCodeStyle getStyleType])];
+      [styleArr addObject:@([InlineCodeStyle getType])];
     } else if ([tagName isEqualToString:@"a"]) {
       NSRegularExpression *hrefRegex =
           [NSRegularExpression regularExpressionWithPattern:@"href=\".+\""
@@ -1338,14 +1346,21 @@
       }
 
       NSRange hrefRange = match.range;
-      [styleArr addObject:@([LinkStyle getStyleType])];
+      [styleArr addObject:@([LinkStyle getType])];
       // cut only the url from the href="..." string
       NSString *url =
           [params substringWithRange:NSMakeRange(hrefRange.location + 6,
                                                  hrefRange.length - 7)];
-      stylePair.styleValue = url;
+      NSString *text = [plainText substringWithRange:tagRangeValue.rangeValue];
+
+      LinkData *linkData = [[LinkData alloc] init];
+      linkData.url = url;
+      linkData.text = text;
+      linkData.isManual = ![text isEqualToString:url];
+
+      stylePair.styleValue = linkData;
     } else if ([tagName isEqualToString:@"mention"]) {
-      [styleArr addObject:@([MentionStyle getStyleType])];
+      [styleArr addObject:@([MentionStyle getType])];
       // extract html expression into dict using some regex
       NSMutableDictionary *paramsDict = [[NSMutableDictionary alloc] init];
       NSString *pattern = @"(\\w+)=(['\"])(.*?)\\2";
@@ -1385,32 +1400,32 @@
 
       stylePair.styleValue = mentionParams;
     } else if ([tagName isEqualToString:@"h1"]) {
-      [styleArr addObject:@([H1Style getStyleType])];
+      [styleArr addObject:@([H1Style getType])];
     } else if ([tagName isEqualToString:@"h2"]) {
-      [styleArr addObject:@([H2Style getStyleType])];
+      [styleArr addObject:@([H2Style getType])];
     } else if ([tagName isEqualToString:@"h3"]) {
-      [styleArr addObject:@([H3Style getStyleType])];
+      [styleArr addObject:@([H3Style getType])];
     } else if ([tagName isEqualToString:@"h4"]) {
-      [styleArr addObject:@([H4Style getStyleType])];
+      [styleArr addObject:@([H4Style getType])];
     } else if ([tagName isEqualToString:@"h5"]) {
-      [styleArr addObject:@([H5Style getStyleType])];
+      [styleArr addObject:@([H5Style getType])];
     } else if ([tagName isEqualToString:@"h6"]) {
-      [styleArr addObject:@([H6Style getStyleType])];
+      [styleArr addObject:@([H6Style getType])];
     } else if ([tagName isEqualToString:@"ul"]) {
       if ([self isUlCheckboxList:params]) {
-        [styleArr addObject:@([CheckboxListStyle getStyleType])];
+        [styleArr addObject:@([CheckboxListStyle getType])];
         stylePair.styleValue =
             [self prepareCheckboxListStyleValue:tagRangeValue
                                  checkboxStates:checkboxStates];
       } else {
-        [styleArr addObject:@([UnorderedListStyle getStyleType])];
+        [styleArr addObject:@([UnorderedListStyle getType])];
       }
     } else if ([tagName isEqualToString:@"ol"]) {
-      [styleArr addObject:@([OrderedListStyle getStyleType])];
+      [styleArr addObject:@([OrderedListStyle getType])];
     } else if ([tagName isEqualToString:@"blockquote"]) {
-      [styleArr addObject:@([BlockQuoteStyle getStyleType])];
+      [styleArr addObject:@([BlockQuoteStyle getType])];
     } else if ([tagName isEqualToString:@"codeblock"]) {
-      [styleArr addObject:@([CodeBlockStyle getStyleType])];
+      [styleArr addObject:@([CodeBlockStyle getType])];
     } else {
       // some other external tags like span just don't get put into the
       // processed styles

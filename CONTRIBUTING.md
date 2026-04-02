@@ -106,7 +106,7 @@ Each command sets up the device and runs all Maestro flows. The script automatic
 
 ```sh
 # Both platforms sequentially
-yarn test:e2e
+yarn test:e2e:mobile
 
 # Single platform
 yarn test:e2e:ios
@@ -129,7 +129,7 @@ Some flows compare a screenshot of the editor against a saved baseline in `.maes
 
 ```sh
 # Update baselines on both platforms
-yarn test:e2e --update-screenshots
+yarn test:e2e:mobile --update-screenshots
 
 # Single platform
 yarn test:e2e:ios --update-screenshots
@@ -144,6 +144,28 @@ macOS may throttle the Android emulator via **App Nap** when its window is not v
 
 1. **Keep the emulator window visible** while tests are running.
 2. **Disable App Nap** for the emulator: `defaults write com.google.android.emulator NSAppSleepDisabled -bool YES` (requires an emulator restart). Note this may drain your battery, so you may want to re-enable it afterwards with `-bool NO`.
+
+### Web E2E tests
+
+We use [Playwright](https://playwright.dev/) for end-to-end testing of the web example. Tests live in `.playwright/tests/`.
+
+#### Prerequisites
+
+- Install Playwright browser binaries once before running web E2E tests:
+
+```sh
+yarn playwright install
+```
+
+#### Running Web E2E tests
+
+Run the web E2E suite from the root directory:
+
+```sh
+yarn test:e2e:web
+```
+
+The Playwright config starts the Vite dev server automatically, so you do not need to run `yarn example-web dev` separately.
 
 ### Commit message convention
 
@@ -187,9 +209,11 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
-- `yarn test:e2e`: run E2E tests on iOS and Android sequentially.
+- `yarn test:e2e`: run all E2E tests (mobile + web) sequentially.
+- `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
+- `yarn test:e2e:web`: run E2E tests on the web example with Playwright.
 
 ### Sending a pull request
 

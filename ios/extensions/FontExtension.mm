@@ -24,23 +24,6 @@
   }
 }
 
-- (UIFont *)removeBold {
-  if (![self isBold]) {
-    return self;
-  }
-  UIFontDescriptorSymbolicTraits newTraits =
-      (self.fontDescriptor.symbolicTraits ^ UIFontDescriptorTraitBold);
-  UIFontDescriptor *fontDescriptor =
-      [self.fontDescriptor fontDescriptorWithSymbolicTraits:newTraits];
-  if (fontDescriptor != nullptr) {
-    return [UIFont fontWithDescriptor:fontDescriptor size:0];
-  } else {
-    RCTLogWarn(
-        @"[EnrichedTextInput]: Couldn't remove bold trait from the font.");
-    return self;
-  }
-}
-
 - (BOOL)isItalic {
   return (self.fontDescriptor.symbolicTraits & UIFontDescriptorTraitItalic) ==
          UIFontDescriptorTraitItalic;
@@ -59,23 +42,6 @@
   } else {
     RCTLogWarn(
         @"[EnrichedTextInput]: Couldn't apply italic trait to the font.");
-    return self;
-  }
-}
-
-- (UIFont *)removeItalic {
-  if (![self isItalic]) {
-    return self;
-  }
-  UIFontDescriptorSymbolicTraits newTraits =
-      (self.fontDescriptor.symbolicTraits ^ UIFontDescriptorTraitItalic);
-  UIFontDescriptor *fontDescriptor =
-      [self.fontDescriptor fontDescriptorWithSymbolicTraits:newTraits];
-  if (fontDescriptor != nullptr) {
-    return [UIFont fontWithDescriptor:fontDescriptor size:0];
-  } else {
-    RCTLogWarn(
-        @"[EnrichedTextInput]: Couldn't remove italic trait from the font.");
     return self;
   }
 }
