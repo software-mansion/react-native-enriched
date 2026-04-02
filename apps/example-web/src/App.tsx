@@ -7,6 +7,7 @@ import {
   type OnChangeSelectionEvent,
   type FocusEvent,
   type BlurEvent,
+  type EnrichedInputStyle,
 } from 'react-native-enriched';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
@@ -60,6 +61,7 @@ function App() {
             editable
             scrollEnabled
             autoCapitalize="sentences"
+            style={enrichedInputStyle}
             onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyPress={handleKeyPress}
@@ -104,5 +106,10 @@ function App() {
     </div>
   );
 }
+
+const enrichedInputStyle: EnrichedInputStyle = {
+  minWidth: 150,
+  maxWidth: 500,
+};
 
 export default App;
