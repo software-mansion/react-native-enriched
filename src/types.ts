@@ -8,6 +8,7 @@ import type {
   TargetedEvent,
   TextStyle,
   ViewProps,
+  ViewStyle,
 } from 'react-native';
 
 export interface EnrichedInputStyle {
@@ -72,7 +73,7 @@ export interface EnrichedInputStyle {
   paddingStart?: DimensionValue;
   paddingTop?: DimensionValue;
   paddingVertical?: DimensionValue;
-  position?: 'absolute' | 'relative' | 'static';
+  position?: TextStyle['position'];
   right?: DimensionValue;
   start?: DimensionValue;
   top?: DimensionValue;
@@ -95,7 +96,7 @@ export interface EnrichedInputStyle {
 
   // View appearance
   /** @platform ios web */
-  backfaceVisibility?: 'visible' | 'hidden';
+  backfaceVisibility?: TextStyle['backfaceVisibility'];
   backgroundColor?: ColorValue;
   /** @platform ios web */
   borderBlockColor?: ColorValue;
@@ -134,7 +135,7 @@ export interface EnrichedInputStyle {
   /** @platform ios web */
   borderStartStartRadius?: TextStyle['borderStartStartRadius'];
   /** @platform ios web */
-  borderStyle?: 'solid' | 'dotted' | 'dashed';
+  borderStyle?: TextStyle['borderStyle'];
   /** @platform ios web */
   borderTopColor?: ColorValue;
   /** @platform ios web */
@@ -159,33 +160,21 @@ export interface EnrichedInputStyle {
   outlineColor?: ColorValue;
   outlineOffset?: TextStyle['outlineOffset'];
   /** @platform android web */
-  outlineStyle?: 'solid' | 'dotted' | 'dashed';
+  outlineStyle?: TextStyle['outlineStyle'];
   outlineWidth?: TextStyle['outlineWidth'];
   /** @platform ios web */
-  pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto';
+  pointerEvents?: TextStyle['pointerEvents'];
 
   // Typography
   color?: ColorValue;
   fontFamily?: string;
   fontSize?: number;
-  fontStyle?: 'normal' | 'italic';
+  fontStyle?: TextStyle['fontStyle'];
   fontWeight?: TextStyle['fontWeight'];
   lineHeight?: number;
   /** @platform web */
   letterSpacing?: number;
 }
-
-// Compile-time compatibility checks — exported so TypeScript doesn't report them as unused.
-// Each tuple element evaluates to `true` when the interface is in sync with TextStyle,
-// and to `never` (causing a compile error) when it drifts.
-//   [0] Fails if EnrichedInputStyle contains a key that doesn't exist in TextStyle.
-//   [1] Fails if a TextStyle value is no longer assignable to EnrichedInputStyle.
-export type _EnrichedInputStyleCompatChecks = [
-  Exclude<keyof EnrichedInputStyle, keyof TextStyle> extends never
-    ? true
-    : never,
-  TextStyle extends EnrichedInputStyle ? true : never,
-];
 
 interface HeadingStyle {
   fontSize?: number;
@@ -461,7 +450,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
-  style?: EnrichedInputStyle;
+  style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   returnKeyType?: ReturnKeyTypeOptions;
