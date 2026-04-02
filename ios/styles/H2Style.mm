@@ -2,19 +2,19 @@
 #import "StyleHeaders.h"
 
 @implementation H2Style
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return H2;
 }
-- (NSString *)getHeadingLevelString {
-  return @"H2";
+- (NSString *)getValue {
+  return @"EnrichedH2";
 }
-+ (BOOL)isParagraphStyle {
+- (BOOL)isParagraph {
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  return [((EnrichedTextInputView *)input)->config h2FontSize];
+  return [self.input->config h2FontSize];
 }
 - (BOOL)isHeadingBold {
-  return [((EnrichedTextInputView *)input)->config h2Bold];
+  return [self.input->config h2Bold];
 }
 @end

@@ -13,7 +13,7 @@ import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 class EnrichedTextLinkSpan(
   private val url: String,
   private val enrichedStyle: EnrichedTextStyle,
-) : EnrichedLinkSpan(url, enrichedStyle),
+) : EnrichedLinkSpan(url, enrichedStyle, true),
   EnrichedTextSpan,
   EnrichedTextClickableSpan {
   override val dependsOnHtmlStyle = true

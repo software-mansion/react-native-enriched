@@ -1,0 +1,35 @@
+appId: swmansion.enriched.example
+---
+# PR #430 - fix(Android): removing paragraph styles
+# Verifies that backspacing text from a line in a code block does not strip
+# paragraph styles from the remaining lines.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-quote"
+
+- inputText: "A"
+- pressKey: Enter
+- inputText: "B"
+- pressKey: Enter
+- inputText: "C"
+
+# Tap on the second line
+- tapOn:
+    id: "editor-input"
+    point: "40%,50%"
+
+# Clear second line
+- pressKey: Backspace
+- pressKey: Backspace
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "paragraph_style_after_removal"

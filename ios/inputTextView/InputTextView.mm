@@ -6,6 +6,17 @@
 
 @implementation InputTextView
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  // UITextView resets contentSize during its own layout pass (triggered when
+  // the frame is set on first mount). Re-schedule a relayout so our explicit
+  // contentSize is applied after UITextView finishes its internal layout.
+  EnrichedTextInputView *input = (EnrichedTextInputView *)_input;
+  if (input != nil) {
+    [input scheduleRelayoutIfNeeded];
+  }
+}
+
 - (void)copy:(id)sender {
   EnrichedTextInputView *typedInput = (EnrichedTextInputView *)_input;
   if (typedInput == nullptr) {
@@ -74,12 +85,12 @@
       NSString *type = item.allKeys[j];
       if ([type isEqual:UTTypeJPEG.identifier] ||
           [type isEqual:UTTypePNG.identifier] ||
-          [type isEqual:UTTypeWebP.identifier] ||
           [type isEqual:UTTypeHEIC.identifier] ||
           [type isEqual:UTTypeTIFF.identifier]) {
         imageData = [self getDataForImageItem:item[type] type:type];
-      } else if ([type isEqual:UTTypeGIF.identifier]) {
-        // gifs
+      } else if ([type isEqual:UTTypeWebP.identifier] ||
+                 [type isEqual:UTTypeGIF.identifier]) {
+        // webp and gifs: read raw bytes directly — no re-encoding needed
         imageData = [pasteboard dataForPasteboardType:type];
       }
       if (!imageData) {

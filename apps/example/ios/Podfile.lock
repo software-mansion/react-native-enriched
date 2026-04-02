@@ -1807,7 +1807,7 @@ PODS:
     - React-utils (= 0.84.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.84.0)
-  - ReactNativeEnriched (0.4.1):
+  - ReactNativeEnriched (0.5.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2136,7 +2136,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 27937747ddc743fcb66a8dc19e8edf60188d94cc
   ReactCommon: cc0e38600f82487c5fe5d29150abb6fa9d981986
   ReactNativeDependencies: d49d9d865b7eb4a9884164a4b6f50440edb37e01
-  ReactNativeEnriched: 955ecbffda0ae4e899dcec807fb4f9c0d1fa04e0
+  ReactNativeEnriched: 4269ef1190b05845dffbed287c472df4e7976077
   Yoga: 772166513f9cd2d61a6251d0dacbbfaa5b537479
 
 PODFILE CHECKSUM: 88c10840d02e9884b2dc3f457d5120f83ac3803b
