@@ -210,6 +210,50 @@ describe('paddingHorizontal / paddingVertical shorthands', () => {
   });
 });
 
+describe('shorthand vs specific precedence (RN behavior: specific wins)', () => {
+  it('marginLeft overrides marginHorizontal', () => {
+    expect(convert({ marginHorizontal: 20, marginLeft: 10 })).toMatchObject({
+      marginLeft: '10px',
+      marginRight: '20px',
+    });
+  });
+
+  it('marginRight overrides marginHorizontal', () => {
+    expect(convert({ marginHorizontal: 20, marginRight: 5 })).toMatchObject({
+      marginLeft: '20px',
+      marginRight: '5px',
+    });
+  });
+
+  it('marginTop overrides marginVertical', () => {
+    expect(convert({ marginVertical: 16, marginTop: 4 })).toMatchObject({
+      marginTop: '4px',
+      marginBottom: '16px',
+    });
+  });
+
+  it('marginBottom overrides marginVertical', () => {
+    expect(convert({ marginVertical: 16, marginBottom: 0 })).toMatchObject({
+      marginTop: '16px',
+      marginBottom: '0px',
+    });
+  });
+
+  it('paddingLeft overrides paddingHorizontal', () => {
+    expect(convert({ paddingHorizontal: 12, paddingLeft: 4 })).toMatchObject({
+      paddingLeft: '4px',
+      paddingRight: '12px',
+    });
+  });
+
+  it('paddingTop overrides paddingVertical', () => {
+    expect(convert({ paddingVertical: 8, paddingTop: 2 })).toMatchObject({
+      paddingTop: '2px',
+      paddingBottom: '8px',
+    });
+  });
+});
+
 describe('logical property mapping', () => {
   const cases: Array<{
     description: string;
@@ -688,14 +732,70 @@ describe('transform property', () => {
     ).toEqual({ transform: 'translateX(10px) scale(1.5) rotate(90deg)' });
   });
 
-  it('RN array transform is ignored', () => {
-    expect(
-      convert({ transform: [{ translateX: 10 }, { rotate: '45deg' }] })
-    ).not.toHaveProperty('transform');
-  });
-
   it('transform is omitted when not provided', () => {
     expect(convert({ width: 100 })).not.toHaveProperty('transform');
+  });
+
+  it('RN array transform is converted to CSS string', () => {
+    expect(
+      convert({ transform: [{ translateX: 10 }, { rotate: '45deg' }] })
+    ).toEqual({ transform: 'translateX(10px) rotate(45deg)' });
+  });
+
+  it('single-item array transform', () => {
+    expect(convert({ transform: [{ scale: 1.5 }] })).toEqual({
+      transform: 'scale(1.5)',
+    });
+  });
+
+  it('all numeric transform functions get px suffix', () => {
+    expect(
+      convert({
+        transform: [
+          { translateX: 5 },
+          { translateY: -10 },
+          { perspective: 1000 },
+        ],
+      })
+    ).toEqual({
+      transform: 'translateX(5px) translateY(-10px) perspective(1000px)',
+    });
+  });
+
+  it('scale transforms have no unit', () => {
+    expect(convert({ transform: [{ scaleX: 2 }, { scaleY: 0.5 }] })).toEqual({
+      transform: 'scaleX(2) scaleY(0.5)',
+    });
+  });
+
+  it('angle transforms pass string value through', () => {
+    expect(
+      convert({
+        transform: [
+          { rotateX: '30deg' },
+          { rotateY: '60deg' },
+          { rotateZ: '90deg' },
+          { skewX: '15deg' },
+          { skewY: '10deg' },
+        ],
+      })
+    ).toEqual({
+      transform:
+        'rotateX(30deg) rotateY(60deg) rotateZ(90deg) skewX(15deg) skewY(10deg)',
+    });
+  });
+
+  it('matrix(6 values) uses 2D matrix()', () => {
+    expect(convert({ transform: [{ matrix: [1, 0, 0, 1, 10, 20] }] })).toEqual({
+      transform: 'matrix(1, 0, 0, 1, 10, 20)',
+    });
+  });
+
+  it('matrix(16 values) uses matrix3d()', () => {
+    const m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 0, 1];
+    expect(convert({ transform: [{ matrix: m }] })).toEqual({
+      transform: `matrix3d(${m.join(', ')})`,
+    });
   });
 });
 

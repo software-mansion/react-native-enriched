@@ -489,7 +489,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   useHtmlNormalizer?: boolean;
 }
 
-// To be removed when we fully migrate style prop to EnrichedInputStyle
+// Web-only for now. Native will eventually migrate to EnrichedInputStyle too,
+// at which point this interface will be removed and EnrichedTextInputProps
+// will use EnrichedInputStyle directly.
 export interface EnrichedTextInputWebProps
   extends Omit<EnrichedTextInputProps, 'style'> {
   style?: EnrichedInputStyle;

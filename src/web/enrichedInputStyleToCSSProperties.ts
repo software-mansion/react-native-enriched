@@ -20,6 +20,39 @@ function toColor(value?: ColorValue): string | undefined {
   return undefined;
 }
 
+function resolveTransform(
+  transform: EnrichedInputStyle['transform']
+): string | undefined {
+  if (typeof transform === 'string') return transform;
+  if (!Array.isArray(transform)) return undefined;
+
+  const parts = transform.map((item) => {
+    if ('translateX' in item) return `translateX(${item.translateX}px)`;
+    if ('translateY' in item) return `translateY(${item.translateY}px)`;
+    if ('translateZ' in item) return `translateZ(${item.translateZ}px)`;
+    if ('scale' in item) return `scale(${item.scale})`;
+    if ('scaleX' in item) return `scaleX(${item.scaleX})`;
+    if ('scaleY' in item) return `scaleY(${item.scaleY})`;
+    if ('scaleZ' in item) return `scaleZ(${item.scaleZ})`;
+    if ('rotate' in item) return `rotate(${item.rotate})`;
+    if ('rotateX' in item) return `rotateX(${item.rotateX})`;
+    if ('rotateY' in item) return `rotateY(${item.rotateY})`;
+    if ('rotateZ' in item) return `rotateZ(${item.rotateZ})`;
+    if ('skewX' in item) return `skewX(${item.skewX})`;
+    if ('skewY' in item) return `skewY(${item.skewY})`;
+    if ('perspective' in item) return `perspective(${item.perspective}px)`;
+    if ('matrix' in item) {
+      return item.matrix.length === 16
+        ? `matrix3d(${item.matrix.join(', ')})`
+        : `matrix(${item.matrix.join(', ')})`;
+    }
+    return null;
+  });
+
+  const css = parts.filter(Boolean).join(' ');
+  return css || undefined;
+}
+
 export function enrichedInputStyleToCSSProperties(
   style: EnrichedInputStyle
 ): CSSProperties {
@@ -43,12 +76,12 @@ export function enrichedInputStyleToCSSProperties(
     insetInlineEnd: toPx(style.insetInlineEnd ?? style.end),
     insetInlineStart: toPx(style.insetInlineStart ?? style.start),
 
-    // Margin
+    // Margin — specific properties take precedence over shorthands (RN behavior)
     margin: toPx(style.margin),
-    marginTop: toPx(style.marginTop),
-    marginBottom: toPx(style.marginBottom),
-    marginLeft: toPx(style.marginLeft),
-    marginRight: toPx(style.marginRight),
+    marginTop: toPx(style.marginTop ?? style.marginVertical),
+    marginBottom: toPx(style.marginBottom ?? style.marginVertical),
+    marginLeft: toPx(style.marginLeft ?? style.marginHorizontal),
+    marginRight: toPx(style.marginRight ?? style.marginHorizontal),
     marginBlock: toPx(style.marginBlock),
     marginBlockEnd: toPx(style.marginBlockEnd),
     marginBlockStart: toPx(style.marginBlockStart),
@@ -56,36 +89,18 @@ export function enrichedInputStyleToCSSProperties(
     marginInlineEnd: toPx(style.marginInlineEnd ?? style.marginEnd),
     marginInlineStart: toPx(style.marginInlineStart ?? style.marginStart),
 
-    // Padding
+    // Padding — specific properties take precedence over shorthands (RN behavior)
     padding: toPx(style.padding),
-    paddingTop: toPx(style.paddingTop),
-    paddingBottom: toPx(style.paddingBottom),
-    paddingLeft: toPx(style.paddingLeft),
-    paddingRight: toPx(style.paddingRight),
+    paddingTop: toPx(style.paddingTop ?? style.paddingVertical),
+    paddingBottom: toPx(style.paddingBottom ?? style.paddingVertical),
+    paddingLeft: toPx(style.paddingLeft ?? style.paddingHorizontal),
+    paddingRight: toPx(style.paddingRight ?? style.paddingHorizontal),
     paddingBlock: toPx(style.paddingBlock),
     paddingBlockEnd: toPx(style.paddingBlockEnd),
     paddingBlockStart: toPx(style.paddingBlockStart),
     paddingInline: toPx(style.paddingInline),
     paddingInlineEnd: toPx(style.paddingInlineEnd ?? style.paddingEnd),
     paddingInlineStart: toPx(style.paddingInlineStart ?? style.paddingStart),
-
-    // RN shorthands expanded (override the direct values above if set)
-    ...(style.marginHorizontal != null && {
-      marginLeft: toPx(style.marginHorizontal),
-      marginRight: toPx(style.marginHorizontal),
-    }),
-    ...(style.marginVertical != null && {
-      marginTop: toPx(style.marginVertical),
-      marginBottom: toPx(style.marginVertical),
-    }),
-    ...(style.paddingHorizontal != null && {
-      paddingLeft: toPx(style.paddingHorizontal),
-      paddingRight: toPx(style.paddingHorizontal),
-    }),
-    ...(style.paddingVertical != null && {
-      paddingTop: toPx(style.paddingVertical),
-      paddingBottom: toPx(style.paddingVertical),
-    }),
 
     // Border widths
     borderInlineStartWidth: toPx(style.borderStartWidth),
@@ -176,9 +191,8 @@ export function enrichedInputStyleToCSSProperties(
     outlineOffset: toPx(style.outlineOffset),
     outlineWidth: toPx(style.outlineWidth),
 
-    // Transforms - RN accepts arrays, CSS only strings
-    transform:
-      typeof style.transform === 'string' ? style.transform : undefined,
+    // Transforms — array form (RN syntax) is not supported on web
+    transform: resolveTransform(style.transform),
     transformOrigin:
       typeof style.transformOrigin === 'string'
         ? style.transformOrigin
@@ -200,5 +214,5 @@ export function enrichedInputStyleToCSSProperties(
   // Clean undefined values
   return Object.fromEntries(
     Object.entries(css).filter(([, v]) => v !== undefined)
-  ) as CSSProperties;
+  );
 }
