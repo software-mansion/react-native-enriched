@@ -143,7 +143,7 @@ Summary of what happens here:
 
 ## Supported Tags
 
-`react-native-enriched` uses the following HTML tags in its output (via [onChangeHtml](docs/API_REFERENCE.md#onchangehtml)) and accepts them as input (via [setValue](docs/API_REFERENCE.md#setValue)).
+`react-native-enriched` uses the following HTML tags in its output and accepts them as input.
 
 Not all styles can be combined freely. There are two kinds of restrictions:
 
@@ -154,18 +154,20 @@ These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchange
 
 ### Inline tags
 
-| Style         | HTML tag                                    | Conflicts with               | Blocked by             |
-| ------------- | ------------------------------------------- | ---------------------------- | ---------------------- |
-| Bold          | `<b>`                                       | --                           | `<codeblock>`          |
-| Italic        | `<i>`                                       | --                           | `<codeblock>`          |
-| Underline     | `<u>`                                       | --                           | `<codeblock>`          |
-| Strikethrough | `<s>`                                       | --                           | `<codeblock>`          |
-| Inline code   | `<code>`                                    | `<a>`, `<mention>`           | `<codeblock>`, `<img>` |
-| Link          | `<a>`                            | `<code>`, `<a>`, `<mention>` | `<codeblock>`, `<img>` |
-| Mention       | `<mention>`      | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
-| Image         | `<img>` | `<a>`, `<mention>`           | `<code>`               |
+| Style         | HTML tag    | Conflicts with               | Blocked by             |
+| ------------- | ----------- | ---------------------------- | ---------------------- |
+| Bold          | `<b>`       | --                           | `<codeblock>`          |
+| Italic        | `<i>`       | --                           | `<codeblock>`          |
+| Underline     | `<u>`       | --                           | `<codeblock>`          |
+| Strikethrough | `<s>`       | --                           | `<codeblock>`          |
+| Inline code   | `<code>`    | `<a>`, `<mention>`           | `<codeblock>`, `<img>` |
+| Link          | `<a>`       | `<code>`, `<a>`, `<mention>` | `<codeblock>`, `<img>` |
+| Mention       | `<mention>` | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
+| Image         | `<img>`     | `<a>`, `<mention>`           | `<code>`               |
 
 ### Paragraph tags
+
+Some paragraph styles are container elements that wrap each line of text inside them with an **inner content tag**. For example: each line inside `<ul>` is wrapped in `<li>` and each line inside `<codeblock>` is wrapped in `<p>`.
 
 Only one paragraph-level style can be active per paragraph - all paragraph styles conflict with each other.
 
