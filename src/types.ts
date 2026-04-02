@@ -10,191 +10,169 @@ import type {
   ViewProps,
 } from 'react-native';
 
-// ─── EnrichedInputStyle ────────────────────────────────────────────────────────
-// A flat, hand-written subset of TextStyle (which already extends ViewStyle).
-// Use TextStyle['prop'] for complex types to stay in sync with React Native.
-
 export interface EnrichedInputStyle {
   // Layout / FlexStyle
-  alignContent?: TextStyle['alignContent']; // NOT OK
-  alignItems?: TextStyle['alignItems']; // NOT OK
-  alignSelf?: TextStyle['alignSelf']; // OK
-  aspectRatio?: number | string; // OK
-  borderBottomWidth?: number; // OK
-  borderEndWidth?: number; // OK
-  borderLeftWidth?: number; // OK
-  borderRightWidth?: number; // OK
-  borderStartWidth?: number; // OK
-  borderTopWidth?: number; // OK
-  borderWidth?: number; // OK
-  bottom?: DimensionValue; // OK
-  boxSizing?: 'border-box' | 'content-box'; // OK
-  columnGap?: number | string; // NOT OK
-  direction?: 'inherit' | 'ltr' | 'rtl'; // NOT OK
-  display?: 'none' | 'flex' | 'contents'; // OK
-  end?: DimensionValue; // OK
-  flex?: number; // OK
-  flexBasis?: DimensionValue; // OK
-  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse'; // NOT OK
-  flexGrow?: number; // OK
-  flexShrink?: number; // OK
-  flexWrap?: 'wrap' | 'nowrap' | 'wrap-reverse'; // NOT OK
-  gap?: number | string; // NOT OK
-  height?: DimensionValue; // OK
-  inset?: DimensionValue; // OK
-  insetBlock?: DimensionValue; // OK
-  insetBlockEnd?: DimensionValue; // OK
-  insetBlockStart?: DimensionValue; // OK
-  insetInline?: DimensionValue; // OK
-  insetInlineEnd?: DimensionValue; // OK
-  insetInlineStart?: DimensionValue; // OK
-  justifyContent?: TextStyle['justifyContent']; // NOT OK
-  left?: DimensionValue; // OK
-  margin?: DimensionValue; // OK
-  marginBlock?: DimensionValue; // OK
-  marginBlockEnd?: DimensionValue; // OK
-  marginBlockStart?: DimensionValue; // OK
-  marginBottom?: DimensionValue; // OK
-  marginEnd?: DimensionValue; // OK
-  marginHorizontal?: DimensionValue; // OK
-  marginInline?: DimensionValue; // OK
-  marginInlineEnd?: DimensionValue; // OK
-  marginInlineStart?: DimensionValue; // OK
-  marginLeft?: DimensionValue; // OK
-  marginRight?: DimensionValue; // OK
-  marginStart?: DimensionValue; // OK
-  marginTop?: DimensionValue; // OK
-  marginVertical?: DimensionValue; // OK
-  maxHeight?: DimensionValue; // OK
-  maxWidth?: DimensionValue; // OK
-  minHeight?: DimensionValue; // OK
-  minWidth?: DimensionValue; // OK
-  overflow?: 'visible' | 'hidden' | 'scroll'; // NOT OK
-  padding?: DimensionValue; // OK
-  paddingBlock?: DimensionValue; // OK
-  paddingBlockEnd?: DimensionValue; // OK
-  paddingBlockStart?: DimensionValue; // OK
-  paddingBottom?: DimensionValue; // OK
-  paddingEnd?: DimensionValue; // OK
-  paddingHorizontal?: DimensionValue; // OK
-  paddingInline?: DimensionValue; // OK
-  paddingInlineEnd?: DimensionValue; // OK
-  paddingInlineStart?: DimensionValue; // OK
-  paddingLeft?: DimensionValue; // OK
-  paddingRight?: DimensionValue; // OK
-  paddingStart?: DimensionValue; // OK
-  paddingTop?: DimensionValue; // OK
-  paddingVertical?: DimensionValue; // OK
-  position?: 'absolute' | 'relative' | 'static'; // OK
-  right?: DimensionValue; // OK
-  rowGap?: number | string; // NOT OK
-  start?: DimensionValue; // OK
-  top?: DimensionValue; // OK
-  width?: DimensionValue; // OK
-  zIndex?: number; // OK
+  alignSelf?: TextStyle['alignSelf'];
+  aspectRatio?: number | string;
+  borderBottomWidth?: number;
+  borderEndWidth?: number;
+  borderLeftWidth?: number;
+  borderRightWidth?: number;
+  borderStartWidth?: number;
+  borderTopWidth?: number;
+  borderWidth?: number;
+  bottom?: DimensionValue;
+  boxSizing?: 'border-box' | 'content-box';
+  display?: 'none' | 'flex' | 'contents';
+  end?: DimensionValue;
+  flex?: number;
+  flexBasis?: DimensionValue;
+  flexGrow?: number;
+  flexShrink?: number;
+  height?: DimensionValue;
+  inset?: DimensionValue;
+  insetBlock?: DimensionValue;
+  insetBlockEnd?: DimensionValue;
+  insetBlockStart?: DimensionValue;
+  insetInline?: DimensionValue;
+  insetInlineEnd?: DimensionValue;
+  insetInlineStart?: DimensionValue;
+  left?: DimensionValue;
+  margin?: DimensionValue;
+  marginBlock?: DimensionValue;
+  marginBlockEnd?: DimensionValue;
+  marginBlockStart?: DimensionValue;
+  marginBottom?: DimensionValue;
+  marginEnd?: DimensionValue;
+  marginHorizontal?: DimensionValue;
+  marginInline?: DimensionValue;
+  marginInlineEnd?: DimensionValue;
+  marginInlineStart?: DimensionValue;
+  marginLeft?: DimensionValue;
+  marginRight?: DimensionValue;
+  marginStart?: DimensionValue;
+  marginTop?: DimensionValue;
+  marginVertical?: DimensionValue;
+  maxHeight?: DimensionValue;
+  maxWidth?: DimensionValue;
+  minHeight?: DimensionValue;
+  minWidth?: DimensionValue;
+  padding?: DimensionValue;
+  paddingBlock?: DimensionValue;
+  paddingBlockEnd?: DimensionValue;
+  paddingBlockStart?: DimensionValue;
+  paddingBottom?: DimensionValue;
+  paddingEnd?: DimensionValue;
+  paddingHorizontal?: DimensionValue;
+  paddingInline?: DimensionValue;
+  paddingInlineEnd?: DimensionValue;
+  paddingInlineStart?: DimensionValue;
+  paddingLeft?: DimensionValue;
+  paddingRight?: DimensionValue;
+  paddingStart?: DimensionValue;
+  paddingTop?: DimensionValue;
+  paddingVertical?: DimensionValue;
+  position?: 'absolute' | 'relative' | 'static';
+  right?: DimensionValue;
+  start?: DimensionValue;
+  top?: DimensionValue;
+  width?: DimensionValue;
+  zIndex?: number;
 
-  // Shadows (iOS)
-  shadowColor?: ColorValue; // OK IOS-ONLY
-  shadowOffset?: TextStyle['shadowOffset']; // OK IOS-ONLY
-  shadowOpacity?: TextStyle['shadowOpacity']; // OK IOS-ONLY
-  shadowRadius?: number; // OK IOS-ONLY
+  // Shadows
+  /** @platform ios */
+  shadowColor?: ColorValue;
+  /** @platform ios */
+  shadowOffset?: TextStyle['shadowOffset'];
+  /** @platform ios */
+  shadowOpacity?: TextStyle['shadowOpacity'];
+  /** @platform ios */
+  shadowRadius?: number;
 
   // Transforms
-  transform?: TextStyle['transform']; // OK
-  transformOrigin?: TextStyle['transformOrigin']; // OK
-  /** @deprecated Use matrix in transform prop instead */
-  transformMatrix?: Array<number>; // NOT OK
-  /** @deprecated Use rotate in transform prop instead */
-  rotation?: TextStyle['rotation']; // NOT OK
-  /** @deprecated Use scaleX in transform prop instead */
-  scaleX?: TextStyle['scaleX']; // NOT OK
-  /** @deprecated Use scaleY in transform prop instead */
-  scaleY?: TextStyle['scaleY']; // NOT OK
-  /** @deprecated Use translateX in transform prop instead */
-  translateX?: TextStyle['translateX']; // NOT OK
-  /** @deprecated Use translateY in transform prop instead */
-  translateY?: TextStyle['translateY']; // NOT OK
+  transform?: TextStyle['transform'];
+  transformOrigin?: TextStyle['transformOrigin'];
 
   // View appearance
-  backfaceVisibility?: 'visible' | 'hidden'; // OK IOS-ONLY
-  backgroundColor?: ColorValue; // OK
-  borderBlockColor?: ColorValue; // OK IOS-ONLY
-  borderBlockEndColor?: ColorValue; // OK IOS-ONLY
-  borderBlockStartColor?: ColorValue; // OK IOS-ONLY
-  borderBottomColor?: ColorValue; // OK IOS-ONLY
-  borderBottomEndRadius?: TextStyle['borderBottomEndRadius']; // OK IOS-ONLY
-  borderBottomLeftRadius?: TextStyle['borderBottomLeftRadius']; // OK IOS-ONLY
-  borderBottomRightRadius?: TextStyle['borderBottomRightRadius']; // OK IOS-ONLY
-  borderBottomStartRadius?: TextStyle['borderBottomStartRadius']; // OK IOS-ONLY
-  borderColor?: ColorValue; // OK IOS-ONLY
-  /** @platform ios */
-  borderCurve?: 'circular' | 'continuous'; // NOT OK
-  borderEndColor?: ColorValue; // OK IOS-ONLY
-  borderEndEndRadius?: TextStyle['borderEndEndRadius']; // OK IOS-ONLY
-  borderEndStartRadius?: TextStyle['borderEndStartRadius']; // OK IOS-ONLY
-  borderLeftColor?: ColorValue; // OK IOS-ONLY
-  borderRadius?: TextStyle['borderRadius']; // OK IOS-ONLY
-  borderRightColor?: ColorValue; // OK IOS-ONLY
-  borderStartColor?: ColorValue; // OK IOS-ONLY
-  borderStartEndRadius?: TextStyle['borderStartEndRadius']; // OK IOS-ONLY
-  borderStartStartRadius?: TextStyle['borderStartStartRadius']; // OK IOS-ONLY
-  borderStyle?: 'solid' | 'dotted' | 'dashed'; // OK IOS-ONLY
-  borderTopColor?: ColorValue; // OK IOS-ONLY
-  borderTopEndRadius?: TextStyle['borderTopEndRadius']; // OK IOS-ONLY
-  borderTopLeftRadius?: TextStyle['borderTopLeftRadius']; // OK IOS-ONLY
-  borderTopRightRadius?: TextStyle['borderTopRightRadius']; // OK IOS-ONLY
-  borderTopStartRadius?: TextStyle['borderTopStartRadius']; // OK IOS-ONLY
-  boxShadow?: TextStyle['boxShadow']; // OK
-  cursor?: TextStyle['cursor']; // OK WEB-ONLY
-
+  /** @platform ios web */
+  backfaceVisibility?: 'visible' | 'hidden';
+  backgroundColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockEndColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockStartColor?: ColorValue;
+  /** @platform ios web */
+  borderBottomColor?: ColorValue;
+  /** @platform ios web */
+  borderBottomEndRadius?: TextStyle['borderBottomEndRadius'];
+  /** @platform ios web */
+  borderBottomLeftRadius?: TextStyle['borderBottomLeftRadius'];
+  /** @platform ios web */
+  borderBottomRightRadius?: TextStyle['borderBottomRightRadius'];
+  /** @platform ios web */
+  borderBottomStartRadius?: TextStyle['borderBottomStartRadius'];
+  /** @platform ios web */
+  borderColor?: ColorValue;
+  /** @platform ios web */
+  borderEndColor?: ColorValue;
+  /** @platform ios web */
+  borderEndEndRadius?: TextStyle['borderEndEndRadius'];
+  /** @platform ios web */
+  borderEndStartRadius?: TextStyle['borderEndStartRadius'];
+  /** @platform ios web */
+  borderLeftColor?: ColorValue;
+  /** @platform ios web */
+  borderRadius?: TextStyle['borderRadius'];
+  /** @platform ios web */
+  borderRightColor?: ColorValue;
+  /** @platform ios web */
+  borderStartColor?: ColorValue;
+  /** @platform ios web */
+  borderStartEndRadius?: TextStyle['borderStartEndRadius'];
+  /** @platform ios web */
+  borderStartStartRadius?: TextStyle['borderStartStartRadius'];
+  /** @platform ios web */
+  borderStyle?: 'solid' | 'dotted' | 'dashed';
+  /** @platform ios web */
+  borderTopColor?: ColorValue;
+  /** @platform ios web */
+  borderTopEndRadius?: TextStyle['borderTopEndRadius'];
+  /** @platform ios web */
+  borderTopLeftRadius?: TextStyle['borderTopLeftRadius'];
+  /** @platform ios web */
+  borderTopRightRadius?: TextStyle['borderTopRightRadius'];
+  /** @platform ios web */
+  borderTopStartRadius?: TextStyle['borderTopStartRadius'];
+  boxShadow?: TextStyle['boxShadow'];
+  /** @platform web */
+  cursor?: TextStyle['cursor'];
   /** @platform android */
-  elevation?: number; // OK ANDROID-ONLY
-  experimental_backgroundImage?: TextStyle['experimental_backgroundImage']; // NOT OK
-  filter?: TextStyle['filter']; // OK ANDROID-ONLY
-  isolation?: 'auto' | 'isolate'; // NOT OK
-  mixBlendMode?: TextStyle['mixBlendMode']; // OK ANDROID-ONLY
-  opacity?: TextStyle['opacity']; // OK
-  outlineColor?: ColorValue; // OK IOS-ONLY
-  outlineOffset?: TextStyle['outlineOffset']; // OK
-  outlineStyle?: 'solid' | 'dotted' | 'dashed'; // OK ANDROID-ONLY
-  outlineWidth?: TextStyle['outlineWidth']; // OK
-  pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto'; // OK IOS-ONLY
+  elevation?: number;
+  /** @platform android web */
+  filter?: TextStyle['filter'];
+  /** @platform android web */
+  mixBlendMode?: TextStyle['mixBlendMode'];
+  opacity?: TextStyle['opacity'];
+  /** @platform ios web */
+  outlineColor?: ColorValue;
+  outlineOffset?: TextStyle['outlineOffset'];
+  /** @platform android web */
+  outlineStyle?: 'solid' | 'dotted' | 'dashed';
+  outlineWidth?: TextStyle['outlineWidth'];
+  /** @platform ios web */
+  pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto';
 
   // Typography
-  color?: ColorValue; // OK
-  fontFamily?: string; // OK
-  fontSize?: number; // OK
-  fontStyle?: 'normal' | 'italic'; // OK
-  fontWeight?: TextStyle['fontWeight']; // OK
-  letterSpacing?: number; // NOT OK
-  lineHeight?: number; // OK
-  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify'; // NOT OK
-  textDecorationColor?: ColorValue; // NOT OK
-  textDecorationLine?:
-    | 'none'
-    | 'underline'
-    | 'line-through'
-    | 'underline line-through'; // NOT OK
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed'; // NOT OK
-  textShadowColor?: ColorValue; // NOT OK
-  textShadowOffset?: TextStyle['textShadowOffset']; // NOT OK
-  textShadowRadius?: number; // NOT OK
-  textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase'; // NOT OK
-  userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all'; // NOT OK
-
-  // iOS-only text
-  /** @platform ios */
-  fontVariant?: TextStyle['fontVariant']; // NOT OK
-  /** @platform ios */
-  writingDirection?: 'auto' | 'ltr' | 'rtl'; // NOT OK
-
-  // Android-only text
-  /** @platform android */
-  includeFontPadding?: boolean; // NOT OK
-  /** @platform android */
-  textAlignVertical?: 'auto' | 'top' | 'bottom' | 'center'; // NOT OK
-  /** @platform android */
-  verticalAlign?: 'auto' | 'top' | 'bottom' | 'middle'; // NOT OK
+  color?: ColorValue;
+  fontFamily?: string;
+  fontSize?: number;
+  fontStyle?: 'normal' | 'italic';
+  fontWeight?: TextStyle['fontWeight'];
+  lineHeight?: number;
+  /** @platform web */
+  letterSpacing?: number;
 }
 
 // Compile-time compatibility checks — exported so TypeScript doesn't report them as unused.
