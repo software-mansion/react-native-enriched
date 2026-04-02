@@ -249,12 +249,12 @@ describe('logical property mapping', () => {
     {
       description: 'borderStartWidth maps to borderInlineStartWidth',
       input: { borderStartWidth: 2 },
-      expected: { borderInlineStartWidth: '2px' },
+      expected: { borderInlineStartWidth: '2px', borderStyle: 'solid' },
     },
     {
       description: 'borderEndWidth maps to borderInlineEndWidth',
       input: { borderEndWidth: 2 },
-      expected: { borderInlineEndWidth: '2px' },
+      expected: { borderInlineEndWidth: '2px', borderStyle: 'solid' },
     },
   ];
 
@@ -348,27 +348,27 @@ describe('border width properties', () => {
     {
       description: 'borderWidth number → px string',
       input: { borderWidth: 1 },
-      expected: { borderWidth: '1px' },
+      expected: { borderWidth: '1px', borderStyle: 'solid' },
     },
     {
       description: 'borderTopWidth number → px string',
       input: { borderTopWidth: 2 },
-      expected: { borderTopWidth: '2px' },
+      expected: { borderTopWidth: '2px', borderStyle: 'solid' },
     },
     {
       description: 'borderBottomWidth number → px string',
       input: { borderBottomWidth: 2 },
-      expected: { borderBottomWidth: '2px' },
+      expected: { borderBottomWidth: '2px', borderStyle: 'solid' },
     },
     {
       description: 'borderLeftWidth number → px string',
       input: { borderLeftWidth: 1 },
-      expected: { borderLeftWidth: '1px' },
+      expected: { borderLeftWidth: '1px', borderStyle: 'solid' },
     },
     {
       description: 'borderRightWidth number → px string',
       input: { borderRightWidth: 1 },
-      expected: { borderRightWidth: '1px' },
+      expected: { borderRightWidth: '1px', borderStyle: 'solid' },
     },
   ];
 
@@ -492,7 +492,7 @@ describe('view appearance properties', () => {
     {
       description: 'borderColor passes through',
       input: { borderColor: '#ccc' },
-      expected: { borderColor: '#ccc' },
+      expected: { borderColor: '#ccc', borderStyle: 'solid' },
     },
     {
       description: 'borderRadius number → px string',
@@ -732,6 +732,49 @@ describe('transformOrigin property', () => {
     expect(
       convert({ transform: 'rotate(45deg)', transformOrigin: 'top left' })
     ).toEqual({ transform: 'rotate(45deg)', transformOrigin: 'top left' });
+  });
+});
+
+describe('border style defaulting', () => {
+  it('defaults borderStyle to solid when borderWidth is set without borderStyle', () => {
+    expect(convert({ borderWidth: 2, borderColor: 'red' })).toMatchObject({
+      borderWidth: '2px',
+      borderColor: 'red',
+      borderStyle: 'solid',
+    });
+  });
+
+  it('does not add borderStyle when no border width or color is set', () => {
+    expect(convert({ backgroundColor: 'white' })).not.toHaveProperty(
+      'borderStyle'
+    );
+  });
+
+  it('respects explicit borderStyle when provided', () => {
+    expect(convert({ borderWidth: 2, borderStyle: 'dashed' })).toMatchObject({
+      borderStyle: 'dashed',
+    });
+  });
+});
+
+describe('outline style defaulting', () => {
+  it('defaults outlineStyle to solid when outlineWidth is set without outlineStyle', () => {
+    expect(convert({ outlineWidth: 10 })).toMatchObject({
+      outlineWidth: '10px',
+      outlineStyle: 'solid',
+    });
+  });
+
+  it('does not add outlineStyle when outlineWidth is not set', () => {
+    expect(convert({ backgroundColor: 'white' })).not.toHaveProperty(
+      'outlineStyle'
+    );
+  });
+
+  it('respects explicit outlineStyle when provided', () => {
+    expect(convert({ outlineWidth: 2, outlineStyle: 'dotted' })).toMatchObject({
+      outlineStyle: 'dotted',
+    });
   });
 });
 

@@ -103,7 +103,7 @@ export function enrichedInputStyleToCSSProperties(
     borderBottomLeftRadius: toPx(style.borderBottomLeftRadius),
     borderBottomRightRadius: toPx(style.borderBottomRightRadius),
 
-    // Border radius (logical) — CSS name takes priority over RN name via ??
+    // Border radius (logical)
     borderStartStartRadius: toPx(
       style.borderStartStartRadius ?? style.borderTopStartRadius
     ),
@@ -117,7 +117,7 @@ export function enrichedInputStyleToCSSProperties(
       style.borderEndEndRadius ?? style.borderBottomEndRadius
     ),
 
-    // Border colors (ColorValue is always a string on web)
+    // Border colors
     borderColor: toColor(style.borderColor),
     borderBlockColor: toColor(style.borderBlockColor),
     borderBlockEndColor: toColor(style.borderBlockEndColor),
@@ -128,7 +128,18 @@ export function enrichedInputStyleToCSSProperties(
     borderRightColor: toColor(style.borderRightColor),
     borderInlineStartColor: toColor(style.borderStartColor),
     borderTopColor: toColor(style.borderTopColor),
-    borderStyle: style.borderStyle,
+    borderStyle:
+      style.borderStyle ??
+      (style.borderWidth != null ||
+      style.borderTopWidth != null ||
+      style.borderBottomWidth != null ||
+      style.borderLeftWidth != null ||
+      style.borderRightWidth != null ||
+      style.borderStartWidth != null ||
+      style.borderEndWidth != null ||
+      style.borderColor != null
+        ? 'solid'
+        : undefined),
 
     // Typography
     color: toColor(style.color),
@@ -160,7 +171,8 @@ export function enrichedInputStyleToCSSProperties(
 
     // Outline
     outlineColor: toColor(style.outlineColor),
-    outlineStyle: style.outlineStyle,
+    outlineStyle:
+      style.outlineStyle ?? (style.outlineWidth != null ? 'solid' : undefined),
     outlineOffset: toPx(style.outlineOffset),
     outlineWidth: toPx(style.outlineWidth),
 
