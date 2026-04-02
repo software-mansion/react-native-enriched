@@ -271,12 +271,9 @@ describe('logical property mapping', () => {
     ['paddingEnd', { paddingEnd: 6 }],
     ['borderStartWidth', { borderStartWidth: 2 }],
     ['borderEndWidth', { borderEndWidth: 2 }],
-  ] as Array<[string, EnrichedInputStyle]>)(
-    'source key %s is not present in output',
-    (key, input) => {
-      expect(convert(input)).not.toHaveProperty(key);
-    }
-  );
+  ])('source key %s is not present in output', (key, input) => {
+    expect(convert(input)).not.toHaveProperty(key);
+  });
 });
 
 describe('direct margin and padding properties', () => {
@@ -559,99 +556,25 @@ describe('view appearance properties', () => {
   });
 });
 
-describe('iOS shadow → boxShadow conversion', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
-    {
-      description: 'full shadow definition is converted to boxShadow string',
-      input: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      expected: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)' },
-    },
-    {
-      description: 'shadow with no offset defaults offset to 0 0',
-      input: {
-        shadowColor: 'red',
-        shadowOpacity: 1,
-        shadowRadius: 6,
-      },
-      expected: { boxShadow: '0px 0px 6px rgba(255, 0, 0, 1)' },
-    },
-    {
-      description: 'shadow with zero opacity produces a zero-opacity boxShadow',
-      input: {
-        shadowColor: '#000',
-        shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0,
-        shadowRadius: 3,
-      },
-      expected: { boxShadow: '1px 1px 3px rgba(0, 0, 0, 0)' },
-    },
-    {
-      description: 'shadow with no radius defaults radius to 0',
-      input: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-      },
-      expected: { boxShadow: '0px 4px 0px rgba(0, 0, 0, 0.5)' },
-    },
-  ];
-
-  it.each(cases)('$description', ({ input, expected }) => {
-    expect(convert(input)).toEqual(expected);
+describe('boxShadow passthrough', () => {
+  it('boxShadow string passes through unchanged', () => {
+    expect(convert({ boxShadow: '0px 2px 4px rgba(0,0,0,0.3)' })).toEqual({
+      boxShadow: '0px 2px 4px rgba(0,0,0,0.3)',
+    });
   });
 
-  it('iOS shadow props are not forwarded individually', () => {
+  it('ios-only shadow props are ignored on web', () => {
     const result = convert({
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
     });
-    expect(result).not.toHaveProperty('shadowColor');
-    expect(result).not.toHaveProperty('shadowOffset');
-    expect(result).not.toHaveProperty('shadowOpacity');
-    expect(result).not.toHaveProperty('shadowRadius');
-  });
-});
-
-describe('elevation → boxShadow conversion', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
-    {
-      description: 'elevation 0 produces no shadow',
-      input: { elevation: 0 },
-      expected: { boxShadow: 'none' },
-    },
-    {
-      description: 'elevation 2 produces a subtle shadow',
-      input: { elevation: 2 },
-      expected: { boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.2)' },
-    },
-    {
-      description: 'elevation 8 produces a stronger shadow',
-      input: { elevation: 8 },
-      expected: { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)' },
-    },
-  ];
-
-  it.each(cases)('$description', ({ input, expected }) => {
-    expect(convert(input)).toEqual(expected);
+    expect(result).toEqual({});
   });
 
-  it('elevation is not forwarded as a CSS property', () => {
-    expect(convert({ elevation: 4 })).not.toHaveProperty('elevation');
+  it('elevation is ignored on web', () => {
+    expect(convert({ elevation: 4 })).toEqual({});
   });
 });
 
@@ -752,6 +675,66 @@ describe('boxSizing', () => {
   });
 });
 
+describe('transform property', () => {
+  it('string transform passes through unchanged', () => {
+    expect(convert({ transform: 'rotate(45deg)' })).toEqual({
+      transform: 'rotate(45deg)',
+    });
+  });
+
+  it('string transform with multiple functions passes through unchanged', () => {
+    expect(
+      convert({ transform: 'translateX(10px) scale(1.5) rotate(90deg)' })
+    ).toEqual({ transform: 'translateX(10px) scale(1.5) rotate(90deg)' });
+  });
+
+  it('RN array transform is ignored', () => {
+    expect(
+      convert({ transform: [{ translateX: 10 }, { rotate: '45deg' }] })
+    ).not.toHaveProperty('transform');
+  });
+
+  it('transform is omitted when not provided', () => {
+    expect(convert({ width: 100 })).not.toHaveProperty('transform');
+  });
+});
+
+describe('transformOrigin property', () => {
+  it('string transformOrigin passes through unchanged', () => {
+    expect(convert({ transformOrigin: 'center' })).toEqual({
+      transformOrigin: 'center',
+    });
+  });
+
+  it('keyword pair transformOrigin passes through unchanged', () => {
+    expect(convert({ transformOrigin: 'top left' })).toEqual({
+      transformOrigin: 'top left',
+    });
+  });
+
+  it('percentage transformOrigin passes through unchanged', () => {
+    expect(convert({ transformOrigin: '50% 50%' })).toEqual({
+      transformOrigin: '50% 50%',
+    });
+  });
+
+  it('px-value transformOrigin passes through unchanged', () => {
+    expect(convert({ transformOrigin: '10px 20px' })).toEqual({
+      transformOrigin: '10px 20px',
+    });
+  });
+
+  it('transformOrigin is omitted when not provided', () => {
+    expect(convert({ width: 100 })).not.toHaveProperty('transformOrigin');
+  });
+
+  it('transform and transformOrigin work together', () => {
+    expect(
+      convert({ transform: 'rotate(45deg)', transformOrigin: 'top left' })
+    ).toEqual({ transform: 'rotate(45deg)', transformOrigin: 'top left' });
+  });
+});
+
 describe('combined properties', () => {
   it('handles a typical card-like style object', () => {
     const input: EnrichedInputStyle = {
@@ -759,10 +742,7 @@ describe('combined properties', () => {
       borderRadius: 12,
       padding: 16,
       marginHorizontal: 8,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
+      boxShadow: '0px 2px 6px rgba(0,0,0,0.15)',
     };
 
     const result = convert(input);
@@ -773,7 +753,7 @@ describe('combined properties', () => {
       padding: '16px',
       marginLeft: '8px',
       marginRight: '8px',
-      boxShadow: expect.any(String),
+      boxShadow: '0px 2px 6px rgba(0,0,0,0.15)',
     });
     expect(result).not.toHaveProperty('marginHorizontal');
   });
@@ -836,25 +816,5 @@ describe('combined properties', () => {
       flexBasis: 'auto',
       alignSelf: 'center',
     });
-  });
-});
-
-describe('undefined properties are omitted from output', () => {
-  it('does not include undefined margin properties', () => {
-    const result = convert({ flex: 1 });
-    expect(result).not.toHaveProperty('margin');
-    expect(result).not.toHaveProperty('marginTop');
-    expect(result).not.toHaveProperty('marginHorizontal');
-  });
-
-  it('does not include boxShadow when no shadow props are set', () => {
-    const result = convert({ backgroundColor: '#fff' });
-    expect(result).not.toHaveProperty('boxShadow');
-  });
-
-  it('does not include elevation or boxShadow when elevation is not set', () => {
-    const result = convert({ flex: 1 });
-    expect(result).not.toHaveProperty('elevation');
-    expect(result).not.toHaveProperty('boxShadow');
   });
 });
