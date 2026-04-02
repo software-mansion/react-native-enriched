@@ -1,4 +1,4 @@
-import { useImperativeHandle, type CSSProperties } from 'react';
+import { useImperativeHandle, useMemo, type CSSProperties } from 'react';
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
@@ -18,6 +18,7 @@ import {
   normalizeHtmlFromTiptap,
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
+import { enrichedInputStyleToCSSProperties } from './enrichedInputStyleToCSSProperties';
 
 export const EnrichedTextInput = ({
   ref,
@@ -28,6 +29,7 @@ export const EnrichedTextInput = ({
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   onFocus,
+  style,
   onBlur,
   onChangeSelection,
   onKeyPress,
@@ -129,9 +131,13 @@ export const EnrichedTextInput = ({
     })
   );
 
-  const editorStyle: CSSProperties = {
-    overflowY: scrollEnabled ? 'auto' : 'hidden',
-  };
+  const editorStyle: CSSProperties = useMemo(() => {
+    const base = style ? enrichedInputStyleToCSSProperties(style) : {};
+    return {
+      ...base,
+      overflowY: scrollEnabled ? 'auto' : 'hidden',
+    };
+  }, [scrollEnabled, style]);
 
   return (
     <div>

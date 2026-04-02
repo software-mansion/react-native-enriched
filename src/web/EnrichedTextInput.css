@@ -5,8 +5,3 @@
   height: 0;
   pointer-events: none;
 }
-
-.eti-editor {
-  min-height: 150px;
-  max-height: 500px;
-}
