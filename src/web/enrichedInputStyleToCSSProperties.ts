@@ -191,8 +191,9 @@ export function enrichedInputStyleToCSSProperties(
     outlineOffset: toPx(style.outlineOffset),
     outlineWidth: toPx(style.outlineWidth),
 
-    // Transforms — array form (RN syntax) is not supported on web
+    // Transforms
     transform: resolveTransform(style.transform),
+    // transformOrigin: RN accepts strings or arrays, CSS only strings
     transformOrigin:
       typeof style.transformOrigin === 'string'
         ? style.transformOrigin
