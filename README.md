@@ -165,6 +165,9 @@ These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchange
 | Mention       | `<mention>` | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
 | Image         | `<img>`     | `<a>`, `<mention>`           | `<code>`               |
 
+> [!NOTE]
+> Headings also block bold when `bold: true` is set on the heading style in the [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop. In that case, the heading itself renders as bold, so toggling bold on top of it is redundant and therefore blocked.
+
 ### Paragraph tags
 
 Some paragraph styles are container elements that wrap each line of text inside them with an **inner content tag**. For example: each line inside `<ul>` is wrapped in `<li>` and each line inside `<codeblock>` is wrapped in `<p>`.
