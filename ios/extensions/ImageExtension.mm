@@ -41,6 +41,7 @@ static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source,
         number = fromCF CFDictionaryGetValue(formatDict, delayKey);
       }
       if ([number doubleValue] > 0) {
+        // ImageIO exposes frame delays in seconds; convert to centiseconds.
         delayCentiseconds = (int)lrint([number doubleValue] * 100);
       }
     }
