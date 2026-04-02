@@ -161,9 +161,9 @@ These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchange
 | Underline     | `<u>`                                       | --                           | `<codeblock>`          |
 | Strikethrough | `<s>`                                       | --                           | `<codeblock>`          |
 | Inline code   | `<code>`                                    | `<a>`, `<mention>`           | `<codeblock>`, `<img>` |
-| Link          | `<a href="...">`                            | `<code>`, `<a>`, `<mention>` | `<codeblock>`, `<img>` |
-| Mention       | `<mention text="..." indicator="...">`      | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
-| Image         | `<img src="..." width="..." height="..."/>` | `<a>`, `<mention>`           | `<code>`               |
+| Link          | `<a>`                            | `<code>`, `<a>`, `<mention>` | `<codeblock>`, `<img>` |
+| Mention       | `<mention>`      | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
+| Image         | `<img>` | `<a>`, `<mention>`           | `<code>`               |
 
 ### Paragraph tags
 
