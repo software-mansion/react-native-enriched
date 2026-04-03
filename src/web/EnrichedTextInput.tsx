@@ -131,13 +131,10 @@ export const EnrichedTextInput = ({
     })
   );
 
-  const editorStyle: CSSProperties = useMemo(() => {
-    const base = style ? enrichedInputStyleToCSSProperties(style) : {};
-    return {
-      ...base,
-      overflowY: scrollEnabled ? 'auto' : 'hidden',
-    };
-  }, [scrollEnabled, style]);
+  const editorStyle: CSSProperties = useMemo(
+    () => enrichedInputStyleToCSSProperties(style ?? {}, { scrollEnabled }),
+    [scrollEnabled, style]
+  );
 
   return (
     <EditorContent

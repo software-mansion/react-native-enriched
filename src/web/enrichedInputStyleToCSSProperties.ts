@@ -6,55 +6,13 @@ import type {
   DimensionValue,
 } from 'react-native';
 
-function toPx(
-  value?: DimensionValue | AnimatableNumericValue | string
-): string | undefined {
-  if (value == null) return undefined;
-  if (typeof value === 'number') return `${value}px`;
-  if (typeof value === 'string') return value;
-  return undefined;
-}
-
-function toColor(value?: ColorValue): string | undefined {
-  if (typeof value === 'string') return value;
-  return undefined;
-}
-
-function resolveTransform(
-  transform: EnrichedInputStyle['transform']
-): string | undefined {
-  if (typeof transform === 'string') return transform;
-  if (!Array.isArray(transform)) return undefined;
-
-  const parts = transform.map((item) => {
-    if ('translateX' in item) return `translateX(${item.translateX}px)`;
-    if ('translateY' in item) return `translateY(${item.translateY}px)`;
-    if ('translateZ' in item) return `translateZ(${item.translateZ}px)`;
-    if ('scale' in item) return `scale(${item.scale})`;
-    if ('scaleX' in item) return `scaleX(${item.scaleX})`;
-    if ('scaleY' in item) return `scaleY(${item.scaleY})`;
-    if ('scaleZ' in item) return `scaleZ(${item.scaleZ})`;
-    if ('rotate' in item) return `rotate(${item.rotate})`;
-    if ('rotateX' in item) return `rotateX(${item.rotateX})`;
-    if ('rotateY' in item) return `rotateY(${item.rotateY})`;
-    if ('rotateZ' in item) return `rotateZ(${item.rotateZ})`;
-    if ('skewX' in item) return `skewX(${item.skewX})`;
-    if ('skewY' in item) return `skewY(${item.skewY})`;
-    if ('perspective' in item) return `perspective(${item.perspective}px)`;
-    if ('matrix' in item) {
-      return item.matrix.length === 16
-        ? `matrix3d(${item.matrix.join(', ')})`
-        : `matrix(${item.matrix.join(', ')})`;
-    }
-    return null;
-  });
-
-  const css = parts.filter(Boolean).join(' ');
-  return css || undefined;
+interface ExtraOptions {
+  scrollEnabled?: boolean;
 }
 
 export function enrichedInputStyleToCSSProperties(
-  style: EnrichedInputStyle
+  style: EnrichedInputStyle,
+  extraOptions: ExtraOptions = {}
 ): CSSProperties {
   const css: CSSProperties = {
     // Dimensions
@@ -76,7 +34,7 @@ export function enrichedInputStyleToCSSProperties(
     insetInlineEnd: toPx(style.insetInlineEnd ?? style.end),
     insetInlineStart: toPx(style.insetInlineStart ?? style.start),
 
-    // Margin — specific properties take precedence over shorthands (RN behavior)
+    // Margin - specific properties take precedence over shorthands (RN behavior)
     margin: toPx(style.margin),
     marginTop: toPx(style.marginTop ?? style.marginVertical),
     marginBottom: toPx(style.marginBottom ?? style.marginVertical),
@@ -89,7 +47,7 @@ export function enrichedInputStyleToCSSProperties(
     marginInlineEnd: toPx(style.marginInlineEnd ?? style.marginEnd),
     marginInlineStart: toPx(style.marginInlineStart ?? style.marginStart),
 
-    // Padding — specific properties take precedence over shorthands (RN behavior)
+    // Padding - specific properties take precedence over shorthands (RN behavior)
     padding: toPx(style.padding),
     paddingTop: toPx(style.paddingTop ?? style.paddingVertical),
     paddingBottom: toPx(style.paddingBottom ?? style.paddingVertical),
@@ -210,10 +168,65 @@ export function enrichedInputStyleToCSSProperties(
     // opacity: RN AnimatableNumericValue includes AnimatedNode; CSS only number
     opacity: typeof style.opacity === 'number' ? style.opacity : undefined,
     aspectRatio: style.aspectRatio,
+
+    // Extra options
+    overflowY:
+      extraOptions.scrollEnabled != null
+        ? extraOptions.scrollEnabled
+          ? 'auto'
+          : 'hidden'
+        : undefined,
   };
 
   // Clean undefined values
   return Object.fromEntries(
     Object.entries(css).filter(([, v]) => v !== undefined)
   );
+}
+
+function toPx(
+  value?: DimensionValue | AnimatableNumericValue | string
+): string | undefined {
+  if (value == null) return undefined;
+  if (typeof value === 'number') return `${value}px`;
+  if (typeof value === 'string') return value;
+  return undefined;
+}
+
+function toColor(value?: ColorValue): string | undefined {
+  if (typeof value === 'string') return value;
+  return undefined;
+}
+
+function resolveTransform(
+  transform: EnrichedInputStyle['transform']
+): string | undefined {
+  if (typeof transform === 'string') return transform;
+  if (!Array.isArray(transform)) return undefined;
+
+  const parts = transform.map((item) => {
+    if ('translateX' in item) return `translateX(${item.translateX}px)`;
+    if ('translateY' in item) return `translateY(${item.translateY}px)`;
+    if ('translateZ' in item) return `translateZ(${item.translateZ}px)`;
+    if ('scale' in item) return `scale(${item.scale})`;
+    if ('scaleX' in item) return `scaleX(${item.scaleX})`;
+    if ('scaleY' in item) return `scaleY(${item.scaleY})`;
+    if ('scaleZ' in item) return `scaleZ(${item.scaleZ})`;
+    if ('rotate' in item) return `rotate(${item.rotate})`;
+    if ('rotateX' in item) return `rotateX(${item.rotateX})`;
+    if ('rotateY' in item) return `rotateY(${item.rotateY})`;
+    if ('rotateZ' in item) return `rotateZ(${item.rotateZ})`;
+    if ('skewX' in item) return `skewX(${item.skewX})`;
+    if ('skewY' in item) return `skewY(${item.skewY})`;
+    if ('perspective' in item) return `perspective(${item.perspective}px)`;
+    if ('matrix' in item) {
+      return item.matrix.length === 16
+        ? `matrix3d(${item.matrix.join(', ')})`
+        : `matrix(${item.matrix.join(', ')})`;
+    }
+    return null;
+  });
+
+  const css = parts.filter(Boolean).join(' ');
+  return css || undefined;
 }

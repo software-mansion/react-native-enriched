@@ -961,3 +961,22 @@ describe('combined properties', () => {
     });
   });
 });
+
+describe('extraOptions.scrollEnabled', () => {
+  it('sets overflowY to auto when scrollEnabled is true', () => {
+    expect(convert({})).not.toHaveProperty('overflowY');
+    expect(
+      enrichedInputStyleToCSSProperties({}, { scrollEnabled: true })
+    ).toMatchObject({
+      overflowY: 'auto',
+    });
+  });
+
+  it('sets overflowY to hidden when scrollEnabled is false', () => {
+    expect(
+      enrichedInputStyleToCSSProperties({}, { scrollEnabled: false })
+    ).toMatchObject({
+      overflowY: 'hidden',
+    });
+  });
+});
