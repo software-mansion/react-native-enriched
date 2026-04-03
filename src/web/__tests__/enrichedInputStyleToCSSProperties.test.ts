@@ -2,6 +2,12 @@ import type { CSSProperties } from 'react';
 import type { EnrichedInputStyle } from '../../types';
 import { enrichedInputStyleToCSSProperties } from '../enrichedInputStyleToCSSProperties';
 
+type TestCase = {
+  description: string;
+  input: EnrichedInputStyle;
+  expected: CSSProperties;
+};
+
 function convert(style: EnrichedInputStyle): CSSProperties {
   return enrichedInputStyleToCSSProperties(style);
 }
@@ -13,11 +19,7 @@ describe('empty input', () => {
 });
 
 describe('dimension value conversion', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'numeric width becomes px string',
       input: { width: 100 },
@@ -96,11 +98,7 @@ describe('dimension value conversion', () => {
 });
 
 describe('marginHorizontal / marginVertical shorthands', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description:
         'marginHorizontal number expands to marginLeft + marginRight',
@@ -151,11 +149,7 @@ describe('marginHorizontal / marginVertical shorthands', () => {
 });
 
 describe('paddingHorizontal / paddingVertical shorthands', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description:
         'paddingHorizontal number expands to paddingLeft + paddingRight',
@@ -255,11 +249,7 @@ describe('shorthand vs specific precedence (RN behavior: specific wins)', () => 
 });
 
 describe('logical property mapping', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'start maps to insetInlineStart',
       input: { start: 10 },
@@ -321,11 +311,7 @@ describe('logical property mapping', () => {
 });
 
 describe('direct margin and padding properties', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'margin number → px string',
       input: { margin: 16 },
@@ -384,11 +370,7 @@ describe('direct margin and padding properties', () => {
 });
 
 describe('border width properties', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'borderWidth number → px string',
       input: { borderWidth: 1 },
@@ -422,11 +404,7 @@ describe('border width properties', () => {
 });
 
 describe('number-only properties (no px suffix)', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'flex passes through as number',
       input: { flex: 1 },
@@ -470,11 +448,7 @@ describe('number-only properties (no px suffix)', () => {
 });
 
 describe('typography properties', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'color string passes through',
       input: { color: '#ff0000' },
@@ -523,11 +497,7 @@ describe('typography properties', () => {
 });
 
 describe('view appearance properties', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'backgroundColor passes through',
       input: { backgroundColor: 'rgba(0,0,0,0.5)' },
@@ -623,11 +593,7 @@ describe('boxShadow passthrough', () => {
 });
 
 describe('flexBasis', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'flexBasis number → px string',
       input: { flexBasis: 100 },
@@ -651,11 +617,7 @@ describe('flexBasis', () => {
 });
 
 describe('position', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'position absolute passes through',
       input: { position: 'absolute' },
@@ -674,11 +636,7 @@ describe('position', () => {
 });
 
 describe('alignSelf', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'alignSelf center passes through',
       input: { alignSelf: 'center' },
@@ -697,11 +655,7 @@ describe('alignSelf', () => {
 });
 
 describe('boxSizing', () => {
-  const cases: Array<{
-    description: string;
-    input: EnrichedInputStyle;
-    expected: CSSProperties;
-  }> = [
+  const cases: TestCase[] = [
     {
       description: 'boxSizing border-box passes through',
       input: { boxSizing: 'border-box' },
