@@ -9,6 +9,7 @@
 #import "StringExtension.h"
 #import "StyleHeaders.h"
 #import "TextBlockTapGestureRecognizer.h"
+#import "TextInsertionUtils.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -1339,6 +1340,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"insertValue"]) {
+    NSString *value = (NSString *)args[0];
+    NSInteger start = [((NSNumber *)args[1]) integerValue];
+    NSInteger end = [((NSNumber *)args[2]) integerValue];
+
+    [self insertValue:value start:start end:end];
   }
 }
 
@@ -1382,6 +1389,53 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSUInteger actualEnd = [self getActualIndex:visibleEnd text:text];
 
   textView.selectedRange = NSMakeRange(actualStart, actualEnd - actualStart);
+}
+
+- (void)insertValue:(NSString *)value
+              start:(NSInteger)visibleStart
+                end:(NSInteger)visibleEnd {
+  if (value == nil) {
+    return;
+  }
+
+  NSString *currentText = textView.text;
+  NSInteger textLength = currentText.length;
+
+  if (textLength == 0) {
+    [self setValue:value];
+
+    return;
+  }
+
+  // Use MIN/MAX to ensure indices are within [0, textLength]
+  // and that start <= end.
+  NSUInteger start = MIN(MAX(0, (NSUInteger)visibleStart), textLength);
+  NSUInteger end = MIN(MAX(start, (NSUInteger)visibleEnd), textLength);
+  NSRange range = NSMakeRange(start, end - start);
+
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
+  if (initiallyProcessedHtml == nullptr) {
+    // just plain text
+    range.length > 0 ? [TextInsertionUtils replaceText:value
+                                                    at:range
+                                  additionalAttributes:nil
+                                                 input:self
+                                         withSelection:YES]
+                     : [TextInsertionUtils insertText:value
+                                                   at:range.location
+                                 additionalAttributes:nil
+                                                input:self
+                                        withSelection:YES];
+  } else {
+    // we've got some seemingly proper html
+    range.length > 0
+        ? [parser replaceFromHtml:initiallyProcessedHtml range:range]
+        : [parser insertFromHtml:initiallyProcessedHtml
+                        location:range.location];
+  }
+
+  // set recentlyChangedRange and check for changes
+  [self anyTextMayHaveBeenModified];
 }
 
 // Helper: Walks through the string skipping ZWSPs to find the Nth visible

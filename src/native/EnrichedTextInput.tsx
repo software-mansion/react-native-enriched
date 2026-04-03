@@ -270,6 +270,9 @@ export const EnrichedTextInput = ({
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
     },
+    insertValue: (value: string, start: number, end: number) => {
+      Commands.insertValue(nullthrows(nativeRef.current), value, start, end);
+    },
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
