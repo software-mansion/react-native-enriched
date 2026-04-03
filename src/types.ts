@@ -322,3 +322,18 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    */
   useHtmlNormalizer?: boolean;
 }
+
+interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
+  pressColor?: ColorValue;
+  pressBackgroundColor?: ColorValue;
+}
+
+export interface EnrichedTextHtmlStyle
+  extends Omit<HtmlStyle, 'a' | 'mention'> {
+  a?: HtmlStyle['a'] & {
+    pressColor?: ColorValue;
+  };
+  mention?:
+    | Record<string, EnrichedTextMentionStyleProperties>
+    | EnrichedTextMentionStyleProperties;
+}
