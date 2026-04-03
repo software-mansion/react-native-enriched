@@ -143,7 +143,7 @@ Summary of what happens here:
 
 ## Supported Tags
 
-`react-native-enriched` uses the following HTML tags in its output and accepts them as input.
+`react-native-enriched` uses both standard and custom HTML tags in its output and accepts them as input.
 
 Not all styles can be combined freely. There are two kinds of restrictions:
 
