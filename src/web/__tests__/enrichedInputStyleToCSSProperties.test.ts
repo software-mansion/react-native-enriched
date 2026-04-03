@@ -447,6 +447,17 @@ describe('number-only properties (no px suffix)', () => {
   });
 });
 
+describe('integer color values (0xRRGGBBAA)', () => {
+  it.each([
+    [0xff0000ff, 'rgba(255, 0, 0, 1)'],
+    [0xff00ff00, 'rgba(255, 0, 255, 0)'],
+    [0x00000080, `rgba(0, 0, 0, ${128 / 255})`],
+  ])('%s → %s', (int, expected) => {
+    const style = { color: int } as unknown as EnrichedInputStyle;
+    expect(convert(style)).toEqual({ color: expected });
+  });
+});
+
 describe('typography properties', () => {
   const cases: TestCase[] = [
     {
