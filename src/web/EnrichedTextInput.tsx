@@ -140,13 +140,11 @@ export const EnrichedTextInput = ({
   }, [scrollEnabled, style]);
 
   return (
-    <div>
-      <EditorContent
-        editor={editor}
-        className="eti-editor"
-        style={editorStyle}
-        data-placeholder={placeholder}
-      />
-    </div>
+    <EditorContent
+      editor={editor}
+      className="eti-editor"
+      style={editorStyle}
+      data-placeholder={placeholder}
+    />
   );
 };

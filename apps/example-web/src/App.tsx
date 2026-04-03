@@ -52,25 +52,21 @@ function App() {
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
 
-      <div className="editor-wrapper" onClick={() => ref.current?.focus()}>
-        <div className="editor-content">
-          <EnrichedTextInput
-            ref={ref}
-            placeholder="Type something"
-            autoFocus
-            editable
-            scrollEnabled
-            autoCapitalize="sentences"
-            style={enrichedInputStyle}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onKeyPress={handleKeyPress}
-            onChangeText={handleOnChangeText}
-            onChangeSelection={handleChangeSelection}
-            onChangeHtml={handleOnChangeHtml}
-          />
-        </div>
-      </div>
+      <EnrichedTextInput
+        ref={ref}
+        placeholder="Type something here..."
+        autoFocus
+        editable
+        scrollEnabled
+        autoCapitalize="sentences"
+        style={enrichedInputStyle}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyPress={handleKeyPress}
+        onChangeText={handleOnChangeText}
+        onChangeSelection={handleChangeSelection}
+        onChangeHtml={handleOnChangeHtml}
+      />
 
       <EditorActions
         showHtmlOutput={showHtmlOutput}
@@ -108,8 +104,13 @@ function App() {
 }
 
 const enrichedInputStyle: EnrichedInputStyle = {
-  minWidth: 150,
-  maxWidth: 500,
+  backgroundColor: 'gainsboro',
+  width: '100%',
+  marginVertical: 12,
+  maxHeight: 300,
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  borderRadius: 8,
 };
 
 export default App;
