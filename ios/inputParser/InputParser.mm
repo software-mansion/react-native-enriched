@@ -8,7 +8,7 @@
 #include "GumboParser.hpp"
 
 @implementation InputParser {
-  EnrichedTextInputView *_input;
+  EnrichedTextInputView __weak *_input;
   NSInteger _precedingImageCount;
 }
 
