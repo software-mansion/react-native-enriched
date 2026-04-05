@@ -80,6 +80,12 @@
       presentStyles[@([[style class] getType])] = [style all:dirtyRange];
     }
 
+    // Wrap the reset+reapply in beginEditing/endEditing so TextKit processes
+    // all attribute changes atomically. Without this, removing
+    // NSAttachmentAttributeName triggers a layout pass where \uFFFC has zero
+    // width, causing the caret to render inside inline images.
+    [_input->textView.textStorage beginEditing];
+
     // now reset the attributes to default ones
     [_input->textView.textStorage setAttributes:_input->defaultTypingAttributes
                                           range:dirtyRange];
@@ -110,6 +116,8 @@
         [style applyStyling:occurenceRange];
       }
     }
+
+    [_input->textView.textStorage endEditing];
   }
   // do the typing attributes management, with no selection
   [self manageTypingAttributesWithOnlySelection:NO];
