@@ -322,6 +322,15 @@ class EnrichedTextInputViewManager :
     view?.setValue(text)
   }
 
+  override fun insertText(
+    view: EnrichedTextInputView?,
+    text: String,
+    start: Int,
+    end: Int,
+  ) {
+    view?.insertText(text, start, end)
+  }
+
   override fun setSelection(
     view: EnrichedTextInputView?,
     start: Int,
