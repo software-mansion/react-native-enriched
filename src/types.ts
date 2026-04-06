@@ -388,6 +388,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
   focus: () => void;
   blur: () => void;
   setValue: (value: string) => void;
+  insertText: (text: string, start?: number, end?: number) => void;
   setSelection: (start: number, end: number) => void;
   getHTML: () => Promise<string>;
 

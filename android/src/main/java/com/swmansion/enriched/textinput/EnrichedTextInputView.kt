@@ -426,6 +426,28 @@ class EnrichedTextInputView :
     layoutManager.invalidateLayout()
   }
 
+  fun insertText(
+    text: String,
+    start: Int,
+    end: Int,
+  ) {
+    val editable = this.text ?: return
+    val replaceStart: Int
+    val replaceEnd: Int
+
+    if (start < 0) {
+      // Use current selection
+      replaceStart = selectionStart
+      replaceEnd = selectionEnd
+    } else {
+      replaceStart = getActualIndex(start)
+      replaceEnd = getActualIndex(end)
+    }
+
+    editable.replace(replaceStart, replaceEnd, text)
+    setSelection(replaceStart + text.length)
+  }
+
   fun setCustomSelection(
     visibleStart: Int,
     visibleEnd: Int,

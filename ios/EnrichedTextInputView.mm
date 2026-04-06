@@ -1332,6 +1332,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     CGFloat imgHeight = [(NSNumber *)args[2] floatValue];
 
     [self addImage:uri width:imgWidth height:imgHeight];
+  } else if ([commandName isEqualToString:@"insertText"]) {
+    NSString *text = (NSString *)args[0];
+    NSInteger start = [((NSNumber *)args[1]) integerValue];
+    NSInteger end = [((NSNumber *)args[2]) integerValue];
+    [self insertText:text start:start end:end];
   } else if ([commandName isEqualToString:@"setSelection"]) {
     NSInteger start = [((NSNumber *)args[0]) integerValue];
     NSInteger end = [((NSNumber *)args[1]) integerValue];
@@ -1372,6 +1377,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // set selectedRange and check for changes
   textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
+  [self anyTextMayHaveBeenModified];
+}
+
+- (void)insertText:(NSString *)text start:(NSInteger)start end:(NSInteger)end {
+  NSString *currentText = textView.textStorage.string;
+
+  NSRange replaceRange;
+  if (start < 0) {
+    // Use current selection
+    replaceRange = textView.selectedRange;
+  } else {
+    NSUInteger actualStart = [self getActualIndex:start text:currentText];
+    NSUInteger actualEnd = [self getActualIndex:end text:currentText];
+    replaceRange = NSMakeRange(actualStart, actualEnd - actualStart);
+  }
+
+  // Replace the range with the new text, preserving surrounding attributes
+  [textView.textStorage replaceCharactersInRange:replaceRange withString:text];
+
+  // Move cursor to end of inserted text
+  textView.selectedRange = NSMakeRange(replaceRange.location + text.length, 0);
+
   [self anyTextMayHaveBeenModified];
 }
 
