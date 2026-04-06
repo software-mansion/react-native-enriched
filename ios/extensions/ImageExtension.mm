@@ -21,18 +21,27 @@ static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source,
   CFDictionaryRef const properties =
       CGImageSourceCopyPropertiesAtIndex(source, i, NULL);
   if (properties) {
-    CFDictionaryRef const gifProperties = (CFDictionaryRef)CFDictionaryGetValue(
+    // Try GIF frame delay first
+    CFDictionaryRef formatDict = (CFDictionaryRef)CFDictionaryGetValue(
         properties, kCGImagePropertyGIFDictionary);
-    if (gifProperties) {
-      NSNumber *number = fromCF CFDictionaryGetValue(
-          gifProperties, kCGImagePropertyGIFUnclampedDelayTime);
+    CFStringRef unclampedKey = kCGImagePropertyGIFUnclampedDelayTime;
+    CFStringRef delayKey = kCGImagePropertyGIFDelayTime;
+
+    // Fall back to WebP frame delay
+    if (!formatDict) {
+      formatDict = (CFDictionaryRef)CFDictionaryGetValue(
+          properties, kCGImagePropertyWebPDictionary);
+      unclampedKey = kCGImagePropertyWebPUnclampedDelayTime;
+      delayKey = kCGImagePropertyWebPDelayTime;
+    }
+
+    if (formatDict) {
+      NSNumber *number = fromCF CFDictionaryGetValue(formatDict, unclampedKey);
       if (number == NULL || [number doubleValue] == 0) {
-        number = fromCF CFDictionaryGetValue(gifProperties,
-                                             kCGImagePropertyGIFDelayTime);
+        number = fromCF CFDictionaryGetValue(formatDict, delayKey);
       }
       if ([number doubleValue] > 0) {
-        // Even though the GIF stores the delay as an integer number of
-        // centiseconds, ImageIO “helpfully” converts that to seconds for us.
+        // ImageIO exposes frame delays in seconds; convert to centiseconds.
         delayCentiseconds = (int)lrint([number doubleValue] * 100);
       }
     }
@@ -111,8 +120,7 @@ static void releaseImages(const std::vector<CGImageRef> &images) {
   }
 }
 
-static UIImage *
-animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const source) {
+static UIImage *animatedImageWithImageSource(CGImageSourceRef const source) {
   size_t const count = CGImageSourceGetCount(source);
   if (count == 0) {
     return nil;
@@ -137,10 +145,10 @@ animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const source) {
   return animation;
 }
 
-static UIImage *animatedImageWithAnimatedGIFReleasingImageSource(
-    CGImageSourceRef CF_RELEASES_ARGUMENT source) {
+static UIImage *
+animatedImageWithReleasingSource(CGImageSourceRef CF_RELEASES_ARGUMENT source) {
   if (source) {
-    UIImage *const image = animatedImageWithAnimatedGIFImageSource(source);
+    UIImage *const image = animatedImageWithImageSource(source);
     CFRelease(source);
     return image;
   } else {
@@ -148,8 +156,8 @@ static UIImage *animatedImageWithAnimatedGIFReleasingImageSource(
   }
 }
 
-+ (UIImage *)animatedImageWithAnimatedGIFData:(NSData *)data {
-  return animatedImageWithAnimatedGIFReleasingImageSource(
++ (UIImage *)animatedImageWithData:(NSData *)data {
+  return animatedImageWithReleasingSource(
       CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL));
 }
 
