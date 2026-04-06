@@ -54,6 +54,7 @@
   UIColor *_checkboxListBoxColor;
   UIImage *_checkboxCheckedImage;
   UIImage *_checkboxUncheckedImage;
+  NSString *_imageVerticalAlign;
 }
 
 - (instancetype)init {
@@ -115,6 +116,7 @@
   copy->_checkboxListBoxColor = [_checkboxListBoxColor copy];
   copy->_checkboxCheckedImage = _checkboxCheckedImage;
   copy->_checkboxUncheckedImage = _checkboxUncheckedImage;
+  copy->_imageVerticalAlign = [_imageVerticalAlign copy];
   return copy;
 }
 
@@ -659,6 +661,14 @@
   UIGraphicsEndImageContext();
 
   return result;
+}
+
+- (NSString *)imageVerticalAlign {
+  return _imageVerticalAlign ?: @"baseline";
+}
+
+- (void)setImageVerticalAlign:(NSString *)newValue {
+  _imageVerticalAlign = newValue;
 }
 
 @end
