@@ -348,6 +348,9 @@ export interface HtmlStyleInternal {
     marginLeft?: Float;
     boxColor?: ColorValue;
   };
+  image?: {
+    verticalAlign?: string;
+  };
 }
 
 export interface NativeProps extends ViewProps {
@@ -361,6 +364,8 @@ export interface NativeProps extends ViewProps {
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
   autoCapitalize?: string;
+  autoCorrect?: boolean;
+  spellCheck?: boolean;
   htmlStyle?: HtmlStyleInternal;
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
