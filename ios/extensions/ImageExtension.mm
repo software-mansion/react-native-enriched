@@ -120,8 +120,7 @@ static void releaseImages(const std::vector<CGImageRef> &images) {
   }
 }
 
-static UIImage *
-animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const source) {
+static UIImage *animatedImageWithImageSource(CGImageSourceRef const source) {
   size_t const count = CGImageSourceGetCount(source);
   if (count == 0) {
     return nil;
@@ -146,10 +145,10 @@ animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const source) {
   return animation;
 }
 
-static UIImage *animatedImageWithAnimatedGIFReleasingImageSource(
-    CGImageSourceRef CF_RELEASES_ARGUMENT source) {
+static UIImage *
+animatedImageWithReleasingSource(CGImageSourceRef CF_RELEASES_ARGUMENT source) {
   if (source) {
-    UIImage *const image = animatedImageWithAnimatedGIFImageSource(source);
+    UIImage *const image = animatedImageWithImageSource(source);
     CFRelease(source);
     return image;
   } else {
@@ -157,8 +156,8 @@ static UIImage *animatedImageWithAnimatedGIFReleasingImageSource(
   }
 }
 
-+ (UIImage *)animatedImageWithAnimatedGIFData:(NSData *)data {
-  return animatedImageWithAnimatedGIFReleasingImageSource(
++ (UIImage *)animatedImageWithData:(NSData *)data {
+  return animatedImageWithReleasingSource(
       CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL));
 }
 

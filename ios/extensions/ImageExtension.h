@@ -9,7 +9,7 @@
 @interface UIImage (ImageExtension)
 
 /*
-        UIImage *animation = [UIImage animatedImageWithAnimatedGIFData:theData];
+        UIImage *animation = [UIImage animatedImageWithData:theData];
 
     I interpret `theData` as an animated image (GIF or WebP).  I create an
    animated `UIImage` using the source images and frame delays from the data.
@@ -28,7 +28,6 @@
    contain frame 0 3/3 = 1 time, then frame 1 9/3 = 3 times, then frame 2
    15/3 = 5 times.  I set `animation.duration` to (3+9+15)/100 = 0.27 seconds.
 */
-+ (UIImage *_Nullable)animatedImageWithAnimatedGIFData:
-    (NSData *_Nonnull)theData;
++ (UIImage *_Nullable)animatedImageWithData:(NSData *_Nonnull)theData;
 
 @end
