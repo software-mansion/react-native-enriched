@@ -69,8 +69,8 @@
     "test:e2e:mobile": ".maestro/scripts/run-tests-all.sh",
     "test:e2e:android": ".maestro/scripts/run-tests.sh --platform android",
     "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios",
-    "test:e2e:web": "playwright test --config .playwright/playwright.config.ts",
-    "test:e2e": "yarn test:e2e:mobile && yarn test:e2e:web"
+    "test:e2e:web": ".playwright/scripts/run-tests.sh",
+    "test:e2e": "bash -c '.maestro/scripts/run-tests-all.sh \"$@\" && .playwright/scripts/run-tests.sh \"$@\"' _"
   },
   "keywords": [
     "react-native",
