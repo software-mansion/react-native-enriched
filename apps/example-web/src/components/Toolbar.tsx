@@ -1,12 +1,12 @@
 import './Toolbar.css';
-import type { OnChangeStateEvent } from 'react-native-enriched';
+import type {
+  EnrichedTextInputInstance,
+  OnChangeStateEvent,
+} from 'react-native-enriched';
+import type { RefObject } from 'react';
 
 interface ToolbarProps {
-  onToggleBold: () => void;
-  onToggleItalic: () => void;
-  onToggleUnderline: () => void;
-  onToggleStrikeThrough: () => void;
-  onToggleInlineCode: () => void;
+  editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
 }
 
@@ -14,7 +14,7 @@ interface ToolbarButtonProps {
   label: string;
   isActive: boolean;
   isDisabled: boolean;
-  variant?: 'default' | 'italic' | 'underline' | 'strikethrough';
+  variant?: string;
   onPress: () => void;
 }
 
@@ -41,51 +41,71 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({
-  onToggleBold,
-  onToggleItalic,
-  onToggleUnderline,
-  onToggleStrikeThrough,
-  onToggleInlineCode,
-  state,
-}: ToolbarProps) {
+export function Toolbar({ editorRef, state }: ToolbarProps) {
   const s = state;
+
+  const toolbarItems = [
+    {
+      key: 'bold',
+      label: 'B',
+      onPress: (editor: EnrichedTextInputInstance) => {
+        editor.toggleBold();
+      },
+    },
+    {
+      key: 'italic',
+      label: 'I',
+      variant: 'italic',
+      onPress: (editor: EnrichedTextInputInstance) => {
+        editor.toggleItalic();
+      },
+    },
+    {
+      key: 'underline',
+      label: 'U',
+      variant: 'underline',
+      onPress: (editor: EnrichedTextInputInstance) => {
+        editor.toggleUnderline();
+      },
+    },
+    {
+      key: 'strikeThrough',
+      label: 'S',
+      variant: 'strikethrough',
+      onPress: (editor: EnrichedTextInputInstance) => {
+        editor.toggleStrikeThrough();
+      },
+    },
+    {
+      key: 'inlineCode',
+      label: '</>',
+      onPress: (editor: EnrichedTextInputInstance) => {
+        editor.toggleInlineCode();
+      },
+    },
+  ] satisfies {
+    key: keyof OnChangeStateEvent;
+    label: string;
+    variant?: string;
+    onPress: (editor: EnrichedTextInputInstance) => void;
+  }[];
+
   return (
     <div className="toolbar">
       <div className="toolbar-controls">
-        <ToolbarButton
-          label="B"
-          isActive={s?.bold.isActive ?? false}
-          isDisabled={s?.bold.isBlocking ?? false}
-          onPress={onToggleBold}
-        />
-        <ToolbarButton
-          label="I"
-          isActive={s?.italic.isActive ?? false}
-          isDisabled={s?.italic.isBlocking ?? false}
-          variant="italic"
-          onPress={onToggleItalic}
-        />
-        <ToolbarButton
-          label="U"
-          isActive={s?.underline.isActive ?? false}
-          isDisabled={s?.underline.isBlocking ?? false}
-          variant="underline"
-          onPress={onToggleUnderline}
-        />
-        <ToolbarButton
-          label="S"
-          isActive={s?.strikeThrough.isActive ?? false}
-          isDisabled={s?.strikeThrough.isBlocking ?? false}
-          variant="strikethrough"
-          onPress={onToggleStrikeThrough}
-        />
-        <ToolbarButton
-          label="</>"
-          isActive={s?.inlineCode.isActive ?? false}
-          isDisabled={s?.inlineCode.isBlocking ?? false}
-          onPress={onToggleInlineCode}
-        />
+        {toolbarItems.map((item) => (
+          <ToolbarButton
+            key={item.key}
+            label={item.label}
+            isActive={s?.[item.key].isActive ?? false}
+            isDisabled={s?.[item.key].isBlocking ?? false}
+            variant={item.variant}
+            onPress={() => {
+              const editor = editorRef.current;
+              if (editor) item.onPress(editor);
+            }}
+          />
+        ))}
       </div>
       <div className="toolbar-fill" aria-hidden="true" />
     </div>

@@ -42,14 +42,7 @@ export function VisualRegressionScreen() {
         />
       </div>
 
-      <Toolbar
-        state={editorState}
-        onToggleBold={() => ref.current?.toggleBold()}
-        onToggleItalic={() => ref.current?.toggleItalic()}
-        onToggleUnderline={() => ref.current?.toggleUnderline()}
-        onToggleStrikeThrough={() => ref.current?.toggleStrikeThrough()}
-        onToggleInlineCode={() => ref.current?.toggleInlineCode()}
-      />
+      <Toolbar editorRef={ref} state={editorState} />
 
       <div style={{ marginTop: '12px' }}>
         <textarea
