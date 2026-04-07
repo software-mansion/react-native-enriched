@@ -19,7 +19,8 @@ import {
   normalizeHtmlFromTiptap,
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
-import { enrichedInputStyleToCSSProperties } from './enrichedInputStyleToCSSProperties';
+import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
+import { htmlStyleToCSSVariables } from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
@@ -42,6 +43,7 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
+  htmlStyle,
 }: EnrichedTextInputWebProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
@@ -52,13 +54,7 @@ export const EnrichedTextInput = ({
         Document,
         Paragraph,
         Text,
-        // EnrichedBold.extend(),
-        EnrichedBold.configure({
-          HTMLAttributes: {
-            style:
-              'color: #ff0055; font-weight: 900; background-color: #ffe6ee; padding: 0 4px; border-radius: 4px;',
-          },
-        }),
+        EnrichedBold,
         EnrichedItalic,
         EnrichedUnderline,
         EnrichedStrike,
@@ -155,11 +151,21 @@ export const EnrichedTextInput = ({
     [scrollEnabled, style]
   );
 
+  const cssVars = useMemo(
+    () => htmlStyleToCSSVariables(htmlStyle),
+    [htmlStyle]
+  );
+
+  const finalStyle = useMemo(
+    () => ({ ...editorStyle, ...cssVars }),
+    [editorStyle, cssVars]
+  );
+
   return (
     <EditorContent
       editor={editor}
       className="eti-editor"
-      style={editorStyle}
+      style={finalStyle}
       data-placeholder={placeholder}
     />
   );

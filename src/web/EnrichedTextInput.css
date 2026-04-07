@@ -17,7 +17,7 @@
 
 .eti-editor code {
   font-family: monospace;
-  background: rgb(231, 231, 151);
-  color: purple;
+  background-color: var(--eti-code-bg-color);
+  color: var(--eti-code-color);
   padding: 2px 4px;
 }
