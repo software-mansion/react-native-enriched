@@ -10,15 +10,21 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import { EnrichedStrike } from './EnrichedStrike';
+import { EnrichedUnderline } from './EnrichedUnderline';
 import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
+import { useOnChangeState } from './useOnChangeState';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './enrichedInputStyleToCSSProperties';
+import { EnrichedBold } from './EnrichedBold';
+import { EnrichedItalic } from './EnrichedItalic';
+import { EnrichedCode } from './EnrichedCode';
 
 export const EnrichedTextInput = ({
   ref,
@@ -35,6 +41,7 @@ export const EnrichedTextInput = ({
   onKeyPress,
   onChangeText,
   onChangeHtml,
+  onChangeState,
 }: EnrichedTextInputWebProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
@@ -45,6 +52,11 @@ export const EnrichedTextInput = ({
         Document,
         Paragraph,
         Text,
+        EnrichedBold,
+        EnrichedItalic,
+        EnrichedUnderline,
+        EnrichedStrike,
+        EnrichedCode,
         Placeholder.configure({
           placeholder,
           showOnlyWhenEditable: true,
@@ -83,6 +95,7 @@ export const EnrichedTextInput = ({
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
+  useOnChangeState(editor, onChangeState);
 
   useImperativeHandle(
     ref,
@@ -103,11 +116,11 @@ export const EnrichedTextInput = ({
           .run();
       },
       getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
-      toggleBold: () => {},
-      toggleItalic: () => {},
-      toggleUnderline: () => {},
-      toggleStrikeThrough: () => {},
-      toggleInlineCode: () => {},
+      toggleBold: () => editor.chain().focus().toggleBold().run(),
+      toggleItalic: () => editor.chain().focus().toggleItalic().run(),
+      toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
+      toggleStrikeThrough: () => editor.chain().focus().toggleStrike().run(),
+      toggleInlineCode: () => editor.chain().focus().toggleCode().run(),
       toggleH1: () => {},
       toggleH2: () => {},
       toggleH3: () => {},

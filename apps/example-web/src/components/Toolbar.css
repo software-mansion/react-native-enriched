@@ -1,0 +1,62 @@
+.toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  background: rgba(51, 72, 142, 1);
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.toolbar-fill {
+  flex: 1;
+  align-self: stretch;
+}
+
+.toolbar-btn {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+}
+
+.toolbar-btn--active {
+  background: rgb(0, 26, 114);
+  color: #fff;
+}
+
+.toolbar-btn--disabled {
+  background: rgb(0, 26, 114);
+  cursor: default;
+  opacity: 0.3;
+}
+
+.toolbar-btn--italic {
+  font-style: italic;
+}
+
+.toolbar-btn--underline {
+  text-decoration: underline;
+}
+
+.toolbar-btn--strikethrough {
+  text-decoration: line-through;
+}
+
+.toolbar-btn:focus-visible {
+  outline: none;
+}

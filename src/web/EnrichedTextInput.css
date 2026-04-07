@@ -14,3 +14,10 @@
   height: 0;
   pointer-events: none;
 }
+
+.eti-editor code {
+  font-family: monospace;
+  background: rgb(231, 231, 151);
+  color: purple;
+  padding: 2px 4px;
+}
