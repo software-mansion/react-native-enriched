@@ -20,7 +20,7 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
-import { htmlStyleToCSSVariables } from './styleConversion/htmlStyleToCSSVariables';
+import { htmlStyleWithDefaultsToCSSVariables } from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
@@ -152,7 +152,7 @@ export const EnrichedTextInput = ({
   );
 
   const cssVars = useMemo(
-    () => htmlStyleToCSSVariables(htmlStyle),
+    () => htmlStyleWithDefaultsToCSSVariables(htmlStyle),
     [htmlStyle]
   );
 

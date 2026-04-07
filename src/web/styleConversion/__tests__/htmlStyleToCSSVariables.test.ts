@@ -1,8 +1,51 @@
 import type { CSSProperties } from 'react';
 import type { HtmlStyle } from '../../../types';
-import { htmlStyleToCSSVariables } from '../htmlStyleToCSSVariables';
+import { DEFAULT_HTML_STYLE } from '../../../utils/defaultHtmlStyle';
+import {
+  htmlStyleToCSSVariables,
+  mergeWithDefaultHtmlStyle,
+} from '../htmlStyleToCSSVariables';
 
 type CodeStyle = HtmlStyle['code'];
+
+describe('mergeWithDefaultHtmlStyle', () => {
+  const cases: Array<[HtmlStyle | undefined, Partial<Required<HtmlStyle>>]> = [
+    [undefined, DEFAULT_HTML_STYLE],
+    [{}, DEFAULT_HTML_STYLE],
+    [
+      { code: { color: 'purple' } },
+      {
+        code: {
+          color: 'purple',
+          backgroundColor: DEFAULT_HTML_STYLE.code.backgroundColor,
+        },
+      },
+    ],
+    [
+      { code: { color: 'purple', backgroundColor: 'white' } },
+      { code: { color: 'purple', backgroundColor: 'white' } },
+    ],
+    [
+      { h1: { fontSize: 48 } },
+      { h1: { fontSize: 48, bold: DEFAULT_HTML_STYLE.h1.bold } },
+    ],
+    [
+      { ul: { bulletColor: 'red' } },
+      {
+        ul: {
+          bulletColor: 'red',
+          bulletSize: DEFAULT_HTML_STYLE.ul.bulletSize,
+          marginLeft: DEFAULT_HTML_STYLE.ul.marginLeft,
+          gapWidth: DEFAULT_HTML_STYLE.ul.gapWidth,
+        },
+      },
+    ],
+  ];
+
+  it.each(cases)('%j → contains %j', (input, expected) => {
+    expect(mergeWithDefaultHtmlStyle(input)).toMatchObject(expected);
+  });
+});
 
 describe('htmlStyleToCSSVariables', () => {
   it('returns empty object for undefined input', () => {
