@@ -1,35 +1,33 @@
 #import <UIKit/UIKit.h>
 
 /**
-        UIImage (animatedGIF)
+        UIImage (ImageExtension)
 
     This category adds class methods to `UIImage` to create an animated
-   `UIImage` from an animated GIF.
+   `UIImage` from animated image data (GIF or WebP).
 */
 @interface UIImage (ImageExtension)
 
 /*
-        UIImage *animation = [UIImage animatedImageWithAnimatedGIFData:theData];
+        UIImage *animation = [UIImage animatedImageWithData:theData];
 
-    I interpret `theData` as a GIF.  I create an animated `UIImage` using the
-   source images in the GIF.
+    I interpret `theData` as an animated image (GIF or WebP).  I create an
+   animated `UIImage` using the source images and frame delays from the data.
 
-    The GIF stores a separate duration for each frame, in units of centiseconds
-   (hundredths of a second).  However, a `UIImage` only has a single, total
-   `duration` property, which is a floating-point number.
+    The image stores a separate duration for each frame, in units of
+   centiseconds (hundredths of a second).  However, a `UIImage` only has a
+   single, total `duration` property, which is a floating-point number.
 
-    To handle this mismatch, I add each source image (from the GIF) to
-   `animation` a varying number of times to match the ratios between the frame
-   durations in the GIF.
+    To handle this mismatch, I add each source image to `animation` a varying
+   number of times to match the ratios between the frame durations.
 
-    For example, suppose the GIF contains three frames.  Frame 0 has duration 3.
-   Frame 1 has duration 9.  Frame 2 has duration 15.  I divide each duration by
-   the greatest common denominator of all the durations, which is 3, and add
-   each frame the resulting number of times.  Thus `animation` will contain
-   frame 0 3/3 = 1 time, then frame 1 9/3 = 3 times, then frame 2 15/3 = 5
-   times.  I set `animation.duration` to (3+9+15)/100 = 0.27 seconds.
+    For example, suppose the image contains three frames.  Frame 0 has duration
+   3.  Frame 1 has duration 9.  Frame 2 has duration 15.  I divide each
+   duration by the greatest common denominator of all the durations, which is 3,
+   and add each frame the resulting number of times.  Thus `animation` will
+   contain frame 0 3/3 = 1 time, then frame 1 9/3 = 3 times, then frame 2
+   15/3 = 5 times.  I set `animation.duration` to (3+9+15)/100 = 0.27 seconds.
 */
-+ (UIImage *_Nullable)animatedImageWithAnimatedGIFData:
-    (NSData *_Nonnull)theData;
++ (UIImage *_Nullable)animatedImageWithData:(NSData *_Nonnull)theData;
 
 @end
