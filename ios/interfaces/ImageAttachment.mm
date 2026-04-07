@@ -83,10 +83,10 @@ static NSCache<NSString *, UIImage *> *ImageAttachmentCache(void) {
     NSData *bytes = [NSData dataWithContentsOfURL:url];
 
     // We pass all image data (including static formats like PNG or JPEG)
-    // through the GIF parser. It safely acts as a universal parser, returning
-    // a single-frame UIImage for static formats and an animated UIImage for
-    // GIFs.
-    UIImage *img = bytes ? [UIImage animatedImageWithAnimatedGIFData:bytes]
+    // through the animated image parser. It safely acts as a universal parser,
+    // returning a single-frame UIImage for static formats and an animated
+    // UIImage for GIFs and WebPs.
+    UIImage *img = bytes ? [UIImage animatedImageWithData:bytes]
                          : [UIImage systemImageNamed:@"photo"];
 
     dispatch_async(dispatch_get_main_queue(), ^{
