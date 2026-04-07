@@ -3,6 +3,7 @@
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "WeakBox.h"
 #import <objc/runtime.h>
 
 @implementation NSLayoutManager (LayoutManagerExtension)
@@ -10,11 +11,14 @@
 static void const *kInputKey = &kInputKey;
 
 - (id)input {
-  return objc_getAssociatedObject(self, kInputKey);
+  WeakBox *box = objc_getAssociatedObject(self, kInputKey);
+  return box.value;
 }
 
 - (void)setInput:(id)value {
-  objc_setAssociatedObject(self, kInputKey, value,
+  WeakBox *box = [WeakBox new];
+  box.value = value;
+  objc_setAssociatedObject(self, kInputKey, box,
                            OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 

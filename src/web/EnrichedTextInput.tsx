@@ -1,8 +1,8 @@
-import { useImperativeHandle, type CSSProperties } from 'react';
+import { useImperativeHandle, useMemo, type CSSProperties } from 'react';
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
-  EnrichedTextInputProps,
+  EnrichedTextInputWebProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
@@ -18,6 +18,7 @@ import {
   normalizeHtmlFromTiptap,
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
+import { enrichedInputStyleToCSSProperties } from './enrichedInputStyleToCSSProperties';
 
 export const EnrichedTextInput = ({
   ref,
@@ -28,12 +29,13 @@ export const EnrichedTextInput = ({
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   onFocus,
+  style,
   onBlur,
   onChangeSelection,
   onKeyPress,
   onChangeText,
   onChangeHtml,
-}: EnrichedTextInputProps) => {
+}: EnrichedTextInputWebProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
@@ -129,18 +131,17 @@ export const EnrichedTextInput = ({
     })
   );
 
-  const editorStyle: CSSProperties = {
-    overflowY: scrollEnabled ? 'auto' : 'hidden',
-  };
+  const editorStyle: CSSProperties = useMemo(
+    () => enrichedInputStyleToCSSProperties(style ?? {}, { scrollEnabled }),
+    [scrollEnabled, style]
+  );
 
   return (
-    <div>
-      <EditorContent
-        editor={editor}
-        className="eti-editor"
-        style={editorStyle}
-        data-placeholder={placeholder}
-      />
-    </div>
+    <EditorContent
+      editor={editor}
+      className="eti-editor"
+      style={editorStyle}
+      data-placeholder={placeholder}
+    />
   );
 };
