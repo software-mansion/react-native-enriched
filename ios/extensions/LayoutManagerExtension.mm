@@ -3,7 +3,7 @@
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
-#import "Weakbox.h"
+#import "WeakBox.h"
 #import <objc/runtime.h>
 
 @implementation NSLayoutManager (LayoutManagerExtension)
