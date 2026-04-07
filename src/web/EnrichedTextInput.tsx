@@ -10,8 +10,6 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-import { EnrichedStrike } from './EnrichedStrike';
-import { EnrichedUnderline } from './EnrichedUnderline';
 import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
@@ -22,9 +20,11 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './enrichedInputStyleToCSSProperties';
-import { EnrichedBold } from './EnrichedBold';
-import { EnrichedItalic } from './EnrichedItalic';
-import { EnrichedCode } from './EnrichedCode';
+import { EnrichedBold } from './formats/EnrichedBold';
+import { EnrichedItalic } from './formats/EnrichedItalic';
+import { EnrichedStrike } from './formats/EnrichedStrike';
+import { EnrichedUnderline } from './formats/EnrichedUnderline';
+import { EnrichedCode } from './formats/EnrichedCode';
 
 export const EnrichedTextInput = ({
   ref,
@@ -52,7 +52,13 @@ export const EnrichedTextInput = ({
         Document,
         Paragraph,
         Text,
-        EnrichedBold,
+        // EnrichedBold.extend(),
+        EnrichedBold.configure({
+          HTMLAttributes: {
+            style:
+              'color: #ff0055; font-weight: 900; background-color: #ffe6ee; padding: 0 4px; border-radius: 4px;',
+          },
+        }),
         EnrichedItalic,
         EnrichedUnderline,
         EnrichedStrike,
