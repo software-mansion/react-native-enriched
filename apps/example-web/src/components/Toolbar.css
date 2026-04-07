@@ -25,6 +25,7 @@
   min-width: 56px;
   height: 56px;
   border: none;
+  background: transparent;
   font-size: 20px;
   font-weight: 700;
   display: flex;

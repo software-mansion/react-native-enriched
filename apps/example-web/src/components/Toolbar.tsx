@@ -26,10 +26,8 @@ function ToolbarButton({
   onPress,
 }: ToolbarButtonProps) {
   return (
-    <div
-      role="button"
-      tabIndex={isDisabled ? -1 : 0}
-      aria-disabled={isDisabled}
+    <button
+      disabled={isDisabled}
       className={`toolbar-btn toolbar-btn--${variant} ${isActive ? 'toolbar-btn--active' : ''} ${isDisabled ? 'toolbar-btn--disabled' : ''}`}
       onPointerDown={(e) => {
         e.preventDefault();
@@ -39,7 +37,7 @@ function ToolbarButton({
       }}
     >
       {label}
-    </div>
+    </button>
   );
 }
 

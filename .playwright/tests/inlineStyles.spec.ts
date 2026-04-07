@@ -25,6 +25,6 @@ test('inline styles visual regression', async ({ page }) => {
   await page.waitForTimeout(300);
 
   await expect(page.locator(EDITOR_INNER)).toHaveScreenshot(
-    'inline_styles.png'
+    'inline-styles.png'
   );
 });
