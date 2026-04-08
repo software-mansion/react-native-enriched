@@ -12,6 +12,7 @@ interface ToolbarProps {
 
 interface ToolbarButtonProps {
   label: string;
+  testId: string;
   isActive: boolean;
   isDisabled: boolean;
   variant?: string;
@@ -20,6 +21,7 @@ interface ToolbarButtonProps {
 
 function ToolbarButton({
   label,
+  testId,
   isActive,
   isDisabled,
   variant = 'default',
@@ -27,6 +29,7 @@ function ToolbarButton({
 }: ToolbarButtonProps) {
   return (
     <button
+      data-testid={testId}
       disabled={isDisabled}
       className={`toolbar-btn toolbar-btn--${variant} ${isActive ? 'toolbar-btn--active' : ''} ${isDisabled ? 'toolbar-btn--disabled' : ''}`}
       onPointerDown={(e) => {
@@ -97,6 +100,7 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
           <ToolbarButton
             key={item.key}
             label={item.label}
+            testId={`toolbar-button-${item.key}`}
             isActive={s?.[item.key].isActive ?? false}
             isDisabled={s?.[item.key].isBlocking ?? false}
             variant={item.variant}

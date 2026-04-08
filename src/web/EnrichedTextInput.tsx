@@ -26,6 +26,7 @@ import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
 import { EnrichedUnderline } from './formats/EnrichedUnderline';
 import { EnrichedCode } from './formats/EnrichedCode';
+import { StrictMarksPlugin } from './StrictMarksPlugin';
 
 export const EnrichedTextInput = ({
   ref,
@@ -59,6 +60,7 @@ export const EnrichedTextInput = ({
         EnrichedUnderline,
         EnrichedStrike,
         EnrichedCode,
+        StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
           showOnlyWhenEditable: true,
