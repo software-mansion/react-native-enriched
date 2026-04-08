@@ -24,10 +24,10 @@
 - (void)applyStyling:(NSRange)range {
   // lists are drawn manually
   // margin before bullet + gap between bullet and paragraph
-  CGFloat listHeadIndent = [self.input->config unorderedListMarginLeft] +
-                           [self.input->config unorderedListGapWidth];
+  CGFloat listHeadIndent = [self.host.config unorderedListMarginLeft] +
+                           [self.host.config unorderedListGapWidth];
 
-  [self.input->textView.textStorage
+  [self.host.textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
                  inRange:range
                  options:0
@@ -37,7 +37,7 @@
                     [(NSParagraphStyle *)value mutableCopy];
                 pStyle.headIndent = listHeadIndent;
                 pStyle.firstLineHeadIndent = listHeadIndent;
-                [self.input->textView.textStorage
+                [self.host.textView.textStorage
                     addAttribute:NSParagraphStyleAttributeName
                            value:pStyle
                            range:range];
@@ -47,28 +47,28 @@
 - (BOOL)tryHandlingListShorcutInRange:(NSRange)range
                       replacementText:(NSString *)text {
   NSRange paragraphRange =
-      [self.input->textView.textStorage.string paragraphRangeForRange:range];
+      [self.host.textView.textStorage.string paragraphRangeForRange:range];
   // space was added - check if we are both at the paragraph beginning + 1
   // character (which we want to be a dash)
   if ([text isEqualToString:@" "] &&
       range.location - 1 == paragraphRange.location) {
-    unichar charBefore = [self.input->textView.textStorage.string
+    unichar charBefore = [self.host.textView.textStorage.string
         characterAtIndex:range.location - 1];
     if (charBefore == '-') {
       // we got a match - add a list if possible
-      if ([self.input handleStyleBlocksAndConflicts:[[self class] getType]
-                                              range:paragraphRange]) {
+      if ([self.host handleStyleBlocksAndConflicts:[[self class] getType]
+                                             range:paragraphRange]) {
         // don't emit during the replacing
-        self.input->blockEmitting = YES;
+        self.host.blockEmitting = YES;
 
         // remove the dash
         [TextInsertionUtils replaceText:@""
                                      at:NSMakeRange(paragraphRange.location, 1)
                    additionalAttributes:nullptr
-                                  input:self.input
+                                  input:self.host
                           withSelection:YES];
 
-        self.input->blockEmitting = NO;
+        self.host.blockEmitting = NO;
 
         // add attributes on the dashless paragraph
         [self add:NSMakeRange(paragraphRange.location,

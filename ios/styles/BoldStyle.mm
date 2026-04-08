@@ -17,7 +17,7 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  [self.input->textView.textStorage
+  [self.host.textView.textStorage
       enumerateAttribute:NSFontAttributeName
                  inRange:range
                  options:0
@@ -26,7 +26,7 @@
                 UIFont *font = (UIFont *)value;
                 if (font != nullptr) {
                   UIFont *newFont = [font setBold];
-                  [self.input->textView.textStorage
+                  [self.host.textView.textStorage
                       addAttribute:NSFontAttributeName
                              value:newFont
                              range:range];

@@ -1,6 +1,7 @@
 #pragma once
 #import "AttributesManager.h"
 #import "BaseStyleProtocol.h"
+#import "EnrichedStyleHost.h"
 #import "InputConfig.h"
 #import "InputParser.h"
 #import "InputTextView.h"
@@ -15,7 +16,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EnrichedTextInputView
-    : RCTViewComponentView <MediaAttachmentDelegate> {
+    : RCTViewComponentView <MediaAttachmentDelegate, EnrichedStyleHost> {
 @public
   InputTextView *textView;
 @public

@@ -16,10 +16,10 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  [self.input->textView.textStorage addAttributes:@{
+  [self.host.textView.textStorage addAttributes:@{
     NSStrikethroughStyleAttributeName : @(NSUnderlineStyleSingle)
   }
-                                            range:range];
+                                          range:range];
 }
 
 @end

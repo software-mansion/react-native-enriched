@@ -22,11 +22,11 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  CGFloat listHeadIndent = [self.input->config checkboxListMarginLeft] +
-                           [self.input->config checkboxListGapWidth] +
-                           [self.input->config checkboxListBoxSize];
+  CGFloat listHeadIndent = [self.host.config checkboxListMarginLeft] +
+                           [self.host.config checkboxListGapWidth] +
+                           [self.host.config checkboxListBoxSize];
 
-  [self.input->textView.textStorage
+  [self.host.textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
                  inRange:range
                  options:0
@@ -36,7 +36,7 @@
                     [(NSParagraphStyle *)value mutableCopy];
                 pStyle.headIndent = listHeadIndent;
                 pStyle.firstLineHeadIndent = listHeadIndent;
-                [self.input->textView.textStorage
+                [self.host.textView.textStorage
                     addAttribute:NSParagraphStyleAttributeName
                            value:pStyle
                            range:range];
@@ -88,20 +88,20 @@
 }
 
 - (void)toggleCheckedAt:(NSUInteger)location {
-  if (location >= self.input->textView.textStorage.length) {
+  if (location >= self.host.textView.textStorage.length) {
     return;
   }
 
   NSParagraphStyle *pStyle =
-      [self.input->textView.textStorage attribute:NSParagraphStyleAttributeName
-                                          atIndex:location
-                                   effectiveRange:NULL];
+      [self.host.textView.textStorage attribute:NSParagraphStyleAttributeName
+                                        atIndex:location
+                                 effectiveRange:NULL];
   NSTextList *list = pStyle.textLists.firstObject;
 
   BOOL isCurrentlyChecked =
       [list.markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
-  NSRange paragraphRange = [self.input->textView.textStorage.string
+  NSRange paragraphRange = [self.host.textView.textStorage.string
       paragraphRangeForRange:NSMakeRange(location, 0)];
 
   [self addWithChecked:!isCurrentlyChecked
@@ -111,14 +111,14 @@
 }
 
 - (BOOL)getCheckboxStateAt:(NSUInteger)location {
-  if (location >= self.input->textView.textStorage.length) {
+  if (location >= self.host.textView.textStorage.length) {
     return NO;
   }
 
   NSParagraphStyle *style =
-      [self.input->textView.textStorage attribute:NSParagraphStyleAttributeName
-                                          atIndex:location
-                                   effectiveRange:NULL];
+      [self.host.textView.textStorage attribute:NSParagraphStyleAttributeName
+                                        atIndex:location
+                                 effectiveRange:NULL];
 
   if (style && style.textLists.count > 0) {
     NSTextList *list = style.textLists.firstObject;
@@ -131,18 +131,18 @@
 }
 
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {
-  if ([self detect:self.input->textView.selectedRange] && text.length > 0 &&
+  if ([self detect:self.host.textView.selectedRange] && text.length > 0 &&
       [[NSCharacterSet newlineCharacterSet]
           characterIsMember:[text characterAtIndex:text.length - 1]]) {
     // do the replacement manually
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
-                              input:self.input
+                              input:self.host
                       withSelection:YES];
     // apply unchecked checkbox attributes to the new paragraph
     [self addWithChecked:NO
-                   range:self.input->textView.selectedRange
+                   range:self.host.textView.selectedRange
               withTyping:YES
           withDirtyRange:YES];
     return YES;

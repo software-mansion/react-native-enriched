@@ -12,9 +12,9 @@
   return YES;
 }
 - (CGFloat)getHeadingFontSize {
-  return [self.input->config h4FontSize];
+  return [self.host.config h4FontSize];
 }
 - (BOOL)isHeadingBold {
-  return [self.input->config h4Bold];
+  return [self.host.config h4Bold];
 }
 @end

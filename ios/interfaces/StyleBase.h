@@ -1,19 +1,18 @@
 #pragma once
 #import "AttributeEntry.h"
+#import "EnrichedStyleHost.h"
 #import "StylePair.h"
 #import "StyleTypeEnum.h"
 #import <UIKit/UIKit.h>
 
-@class EnrichedTextInputView;
-
 @interface StyleBase : NSObject
-@property(nonatomic, weak) EnrichedTextInputView *input;
+@property(nonatomic, weak) id<EnrichedStyleHost> host;
 + (StyleType)getType;
 - (NSString *)getKey;
 - (NSString *)getValue;
 - (BOOL)isParagraph;
 - (BOOL)needsZWS;
-- (instancetype)initWithInput:(EnrichedTextInputView *)input;
+- (instancetype)initWithHost:(id<EnrichedStyleHost>)host;
 - (NSRange)actualUsedRange:(NSRange)range;
 - (void)toggle:(NSRange)range;
 - (void)add:(NSRange)range

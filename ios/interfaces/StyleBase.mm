@@ -1,6 +1,5 @@
 #import "StyleBase.h"
 #import "AttributeEntry.h"
-#import "EnrichedTextInputView.h"
 #import "OccurenceUtils.h"
 #import "RangeUtils.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -35,9 +34,9 @@
   return NO;
 }
 
-- (instancetype)initWithInput:(EnrichedTextInputView *)input {
+- (instancetype)initWithHost:(id<EnrichedStyleHost>)host {
   self = [super init];
-  _input = input;
+  _host = host;
   return self;
 }
 
@@ -45,7 +44,7 @@
 - (NSRange)actualUsedRange:(NSRange)range {
   if (![self isParagraph])
     return range;
-  return [_input->textView.textStorage.string paragraphRangeForRange:range];
+  return [self.host.textView.textStorage.string paragraphRangeForRange:range];
 }
 
 - (void)toggle:(NSRange)range {
@@ -76,11 +75,11 @@
   NSRange actualRange = [self actualUsedRange:range];
 
   if (![self isParagraph]) {
-    [_input->textView.textStorage addAttribute:[self getKey]
-                                         value:value
-                                         range:actualRange];
+    [self.host.textView.textStorage addAttribute:[self getKey]
+                                           value:value
+                                           range:actualRange];
   } else {
-    [_input->textView.textStorage
+    [self.host.textView.textStorage
         enumerateAttribute:NSParagraphStyleAttributeName
                    inRange:actualRange
                    options:0
@@ -93,7 +92,7 @@
                   pStyle.textLists =
                       @[ [[NSTextList alloc] initWithMarkerFormat:value
                                                           options:0] ];
-                  [_input->textView.textStorage
+                  [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
                              range:subRange];
@@ -106,7 +105,7 @@
 
   // Notify attributes manager of styling to be re-done if needed.
   if (withDirtyRange) {
-    [self.input->attributesManager addDirtyRange:actualRange];
+    [self.host.attributesManager addDirtyRange:actualRange];
   }
 }
 
@@ -114,10 +113,10 @@
   NSRange actualRange = [self actualUsedRange:range];
 
   if (![self isParagraph]) {
-    [_input->textView.textStorage removeAttribute:[self getKey]
-                                            range:actualRange];
+    [self.host.textView.textStorage removeAttribute:[self getKey]
+                                              range:actualRange];
   } else {
-    [_input->textView.textStorage
+    [self.host.textView.textStorage
         enumerateAttribute:NSParagraphStyleAttributeName
                    inRange:actualRange
                    options:0
@@ -128,7 +127,7 @@
                   if (pStyle == nullptr)
                     return;
                   pStyle.textLists = @[];
-                  [_input->textView.textStorage
+                  [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
                              range:subRange];
@@ -138,13 +137,13 @@
 
   // Notify attributes manager of styling to be re-done if needed.
   if (withDirtyRange) {
-    [self.input->attributesManager addDirtyRange:actualRange];
+    [self.host.attributesManager addDirtyRange:actualRange];
   }
 }
 
 - (void)addTypingWithValue:(NSString *)value {
   NSMutableDictionary *newTypingAttrs =
-      [_input->textView.typingAttributes mutableCopy];
+      [self.host.textView.typingAttributes mutableCopy];
 
   if (![self isParagraph]) {
     newTypingAttrs[[self getKey]] = value;
@@ -156,18 +155,18 @@
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
-  _input->textView.typingAttributes = newTypingAttrs;
+  self.host.textView.typingAttributes = newTypingAttrs;
 }
 
 - (void)removeTyping {
   NSMutableDictionary *newTypingAttrs =
-      [_input->textView.typingAttributes mutableCopy];
+      [self.host.textView.typingAttributes mutableCopy];
 
   if (![self isParagraph]) {
     [newTypingAttrs removeObjectForKey:[self getKey]];
     // attributes manager also needs to be notified of custom attributes that
     // shouldn't be extended
-    [_input->attributesManager didRemoveTypingAttribute:[self getKey]];
+    [self.host.attributesManager didRemoveTypingAttribute:[self getKey]];
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
@@ -175,7 +174,7 @@
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
-  _input->textView.typingAttributes = newTypingAttrs;
+  self.host.textView.typingAttributes = newTypingAttrs;
 }
 
 // custom styles (e.g. ImageStyle, MentionStyle) will likely need to override
@@ -195,14 +194,14 @@
 - (BOOL)detect:(NSRange)range {
   if (range.length >= 1) {
     return [OccurenceUtils detect:[self getKey]
-                        withInput:_input
+                         withHost:self.host
                           inRange:range
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
                       return [self styleCondition:value range:range];
                     }];
   } else {
     return [OccurenceUtils detect:[self getKey]
-                        withInput:_input
+                         withHost:self.host
                           atIndex:range.location
                     checkPrevious:[self isParagraph]
                     withCondition:^BOOL(id _Nullable value, NSRange range) {
@@ -213,7 +212,7 @@
 
 - (BOOL)any:(NSRange)range {
   return [OccurenceUtils any:[self getKey]
-                   withInput:_input
+                    withHost:self.host
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
                  return [self styleCondition:value range:range];
@@ -222,7 +221,7 @@
 
 - (NSArray<StylePair *> *)all:(NSRange)range {
   return [OccurenceUtils all:[self getKey]
-                   withInput:_input
+                    withHost:self.host
                      inRange:range
                withCondition:^BOOL(id _Nullable value, NSRange range) {
                  return [self styleCondition:value range:range];

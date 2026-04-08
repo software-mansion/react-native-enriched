@@ -1,4 +1,5 @@
 #import "EnrichedTextInputView.h"
+#import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
 #import "ImageAttachment.h"
@@ -104,29 +105,29 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
 
   stylesDict = @{
-    @([BoldStyle getType]) : [[BoldStyle alloc] initWithInput:self],
-    @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithInput:self],
-    @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithInput:self],
+    @([BoldStyle getType]) : [[BoldStyle alloc] initWithHost:self],
+    @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithHost:self],
+    @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithHost:self],
     @([StrikethroughStyle getType]) :
-        [[StrikethroughStyle alloc] initWithInput:self],
-    @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithInput:self],
-    @([LinkStyle getType]) : [[LinkStyle alloc] initWithInput:self],
-    @([MentionStyle getType]) : [[MentionStyle alloc] initWithInput:self],
-    @([H1Style getType]) : [[H1Style alloc] initWithInput:self],
-    @([H2Style getType]) : [[H2Style alloc] initWithInput:self],
-    @([H3Style getType]) : [[H3Style alloc] initWithInput:self],
-    @([H4Style getType]) : [[H4Style alloc] initWithInput:self],
-    @([H5Style getType]) : [[H5Style alloc] initWithInput:self],
-    @([H6Style getType]) : [[H6Style alloc] initWithInput:self],
+        [[StrikethroughStyle alloc] initWithHost:self],
+    @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithHost:self],
+    @([LinkStyle getType]) : [[LinkStyle alloc] initWithHost:self],
+    @([MentionStyle getType]) : [[MentionStyle alloc] initWithHost:self],
+    @([H1Style getType]) : [[H1Style alloc] initWithHost:self],
+    @([H2Style getType]) : [[H2Style alloc] initWithHost:self],
+    @([H3Style getType]) : [[H3Style alloc] initWithHost:self],
+    @([H4Style getType]) : [[H4Style alloc] initWithHost:self],
+    @([H5Style getType]) : [[H5Style alloc] initWithHost:self],
+    @([H6Style getType]) : [[H6Style alloc] initWithHost:self],
     @([UnorderedListStyle getType]) :
-        [[UnorderedListStyle alloc] initWithInput:self],
+        [[UnorderedListStyle alloc] initWithHost:self],
     @([OrderedListStyle getType]) :
-        [[OrderedListStyle alloc] initWithInput:self],
+        [[OrderedListStyle alloc] initWithHost:self],
     @([CheckboxListStyle getType]) :
-        [[CheckboxListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
-    @([ImageStyle getType]) : [[ImageStyle alloc] initWithInput:self]
+        [[CheckboxListStyle alloc] initWithHost:self],
+    @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithHost:self],
+    @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithHost:self],
+    @([ImageStyle getType]) : [[ImageStyle alloc] initWithHost:self]
   };
 
   conflictingStyles = [@{
@@ -2205,129 +2206,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // MARK: - Media attachments delegate
 
 - (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
-  NSTextStorage *storage = textView.textStorage;
-  NSRange fullRange = NSMakeRange(0, storage.length);
-
-  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
-
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:fullRange
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if (value == attachment) {
-                       foundRange = range;
-                       *stop = YES;
-                     }
-                   }];
-
-  if (foundRange.location == NSNotFound) {
-    return;
-  }
-
-  [storage edited:NSTextStorageEditedAttributes
-               range:foundRange
-      changeInLength:0];
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self layoutAttachments];
-  });
+  [AttachmentLayoutUtils handleAttachmentUpdate:attachment
+                                       textView:textView
+                                  onLayoutBlock:^{
+                                    [self layoutAttachments];
+                                  }];
 }
 
 // MARK: - Image/GIF Overlay Management
 
 - (void)layoutAttachments {
-  NSTextStorage *storage = textView.textStorage;
-  NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
-      [NSMutableDictionary dictionary];
-
-  // Iterate over the entire text to find ImageAttachments
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:NSMakeRange(0, storage.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if ([value isKindOfClass:[ImageAttachment class]]) {
-                       ImageAttachment *attachment = (ImageAttachment *)value;
-
-                       CGRect rect = [self frameForAttachment:attachment
-                                                      atRange:range];
-
-                       // Get or Create the UIImageView for this specific
-                       // attachment key
-                       NSValue *key =
-                           [NSValue valueWithNonretainedObject:attachment];
-                       UIImageView *imgView = _attachmentViews[key];
-
-                       if (!imgView) {
-                         // It doesn't exist yet, create it
-                         imgView = [[UIImageView alloc] initWithFrame:rect];
-                         imgView.contentMode = UIViewContentModeScaleAspectFit;
-                         imgView.tintColor = [UIColor labelColor];
-
-                         // Add it directly to the TextView
-                         [textView addSubview:imgView];
-                       }
-
-                       // Update position (in case text moved/scrolled)
-                       if (!CGRectEqualToRect(imgView.frame, rect)) {
-                         imgView.frame = rect;
-                       }
-                       UIImage *targetImage =
-                           attachment.storedAnimatedImage ?: attachment.image;
-
-                       // Only set if different to avoid resetting the animation
-                       // loop
-                       if (imgView.image != targetImage) {
-                         imgView.image = targetImage;
-                       }
-
-                       // Ensure it is visible on top
-                       imgView.hidden = NO;
-                       [textView bringSubviewToFront:imgView];
-
-                       activeAttachmentViews[key] = imgView;
-                       // Remove from the old map so we know it has been claimed
-                       [_attachmentViews removeObjectForKey:key];
-                     }
-                   }];
-
-  // Everything remaining in _attachmentViews is dead or off-screen
-  for (UIImageView *danglingView in _attachmentViews.allValues) {
-    [danglingView removeFromSuperview];
-  }
-  _attachmentViews = activeAttachmentViews;
-}
-
-- (CGRect)frameForAttachment:(ImageAttachment *)attachment
-                     atRange:(NSRange)range {
-  NSLayoutManager *layoutManager = textView.layoutManager;
-  NSTextContainer *textContainer = textView.textContainer;
-  NSTextStorage *storage = textView.textStorage;
-
-  NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range
-                                             actualCharacterRange:NULL];
-  CGRect glyphRect = [layoutManager boundingRectForGlyphRange:glyphRange
-                                              inTextContainer:textContainer];
-
-  CGRect lineRect =
-      [layoutManager lineFragmentRectForGlyphAtIndex:glyphRange.location
-                                      effectiveRange:NULL];
-  CGSize attachmentSize = attachment.bounds.size;
-
-  UIFont *font = [storage attribute:NSFontAttributeName
-                            atIndex:range.location
-                     effectiveRange:NULL];
-  if (!font) {
-    font = [config primaryFont];
-  }
-
-  // Calculate (Baseline Alignment)
-  CGFloat targetY =
-      CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
-  CGRect rect =
-      CGRectMake(glyphRect.origin.x + textView.textContainerInset.left,
-                 targetY + textView.textContainerInset.top,
-                 attachmentSize.width, attachmentSize.height);
-
-  return CGRectIntegral(rect);
+  _attachmentViews =
+      [AttachmentLayoutUtils layoutAttachmentsInTextView:textView
+                                                  config:config
+                                           existingViews:_attachmentViews];
 }
 @end

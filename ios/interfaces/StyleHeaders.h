@@ -27,6 +27,7 @@
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location;
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange;
 - (void)handleManualLinks:(NSString *)word inRange:(NSRange)wordRange;
+- (void)applyLinkMetaWithData:(LinkData *)linkData range:(NSRange)range;
 @end
 
 @interface MentionStyle : StyleBase

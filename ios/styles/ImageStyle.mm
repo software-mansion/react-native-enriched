@@ -33,13 +33,13 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
   ImageAttachment *attachment =
       [[ImageAttachment alloc] initWithImageData:imageData];
-  attachment.delegate = self.input;
+  attachment.delegate = (id)self.host;
 
-  [self.input->textView.textStorage addAttributes:@{
+  [self.host.textView.textStorage addAttributes:@{
     NSAttachmentAttributeName : attachment,
     ImageAttributeName : imageData
   }
-                                            range:range];
+                                          range:range];
 }
 
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range {
@@ -51,15 +51,15 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 }
 
 - (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
-  [self.input->textView.textStorage beginEditing];
-  [self.input->textView.textStorage removeAttribute:ImageAttributeName
-                                              range:range];
-  [self.input->textView.textStorage removeAttribute:NSAttachmentAttributeName
-                                              range:range];
-  [self.input->textView.textStorage endEditing];
+  [self.host.textView.textStorage beginEditing];
+  [self.host.textView.textStorage removeAttribute:ImageAttributeName
+                                            range:range];
+  [self.host.textView.textStorage removeAttribute:NSAttachmentAttributeName
+                                            range:range];
+  [self.host.textView.textStorage endEditing];
 
   if (withDirtyRange) {
-    [self.input->attributesManager addDirtyRange:range];
+    [self.host.attributesManager addDirtyRange:range];
   }
 
   [self removeTyping];
@@ -67,11 +67,11 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
 - (void)removeTyping {
   NSMutableDictionary *currentAttributes =
-      [self.input->textView.typingAttributes mutableCopy];
+      [self.host.textView.typingAttributes mutableCopy];
   [currentAttributes removeObjectForKey:ImageAttributeName];
   [currentAttributes removeObjectForKey:NSAttachmentAttributeName];
-  [self.input->attributesManager didRemoveTypingAttribute:ImageAttributeName];
-  self.input->textView.typingAttributes = currentAttributes;
+  [self.host.attributesManager didRemoveTypingAttribute:ImageAttributeName];
+  self.host.textView.typingAttributes = currentAttributes;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
@@ -80,19 +80,19 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
 - (ImageData *)getImageDataAt:(NSUInteger)location {
   NSRange imageRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, self.input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.host.textView.textStorage.length);
 
   // don't search at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == self.input->textView.textStorage.length) {
+  if (searchLocation == self.host.textView.textStorage.length) {
     return nullptr;
   }
 
   ImageData *imageData =
-      [self.input->textView.textStorage attribute:ImageAttributeName
-                                          atIndex:searchLocation
-                            longestEffectiveRange:&imageRange
-                                          inRange:inputRange];
+      [self.host.textView.textStorage attribute:ImageAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&imageRange
+                                        inRange:inputRange];
 
   return imageData;
 }
@@ -105,7 +105,7 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
   ImageAttachment *attachment =
       [[ImageAttachment alloc] initWithImageData:imageData];
-  attachment.delegate = self.input;
+  attachment.delegate = (id)self.host;
 
   NSDictionary *attributes =
       @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
@@ -118,18 +118,18 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
     [TextInsertionUtils insertText:placeholderChar
                                 at:range.location
               additionalAttributes:attributes
-                             input:self.input
+                             input:self.host
                      withSelection:withSelection];
   } else {
     [TextInsertionUtils replaceText:placeholderChar
                                  at:range
                additionalAttributes:attributes
-                              input:self.input
+                              input:self.host
                       withSelection:withSelection];
   }
 
   NSRange insertedImageRange = NSMakeRange(range.location, 1);
-  [self.input->attributesManager addDirtyRange:insertedImageRange];
+  [self.host.attributesManager addDirtyRange:insertedImageRange];
 }
 
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
@@ -138,7 +138,7 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
   data.width = width;
   data.height = height;
 
-  [self addImageAtRange:self.input->textView.selectedRange
+  [self addImageAtRange:self.host.textView.selectedRange
               imageData:data
           withSelection:YES];
 }
