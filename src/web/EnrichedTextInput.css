@@ -19,5 +19,6 @@
   font-family: monospace;
   background-color: var(--eti-code-bg-color);
   color: var(--eti-code-color);
+  display: inline-block;
   padding: 2px 4px;
 }
