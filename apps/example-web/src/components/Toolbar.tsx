@@ -48,46 +48,46 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
     {
       key: 'bold',
       label: 'B',
-      onPress: (editor: EnrichedTextInputInstance) => {
-        editor.toggleBold();
+      onPress: (editor) => {
+        editor?.toggleBold();
       },
     },
     {
       key: 'italic',
       label: 'I',
       variant: 'italic',
-      onPress: (editor: EnrichedTextInputInstance) => {
-        editor.toggleItalic();
+      onPress: (editor) => {
+        editor?.toggleItalic();
       },
     },
     {
       key: 'underline',
       label: 'U',
       variant: 'underline',
-      onPress: (editor: EnrichedTextInputInstance) => {
-        editor.toggleUnderline();
+      onPress: (editor) => {
+        editor?.toggleUnderline();
       },
     },
     {
       key: 'strikeThrough',
       label: 'S',
       variant: 'strikethrough',
-      onPress: (editor: EnrichedTextInputInstance) => {
-        editor.toggleStrikeThrough();
+      onPress: (editor) => {
+        editor?.toggleStrikeThrough();
       },
     },
     {
       key: 'inlineCode',
       label: '</>',
-      onPress: (editor: EnrichedTextInputInstance) => {
-        editor.toggleInlineCode();
+      onPress: (editor) => {
+        editor?.toggleInlineCode();
       },
     },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
     variant?: string;
-    onPress: (editor: EnrichedTextInputInstance) => void;
+    onPress: (editor: EnrichedTextInputInstance | null) => void;
   }[];
 
   return (
@@ -101,8 +101,7 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
             isDisabled={s?.[item.key].isBlocking ?? false}
             variant={item.variant}
             onPress={() => {
-              const editor = editorRef.current;
-              if (editor) item.onPress(editor);
+              item.onPress(editorRef.current);
             }}
           />
         ))}

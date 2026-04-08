@@ -8,7 +8,7 @@ import {
 } from 'react-native-enriched';
 import { Toolbar } from '../components/Toolbar';
 
-export function VisualRegressionScreen() {
+export function VisualRegression() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [htmlInput, setHtmlInput] = useState('');
   const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
@@ -25,7 +25,7 @@ export function VisualRegressionScreen() {
   };
 
   return (
-    <div style={{ padding: '16px' }}>
+    <div style={styles.container}>
       <div
         data-testid="visual-regression-editor"
         onClick={() => ref.current?.focus()}
@@ -44,7 +44,7 @@ export function VisualRegressionScreen() {
 
       <Toolbar editorRef={ref} state={editorState} />
 
-      <div style={{ marginTop: '12px' }}>
+      <div style={styles.controlsContainer}>
         <textarea
           data-testid="visual-regression-html-input"
           value={htmlInput}
@@ -53,9 +53,9 @@ export function VisualRegressionScreen() {
           }}
           placeholder="Paste HTML here..."
           rows={4}
-          style={{ width: '100%' }}
+          style={styles.htmlInput}
         />
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={styles.actionButtons}>
           <button
             data-testid="visual-regression-set-value-button"
             onClick={handleSetValue}
@@ -73,6 +73,22 @@ export function VisualRegressionScreen() {
     </div>
   );
 }
+
+const styles = {
+  container: {
+    padding: '16px',
+  },
+  controlsContainer: {
+    marginTop: '12px',
+  },
+  htmlInput: {
+    width: '100%',
+  },
+  actionButtons: {
+    display: 'flex',
+    gap: '8px',
+  },
+} as const;
 
 const enrichedInputStyle: EnrichedInputStyle = {
   width: '100%',

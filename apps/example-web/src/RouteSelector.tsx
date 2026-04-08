@@ -1,6 +1,6 @@
 import App from './App';
 import { TestSetSelection } from './testScreens/TestSetSelection';
-import { VisualRegressionScreen } from './testScreens/VisualRegressionScreen';
+import { VisualRegression } from './testScreens/VisualRegression';
 import { useEffect, useState } from 'react';
 
 export default function RouteSelector() {
@@ -22,7 +22,7 @@ export default function RouteSelector() {
   }
 
   if (path === '/visual-regression') {
-    return <VisualRegressionScreen />;
+    return <VisualRegression />;
   }
 
   return <App />;

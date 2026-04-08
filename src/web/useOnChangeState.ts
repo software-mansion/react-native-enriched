@@ -4,31 +4,41 @@ import type { OnChangeStateEvent } from '../types';
 import type { NativeSyntheticEvent } from 'react-native';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 
+export const useOnChangeState = (
+  editor: Editor | null,
+  onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void
+) => {
+  const lastStateHashRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!editor || !onChangeState) return;
+
+    const handleUpdate = () => {
+      const state = buildState(editor);
+      const stateHash = hashState(state);
+
+      if (lastStateHashRef.current === stateHash) {
+        return;
+      }
+
+      lastStateHashRef.current = stateHash;
+      onChangeState(adaptWebToNativeEvent(null, state));
+    };
+
+    handleUpdate();
+    editor.on('transaction', handleUpdate);
+
+    return () => {
+      editor.off('transaction', handleUpdate);
+    };
+  }, [editor, onChangeState]);
+};
+
 function makeFormatState(isActive: boolean) {
+  // TODO: Update this function when adding elements that can be conflicting or
+  // blocking. Make sure conflicting and blocking states are in sync between web
+  // and native
   return { isActive, isConflicting: false, isBlocking: false };
-}
-
-function areFormatStatesEqual(
-  a: OnChangeStateEvent['bold'],
-  b: OnChangeStateEvent['bold']
-): boolean {
-  return (
-    a.isActive === b.isActive &&
-    a.isConflicting === b.isConflicting &&
-    a.isBlocking === b.isBlocking
-  );
-}
-
-function areStatesEqual(a: OnChangeStateEvent, b: OnChangeStateEvent): boolean {
-  const keys = Object.keys(a) as Array<keyof OnChangeStateEvent>;
-
-  for (const key of keys) {
-    if (!areFormatStatesEqual(a[key], b[key])) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 function buildState(editor: Editor): OnChangeStateEvent {
@@ -55,29 +65,25 @@ function buildState(editor: Editor): OnChangeStateEvent {
   };
 }
 
-export const useOnChangeState = (
-  editor: Editor | null,
-  onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void
-) => {
-  const lastStateRef = useRef<OnChangeStateEvent | null>(null);
+function hashState(state: OnChangeStateEvent): string {
+  return Object.values(state)
+    .map((formatState) =>
+      String(
+        getFormatHash(
+          formatState.isActive,
+          formatState.isConflicting,
+          formatState.isBlocking
+        )
+      )
+    )
+    .join('');
+}
 
-  useEffect(() => {
-    if (!editor || !onChangeState) return;
-
-    const handleUpdate = () => {
-      const state = buildState(editor);
-      if (lastStateRef.current && areStatesEqual(lastStateRef.current, state)) {
-        return;
-      }
-      lastStateRef.current = state;
-      onChangeState(adaptWebToNativeEvent(null, state));
-    };
-
-    handleUpdate();
-    editor.on('transaction', handleUpdate);
-
-    return () => {
-      editor.off('transaction', handleUpdate);
-    };
-  }, [editor, onChangeState]);
-};
+function getFormatHash(
+  isActive: boolean,
+  isConflicting: boolean,
+  isBlocking: boolean
+): number {
+  // eslint-disable-next-line no-bitwise
+  return (+isActive << 2) | (+isConflicting << 1) | (+isBlocking << 0);
+}
