@@ -592,76 +592,119 @@
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
-
   // reset the text first and reset typing attributes
   _input->textView.text = @"";
   _input->textView.typingAttributes = _input->defaultTypingAttributes;
 
-  // set new text
-  _input->textView.text = plainText;
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // re-apply the styles
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:0
-             plainTextLength:plainText.length];
+    // set new text
+    _input->textView.text = plainText;
+
+    // re-apply the styles
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:0
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+
+    // set new text
+    _input->textView.text = html;
+  }
 }
 
 - (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // we can use ready replace util
-  [TextInsertionUtils replaceText:plainText
-                               at:range
-             additionalAttributes:nil
-                            input:_input
-                    withSelection:YES];
+    // we can use ready replace util
+    [TextInsertionUtils replaceText:plainText
+                                 at:range
+               additionalAttributes:nil
+                              input:_input
+                      withSelection:YES];
 
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:range.location
-             plainTextLength:plainText.length];
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:range.location
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+    [TextInsertionUtils replaceText:html
+                                 at:range
+               additionalAttributes:nil
+                              input:_input
+                      withSelection:YES];
+  }
 }
 
 - (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // same here, insertion utils got our back
-  [TextInsertionUtils insertText:plainText
-                              at:location
-            additionalAttributes:nil
-                           input:_input
-                   withSelection:YES];
+    // same here, insertion utils got our back
+    [TextInsertionUtils insertText:plainText
+                                at:location
+              additionalAttributes:nil
+                             input:_input
+                     withSelection:YES];
 
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:location
-             plainTextLength:plainText.length];
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:location
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+    [TextInsertionUtils insertText:html
+                                at:location
+              additionalAttributes:nil
+                             input:_input
+                     withSelection:YES];
+  }
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles
          offsetFromBeginning:(NSInteger)offset
              plainTextLength:(NSUInteger)plainTextLength {
+  // Some paragraph styles (codeblock, blockquote, etc.) insert \u200B
+  // into empty lines, mutating NSTextStorage length. We need to
+  // shift subsequent ranges by this offset.
+  NSInteger zeroWidthSpaceOffset = 0;
+
   for (NSArray *arr in processedStyles) {
     // unwrap all info from processed style
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
     StyleBase *baseStyle = _input->stylesDict[styleType];
-    // range must be taking offest into consideration because processed styles'
-    // ranges are relative to only the new text while we need absolute ranges
-    // relative to the whole existing text
+    NSRange parsedRange = [stylePair.rangeValue rangeValue];
+    NSUInteger textLengthBeforeStyleApplied =
+        _input->textView.textStorage.string.length;
+    // range must be taking zeroWidthSpaceOffset and offest into consideration
+    // because processed styles ranges are relative to only the new text while
+    // we need absolute ranges relative to the whole existing text
     NSRange styleRange =
-        NSMakeRange(offset + [stylePair.rangeValue rangeValue].location,
-                    [stylePair.rangeValue rangeValue].length);
+        NSMakeRange(offset + zeroWidthSpaceOffset + parsedRange.location,
+                    parsedRange.length);
 
     // of course any changes here need to take blocks and conflicts into
     // consideration
     if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getType]
                                         range:styleRange]) {
+      BOOL shouldAddTypingAttr =
+          styleRange.location + styleRange.length ==
+          plainTextLength + offset + zeroWidthSpaceOffset;
+
       if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
         LinkData *linkData = (LinkData *)stylePair.styleValue;
         [((LinkStyle *)baseStyle) addLink:linkData
@@ -682,31 +725,35 @@
 
         // First apply the checkbox list style to the entire range with
         // unchecked value
-        BOOL shouldAddTypingAttr =
-            styleRange.location + styleRange.length == plainTextLength;
         [cbLStyle addWithChecked:NO
                            range:styleRange
                       withTyping:shouldAddTypingAttr
                   withDirtyRange:YES];
 
-        if (!checkboxStates && checkboxStates.count == 0) {
-          continue;
-        }
-        // Then toggle checked checkboxes
-        for (NSNumber *key in checkboxStates) {
-          NSUInteger checkboxPosition = offset + [key unsignedIntegerValue];
-          BOOL isChecked = [checkboxStates[key] boolValue];
-          if (isChecked) {
-            [cbLStyle toggleCheckedAt:checkboxPosition];
+        if (checkboxStates && checkboxStates.count > 0) {
+          // Then toggle checked checkboxes
+          for (NSNumber *key in checkboxStates) {
+            NSUInteger checkboxPosition =
+                offset + zeroWidthSpaceOffset + [key unsignedIntegerValue];
+            BOOL isChecked = [checkboxStates[key] boolValue];
+            if (isChecked) {
+              [cbLStyle toggleCheckedAt:checkboxPosition];
+            }
           }
         }
       } else {
-        BOOL shouldAddTypingAttr =
-            styleRange.location + styleRange.length == plainTextLength;
         [baseStyle add:styleRange
                 withTyping:shouldAddTypingAttr
             withDirtyRange:YES];
       }
+    }
+
+    NSInteger delta = (NSInteger)_input->textView.textStorage.string.length -
+                      (NSInteger)textLengthBeforeStyleApplied;
+    // Image shifts are already handled by _precedingImageCount during tag
+    // finalization.
+    if (delta != 0 && ![styleType isEqualToNumber:@([ImageStyle getType])]) {
+      zeroWidthSpaceOffset += delta;
     }
   }
   [_input anyTextMayHaveBeenModified];
