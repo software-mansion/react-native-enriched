@@ -592,55 +592,86 @@
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
-
   // reset the text first and reset typing attributes
   _input->textView.text = @"";
   _input->textView.typingAttributes = _input->defaultTypingAttributes;
 
-  // set new text
-  _input->textView.text = plainText;
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // re-apply the styles
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:0
-             plainTextLength:plainText.length];
+    // set new text
+    _input->textView.text = plainText;
+
+    // re-apply the styles
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:0
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+
+    // set new text
+    _input->textView.text = html;
+  }
 }
 
 - (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // we can use ready replace util
-  [TextInsertionUtils replaceText:plainText
-                               at:range
-             additionalAttributes:nil
-                            input:_input
-                    withSelection:YES];
+    // we can use ready replace util
+    [TextInsertionUtils replaceText:plainText
+                                 at:range
+               additionalAttributes:nil
+                              input:_input
+                      withSelection:YES];
 
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:range.location
-             plainTextLength:plainText.length];
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:range.location
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+    [TextInsertionUtils replaceText:html
+                                 at:range
+               additionalAttributes:nil
+                              input:_input
+                      withSelection:YES];
+  }
 }
 
 - (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location {
-  NSArray *processingResult = [self getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
+  @try {
+    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSString *plainText = (NSString *)processingResult[0];
+    NSArray *stylesInfo = (NSArray *)processingResult[1];
 
-  // same here, insertion utils got our back
-  [TextInsertionUtils insertText:plainText
-                              at:location
-            additionalAttributes:nil
-                           input:_input
-                   withSelection:YES];
+    // same here, insertion utils got our back
+    [TextInsertionUtils insertText:plainText
+                                at:location
+              additionalAttributes:nil
+                             input:_input
+                     withSelection:YES];
 
-  [self applyProcessedStyles:stylesInfo
-         offsetFromBeginning:location
-             plainTextLength:plainText.length];
+    [self applyProcessedStyles:stylesInfo
+           offsetFromBeginning:location
+               plainTextLength:plainText.length];
+  } @catch (NSException *exception) {
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
+               @"to raw input.",
+               exception.reason);
+    [TextInsertionUtils insertText:html
+                                at:location
+              additionalAttributes:nil
+                             input:_input
+                     withSelection:YES];
+  }
 }
 
 - (void)applyProcessedStyles:(NSArray *)processedStyles
