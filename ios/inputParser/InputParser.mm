@@ -609,7 +609,7 @@
            offsetFromBeginning:0
                plainTextLength:plainText.length];
   } @catch (NSException *exception) {
-    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML (%@), falling back "
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
                exception.reason);
 
@@ -635,7 +635,7 @@
            offsetFromBeginning:range.location
                plainTextLength:plainText.length];
   } @catch (NSException *exception) {
-    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML (%@), falling back "
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
                exception.reason);
     [TextInsertionUtils replaceText:html
@@ -663,7 +663,7 @@
            offsetFromBeginning:location
                plainTextLength:plainText.length];
   } @catch (NSException *exception) {
-    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML (%@), falling back "
+    RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
                exception.reason);
     [TextInsertionUtils insertText:html
