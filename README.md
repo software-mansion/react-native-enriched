@@ -24,6 +24,7 @@ We can help you build your next dream product –
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Supported Tags](#supported-tags)
 - [Non Parametrized Styles](#non-parametrized-styles)
 - [Links](#links)
 - [Mentions](#mentions)
@@ -139,6 +140,55 @@ Summary of what happens here:
 - `isActive`: Indicates if the style is currently applied (highlight the button).
 - `isBlocking`: Indicates if the style is blocked by another active style (disable the button).
 - `isConflicting`: Indicates if the style is in conflict with another active style.
+
+## Supported Tags
+
+`react-native-enriched` uses both standard and custom HTML tags in its output and accepts them as input.
+
+Not all styles can be combined freely. There are two kinds of restrictions:
+
+- **Conflicting** - toggling a style that conflicts with an already active style will automatically remove the active one. For example: toggling `<h2>` on a `<blockquote>` paragraph will remove the blockquote and apply the heading.
+- **Blocking** - a style that is blocked cannot be toggled at all while the blocking style is active. For example: `<b>` is blocked inside `<codeblock>`, so the bold cannot be applied where codeblock is active.
+
+These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchangestate) event (`isConflicting` and `isBlocking` properties).
+
+### Inline tags
+
+| Style         | HTML tag    | Conflicts with               | Blocked by             |
+| ------------- | ----------- | ---------------------------- | ---------------------- |
+| Bold          | `<b>`       | --                           | `<codeblock>`          |
+| Italic        | `<i>`       | --                           | `<codeblock>`          |
+| Underline     | `<u>`       | --                           | `<codeblock>`          |
+| Strikethrough | `<s>`       | --                           | `<codeblock>`          |
+| Inline code   | `<code>`    | `<a>`, `<mention>`           | `<codeblock>`, `<img>` |
+| Link          | `<a>`       | `<code>`, `<a>`, `<mention>` | `<codeblock>`, `<img>` |
+| Mention       | `<mention>` | `<code>`, `<a>`              | `<codeblock>`, `<img>` |
+| Image         | `<img>`     | `<a>`, `<mention>`           | `<code>`               |
+
+> [!NOTE]
+> Headings also block bold when `bold: true` is set on the heading style in the [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop. In that case, the heading itself renders as bold, so toggling bold on top of it is redundant and therefore blocked.
+
+### Paragraph tags
+
+Some paragraph styles are container elements that wrap each line of text inside them with an **inner content tag**. For example: each line inside `<ul>` is wrapped in `<li>` and each line inside `<codeblock>` is wrapped in `<p>`.
+
+Only one paragraph-level style can be active per paragraph - all paragraph styles conflict with each other.
+
+| Style          | HTML tag                    | Inner content tag       | Conflicts with                                                                                                                                                        | Blocked by |
+| -------------- | --------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Heading 1      | `<h1>`                      | --                      | `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Heading 2      | `<h2>`                      | --                      | `<h1>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Heading 3      | `<h3>`                      | --                      | `<h1>`, `<h2>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Heading 4      | `<h4>`                      | --                      | `<h1>`, `<h2>`, `<h3>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Heading 5      | `<h5>`                      | --                      | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Heading 6      | `<h6>`                      | --                      | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Unordered list | `<ul>`                      | `<li>`                  | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Ordered list   | `<ol>`                      | `<li>`                  | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ul data-type="checkbox">`, `<blockquote>`, `<codeblock>`                                                    | --         |
+| Checkbox list  | `<ul data-type="checkbox">` | `<li>` / `<li checked>` | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<blockquote>`, `<codeblock>`                                                                         | --         |
+| Blockquote     | `<blockquote>`              | `<p>`                   | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<codeblock>`                                                            | --         |
+| Codeblock      | `<codeblock>`               | `<p>`                   | `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`, `<b>`, `<u>`, `<i>`, `<s>`, `<ul>`, `<ol>`, `<ul data-type="checkbox">`, `<blockquote>`, `<code>`, `<mention>`, `<a>` | --         |
+
+Plain text paragraphs are wrapped in `<p>` tags. Empty paragraphs are represented as `<br>`.
 
 ## Non Parametrized Styles
 
