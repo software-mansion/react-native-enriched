@@ -16,16 +16,6 @@ This document describes the steps to release the library.
    ```
 4. Commit changes, push branch, and open a pull request.
 5. Once PR is approved and merged, run `publish` GitHub action. First run should be a dry run.
-6. After verifying dry run, download newly created package from GitHub artifacts.
-7. Downloaded file might be double zipped, unzip until you get to the `.tgz` file. On macOS, you can use:
-   ```sh
-    unzip -q ~/{source_path}/{file_name}.tgz.zip -d ~/{output_path}/
-   ```
-8. Verify the package by installing it in a fresh React Native project. Keep in mind to clean cache:
-   ```sh
-   yarn cache clean
-   yarn add ./{output_path}/{file_name}.tgz
-   ```
-9. If everything looks fine (included files, library version and size), run the `publish` action again without dry run.
-10. Install the new version from npm and verify everything works as expected.
-11. After publishing, create a GitHub release with release notes.
+6. If everything looks fine (included files, library version and size), run the `publish` action again without dry run.
+7. Install the new version from npm and verify everything works as expected.
+8. After publishing, create a GitHub release with release notes.
