@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 const EDITOR_INNER = '[data-testid="visual-regression-editor"] .eti-editor';
 const BOLD_TOOLBAR_BUTTON = '[data-testid="toolbar-button-bold"]';
+const INLINE_CODE_TOOLBAR_BUTTON = '[data-testid="toolbar-button-inlineCode"]';
 
 async function typeBoldText(page: Page, text: string) {
   const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
@@ -89,6 +90,51 @@ test.describe('strict marks', () => {
     await expect(boldBtn).not.toHaveClass(/toolbar-btn--active/);
   });
 
+  test('pressing Enter at the end of a styled segment followed by plain text does not carry style to new line', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const inlineCodeBtn = page.locator(INLINE_CODE_TOOLBAR_BUTTON);
+
+    await editor.click();
+    await inlineCodeBtn.click();
+    await expect(inlineCodeBtn).toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially('code', { delay: 80 });
+    await inlineCodeBtn.click();
+    await expect(inlineCodeBtn).not.toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially(' plain', { delay: 80 });
+
+    await editor.press('Home');
+    for (let i = 0; i < 'code'.length; i++) {
+      await editor.press('ArrowRight', { delay: 80 });
+    }
+
+    await editor.press('Enter');
+
+    await expect(inlineCodeBtn).not.toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('pressing Enter in the middle of a styled segment carries style to the new line', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await editor.click();
+    await boldBtn.click();
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially('hello world', { delay: 80 });
+
+    await editor.press('Home');
+    for (let i = 0; i < 'hello'.length; i++) {
+      await editor.press('ArrowRight', { delay: 80 });
+    }
+
+    await editor.press('Enter');
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+  });
+
   test('inline style stays active at boundary between styled and plain text after deletion', async ({
     page,
   }) => {
@@ -99,7 +145,6 @@ test.describe('strict marks', () => {
 
     await editor.press('Home');
 
-    // move past "hello " (6 chars) to position cursor after the space
     for (let i = 0; i < 6; i++) {
       await editor.press('ArrowRight', { delay: 80 });
     }
@@ -111,5 +156,94 @@ test.describe('strict marks', () => {
     await expect(page.locator(BOLD_TOOLBAR_BUTTON)).toHaveClass(
       /toolbar-btn--active/
     );
+  });
+
+  test('explicit style survives multiple Enter and Backspace keystrokes on empty lines', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await editor.click();
+    await boldBtn.click();
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    await editor.press('Enter', { delay: 50 });
+    await editor.press('Enter', { delay: 50 });
+    await editor.press('Enter', { delay: 50 });
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    await editor.press('Backspace', { delay: 50 });
+    await editor.press('Backspace', { delay: 50 });
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('style clears when deleting the last character of a specific line', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await editor.click();
+    await editor.pressSequentially('Line 1');
+    await editor.press('Enter');
+
+    await boldBtn.click();
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially('Bold', { delay: 50 });
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    for (let i = 0; i < 4; i++) {
+      await editor.press('Backspace', { delay: 50 });
+    }
+
+    await expect(boldBtn).not.toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('can toggle inline style off when cursor is inside styled text', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await typeBoldText(page, 'hello');
+    await page.pause();
+
+    await editor.press('ArrowLeft', { delay: 80 });
+    await editor.press('ArrowLeft', { delay: 80 });
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    await boldBtn.click();
+
+    await expect(boldBtn).not.toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially('X', { delay: 80 });
+    await expect(boldBtn).not.toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('style inherits from previous block when clearing a newly created line', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await editor.click();
+    await boldBtn.click();
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+    await editor.pressSequentially('Bold Line', { delay: 80 });
+
+    await editor.press('Enter');
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    await editor.pressSequentially('Temp', { delay: 80 });
+
+    for (let i = 0; i < 'Temp'.length; i++) {
+      await editor.press('Backspace', { delay: 80 });
+    }
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
   });
 });
