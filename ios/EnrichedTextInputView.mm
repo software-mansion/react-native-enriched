@@ -1484,11 +1484,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                            forHost:self];
 }
 
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range {
-  return [StyleUtils getPresentStyleTypesFrom:types range:range forHost:self];
-}
-
 - (void)manageSelectionBasedChanges {
   NSString *currentString = [textView.textStorage.string copy];
 
