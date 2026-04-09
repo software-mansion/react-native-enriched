@@ -26,6 +26,6 @@ This document describes the steps to release the library.
    yarn cache clean
    yarn add ./{output_path}/{file_name}.tgz
    ```
-9. If everything works, run the `publish` action again without dry run.
+9. If everything looks fine (included files, library version and size), run the `publish` action again without dry run.
 10. Install the new version from npm and verify everything works as expected.
 11. After publishing, create a GitHub release with release notes.
