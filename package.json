@@ -137,7 +137,7 @@
     "apps/example",
     "apps/example-web"
   ],
-  "packageManager": "yarn@3.6.1",
+  "packageManager": "yarn@4.13.0",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
