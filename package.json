@@ -61,7 +61,7 @@
     "lint-clang:android:fix": "find android/ \\( -iname \"*.h\" -o -iname \"*.cpp\" \\) | grep -v -e build -e generated | xargs npx clang-format -i",
     "lint-clang": "yarn lint-clang:ios && yarn lint-clang:android",
     "lint-clang:fix": "yarn lint-clang:ios:fix && yarn lint-clang:android:fix",
-    "clean": "del-cli android/build apps/example/android/build apps/example/android/app/build apps/example/ios/build lib",
+    "clean": "./scripts/git-clean.sh",
     "prepare": "bob build",
     "release": "release-it",
     "android-studio": "open -a 'Android Studio' apps/example/android",
