@@ -28,15 +28,14 @@ function resolveStrictMarks(
     }
     const old$ = oldState.selection.$from;
     const { nodeBefore: oldBefore, nodeAfter: oldAfter } = old$;
-    // Block split at a styled|plain boundary: inherit left marks, but don't
-    // extend `code` to the new paragraph (new line should start plain after code).
+    // Styled|plain boundary after Enter/paste/etc.: inherit the left inline's marks so
+    // bold, code, and other marks behave the same on a new paragraph.
     if (
       oldBefore &&
       oldAfter &&
       !Mark.sameSet(oldBefore.marks, oldAfter.marks)
     ) {
-      const leftHasCode = oldBefore.marks.some((m) => m.type.name === 'code');
-      return leftHasCode ? $from.nodeAfter.marks : oldBefore.marks;
+      return oldBefore.marks;
     }
     return $from.nodeAfter.marks;
   }
