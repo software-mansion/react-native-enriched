@@ -38,7 +38,7 @@
  * for a new HTML tag that contains visible text (e.g., h4, h5, h6),
  * you MUST add it to the `textTags` set below.
  */
-- (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
++ (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
   NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
                                           @"h5", @"h6", @"li", @"b", @"a", @"s",
                                           @"mention", @"code", @"u", @"i", nil];
@@ -108,7 +108,7 @@
   return output;
 }
 
-- (NSString *)stringByAddingNewlinesToTag:(NSString *)tag
++ (NSString *)stringByAddingNewlinesToTag:(NSString *)tag
                                  inString:(NSString *)html
                                   leading:(BOOL)leading
                                  trailing:(BOOL)trailing {
@@ -227,7 +227,7 @@
                                                        withString:@""];
       fixedHtml = [fixedHtml stringByReplacingOccurrencesOfString:@"</html>"
                                                        withString:@""];
-    } else if (_input->useHtmlNormalizer) {
+    } else if (useHtmlNormalizer) {
       // External HTML (from Google Docs, Word, web pages, etc.)
       // Run through the Gumbo-based normalizer to convert arbitrary HTML
       // into our canonical tag subset.

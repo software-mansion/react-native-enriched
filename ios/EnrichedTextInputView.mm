@@ -9,6 +9,7 @@
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextBlockTapGestureRecognizer.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
@@ -104,149 +105,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   defaultTypingAttributes =
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
 
-  stylesDict = @{
-    @([BoldStyle getType]) : [[BoldStyle alloc] initWithHost:self],
-    @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithHost:self],
-    @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithHost:self],
-    @([StrikethroughStyle getType]) :
-        [[StrikethroughStyle alloc] initWithHost:self],
-    @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithHost:self],
-    @([LinkStyle getType]) : [[LinkStyle alloc] initWithHost:self],
-    @([MentionStyle getType]) : [[MentionStyle alloc] initWithHost:self],
-    @([H1Style getType]) : [[H1Style alloc] initWithHost:self],
-    @([H2Style getType]) : [[H2Style alloc] initWithHost:self],
-    @([H3Style getType]) : [[H3Style alloc] initWithHost:self],
-    @([H4Style getType]) : [[H4Style alloc] initWithHost:self],
-    @([H5Style getType]) : [[H5Style alloc] initWithHost:self],
-    @([H6Style getType]) : [[H6Style alloc] initWithHost:self],
-    @([UnorderedListStyle getType]) :
-        [[UnorderedListStyle alloc] initWithHost:self],
-    @([OrderedListStyle getType]) :
-        [[OrderedListStyle alloc] initWithHost:self],
-    @([CheckboxListStyle getType]) :
-        [[CheckboxListStyle alloc] initWithHost:self],
-    @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithHost:self],
-    @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithHost:self],
-    @([ImageStyle getType]) : [[ImageStyle alloc] initWithHost:self]
-  };
-
-  conflictingStyles = [@{
-    @([BoldStyle getType]) : @[],
-    @([ItalicStyle getType]) : @[],
-    @([UnderlineStyle getType]) : @[],
-    @([StrikethroughStyle getType]) : @[],
-    @([InlineCodeStyle getType]) :
-        @[ @([LinkStyle getType]), @([MentionStyle getType]) ],
-    @([LinkStyle getType]) : @[
-      @([InlineCodeStyle getType]), @([LinkStyle getType]),
-      @([MentionStyle getType])
-    ],
-    @([MentionStyle getType]) :
-        @[ @([InlineCodeStyle getType]), @([LinkStyle getType]) ],
-    @([H1Style getType]) : @[
-      @([H2Style getType]), @([H3Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H2Style getType]) : @[
-      @([H1Style getType]), @([H3Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H3Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H4Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H5Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H6Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([UnorderedListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([OrderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([OrderedListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([CheckboxListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType])
-    ],
-    @([BlockQuoteStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([CodeBlockStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([BoldStyle getType]), @([UnderlineStyle getType]),
-      @([ItalicStyle getType]), @([StrikethroughStyle getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
-      @([MentionStyle getType]), @([LinkStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([ImageStyle getType]) :
-        @[ @([LinkStyle getType]), @([MentionStyle getType]) ]
-  } mutableCopy];
-
-  blockingStyles = [@{
-    @([BoldStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([UnderlineStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([InlineCodeStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([LinkStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([MentionStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([H1Style getType]) : @[],
-    @([H2Style getType]) : @[],
-    @([H3Style getType]) : @[],
-    @([H4Style getType]) : @[],
-    @([H5Style getType]) : @[],
-    @([H6Style getType]) : @[],
-    @([UnorderedListStyle getType]) : @[],
-    @([OrderedListStyle getType]) : @[],
-    @([CheckboxListStyle getType]) : @[],
-    @([BlockQuoteStyle getType]) : @[],
-    @([CodeBlockStyle getType]) : @[],
-    @([ImageStyle getType]) : @[ @([InlineCodeStyle getType]) ]
-  } mutableCopy];
+  stylesDict = [StyleUtils stylesDictForHost:self isInput:YES];
+  conflictingStyles = [[StyleUtils conflictMap] mutableCopy];
+  blockingStyles = [[StyleUtils blockingMap] mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
   _attachmentViews = [[NSMutableDictionary alloc] init];
@@ -370,11 +231,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h1.bold) {
-      [self addStyleBlock:H1 to:Bold];
-      [self addStyleConflict:Bold to:H1];
+      [StyleUtils addStyleBlock:H1 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H1 forHost:self];
     } else {
-      [self removeStyleBlock:H1 from:Bold];
-      [self removeStyleConflict:Bold from:H1];
+      [StyleUtils removeStyleBlock:H1 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H1 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -391,11 +252,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h2.bold) {
-      [self addStyleBlock:H2 to:Bold];
-      [self addStyleConflict:Bold to:H2];
+      [StyleUtils addStyleBlock:H2 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H2 forHost:self];
     } else {
-      [self removeStyleBlock:H2 from:Bold];
-      [self removeStyleConflict:Bold from:H2];
+      [StyleUtils removeStyleBlock:H2 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H2 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -412,11 +273,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h3.bold) {
-      [self addStyleBlock:H3 to:Bold];
-      [self addStyleConflict:Bold to:H3];
+      [StyleUtils addStyleBlock:H3 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H3 forHost:self];
     } else {
-      [self removeStyleBlock:H3 from:Bold];
-      [self removeStyleConflict:Bold from:H3];
+      [StyleUtils removeStyleBlock:H3 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H3 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -433,11 +294,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h4.bold) {
-      [self addStyleBlock:H4 to:Bold];
-      [self addStyleConflict:Bold to:H4];
+      [StyleUtils addStyleBlock:H4 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H4 forHost:self];
     } else {
-      [self removeStyleBlock:H4 from:Bold];
-      [self removeStyleConflict:Bold from:H4];
+      [StyleUtils removeStyleBlock:H4 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H4 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -454,11 +315,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h5.bold) {
-      [self addStyleBlock:H5 to:Bold];
-      [self addStyleConflict:Bold to:H5];
+      [StyleUtils addStyleBlock:H5 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H5 forHost:self];
     } else {
-      [self removeStyleBlock:H5 from:Bold];
-      [self removeStyleConflict:Bold from:H5];
+      [StyleUtils removeStyleBlock:H5 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H5 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -475,11 +336,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h6.bold) {
-      [self addStyleBlock:H6 to:Bold];
-      [self addStyleConflict:Bold to:H6];
+      [StyleUtils addStyleBlock:H6 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H6 forHost:self];
     } else {
-      [self removeStyleBlock:H6 from:Bold];
-      [self removeStyleConflict:Bold from:H6];
+      [StyleUtils removeStyleBlock:H6 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H6 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -1234,38 +1095,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
          [_submitBehavior isEqualToString:@"submit"];
 }
 
-- (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if (![blocksArr containsObject:@(blocking)]) {
-    [blocksArr addObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
-- (void)removeStyleBlock:(StyleType)blocking from:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if ([blocksArr containsObject:@(blocking)]) {
-    [blocksArr removeObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
-- (void)addStyleConflict:(StyleType)conflicting to:(StyleType)conflicted {
-  NSMutableArray *conflictsArr = [conflictingStyles[@(conflicted)] mutableCopy];
-  if (![conflictsArr containsObject:@(conflicting)]) {
-    [conflictsArr addObject:@(conflicting)];
-    conflictingStyles[@(conflicted)] = conflictsArr;
-  }
-}
-
-- (void)removeStyleConflict:(StyleType)conflicting from:(StyleType)conflicted {
-  NSMutableArray *conflictsArr = [conflictingStyles[@(conflicted)] mutableCopy];
-  if ([conflictsArr containsObject:@(conflicting)]) {
-    [conflictsArr removeObject:@(conflicting)];
-    conflictingStyles[@(conflicted)] = conflictsArr;
-  }
-}
-
 // MARK: - Native commands and events
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
@@ -1649,55 +1478,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-// returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
-  // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking =
-      [self getPresentStyleTypesFrom:blockingStyles[@(type)] range:range];
-  if (blocking.count != 0) {
-    return NO;
-  }
-
-  // handle conflicting styles: remove styles within the range
-  NSArray<NSNumber *> *conflicting =
-      [self getPresentStyleTypesFrom:conflictingStyles[@(type)] range:range];
-  if (conflicting.count != 0) {
-    for (NSNumber *type in conflicting) {
-      StyleBase *style = stylesDict[type];
-
-      if ([style isParagraph]) {
-        // for paragraph styles we can just call remove since it will pick up
-        // proper paragraph range
-        [style remove:range withDirtyRange:YES];
-      } else {
-        // for inline styles we have to differentiate betweeen normal and typing
-        // attributes removal
-        range.length >= 1 ? [style remove:range withDirtyRange:YES]
-                          : [style removeTyping];
-      }
-    }
-  }
-  return YES;
+  return [StyleUtils handleStyleBlocksAndConflicts:type
+                                             range:range
+                                           forHost:self];
 }
 
 - (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
                                             range:(NSRange)range {
-  NSMutableArray<NSNumber *> *resultArray =
-      [[NSMutableArray<NSNumber *> alloc] init];
-  for (NSNumber *type in types) {
-    StyleBase *style = stylesDict[type];
-
-    if (range.length >= 1) {
-      if ([style any:range]) {
-        [resultArray addObject:type];
-      }
-    } else {
-      if ([style detect:range]) {
-        [resultArray addObject:type];
-      }
-    }
-  }
-  return resultArray;
+  return [StyleUtils getPresentStyleTypesFrom:types range:range forHost:self];
 }
 
 - (void)manageSelectionBasedChanges {
