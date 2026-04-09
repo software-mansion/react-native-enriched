@@ -19,6 +19,8 @@
   font-family: monospace;
   background-color: var(--eti-code-bg-color);
   color: var(--eti-code-color);
-  display: inline-block;
-  padding: 2px 4px;
+  display: inline;
+  padding: 0.125em 0;
+  line-height: inherit;
+  vertical-align: baseline;
 }

@@ -135,6 +135,26 @@ test.describe('strict marks', () => {
     await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
   });
 
+  test('pressing Enter after the last bold character keeps bold when the rest of the line is plain', async ({
+    page,
+  }) => {
+    const editor = page.locator(EDITOR_INNER);
+    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+
+    await typeBoldThenPlainText(page, 'hello', ' something');
+
+    await editor.press('Home');
+    for (let i = 0; i < 'hello'.length; i++) {
+      await editor.press('ArrowRight', { delay: 80 });
+    }
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+
+    await editor.press('Enter');
+
+    await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+  });
+
   test('inline style stays active at boundary between styled and plain text after deletion', async ({
     page,
   }) => {
