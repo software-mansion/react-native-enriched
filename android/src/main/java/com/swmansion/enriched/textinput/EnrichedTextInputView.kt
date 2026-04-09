@@ -10,6 +10,7 @@ import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.Editable
+import android.text.InputFilter
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
@@ -46,6 +47,7 @@ import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
+import com.swmansion.enriched.textinput.events.OnMaxLengthExceededEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
 import com.swmansion.enriched.textinput.spans.EnrichedInputH1Span
@@ -122,6 +124,7 @@ class EnrichedTextInputView :
   private var fontWeight: Int = ReactConstants.UNSET
   private var defaultValue: CharSequence? = null
   private var defaultValueDirty: Boolean = false
+  private var maxLength: Int? = null
 
   private var inputMethodManager: InputMethodManager? = null
   private val spannableFactory = EnrichedTextInputSpannableFactory()
@@ -336,6 +339,38 @@ class EnrichedTextInputView :
       val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
       clipboard.setPrimaryClip(clip)
     }
+  }
+
+  fun setMaxLength(value: Int?) {
+    maxLength = value
+    filters =
+      if (value == null) {
+        emptyArray()
+      } else {
+        arrayOf(
+          InputFilter { source, start, end, dest, dstart, dend ->
+            val remaining = value - ((dest?.length ?: 0) - (dend - dstart))
+            val incomingLength = end - start
+
+            if (incomingLength <= 0 || incomingLength <= remaining) {
+              return@InputFilter null
+            }
+
+            emitOnMaxLengthExceededEvent(value)
+            ""
+          },
+        )
+      }
+  }
+
+  private fun emitOnMaxLengthExceededEvent(limit: Int) {
+    val context = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+
+    dispatcher?.dispatchEvent(
+      OnMaxLengthExceededEvent(surfaceId, id, limit, experimentalSynchronousEvents),
+    )
   }
 
   fun handleTextPaste(item: ClipData.Item) {

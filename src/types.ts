@@ -374,6 +374,10 @@ export interface OnPasteImagesEvent {
   }[];
 }
 
+export interface OnMaxLengthExceededEvent {
+  maxLength: number;
+}
+
 export interface OnSubmitEditing {
   text: string;
 }
@@ -445,6 +449,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   mentionIndicators?: string[];
   defaultValue?: string;
   placeholder?: string;
+  maxLength?: number;
   placeholderTextColor?: ColorValue;
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
@@ -470,6 +475,9 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
   onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
+  onMaxLengthExceeded?: (
+    e: NativeSyntheticEvent<OnMaxLengthExceededEvent>
+  ) => void;
   contextMenuItems?: ContextMenuItem[];
   /**
    * If true, Android will use experimental synchronous events.
