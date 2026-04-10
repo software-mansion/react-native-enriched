@@ -496,3 +496,18 @@ export interface EnrichedTextInputWebProps
   extends Omit<EnrichedTextInputProps, 'style'> {
   style?: EnrichedInputStyle;
 }
+
+interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
+  pressColor?: ColorValue;
+  pressBackgroundColor?: ColorValue;
+}
+
+export interface EnrichedTextHtmlStyle
+  extends Omit<HtmlStyle, 'a' | 'mention'> {
+  a?: HtmlStyle['a'] & {
+    pressColor?: ColorValue;
+  };
+  mention?:
+    | Record<string, EnrichedTextMentionStyleProperties>
+    | EnrichedTextMentionStyleProperties;
+}
