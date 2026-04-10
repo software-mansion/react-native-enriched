@@ -232,6 +232,9 @@ export interface HtmlStyle {
     marginLeft?: number;
     boxColor?: ColorValue;
   };
+  image?: {
+    verticalAlign?: 'baseline' | 'bottom';
+  };
 }
 
 // Event types

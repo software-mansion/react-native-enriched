@@ -69,6 +69,9 @@ const defaultStyle: Required<HtmlStyle> = {
     marginLeft: 16,
     boxColor: 'blue',
   },
+  image: {
+    verticalAlign: 'baseline',
+  },
 };
 
 const isMentionStyleRecord = (

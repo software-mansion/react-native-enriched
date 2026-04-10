@@ -101,4 +101,6 @@
 - (void)setCheckboxListBoxColor:(UIColor *)newValue;
 - (UIImage *)checkboxCheckedImage;
 - (UIImage *)checkboxUncheckedImage;
+- (NSString *)imageVerticalAlign;
+- (void)setImageVerticalAlign:(NSString *)newValue;
 @end

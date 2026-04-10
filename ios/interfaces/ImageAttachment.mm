@@ -1,4 +1,5 @@
 #import "ImageAttachment.h"
+#import "EnrichedTextInputView.h"
 #import "ImageExtension.h"
 
 // NSTextStorage frequently recreates NSTextAttachment objects during attribute
@@ -62,12 +63,24 @@ static NSCache<NSString *, UIImage *> *ImageAttachmentCache(void) {
     return baseBounds;
   }
 
-  // Extend the layout bounds below the baseline by the font's descender.
-  // Without this, a line containing only the attachment has no descender space
-  // below the baseline, but adding a text character introduces it — causing
-  // the line height to jump.  By reserving descender space upfront the line
-  // height stays consistent regardless of whether text is present.
   CGFloat descender = font.descender;
+
+  // Check vertical alignment config
+  NSString *verticalAlign = @"baseline";
+  if ([self.delegate isKindOfClass:[EnrichedTextInputView class]]) {
+    EnrichedTextInputView *inputView = (EnrichedTextInputView *)self.delegate;
+    verticalAlign = [inputView->config imageVerticalAlign];
+  }
+
+  if ([verticalAlign isEqualToString:@"bottom"]) {
+    // Align glyph to line fragment bottom — no descender offset on y,
+    // but include descender in height so the line fragment is tall enough.
+    return CGRectMake(baseBounds.origin.x, 0, baseBounds.size.width,
+                      baseBounds.size.height);
+  }
+
+  // Default baseline: extend layout bounds below the baseline by the font's
+  // descender so the line height stays consistent.
   return CGRectMake(baseBounds.origin.x, descender, baseBounds.size.width,
                     baseBounds.size.height - descender);
 }

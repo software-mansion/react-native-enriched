@@ -678,6 +678,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  if (newViewProps.htmlStyle.image.verticalAlign !=
+      oldViewProps.htmlStyle.image.verticalAlign) {
+    [newConfig setImageVerticalAlign:
+                   [NSString fromCppString:newViewProps.htmlStyle.image
+                                               .verticalAlign]];
+    stylePropChanged = YES;
+  }
+
   if (newViewProps.htmlStyle.a.textDecorationLine !=
       oldViewProps.htmlStyle.a.textDecorationLine) {
     NSString *objcString =
@@ -2320,9 +2328,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     font = [config primaryFont];
   }
 
-  // Calculate (Baseline Alignment)
-  CGFloat targetY =
-      CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
+  // Calculate vertical position based on config
+  CGFloat targetY;
+  if ([[config imageVerticalAlign] isEqualToString:@"bottom"]) {
+    targetY = CGRectGetMaxY(lineRect) - attachmentSize.height;
+  } else {
+    // baseline (default): align image bottom with the descender
+    targetY =
+        CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
+  }
   CGRect rect =
       CGRectMake(glyphRect.origin.x + textView.textContainerInset.left,
                  targetY + textView.textContainerInset.top,
