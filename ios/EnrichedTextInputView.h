@@ -45,8 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range;
+
 @end
 
 NS_ASSUME_NONNULL_END

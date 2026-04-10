@@ -99,7 +99,8 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection {
+          withSelection:(BOOL)withSelection
+         withDirtyRange:(BOOL)withDirtyRange {
   if (!imageData)
     return;
 
@@ -128,8 +129,10 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
                       withSelection:withSelection];
   }
 
-  NSRange insertedImageRange = NSMakeRange(range.location, 1);
-  [self.host.attributesManager addDirtyRange:insertedImageRange];
+  if (withDirtyRange) {
+    NSRange insertedImageRange = NSMakeRange(range.location, 1);
+    [self.host.attributesManager addDirtyRange:insertedImageRange];
+  }
 }
 
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height {
@@ -140,7 +143,8 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
 
   [self addImageAtRange:self.host.textView.selectedRange
               imageData:data
-          withSelection:YES];
+          withSelection:YES
+         withDirtyRange:YES];
 }
 
 @end

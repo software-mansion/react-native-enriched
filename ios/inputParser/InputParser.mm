@@ -665,7 +665,8 @@
         ImageData *imgData = (ImageData *)stylePair.styleValue;
         [((ImageStyle *)baseStyle) addImageAtRange:styleRange
                                          imageData:imgData
-                                     withSelection:NO];
+                                     withSelection:NO
+                                    withDirtyRange:YES];
       } else if ([styleType isEqualToNumber:@([CheckboxListStyle getType])]) {
         NSDictionary *checkboxStates = (NSDictionary *)stylePair.styleValue;
         CheckboxListStyle *cbLStyle = (CheckboxListStyle *)baseStyle;
@@ -687,7 +688,7 @@
           NSUInteger checkboxPosition = offset + [key unsignedIntegerValue];
           BOOL isChecked = [checkboxStates[key] boolValue];
           if (isChecked) {
-            [cbLStyle toggleCheckedAt:checkboxPosition];
+            [cbLStyle toggleCheckedAt:checkboxPosition withDirtyRange:YES];
           }
         }
       } else {

@@ -41,6 +41,7 @@
 - (MentionParams *)getMentionParamsAt:(NSUInteger)location;
 - (NSRange)getFullMentionRangeAt:(NSUInteger)location;
 - (NSValue *)getActiveMentionRange;
+- (void)applyMentionMeta:(MentionParams *)params range:(NSRange)range;
 @end
 
 @interface HeadingStyleBase : StyleBase
@@ -83,7 +84,8 @@
                  range:(NSRange)range
             withTyping:(BOOL)withTyping
         withDirtyRange:(BOOL)withDirtyRange;
-- (void)toggleCheckedAt:(NSUInteger)location;
+- (void)toggleCheckedAt:(NSUInteger)location
+         withDirtyRange:(BOOL)withDirtyRange;
 - (BOOL)getCheckboxStateAt:(NSUInteger)location;
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
 @end
@@ -98,6 +100,7 @@
 - (void)addImage:(NSString *)uri width:(CGFloat)width height:(CGFloat)height;
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection;
+          withSelection:(BOOL)withSelection
+         withDirtyRange:(BOOL)withDirtyRange;
 - (ImageData *)getImageDataAt:(NSUInteger)location;
 @end

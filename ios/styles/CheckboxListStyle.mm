@@ -87,7 +87,8 @@
   [self addWithChecked:checked range:range withTyping:NO withDirtyRange:NO];
 }
 
-- (void)toggleCheckedAt:(NSUInteger)location {
+- (void)toggleCheckedAt:(NSUInteger)location
+         withDirtyRange:(BOOL)withDirtyRange {
   if (location >= self.host.textView.textStorage.length) {
     return;
   }
@@ -107,7 +108,7 @@
   [self addWithChecked:!isCurrentlyChecked
                  range:paragraphRange
             withTyping:NO
-        withDirtyRange:YES];
+        withDirtyRange:withDirtyRange];
 }
 
 - (BOOL)getCheckboxStateAt:(NSUInteger)location {

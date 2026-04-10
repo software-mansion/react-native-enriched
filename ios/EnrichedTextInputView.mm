@@ -1934,7 +1934,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     if (checkboxStyle) {
       NSUInteger charIndex = (NSUInteger)gr.characterIndex;
-      [checkboxStyle toggleCheckedAt:charIndex];
+      [checkboxStyle toggleCheckedAt:charIndex withDirtyRange:YES];
       [self anyTextMayHaveBeenModified];
 
       NSString *fullText = textView.textStorage.string;
