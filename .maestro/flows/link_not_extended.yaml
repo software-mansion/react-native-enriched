@@ -1,8 +1,7 @@
 appId: swmansion.enriched.example
-tags:
-    - ios-only
 ---
 # PR #421 - fix(iOS): prevent extending link styles
+# PR #502 - fix(android): link turns into plain text
 - launchApp
 
 - tapOn:

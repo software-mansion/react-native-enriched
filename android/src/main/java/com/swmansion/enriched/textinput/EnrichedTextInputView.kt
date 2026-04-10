@@ -13,6 +13,7 @@ import android.text.Editable
 import android.text.InputType
 import android.text.Layout
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.AlignmentSpan
@@ -22,12 +23,14 @@ import android.util.Patterns
 import android.util.TypedValue
 import android.view.ActionMode
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.ViewCompat
 import com.facebook.react.bridge.ReactContext
@@ -48,19 +51,20 @@ import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
+import com.swmansion.enriched.textinput.spans.EnrichedAlignmentPlaceholderSpan
+import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputH1Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH2Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH3Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
-import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
-import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedAlignmentPlaceholderSpan
+import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
@@ -84,7 +88,9 @@ import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 import kotlin.math.ceil
 
-class EnrichedTextInputView : AppCompatEditText {
+class EnrichedTextInputView :
+  AppCompatEditText,
+  TextView.OnEditorActionListener {
   var stateWrapper: StateWrapper? = null
   val selection: EnrichedSelection? = EnrichedSelection(this)
   val spanState: EnrichedSpanState? = EnrichedSpanState(this)
@@ -119,6 +125,7 @@ class EnrichedTextInputView : AppCompatEditText {
 
   var fontSize: Float? = null
   private var lineHeight: Float? = null
+  var submitBehavior: String? = null
   private var autoFocus = false
   private var typefaceDirty = false
   private var didAttachToWindow = false
@@ -152,6 +159,18 @@ class EnrichedTextInputView : AppCompatEditText {
 
   override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
     var inputConnection = super.onCreateInputConnection(outAttrs)
+
+    if (shouldSubmitOnReturn()) {
+      // Remove the "No Enter Action" flag if it exists
+      outAttrs.imeOptions = outAttrs.imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION.inv()
+
+      // Force the key to be "Done" (or whatever label you set) instead of "Return"
+      // This ensures onEditorAction gets called instead of just inserting \n
+      if (outAttrs.imeOptions and EditorInfo.IME_MASK_ACTION == EditorInfo.IME_ACTION_UNSPECIFIED) {
+        outAttrs.imeOptions = outAttrs.imeOptions or EditorInfo.IME_ACTION_DONE
+      }
+    }
+
     if (inputConnection != null) {
       inputConnection =
         EnrichedTextInputConnectionWrapper(
@@ -197,6 +216,53 @@ class EnrichedTextInputView : AppCompatEditText {
 
     // Handle checkbox list item clicks
     this.setCheckboxClickListener()
+
+    setOnEditorActionListener(this)
+    setReturnKeyLabel(DEFAULT_IME_ACTION_LABEL)
+  }
+
+  // Similar implementation to: https://github.com/facebook/react-native/blob/c1f5445f4a59d0035389725e47da58eb3d2c267c/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactTextInputManager.kt#L940
+  override fun onEditorAction(
+    v: TextView?,
+    actionId: Int,
+    event: KeyEvent?,
+  ): Boolean {
+    // Check if it's a valid keyboard action (Done, Next, etc.) or the Enter key (IME_NULL)
+    val isAction = (actionId and EditorInfo.IME_MASK_ACTION) != 0 || actionId == EditorInfo.IME_NULL
+
+    if (isAction) {
+      val shouldSubmit = shouldSubmitOnReturn()
+      val shouldBlur = shouldBlurOnReturn()
+
+      if (shouldSubmit) {
+        emitSubmitEditing()
+      }
+
+      if (shouldBlur) {
+        clearFocus()
+      }
+
+      if (shouldSubmit || shouldBlur) {
+        return true
+      }
+    }
+
+    // Return false to let the system handle default behavior (like inserting \n)
+    return false
+  }
+
+  private fun emitSubmitEditing() {
+    val context = context as ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+    dispatcher?.dispatchEvent(
+      OnSubmitEditingEvent(
+        surfaceId,
+        id,
+        text,
+        experimentalSynchronousEvents,
+      ),
+    )
   }
 
   // https://github.com/facebook/react-native/blob/36df97f500aa0aa8031098caf7526db358b6ddc1/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt#L295C1-L296C1
@@ -295,28 +361,37 @@ class EnrichedTextInputView : AppCompatEditText {
   }
 
   fun handleTextPaste(item: ClipData.Item) {
-    val htmlText = item.htmlText
     val currentText = text as Spannable
     val start = selectionStart.coerceAtLeast(0)
     val end = selectionEnd.coerceAtLeast(0)
-
-    if (htmlText != null) {
-      val parsedText = parseText(htmlText)
-      if (parsedText is Spannable) {
-        val finalText = currentText.mergeSpannables(start, end, parsedText)
-        setValue(finalText, false)
-        return
-      }
-    }
-
-    if (item.text == null) return
     val lengthBefore = currentText.length
-    val finalText = currentText.mergeSpannables(start, end, item.text.toString())
-    setValue(finalText)
+
+    val pastedSpannable: Spannable =
+      when {
+        item.htmlText != null -> {
+          val parsed = parseText(item.htmlText)
+          (parsed as? Spannable) ?: return
+        }
+
+        item.text != null -> {
+          SpannableString(item.text.toString())
+        }
+
+        else -> {
+          return
+        }
+      }
+
+    val finalText = currentText.mergeSpannables(start, end, pastedSpannable)
+    setValue(finalText, false)
+
+    // replacement-safe: oldLength - removed + inserted
+    val insertedLength = finalText.length - (lengthBefore - (end - start))
+    val pasteEnd = (start + insertedLength).coerceIn(0, finalText.length)
+    setSelection(pasteEnd)
 
     // Detect links in the newly pasted range
-    val finalEndIndex = start + finalText.length - lengthBefore
-    parametrizedStyles?.detectLinksInRange(finalText, start, finalEndIndex)
+    parametrizedStyles?.detectLinksInRange(finalText, start.coerceAtMost(pasteEnd), pasteEnd)
   }
 
   fun requestFocusProgrammatically() {
@@ -452,6 +527,10 @@ class EnrichedTextInputView : AppCompatEditText {
 
       textCursorDrawable = cursorDrawable
     }
+  }
+
+  fun setReturnKeyLabel(returnKeyLabel: String?) {
+    setImeActionLabel(returnKeyLabel, EditorInfo.IME_ACTION_UNSPECIFIED)
   }
 
   fun setColor(colorInt: Int?) {
@@ -862,10 +941,11 @@ class EnrichedTextInputView : AppCompatEditText {
     selStart: Int = selectionStart,
     selEnd: Int = selectionEnd,
   ) {
-    val spannable = text as? Spannable ?: run {
-      typingAlignment = Layout.Alignment.ALIGN_NORMAL
-      return
-    }
+    val spannable =
+      text as? Spannable ?: run {
+        typingAlignment = Layout.Alignment.ALIGN_NORMAL
+        return
+      }
 
     if (spannable.isEmpty()) {
       typingAlignment = Layout.Alignment.ALIGN_NORMAL
@@ -940,8 +1020,10 @@ class EnrichedTextInputView : AppCompatEditText {
     if (alignment == Layout.Alignment.ALIGN_NORMAL) return false
     if (paragraphStart >= paragraphEnd) return false
 
-    val existing = spannable.getSpans(paragraphStart, paragraphEnd, AlignmentSpan::class.java)
-      .firstOrNull()
+    val existing =
+      spannable
+        .getSpans(paragraphStart, paragraphEnd, AlignmentSpan::class.java)
+        .firstOrNull()
 
     if (existing == null || existing.alignment != alignment) {
       runAsATransaction {
@@ -976,8 +1058,6 @@ class EnrichedTextInputView : AppCompatEditText {
     spannable.getSpans(start, end, EnrichedInputUnorderedListSpan::class.java).isNotEmpty() ||
       spannable.getSpans(start, end, EnrichedInputOrderedListSpan::class.java).isNotEmpty() ||
       spannable.getSpans(start, end, EnrichedInputCheckboxListSpan::class.java).isNotEmpty()
-
-
 
   /**
    * Applies the current [typingAlignment] to the given paragraph range.
@@ -1027,7 +1107,7 @@ class EnrichedTextInputView : AppCompatEditText {
           AlignmentSpan.Standard(typingAlignment),
           safeStart,
           safeEnd,
-        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
       }
       if (!manageCursorExternally) {
@@ -1173,6 +1253,10 @@ class EnrichedTextInputView : AppCompatEditText {
     defaultValue = value
     defaultValueDirty = true
   }
+
+  fun shouldBlurOnReturn(): Boolean = submitBehavior == "blurAndSubmit"
+
+  fun shouldSubmitOnReturn(): Boolean = submitBehavior == "submit" || submitBehavior == "blurAndSubmit"
 
   private fun updateDefaultValue() {
     if (!defaultValueDirty) return
@@ -1517,5 +1601,6 @@ class EnrichedTextInputView : AppCompatEditText {
     const val TAG = "EnrichedTextInputView"
     const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
     private const val CONTEXT_MENU_ITEM_ID = 10000
+    const val DEFAULT_IME_ACTION_LABEL = "DONE"
   }
 }

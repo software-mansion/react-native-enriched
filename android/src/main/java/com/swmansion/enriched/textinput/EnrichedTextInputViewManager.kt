@@ -28,6 +28,7 @@ import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionEvent
 import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
 import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
+import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import com.swmansion.enriched.textinput.utils.jsonStringToStringMap
@@ -74,6 +75,7 @@ class EnrichedTextInputViewManager :
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
     map.put(OnPasteImagesEvent.EVENT_NAME, mapOf("registrationName" to OnPasteImagesEvent.EVENT_NAME))
     map.put(OnContextMenuItemPressEvent.EVENT_NAME, mapOf("registrationName" to OnContextMenuItemPressEvent.EVENT_NAME))
+    map.put(OnSubmitEditingEvent.EVENT_NAME, mapOf("registrationName" to OnSubmitEditingEvent.EVENT_NAME))
 
     return map
   }
@@ -108,6 +110,30 @@ class EnrichedTextInputViewManager :
     color: Int?,
   ) {
     view?.setCursorColor(color)
+  }
+
+  @ReactProp(name = "returnKeyType")
+  override fun setReturnKeyType(
+    view: EnrichedTextInputView?,
+    returnKeyType: String?,
+  ) {
+    // Not supported on multiline text input
+  }
+
+  @ReactProp(name = "submitBehavior")
+  override fun setSubmitBehavior(
+    view: EnrichedTextInputView?,
+    submitBehavior: String?,
+  ) {
+    view?.submitBehavior = submitBehavior
+  }
+
+  @ReactProp(name = "returnKeyLabel")
+  override fun setReturnKeyLabel(
+    view: EnrichedTextInputView?,
+    returnKeyLabel: String?,
+  ) {
+    view?.setReturnKeyLabel(returnKeyLabel)
   }
 
   @ReactProp(name = "selectionColor", customType = "Color")
@@ -421,13 +447,14 @@ class EnrichedTextInputViewManager :
   ) {
     view?.requestHTML(requestId)
   }
-  
+
   override fun setTextAlignment(
     view: EnrichedTextInputView?,
     alignment: String,
   ) {
     view?.setTextAlignment(alignment)
   }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

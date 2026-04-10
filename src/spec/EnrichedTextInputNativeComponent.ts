@@ -1,5 +1,6 @@
 import { codegenNativeComponent, codegenNativeCommands } from 'react-native';
 import type {
+  BubblingEventHandler,
   DirectEventHandler,
   Float,
   Int32,
@@ -122,7 +123,7 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
-  alignment: string;
+  alignment: 'left' | 'center' | 'right' | 'justify' | 'default';
 }
 
 export interface OnLinkDetected {
@@ -158,6 +159,10 @@ export interface OnChangeSelectionEvent {
 export interface OnRequestHtmlResultEvent {
   requestId: Int32;
   html: UnsafeMixed;
+}
+
+export interface OnSubmitEditing {
+  text: string;
 }
 
 export interface OnKeyPressEvent {
@@ -269,7 +274,7 @@ export interface OnContextMenuItemPressEvent {
       isConflicting: boolean;
       isBlocking: boolean;
     };
-    alignment: string;
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'default';
   };
 }
 
@@ -362,6 +367,9 @@ export interface NativeProps extends ViewProps {
   scrollEnabled?: boolean;
   linkRegex?: LinkNativeRegex;
   contextMenuItems?: ReadonlyArray<Readonly<ContextMenuItemConfig>>;
+  returnKeyType?: string;
+  returnKeyLabel?: string;
+  submitBehavior?: string;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<TargetedEvent>;
@@ -377,6 +385,7 @@ export interface NativeProps extends ViewProps {
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
   onPasteImages?: DirectEventHandler<OnPasteImagesEvent>;
   onContextMenuItemPress?: DirectEventHandler<OnContextMenuItemPressEvent>;
+  onSubmitEditing?: BubblingEventHandler<OnSubmitEditing>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props

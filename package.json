@@ -1,12 +1,17 @@
 {
   "name": "react-native-enriched",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Rich Text Editor component for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "react-native": {
+        "types": "./lib/typescript/src/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -20,6 +25,14 @@
     "cpp",
     "*.podspec",
     "react-native.config.js",
+    "!src/web",
+    "!src/index.web.tsx",
+    "!lib/module/web",
+    "!lib/module/index.web.js",
+    "!lib/module/index.web.js.map",
+    "!lib/typescript/src/web",
+    "!lib/typescript/src/index.web.d.ts",
+    "!lib/typescript/src/index.web.d.ts.map",
     "!ios/build",
     "!android/build",
     "!android/gradle",
@@ -35,7 +48,10 @@
     "example": "yarn workspace react-native-enriched-example",
     "example-web": "yarn workspace react-native-enriched-web-example",
     "test": "jest --passWithNoTests",
-    "typecheck": "tsc",
+    "typecheck": "yarn typecheck:lib && yarn typecheck:example && yarn typecheck:example-web",
+    "typecheck:lib": "tsc -p tsconfig.build.json",
+    "typecheck:example": "tsc -p apps/example/tsconfig.json",
+    "typecheck:example-web": "tsc -p apps/example-web/tsconfig.app.json",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "lint:android": "cd apps/example/android && ./gradlew lintVerify",
     "lint:android:fix": "cd apps/example/android && ./gradlew lintFormat",
@@ -45,14 +61,16 @@
     "lint-clang:android:fix": "find android/ \\( -iname \"*.h\" -o -iname \"*.cpp\" \\) | grep -v -e build -e generated | xargs npx clang-format -i",
     "lint-clang": "yarn lint-clang:ios && yarn lint-clang:android",
     "lint-clang:fix": "yarn lint-clang:ios:fix && yarn lint-clang:android:fix",
-    "clean": "del-cli android/build apps/example/android/build apps/example/android/app/build apps/example/ios/build lib",
+    "clean": "./scripts/git-clean.sh",
     "prepare": "bob build",
     "release": "release-it",
     "android-studio": "open -a 'Android Studio' apps/example/android",
     "xcode": "open -a 'Xcode' apps/example/ios/EnrichedTextInputExample.xcworkspace",
-    "test:e2e": ".maestro/scripts/run-tests-all.sh",
+    "test:e2e:mobile": ".maestro/scripts/run-tests-all.sh",
     "test:e2e:android": ".maestro/scripts/run-tests.sh --platform android",
-    "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios"
+    "test:e2e:ios": ".maestro/scripts/run-tests.sh --platform ios",
+    "test:e2e:web": "playwright test --config .playwright/playwright.config.ts",
+    "test:e2e": "yarn test:e2e:mobile && yarn test:e2e:web"
   },
   "keywords": [
     "react-native",
@@ -72,17 +90,28 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
+  "dependencies": {
+    "@tiptap/core": "3.20.4",
+    "@tiptap/extension-document": "3.20.4",
+    "@tiptap/extension-paragraph": "3.20.4",
+    "@tiptap/extension-text": "3.20.4",
+    "@tiptap/extensions": "3.20.4",
+    "@tiptap/pm": "3.20.4",
+    "@tiptap/react": "3.20.4"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/compat": "^1.2.7",
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
+    "@playwright/test": "1.58.2",
     "@react-native-community/cli": "20.0.0",
     "@react-native/eslint-config": "^0.81.0",
     "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
     "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "clang-format": "^1.8.0",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
@@ -90,8 +119,10 @@
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
+    "playwright": "1.58.2",
     "prettier": "^3.0.3",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.0",
     "react-native-builder-bob": "^0.40.18",
     "release-it": "^17.10.0",
@@ -106,12 +137,17 @@
     "apps/example",
     "apps/example-web"
   ],
-  "packageManager": "yarn@3.6.1",
+  "packageManager": "yarn@4.13.0",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
       "<rootDir>/apps/example/node_modules",
       "<rootDir>/lib/"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/.playwright/",
+      "<rootDir>/apps/example-web/"
     ]
   },
   "commitlint": {

@@ -38,7 +38,6 @@
     }
     textView.selectedRange = NSMakeRange(index + text.length, 0);
   }
-  typedInput->recentlyChangedRange = NSMakeRange(index, text.length);
 }
 
 + (void)replaceText:(NSString *)text
@@ -77,6 +76,5 @@
     }
     textView.selectedRange = NSMakeRange(range.location + text.length, 0);
   }
-  typedInput->recentlyChangedRange = NSMakeRange(range.location, text.length);
 }
 @end

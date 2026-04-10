@@ -139,11 +139,12 @@ class ListStyles(
     // Process in reverse so ZWS insertions don't shift earlier ranges
     var insertedBeforeCursor = 0
     for ((paragraphStart, paragraphEnd) in rangesToProcess.reversed()) {
-      val inserted = view.applyTypingAlignmentToParagraphRange(
-        paragraphStart,
-        paragraphEnd,
-        manageCursorExternally = true,
-      )
+      val inserted =
+        view.applyTypingAlignmentToParagraphRange(
+          paragraphStart,
+          paragraphEnd,
+          manageCursorExternally = true,
+        )
       if (inserted && paragraphStart <= cursorPos) {
         insertedBeforeCursor++
       }
@@ -291,12 +292,13 @@ class ListStyles(
     }
 
     if (!isBackspace && isNewLine && isPreviousParagraphList(s, start, config.clazz)) {
-      val prevParagraphAlignment = if (start > 0) {
-        val (prevStart, prevEnd) = s.getParagraphBounds(start - 1)
-        captureAlignment(s, prevStart, prevEnd)
-      } else {
-        Layout.Alignment.ALIGN_NORMAL
-      }
+      val prevParagraphAlignment =
+        if (start > 0) {
+          val (prevStart, prevEnd) = s.getParagraphBounds(start - 1)
+          captureAlignment(s, prevStart, prevEnd)
+        } else {
+          Layout.Alignment.ALIGN_NORMAL
+        }
 
       // Check if the span from the previous line "leaked" into this one
       if (spans.isNotEmpty()) {

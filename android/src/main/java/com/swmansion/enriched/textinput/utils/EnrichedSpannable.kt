@@ -47,7 +47,10 @@ fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> = this.getParagraph
  * Returns separate paragraph ranges within the given range (inclusive).
  * Mirrors iOS ParagraphsUtils.getSeparateParagraphsRangesIn:range: for alignment and list handling.
  */
-fun Spannable.getParagraphRangesInRange(start: Int, end: Int): List<Pair<Int, Int>> {
+fun Spannable.getParagraphRangesInRange(
+  start: Int,
+  end: Int,
+): List<Pair<Int, Int>> {
   val (safeStart, safeEnd) = getSafeSpanBoundaries(start, end)
   if (safeStart >= length) return emptyList()
 
@@ -87,6 +90,10 @@ fun Spannable.mergeSpannables(
   val isNewLineStart = startBlockSpans.isNotEmpty() || startParagraphSpans.isNotEmpty()
   val isNewLineEnd = endBlockSpans.isNotEmpty() || endParagraphSpans.isNotEmpty()
 
+  val pastedHasOwnStyles =
+    spannable.getSpans(0, spannable.length, EnrichedBlockSpan::class.java).isNotEmpty() ||
+      spannable.getSpans(0, spannable.length, EnrichedParagraphSpan::class.java).isNotEmpty()
+
   if (isNewLineStart && start != paragraphStart) {
     builder.insert(start, "\n")
     finalStart = start + 1
@@ -98,6 +105,26 @@ fun Spannable.mergeSpannables(
   }
 
   builder.replace(finalStart, finalEnd, spannable)
+
+  // Manually extend existing paragraph/block spans to cover the pasted text.
+  if (!pastedHasOwnStyles) {
+    val pasteEnd = finalStart + spannable.length
+
+    val affectedParagraphSpans = builder.getSpans(finalStart, finalStart, EnrichedParagraphSpan::class.java)
+    val affectedBlockSpans = builder.getSpans(finalStart, finalStart, EnrichedBlockSpan::class.java)
+    val affectedSpans = affectedBlockSpans.toList() + affectedParagraphSpans.toList()
+
+    for (span in affectedSpans) {
+      val spanStart = builder.getSpanStart(span)
+      val spanEnd = builder.getSpanEnd(span)
+      if (spanStart == -1 || spanEnd >= pasteEnd) continue
+
+      val (_, newParagraphEnd) = builder.getParagraphBounds(spanStart, pasteEnd)
+      val flags = builder.getSpanFlags(span)
+      builder.removeSpan(span)
+      builder.setSpan(span, spanStart, newParagraphEnd, flags)
+    }
+  }
 
   return builder
 }

@@ -41,14 +41,13 @@ static const CGFloat kCheckboxHitSlopVertical = 6.0;
   }
 
   CheckboxListStyle *checkboxListStyle =
-      (CheckboxListStyle *)
-          input->stylesDict[@([CheckboxListStyle getStyleType])];
+      (CheckboxListStyle *)input->stylesDict[@([CheckboxListStyle getType])];
 
   if (!checkboxListStyle) {
     return NO;
   }
 
-  return [checkboxListStyle detectStyle:NSMakeRange(charIndex, 0)];
+  return [checkboxListStyle detect:NSMakeRange(charIndex, 0)];
 }
 
 // MARK: - Checkbox rect
