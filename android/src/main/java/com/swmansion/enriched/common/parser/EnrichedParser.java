@@ -843,7 +843,6 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
 
   public void characters(char[] ch, int start, int length) {
     StringBuilder sb = new StringBuilder();
-    if (length > 0) isEmptyTag = false;
 
     /*
      * Ignore whitespace that immediately follows other whitespace;
@@ -871,6 +870,11 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
         sb.append(c);
       }
     }
+    // Only mark the tag as non-empty if content was actually appended after
+    // whitespace collapsing. A space-only list item (e.g. <li> </li>) would
+    // have its space dropped when the preceding char is a newline, leaving
+    // nothing to anchor a span — the ZWS placeholder must still be inserted.
+    if (sb.length() > 0) isEmptyTag = false;
     mSpannableStringBuilder.append(sb);
   }
 
