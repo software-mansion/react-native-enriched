@@ -5,26 +5,25 @@
 #import "UIView+React.h"
 
 @implementation ZeroWidthSpaceUtils
-+ (void)handleZeroWidthSpacesInInput:(id)input {
-  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
-  if (typedInput == nullptr) {
++ (void)handleZeroWidthSpacesInInput:(id<EnrichedViewHost>)host {
+  if (host == nullptr) {
     return;
   }
 
-  [self removeSpacesIfNeededinInput:typedInput];
-  [self addSpacesIfNeededinInput:typedInput];
+  [self removeSpacesIfNeededinInput:host];
+  [self addSpacesIfNeededinInput:host];
 }
 
-+ (void)removeSpacesIfNeededinInput:(EnrichedTextInputView *)input {
++ (void)removeSpacesIfNeededinInput:(id<EnrichedViewHost>)host {
   NSMutableArray *indexesToBeRemoved = [[NSMutableArray alloc] init];
-  NSRange preRemoveSelection = input->textView.selectedRange;
+  NSRange preRemoveSelection = host.textView.selectedRange;
 
-  for (int i = 0; i < input->textView.textStorage.string.length; i++) {
-    unichar character = [input->textView.textStorage.string characterAtIndex:i];
+  for (int i = 0; i < host.textView.textStorage.string.length; i++) {
+    unichar character = [host.textView.textStorage.string characterAtIndex:i];
     if (character == 0x200B) {
       NSRange characterRange = NSMakeRange(i, 1);
 
-      NSRange paragraphRange = [input->textView.textStorage.string
+      NSRange paragraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:characterRange];
       // having paragraph longer than 1 character means someone most likely
       // added something and we probably can remove the space
@@ -33,7 +32,7 @@
       // here, we still need zero width space to keep the empty list items
       if (paragraphRange.length == 2 && paragraphRange.location == i &&
           [[NSCharacterSet newlineCharacterSet]
-              characterIsMember:[input->textView.textStorage.string
+              characterIsMember:[host.textView.textStorage.string
                                     characterAtIndex:i + 1]]) {
         removeSpace = NO;
       }
@@ -44,7 +43,7 @@
       }
 
       // zero width spaces with no needsZWS style on them get removed
-      if (![self anyZWSStylePresentInRange:characterRange input:input]) {
+      if (![self anyZWSStylePresentInRange:characterRange input:host]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -59,7 +58,7 @@
     [TextInsertionUtils replaceText:@""
                                  at:replaceRange
                additionalAttributes:nullptr
-                              input:input
+                              input:host
                       withSelection:NO];
     offset -= 1;
     if ([index integerValue] < preRemoveSelection.location) {
@@ -72,8 +71,8 @@
   }
 
   // fix the selection if needed
-  if ([input->textView isFirstResponder]) {
-    input->textView.selectedRange =
+  if ([host.textView isFirstResponder]) {
+    host.textView.selectedRange =
         NSMakeRange(preRemoveSelection.location + postRemoveLocationOffset,
                     preRemoveSelection.length + postRemoveLengthOffset);
   }
@@ -83,13 +82,13 @@
 // dictionary so that ZWS characters carry the same meta-attributes that are
 // currently active in the typing attributes. Only within the currently selected
 // range!
-+ (NSDictionary *)inlineMetaAttributesForInput:(EnrichedTextInputView *)input {
++ (NSDictionary *)inlineMetaAttributesForInput:(id<EnrichedViewHost>)host {
   NSMutableDictionary *metaAttrs = [NSMutableDictionary new];
-  for (NSNumber *type in input->stylesDict) {
-    StyleBase *style = input->stylesDict[type];
+  for (NSNumber *type in host.stylesDict) {
+    StyleBase *style = host.stylesDict[type];
     if (![style isParagraph]) {
       AttributeEntry *entry =
-          [style getEntryIfPresent:input->textView.selectedRange];
+          [style getEntryIfPresent:host.textView.selectedRange];
       if (entry) {
         metaAttrs[entry.key] = entry.value;
       }
@@ -98,20 +97,20 @@
   return metaAttrs.count > 0 ? metaAttrs : nullptr;
 }
 
-+ (void)addSpacesIfNeededinInput:(EnrichedTextInputView *)input {
++ (void)addSpacesIfNeededinInput:(id<EnrichedViewHost>)host {
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
-  NSRange preAddSelection = input->textView.selectedRange;
+  NSRange preAddSelection = host.textView.selectedRange;
 
-  for (NSUInteger i = 0; i < input->textView.textStorage.string.length; i++) {
-    unichar character = [input->textView.textStorage.string characterAtIndex:i];
+  for (NSUInteger i = 0; i < host.textView.textStorage.string.length; i++) {
+    unichar character = [host.textView.textStorage.string characterAtIndex:i];
 
     if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
       NSRange characterRange = NSMakeRange(i, 1);
-      NSRange paragraphRange = [input->textView.textStorage.string
+      NSRange paragraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:characterRange];
 
       if (paragraphRange.length == 1) {
-        if ([self anyZWSStylePresentInRange:characterRange input:input]) {
+        if ([self anyZWSStylePresentInRange:characterRange input:host]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -119,7 +118,7 @@
     }
   }
 
-  NSDictionary *metaAttrs = [self inlineMetaAttributesForInput:input];
+  NSDictionary *metaAttrs = [self inlineMetaAttributesForInput:host];
 
   // do the replacing
   NSInteger offset = 0;
@@ -130,7 +129,7 @@
     [TextInsertionUtils replaceText:@"\u200B\n"
                                  at:replaceRange
                additionalAttributes:metaAttrs
-                              input:input
+                              input:host
                       withSelection:NO];
     offset += 1;
     if ([index integerValue] < preAddSelection.location) {
@@ -143,21 +142,21 @@
   }
 
   // additional check for last index of the input
-  NSRange lastRange = NSMakeRange(input->textView.textStorage.string.length, 0);
+  NSRange lastRange = NSMakeRange(host.textView.textStorage.string.length, 0);
   NSRange lastParagraphRange =
-      [input->textView.textStorage.string paragraphRangeForRange:lastRange];
+      [host.textView.textStorage.string paragraphRangeForRange:lastRange];
   if (lastParagraphRange.length == 0 &&
-      [self anyZWSStylePresentInRange:lastRange input:input]) {
+      [self anyZWSStylePresentInRange:lastRange input:host]) {
     [TextInsertionUtils insertText:@"\u200B"
                                 at:lastRange.location
               additionalAttributes:metaAttrs
-                             input:input
+                             input:host
                      withSelection:NO];
   }
 
   // fix the selection if needed
-  if ([input->textView isFirstResponder]) {
-    input->textView.selectedRange =
+  if ([host.textView isFirstResponder]) {
+    host.textView.selectedRange =
         NSMakeRange(preAddSelection.location + postAddLocationOffset,
                     preAddSelection.length + postAddLengthOffset);
   }
@@ -165,12 +164,11 @@
 
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
-                         input:(id)input {
+                         input:(id<EnrichedViewHost>)host {
   if (![text isEqualToString:@""]) {
     return NO;
   }
-  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
-  if (typedInput == nullptr) {
+  if (host == nullptr) {
     return NO;
   }
 
@@ -178,9 +176,9 @@
   // Nothing to delete, but if the first paragraph has a needsZWS style,
   // remove it.
   if (range.length == 0 && range.location == 0) {
-    NSRange firstParagraphRange = [typedInput->textView.textStorage.string
+    NSRange firstParagraphRange = [host.textView.textStorage.string
         paragraphRangeForRange:NSMakeRange(0, 0)];
-    if ([self removeZWSStyleInRange:firstParagraphRange input:typedInput]) {
+    if ([self removeZWSStyleInRange:firstParagraphRange input:host]) {
       return YES;
     }
     return NO;
@@ -191,19 +189,19 @@
   }
 
   unichar character =
-      [typedInput->textView.textStorage.string characterAtIndex:range.location];
+      [host.textView.textStorage.string characterAtIndex:range.location];
   // zero-width space got backspaced
   if (character == 0x200B) {
     // in such case: remove the whole line without the endline if there is one
 
     NSRange paragraphRange =
-        [typedInput->textView.textStorage.string paragraphRangeForRange:range];
+        [host.textView.textStorage.string paragraphRangeForRange:range];
     NSRange removalRange = paragraphRange;
     // if whole paragraph gets removed then 0 length for style removal
     NSRange styleRemovalRange = NSMakeRange(paragraphRange.location, 0);
 
     if ([[NSCharacterSet newlineCharacterSet]
-            characterIsMember:[typedInput->textView.textStorage.string
+            characterIsMember:[host.textView.textStorage.string
                                   characterAtIndex:NSMaxRange(paragraphRange) -
                                                    1]]) {
       // if endline is there, don't remove it
@@ -217,11 +215,11 @@
     [TextInsertionUtils replaceText:@""
                                  at:removalRange
                additionalAttributes:nullptr
-                              input:typedInput
+                              input:host
                       withSelection:YES];
 
     // and then remove associated styling
-    [self removeZWSStyleInRange:styleRemovalRange input:typedInput];
+    [self removeZWSStyleInRange:styleRemovalRange input:host];
 
     return YES;
   }
@@ -232,10 +230,10 @@
   // style from the current paragraph.
   if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
     NSUInteger nextParaStart = NSMaxRange(range);
-    if (nextParaStart < typedInput->textView.textStorage.string.length) {
-      NSRange nextParagraphRange = [typedInput->textView.textStorage.string
+    if (nextParaStart < host.textView.textStorage.string.length) {
+      NSRange nextParagraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:NSMakeRange(nextParaStart, 0)];
-      if ([self removeZWSStyleInRange:nextParagraphRange input:typedInput]) {
+      if ([self removeZWSStyleInRange:nextParagraphRange input:host]) {
         return YES;
       }
     }
@@ -245,9 +243,9 @@
 }
 
 + (BOOL)anyZWSStylePresentInRange:(NSRange)range
-                            input:(EnrichedTextInputView *)input {
-  for (NSNumber *type in input->stylesDict) {
-    StyleBase *style = input->stylesDict[type];
+                            input:(id<EnrichedViewHost>)host {
+  for (NSNumber *type in host.stylesDict) {
+    StyleBase *style = host.stylesDict[type];
     if ([style needsZWS] && [style detect:range]) {
       return YES;
     }
@@ -255,10 +253,9 @@
   return NO;
 }
 
-+ (BOOL)removeZWSStyleInRange:(NSRange)range
-                        input:(EnrichedTextInputView *)input {
-  for (NSNumber *type in input->stylesDict) {
-    StyleBase *style = input->stylesDict[type];
++ (BOOL)removeZWSStyleInRange:(NSRange)range input:(id<EnrichedViewHost>)host {
+  for (NSNumber *type in host.stylesDict) {
+    StyleBase *style = host.stylesDict[type];
     if ([style needsZWS] && [style detect:range]) {
       [style remove:range withDirtyRange:YES];
       return YES;

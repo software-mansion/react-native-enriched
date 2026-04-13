@@ -56,6 +56,8 @@ using namespace facebook::react;
   NSString *_submitBehavior;
 }
 
+@synthesize blockEmitting = blockEmitting;
+
 // MARK: - Component utils
 
 + (ComponentDescriptorProvider)componentDescriptorProvider {

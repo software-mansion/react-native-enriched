@@ -1,9 +1,10 @@
+#import "EnrichedViewHost.h"
 #import <UIKit/UIKit.h>
 #pragma once
 
 @interface ZeroWidthSpaceUtils : NSObject
-+ (void)handleZeroWidthSpacesInInput:(id)input;
++ (void)handleZeroWidthSpacesInInput:(id<EnrichedViewHost>)host;
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
-                         input:(id)input;
+                         input:(id<EnrichedViewHost>)host;
 @end
