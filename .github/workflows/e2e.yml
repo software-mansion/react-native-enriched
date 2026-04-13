@@ -1,0 +1,191 @@
+name: E2E Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  merge_group:
+    types:
+      - checks_requested
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            android:
+              - 'android/**'
+              - 'apps/example/android/**'
+              - 'apps/example/src/**'
+              - 'src/**'
+              - 'cpp/**'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+              - '.maestro/**'
+            ios:
+              - 'ios/**'
+              - 'apps/example/ios/**'
+              - 'apps/example/src/**'
+              - 'src/**'
+              - 'cpp/**'
+              - '*.podspec'
+              - 'package.json'
+              - 'apps/example/package.json'
+              - 'react-native.config.js'
+              - 'babel.config.js'
+              - '.maestro/**'
+
+  e2e-ios:
+    needs: [changes]
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Restore cocoapods
+        id: cocoapods-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            **/ios/Pods
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('apps/example/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cocoapods-
+
+      - name: Install cocoapods
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+        run: |
+          cd apps/example/ios
+          pod install
+        env:
+          NO_FLIPPER: 1
+
+      - name: Cache cocoapods
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            **/ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-key }}
+
+      - name: Restore Xcode DerivedData
+        uses: actions/cache/restore@v4
+        id: derived-data-cache
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-data-${{ hashFiles('ios/**', 'apps/example/ios/**', 'cpp/**', 'src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-derived-data-
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Start Metro
+        run: yarn example start &
+
+      - name: Run E2E tests
+        run: yarn test:e2e:ios
+
+      - name: Cache Xcode DerivedData
+        if: steps.derived-data-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ steps.derived-data-cache.outputs.cache-primary-key }}
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-artifacts
+          path: |
+            .maestro/screenshots/ios/*_diff.png
+
+  e2e-android:
+    needs: [changes]
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Finalize Android SDK
+        run: |
+          /bin/bash -c "yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "emulator" "platform-tools"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('apps/example/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Start Metro
+        run: yarn example start &
+
+      - name: Run E2E tests
+        run: yarn test:e2e:android
+        env:
+          JAVA_OPTS: '-XX:MaxHeapSize=6g'
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-artifacts
+          path: |
+            .maestro/screenshots/android/*_diff.png

@@ -92,7 +92,7 @@ The target devices are:
 | Platform | Device    | OS                            |
 | -------- | --------- | ----------------------------- |
 | iOS      | iPhone 17 | iOS 26.2                      |
-| Android  | Pixel 9   | API 36 "Baklava" (Android 16) |
+| Android  | Pixel 7   | API 36 "Baklava" (Android 16) |
 
 #### Running E2E tests
 
