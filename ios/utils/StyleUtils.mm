@@ -124,7 +124,7 @@
   };
 }
 
-+ (NSDictionary *)stylesDictForHost:(id<EnrichedStyleHost>)host
++ (NSDictionary *)stylesDictForHost:(id<EnrichedViewHost>)host
                             isInput:(BOOL)isInput {
   NSArray<Class> *baseClasses = @[
     [BoldStyle class], [ItalicStyle class], [UnderlineStyle class],
@@ -168,7 +168,7 @@
 // returns false when style shouldn't be applied and true when it can be
 + (BOOL)handleStyleBlocksAndConflicts:(StyleType)type
                                 range:(NSRange)range
-                              forHost:(id<EnrichedStyleHost>)host {
+                              forHost:(id<EnrichedViewHost>)host {
   // handle blocking styles: if any is present we do not apply the toggled style
   NSArray<NSNumber *> *blocking =
       [self getPresentStyleTypesFrom:host.blockingStyles[@(type)]
@@ -204,7 +204,7 @@
 
 + (NSArray *)getPresentStyleTypesFrom:(NSArray *)types
                                 range:(NSRange)range
-                              forHost:(id<EnrichedStyleHost>)host {
+                              forHost:(id<EnrichedViewHost>)host {
   NSMutableArray<NSNumber *> *resultArray =
       [[NSMutableArray<NSNumber *> alloc] init];
   for (NSNumber *type in types) {
@@ -225,7 +225,7 @@
 
 + (void)addStyleBlock:(StyleType)blocking
                    to:(StyleType)blocked
-              forHost:(id<EnrichedStyleHost>)host {
+              forHost:(id<EnrichedViewHost>)host {
   NSMutableArray *blocksArr = [host.blockingStyles[@(blocked)] mutableCopy];
   if (![blocksArr containsObject:@(blocking)]) {
     [blocksArr addObject:@(blocking)];
@@ -235,7 +235,7 @@
 
 + (void)removeStyleBlock:(StyleType)blocking
                     from:(StyleType)blocked
-                 forHost:(id<EnrichedStyleHost>)host {
+                 forHost:(id<EnrichedViewHost>)host {
   NSMutableArray *blocksArr = [host.blockingStyles[@(blocked)] mutableCopy];
   if ([blocksArr containsObject:@(blocking)]) {
     [blocksArr removeObject:@(blocking)];
@@ -245,7 +245,7 @@
 
 + (void)addStyleConflict:(StyleType)conflicting
                       to:(StyleType)conflicted
-                 forHost:(id<EnrichedStyleHost>)host {
+                 forHost:(id<EnrichedViewHost>)host {
   NSMutableArray *conflictsArr =
       [host.conflictingStyles[@(conflicted)] mutableCopy];
   if (![conflictsArr containsObject:@(conflicting)]) {
@@ -256,7 +256,7 @@
 
 + (void)removeStyleConflict:(StyleType)conflicting
                        from:(StyleType)conflicted
-                    forHost:(id<EnrichedStyleHost>)host {
+                    forHost:(id<EnrichedViewHost>)host {
   NSMutableArray *conflictsArr =
       [host.conflictingStyles[@(conflicted)] mutableCopy];
   if ([conflictsArr containsObject:@(conflicting)]) {

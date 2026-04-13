@@ -1,18 +1,18 @@
 #pragma once
 #import "AttributeEntry.h"
-#import "EnrichedStyleHost.h"
+#import "EnrichedViewHost.h"
 #import "StylePair.h"
 #import "StyleTypeEnum.h"
 #import <UIKit/UIKit.h>
 
 @interface StyleBase : NSObject
-@property(nonatomic, weak) id<EnrichedStyleHost> host;
+@property(nonatomic, weak) id<EnrichedViewHost> host;
 + (StyleType)getType;
 - (NSString *)getKey;
 - (NSString *)getValue;
 - (BOOL)isParagraph;
 - (BOOL)needsZWS;
-- (instancetype)initWithHost:(id<EnrichedStyleHost>)host;
+- (instancetype)initWithHost:(id<EnrichedViewHost>)host;
 - (NSRange)actualUsedRange:(NSRange)range;
 - (void)toggle:(NSRange)range;
 - (void)add:(NSRange)range

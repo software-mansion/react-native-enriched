@@ -34,7 +34,7 @@
   return NO;
 }
 
-- (instancetype)initWithHost:(id<EnrichedStyleHost>)host {
+- (instancetype)initWithHost:(id<EnrichedViewHost>)host {
   self = [super init];
   _host = host;
   return self;

@@ -4,7 +4,7 @@
 @implementation OccurenceUtils
 
 + (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-         withHost:(id<EnrichedStyleHost> _Nonnull)host
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
@@ -26,7 +26,7 @@
 // it means that first character of paragraph will be checked instead if the
 // detection is not in input's selected range and at the end of the input
 + (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-         withHost:(id<EnrichedStyleHost> _Nonnull)host
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           atIndex:(NSUInteger)index
     checkPrevious:(BOOL)checkPrev
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
@@ -60,7 +60,7 @@
 }
 
 + (BOOL)detectMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-              withHost:(id<EnrichedStyleHost> _Nonnull)host
+              withHost:(id<EnrichedViewHost> _Nonnull)host
                inRange:(NSRange)range
          withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                      NSRange range))condition {
@@ -81,7 +81,7 @@
 }
 
 + (BOOL)any:(NSAttributedStringKey _Nonnull)key
-         withHost:(id<EnrichedStyleHost> _Nonnull)host
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
@@ -101,7 +101,7 @@
 }
 
 + (BOOL)anyMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-           withHost:(id<EnrichedStyleHost> _Nonnull)host
+           withHost:(id<EnrichedViewHost> _Nonnull)host
             inRange:(NSRange)range
       withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                   NSRange range))condition {
@@ -126,7 +126,7 @@
 }
 
 + (NSArray<StylePair *> *_Nullable)all:(NSAttributedStringKey _Nonnull)key
-                              withHost:(id<EnrichedStyleHost> _Nonnull)host
+                              withHost:(id<EnrichedViewHost> _Nonnull)host
                                inRange:(NSRange)range
                          withCondition:
                              (BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
@@ -152,7 +152,7 @@
 
 + (NSArray<StylePair *> *_Nullable)
       allMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-         withHost:(id<EnrichedStyleHost> _Nonnull)host
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {

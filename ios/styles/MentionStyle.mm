@@ -27,7 +27,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   return NO;
 }
 
-- (instancetype)initWithHost:(id<EnrichedStyleHost>)host {
+- (instancetype)initWithHost:(id<EnrichedViewHost>)host {
   self = [super initWithHost:host];
   if (self) {
     _activeMentionRange = nullptr;

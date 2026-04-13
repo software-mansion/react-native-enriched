@@ -1,6 +1,6 @@
 #import "LayoutManagerExtension.h"
 #import "ColorExtension.h"
-#import "EnrichedStyleHost.h"
+#import "EnrichedViewHost.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "WeakBox.h"
@@ -49,7 +49,7 @@ static void const *kInputKey = &kInputKey;
                                atPoint:(CGPoint)origin {
   [self my_drawBackgroundForGlyphRange:glyphRange atPoint:origin];
 
-  id<EnrichedStyleHost> host = self.input;
+  id<EnrichedViewHost> host = self.input;
   if (host == nullptr) {
     return;
   }
@@ -62,7 +62,7 @@ static void const *kInputKey = &kInputKey;
   [self drawCodeBlocks:host origin:origin visibleCharRange:visibleCharRange];
 }
 
-- (void)drawCodeBlocks:(id<EnrichedStyleHost>)host
+- (void)drawCodeBlocks:(id<EnrichedViewHost>)host
                 origin:(CGPoint)origin
       visibleCharRange:(NSRange)visibleCharRange {
   CodeBlockStyle *codeBlockStyle = host.stylesDict[@([CodeBlockStyle getType])];
@@ -199,7 +199,7 @@ static void const *kInputKey = &kInputKey;
   return mergedPairs;
 }
 
-- (void)drawBlockQuotes:(id<EnrichedStyleHost>)host
+- (void)drawBlockQuotes:(id<EnrichedViewHost>)host
                  origin:(CGPoint)origin
        visibleCharRange:(NSRange)visibleCharRange {
   BlockQuoteStyle *bqStyle = host.stylesDict[@([BlockQuoteStyle getType])];
@@ -238,7 +238,7 @@ static void const *kInputKey = &kInputKey;
   }
 }
 
-- (void)drawLists:(id<EnrichedStyleHost>)host
+- (void)drawLists:(id<EnrichedViewHost>)host
               origin:(CGPoint)origin
     visibleCharRange:(NSRange)visibleCharRange {
   UnorderedListStyle *ulStyle =
@@ -326,7 +326,7 @@ static void const *kInputKey = &kInputKey;
   }
 }
 
-- (NSString *)getDecimalMarkerForList:(id<EnrichedStyleHost>)host
+- (NSString *)getDecimalMarkerForList:(id<EnrichedViewHost>)host
                             charIndex:(NSUInteger)index {
   NSString *fullText = host.textView.textStorage.string;
   NSInteger itemNumber = 1;
@@ -380,7 +380,7 @@ static void const *kInputKey = &kInputKey;
   return usedRect;
 }
 
-- (void)drawCheckbox:(id<EnrichedStyleHost>)host
+- (void)drawCheckbox:(id<EnrichedViewHost>)host
         markerFormat:(NSString *)markerFormat
               origin:(CGPoint)origin
             usedRect:(CGRect)usedRect {
@@ -398,7 +398,7 @@ static void const *kInputKey = &kInputKey;
   [image drawAtPoint:CGPointMake(boxX, boxY)];
 }
 
-- (void)drawBullet:(id<EnrichedStyleHost>)host
+- (void)drawBullet:(id<EnrichedViewHost>)host
             origin:(CGPoint)origin
           usedRect:(CGRect)usedRect {
   CGFloat gapWidth = [host.config unorderedListGapWidth];
@@ -417,7 +417,7 @@ static void const *kInputKey = &kInputKey;
   CGContextRestoreGState(context);
 }
 
-- (void)drawDecimal:(id<EnrichedStyleHost>)host
+- (void)drawDecimal:(id<EnrichedViewHost>)host
               marker:(NSString *)marker
     markerAttributes:(NSDictionary *)markerAttributes
               origin:(CGPoint)origin

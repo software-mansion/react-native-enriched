@@ -23,11 +23,9 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {                                                                            \
-    .isActive = [self isStyleActive:TYPE_ENUM],                                \
-    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
-    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
-  }
+  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -71,6 +69,36 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 + (BOOL)shouldBeRecycled {
   return NO;
+}
+
+// MARK: - EnrichedViewHost protocol
+
+- (UITextView *)textView {
+  return textView;
+}
+
+- (EnrichedConfig *)config {
+  return config;
+}
+
+- (NSDictionary<NSNumber *, id> *)stylesDict {
+  return stylesDict;
+}
+
+- (AttributesManager *)attributesManager {
+  return attributesManager;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictingStyles {
+  return conflictingStyles;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)blockingStyles {
+  return blockingStyles;
+}
+
+- (NSMutableDictionary<NSAttributedStringKey, id> *)defaultTypingAttributes {
+  return defaultTypingAttributes;
 }
 
 // MARK: - Init
