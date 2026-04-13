@@ -129,7 +129,42 @@ const enrichedInputStyle: EnrichedInputStyle = {
   fontSize: 18,
 };
 
-const htmlStyle: HtmlStyle = {
+export const htmlStyle: HtmlStyle = {
+  h1: {
+    fontSize: 72,
+    bold: true,
+  },
+  h2: {
+    fontSize: 60,
+    bold: true,
+  },
+  h3: {
+    fontSize: 50,
+    bold: true,
+  },
+  h4: {
+    fontSize: 40,
+    bold: true,
+  },
+  h5: {
+    fontSize: 30,
+    bold: true,
+  },
+  h6: {
+    fontSize: 24,
+    bold: true,
+  },
+  blockquote: {
+    borderColor: 'navy',
+    borderWidth: 4,
+    gapWidth: 16,
+    color: 'navy',
+  },
+  codeblock: {
+    color: 'green',
+    borderRadius: 8,
+    backgroundColor: 'grey',
+  },
   code: {
     color: 'purple',
     backgroundColor: 'yellow',

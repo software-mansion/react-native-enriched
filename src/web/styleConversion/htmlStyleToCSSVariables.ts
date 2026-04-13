@@ -33,5 +33,32 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const codeBackgroundColor = toColor(htmlStyle?.code?.backgroundColor);
   if (codeBackgroundColor) vars['--eti-code-bg-color'] = codeBackgroundColor;
 
+  const headingLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
+  for (const level of headingLevels) {
+    const h = htmlStyle?.[level];
+    if (h?.fontSize != null)
+      vars[`--eti-${level}-font-size`] = `${h.fontSize}px`;
+    if (h?.bold != null)
+      vars[`--eti-${level}-font-weight`] = h.bold ? 'bold' : 'normal';
+  }
+
+  const bq = htmlStyle?.blockquote;
+  const bqBorderColor = toColor(bq?.borderColor);
+  if (bqBorderColor) vars['--eti-blockquote-border-color'] = bqBorderColor;
+  if (bq?.borderWidth != null)
+    vars['--eti-blockquote-border-width'] = `${bq.borderWidth}px`;
+  if (bq?.gapWidth != null)
+    vars['--eti-blockquote-gap-width'] = `${bq.gapWidth}px`;
+  const bqColor = toColor(bq?.color);
+  if (bqColor) vars['--eti-blockquote-color'] = bqColor;
+
+  const cb = htmlStyle?.codeblock;
+  const cbBgColor = toColor(cb?.backgroundColor);
+  if (cbBgColor) vars['--eti-codeblock-bg-color'] = cbBgColor;
+  const cbColor = toColor(cb?.color);
+  if (cbColor) vars['--eti-codeblock-color'] = cbColor;
+  if (cb?.borderRadius != null)
+    vars['--eti-codeblock-border-radius'] = `${cb.borderRadius}px`;
+
   return vars as CSSProperties;
 }

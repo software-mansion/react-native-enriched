@@ -26,6 +26,9 @@ import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
 import { EnrichedUnderline } from './formats/EnrichedUnderline';
 import { EnrichedCode } from './formats/EnrichedCode';
+import { EnrichedHeading } from './formats/EnrichedHeading';
+import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
+import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import { StrictMarksPlugin } from './StrictMarksPlugin';
 
 export const EnrichedTextInput = ({
@@ -60,6 +63,9 @@ export const EnrichedTextInput = ({
         EnrichedUnderline,
         EnrichedStrike,
         EnrichedCode,
+        EnrichedHeading,
+        EnrichedBlockquote,
+        EnrichedCodeBlock,
         StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
@@ -125,14 +131,38 @@ export const EnrichedTextInput = ({
       toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
       toggleStrikeThrough: () => editor.chain().focus().toggleStrike().run(),
       toggleInlineCode: () => editor.chain().focus().toggleCode().run(),
-      toggleH1: () => {},
-      toggleH2: () => {},
-      toggleH3: () => {},
-      toggleH4: () => {},
-      toggleH5: () => {},
-      toggleH6: () => {},
-      toggleCodeBlock: () => {},
-      toggleBlockQuote: () => {},
+      toggleH1: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 1 });
+      },
+      toggleH2: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 2 });
+      },
+      toggleH3: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 3 });
+      },
+      toggleH4: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 4 });
+      },
+      toggleH5: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 5 });
+      },
+      toggleH6: () => {
+        editor.commands.focus();
+        editor.commands.toggleHeading({ level: 6 });
+      },
+      toggleCodeBlock: () => {
+        editor.commands.focus();
+        editor.commands.toggleEnrichedCodeBlock();
+      },
+      toggleBlockQuote: () => {
+        editor.commands.focus();
+        editor.commands.toggleBlockquote();
+      },
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       toggleCheckboxList: () => {},

@@ -34,34 +34,59 @@ export const useOnChangeState = (
   }, [editor, onChangeState]);
 };
 
-function makeFormatState(isActive: boolean) {
-  // TODO: Update this function when adding elements that can be conflicting or
-  // blocking. Make sure conflicting and blocking states are in sync between web
-  // and native
-  return { isActive, isConflicting: false, isBlocking: false };
-}
-
 function buildState(editor: Editor): OnChangeStateEvent {
+  const isCodeBlockActive = editor.isActive('enrichedCodeBlock');
+  const isBlockquoteActive = editor.isActive('blockquote');
+  const inlineBlocked = isCodeBlockActive;
+
+  function paragraphFormat(isActive: boolean) {
+    return {
+      isActive,
+      isConflicting: false,
+      isBlocking: false,
+    };
+  }
+
   return {
-    bold: makeFormatState(editor.isActive('bold')),
-    italic: makeFormatState(editor.isActive('italic')),
-    underline: makeFormatState(editor.isActive('underline')),
-    strikeThrough: makeFormatState(editor.isActive('strike')),
-    inlineCode: makeFormatState(editor.isActive('code')),
-    h1: makeFormatState(false),
-    h2: makeFormatState(false),
-    h3: makeFormatState(false),
-    h4: makeFormatState(false),
-    h5: makeFormatState(false),
-    h6: makeFormatState(false),
-    blockQuote: makeFormatState(false),
-    codeBlock: makeFormatState(false),
-    orderedList: makeFormatState(false),
-    unorderedList: makeFormatState(false),
-    checkboxList: makeFormatState(false),
-    link: makeFormatState(false),
-    mention: makeFormatState(false),
-    image: makeFormatState(false),
+    bold: {
+      isActive: editor.isActive('bold'),
+      isConflicting: false,
+      isBlocking: inlineBlocked,
+    },
+    italic: {
+      isActive: editor.isActive('italic'),
+      isConflicting: false,
+      isBlocking: inlineBlocked,
+    },
+    underline: {
+      isActive: editor.isActive('underline'),
+      isConflicting: false,
+      isBlocking: inlineBlocked,
+    },
+    strikeThrough: {
+      isActive: editor.isActive('strike'),
+      isConflicting: false,
+      isBlocking: inlineBlocked,
+    },
+    inlineCode: {
+      isActive: editor.isActive('code'),
+      isConflicting: false,
+      isBlocking: inlineBlocked,
+    },
+    h1: paragraphFormat(editor.isActive('heading', { level: 1 })),
+    h2: paragraphFormat(editor.isActive('heading', { level: 2 })),
+    h3: paragraphFormat(editor.isActive('heading', { level: 3 })),
+    h4: paragraphFormat(editor.isActive('heading', { level: 4 })),
+    h5: paragraphFormat(editor.isActive('heading', { level: 5 })),
+    h6: paragraphFormat(editor.isActive('heading', { level: 6 })),
+    blockQuote: paragraphFormat(isBlockquoteActive),
+    codeBlock: paragraphFormat(isCodeBlockActive),
+    orderedList: paragraphFormat(false),
+    unorderedList: paragraphFormat(false),
+    checkboxList: paragraphFormat(false),
+    link: { isActive: false, isConflicting: false, isBlocking: false },
+    mention: { isActive: false, isConflicting: false, isBlocking: false },
+    image: { isActive: false, isConflicting: false, isBlocking: false },
   };
 }
 

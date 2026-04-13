@@ -86,6 +86,62 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
         editor?.toggleInlineCode();
       },
     },
+    {
+      key: 'h1',
+      label: 'H1',
+      onPress: (editor) => {
+        editor?.toggleH1();
+      },
+    },
+    {
+      key: 'h2',
+      label: 'H2',
+      onPress: (editor) => {
+        editor?.toggleH2();
+      },
+    },
+    {
+      key: 'h3',
+      label: 'H3',
+      onPress: (editor) => {
+        editor?.toggleH3();
+      },
+    },
+    {
+      key: 'h4',
+      label: 'H4',
+      onPress: (editor) => {
+        editor?.toggleH4();
+      },
+    },
+    {
+      key: 'h5',
+      label: 'H5',
+      onPress: (editor) => {
+        editor?.toggleH5();
+      },
+    },
+    {
+      key: 'h6',
+      label: 'H6',
+      onPress: (editor) => {
+        editor?.toggleH6();
+      },
+    },
+    {
+      key: 'blockQuote',
+      label: '❝',
+      onPress: (editor) => {
+        editor?.toggleBlockQuote();
+      },
+    },
+    {
+      key: 'codeBlock',
+      label: '{ }',
+      onPress: (editor) => {
+        editor?.toggleCodeBlock();
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
