@@ -296,6 +296,10 @@ export interface OnPasteImagesEvent {
   }[];
 }
 
+export interface OnMaxLengthExceededEvent {
+  maxLength: Int32;
+}
+
 type Heading = {
   fontSize?: Float;
   bold?: boolean;
@@ -356,6 +360,7 @@ export interface NativeProps extends ViewProps {
   editable?: boolean;
   defaultValue?: string;
   placeholder?: string;
+  maxLength?: Int32;
   placeholderTextColor?: ColorValue;
   mentionIndicators: string[];
   cursorColor?: ColorValue;
@@ -382,6 +387,7 @@ export interface NativeProps extends ViewProps {
   onRequestHtmlResult?: DirectEventHandler<OnRequestHtmlResultEvent>;
   onInputKeyPress?: DirectEventHandler<OnKeyPressEvent>;
   onPasteImages?: DirectEventHandler<OnPasteImagesEvent>;
+  onMaxLengthExceeded?: DirectEventHandler<OnMaxLengthExceededEvent>;
   onContextMenuItemPress?: DirectEventHandler<OnContextMenuItemPressEvent>;
   onSubmitEditing?: BubblingEventHandler<OnSubmitEditing>;
 

@@ -782,6 +782,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.editable = newViewProps.editable;
   }
 
+  if (newViewProps.maxLength != oldViewProps.maxLength) {
+    maxLength = newViewProps.maxLength;
+  }
+
   // useHtmlNormalizer
   if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
     useHtmlNormalizer = newViewProps.useHtmlNormalizer;
@@ -1526,6 +1530,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)emitOnMaxLengthExceededEvent:(NSInteger)limit {
+  auto emitter = [self getEventEmitter];
+  if (emitter != nullptr) {
+    emitter->onMaxLengthExceeded({.maxLength = static_cast<int>(limit)});
+  }
+}
+
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
@@ -1994,6 +2005,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  if (maxLength > 0) {
+    NSString *currentText = textView.textStorage.string ?: @"";
+    NSUInteger proposedLength = currentText.length - range.length + text.length;
+
+    if (proposedLength > maxLength) {
+      [self emitOnMaxLengthExceededEvent:maxLength];
+      return NO;
+    }
+  }
+
   // Check if the user pressed "Enter"
   if ([text isEqualToString:@"\n"]) {
     const bool shouldSubmit = [self textInputShouldSubmitOnReturn];
