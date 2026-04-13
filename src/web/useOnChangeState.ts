@@ -7,9 +7,11 @@ import {
   isAnyParagraphFormatActive,
   isFormatBlocked,
 } from './formats/formatRules';
+import type { HtmlStyle } from '../types';
 
 export const useOnChangeState = (
   editor: Editor | null,
+  htmlStyle: Required<HtmlStyle>,
   onChangeState?: (e: NativeSyntheticEvent<OnChangeStateEvent>) => void
 ) => {
   const lastStateHashRef = useRef<string | null>(null);
@@ -18,7 +20,7 @@ export const useOnChangeState = (
     if (!editor || !onChangeState) return;
 
     const handleUpdate = () => {
-      const state = buildState(editor);
+      const state = buildState(editor, htmlStyle);
       const stateHash = hashState(state);
 
       if (lastStateHashRef.current === stateHash) {
@@ -35,10 +37,13 @@ export const useOnChangeState = (
     return () => {
       editor.off('transaction', handleUpdate);
     };
-  }, [editor, onChangeState]);
+  }, [editor, onChangeState, htmlStyle]);
 };
 
-function buildState(editor: Editor): OnChangeStateEvent {
+function buildState(
+  editor: Editor,
+  htmlStyle: Required<HtmlStyle>
+): OnChangeStateEvent {
   const isBlockquoteActive = editor.isActive('blockquote');
   const isCodeBlockActive = editor.isActive('enrichedCodeBlock');
   const isAnyBlockActive = isAnyParagraphFormatActive(editor);
@@ -47,7 +52,7 @@ function buildState(editor: Editor): OnChangeStateEvent {
     return {
       isActive: editor.isActive(tiptapName),
       isConflicting: false,
-      isBlocking: isFormatBlocked(tiptapName, editor),
+      isBlocking: isFormatBlocked(tiptapName, editor, htmlStyle),
     };
   }
 

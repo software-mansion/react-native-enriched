@@ -18,12 +18,6 @@ export function mergeWithDefaultHtmlStyle(
   return merged as Required<HtmlStyle>;
 }
 
-export function htmlStyleWithDefaultsToCSSVariables(
-  htmlStyle?: HtmlStyle
-): CSSProperties {
-  return htmlStyleToCSSVariables(mergeWithDefaultHtmlStyle(htmlStyle));
-}
-
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
 

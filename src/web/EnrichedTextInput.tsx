@@ -20,7 +20,10 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
-import { htmlStyleWithDefaultsToCSSVariables } from './styleConversion/htmlStyleToCSSVariables';
+import {
+  htmlStyleToCSSVariables,
+  mergeWithDefaultHtmlStyle,
+} from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
@@ -105,7 +108,13 @@ export const EnrichedTextInput = ({
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
-  useOnChangeState(editor, onChangeState);
+
+  const resolvedHtmlStyle = useMemo(
+    () => mergeWithDefaultHtmlStyle(htmlStyle),
+    [htmlStyle]
+  );
+
+  useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
 
   useImperativeHandle(
     ref,
@@ -184,8 +193,8 @@ export const EnrichedTextInput = ({
   );
 
   const cssVars = useMemo(
-    () => htmlStyleWithDefaultsToCSSVariables(htmlStyle),
-    [htmlStyle]
+    () => htmlStyleToCSSVariables(resolvedHtmlStyle),
+    [resolvedHtmlStyle]
   );
 
   const finalStyle = useMemo(
