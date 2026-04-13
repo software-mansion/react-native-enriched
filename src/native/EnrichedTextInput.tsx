@@ -181,6 +181,11 @@ export const EnrichedTextInput = ({
     setValue: (value: string) => {
       Commands.setValue(nullthrows(nativeRef.current), value);
     },
+    insertText: (text: string, start?: number, end?: number) => {
+      const s = start ?? -1;
+      const e = end ?? s;
+      Commands.insertText(nullthrows(nativeRef.current), text, s, e);
+    },
     getHTML: () => {
       return new Promise<string>((resolve, reject) => {
         const requestId = nextHtmlRequestId.current++;
