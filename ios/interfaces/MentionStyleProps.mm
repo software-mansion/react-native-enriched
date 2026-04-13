@@ -34,6 +34,23 @@
     nativeProps.decorationLine = DecorationUnderline;
   }
 
+  // text only
+  if (folly["pressColor"].isNumber()) {
+    facebook::react::SharedColor pressColor = facebook::react::SharedColor(
+        facebook::react::Color(int32_t(folly["pressColor"].asInt())));
+    nativeProps.pressColor = RCTUIColorFromSharedColor(pressColor);
+  } else {
+    nativeProps.pressColor = [UIColor blueColor];
+  }
+
+  if (folly["pressBackgroundColor"].isNumber()) {
+    facebook::react::SharedColor bgColor = facebook::react::SharedColor(
+        facebook::react::Color(int32_t(folly["pressBackgroundColor"].asInt())));
+    nativeProps.pressBackgroundColor = RCTUIColorFromSharedColor(bgColor);
+  } else {
+    nativeProps.pressBackgroundColor = [UIColor yellowColor];
+  }
+
   return nativeProps;
 }
 

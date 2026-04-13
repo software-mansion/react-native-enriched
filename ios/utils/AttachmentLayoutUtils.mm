@@ -33,7 +33,7 @@
 
 + (NSMutableDictionary<NSValue *, UIImageView *> *)
     layoutAttachmentsInTextView:(UITextView *)textView
-                         config:(InputConfig *)config
+                         config:(EnrichedConfig *)config
                   existingViews:
                       (NSMutableDictionary<NSValue *, UIImageView *> *)
                           attachmentViews {
@@ -107,7 +107,7 @@
 + (CGRect)frameForAttachment:(ImageAttachment *)attachment
                      atRange:(NSRange)range
                     textView:(UITextView *)textView
-                      config:(InputConfig *)config {
+                      config:(EnrichedConfig *)config {
   NSLayoutManager *layoutManager = textView.layoutManager;
   NSTextContainer *textContainer = textView.textContainer;
   NSTextStorage *storage = textView.textStorage;

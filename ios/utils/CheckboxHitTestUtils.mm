@@ -1,6 +1,6 @@
 #import "CheckboxHitTestUtils.h"
+#import "EnrichedConfig.h"
 #import "EnrichedTextInputView.h"
-#import "InputConfig.h"
 #import "StyleHeaders.h"
 
 static const CGFloat kCheckboxHitSlopLeft = 8.0;
@@ -56,7 +56,7 @@ static const CGFloat kCheckboxHitSlopVertical = 6.0;
                             inInput:(EnrichedTextInputView *)input {
   UITextView *textView = input->textView;
   NSLayoutManager *layoutManager = textView.layoutManager;
-  InputConfig *config = input->config;
+  EnrichedConfig *config = input->config;
 
   if (!config) {
     return CGRectNull;

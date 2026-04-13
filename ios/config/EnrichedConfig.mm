@@ -1,7 +1,7 @@
-#import <InputConfig.h>
+#import <EnrichedConfig.h>
 #import <React/RCTFont.h>
 
-@implementation InputConfig {
+@implementation EnrichedConfig {
   UIColor *_primaryColor;
   NSNumber *_primaryFontSize;
   CGFloat _primaryLineHeight;
@@ -54,6 +54,9 @@
   UIColor *_checkboxListBoxColor;
   UIImage *_checkboxCheckedImage;
   UIImage *_checkboxUncheckedImage;
+
+  // text only
+  UIColor *_linkPressColor;
 }
 
 - (instancetype)init {
@@ -65,7 +68,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  InputConfig *copy = [[[self class] allocWithZone:zone] init];
+  EnrichedConfig *copy = [[[self class] allocWithZone:zone] init];
   copy->_primaryColor = [_primaryColor copy];
   copy->_primaryFontSize = [_primaryFontSize copy];
   copy->_primaryLineHeight = _primaryLineHeight;
@@ -115,6 +118,9 @@
   copy->_checkboxListBoxColor = [_checkboxListBoxColor copy];
   copy->_checkboxCheckedImage = _checkboxCheckedImage;
   copy->_checkboxUncheckedImage = _checkboxUncheckedImage;
+
+  // text only
+  copy->_linkPressColor = [_linkPressColor copy];
   return copy;
 }
 
@@ -659,6 +665,16 @@
   UIGraphicsEndImageContext();
 
   return result;
+}
+
+// MARK: - Text only props
+
+- (UIColor *)linkPressColor {
+  return _linkPressColor;
+}
+
+- (void)setLinkPressColor:(UIColor *)newValue {
+  _linkPressColor = newValue;
 }
 
 @end

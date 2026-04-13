@@ -163,13 +163,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // initial config
   if (config == nullptr) {
     isFirstMount = YES;
-    config = [[InputConfig alloc] init];
+    config = [[EnrichedConfig alloc] init];
   }
 
   // any style prop changes:
   // firstly we create the new config for the changes
 
-  InputConfig *newConfig = [config copy];
+  EnrichedConfig *newConfig = [config copy];
 
   if (newViewProps.color != oldViewProps.color) {
     if (isColorMeaningful(newViewProps.color)) {

@@ -1,6 +1,6 @@
 #pragma once
+#import "EnrichedConfig.h"
 #import "ImageAttachment.h"
-#import "InputConfig.h"
 #import <UIKit/UIKit.h>
 
 @interface AttachmentLayoutUtils : NSObject
@@ -11,7 +11,7 @@
 
 + (NSMutableDictionary<NSValue *, UIImageView *> *)
     layoutAttachmentsInTextView:(UITextView *)textView
-                         config:(InputConfig *)config
+                         config:(EnrichedConfig *)config
                   existingViews:
                       (NSMutableDictionary<NSValue *, UIImageView *> *)
                           attachmentViews;
@@ -19,6 +19,6 @@
 + (CGRect)frameForAttachment:(ImageAttachment *)attachment
                      atRange:(NSRange)range
                     textView:(UITextView *)textView
-                      config:(InputConfig *)config;
+                      config:(EnrichedConfig *)config;
 
 @end
