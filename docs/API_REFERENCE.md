@@ -477,7 +477,6 @@ Additionally following [TextStyle](https://reactnative.dev/docs/text#style) prop
 - fontWeight
 - lineHeight
 - fontStyle only on Android
-- lineHeight only on iOS
 
 | Type                                                                                                               | Default Value | Platform |
 | ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
