@@ -46,7 +46,8 @@ open class EnrichedOrderedListSpan(
       val width = paint.measureText(text)
 
       val yPosition = baseline.toFloat()
-      val xPosition = (enrichedStyle.olMarginLeft + x - width / 2) * dir
+      val markerBaseX = if (dir > 0) 0 else x
+      val xPosition = (enrichedStyle.olMarginLeft + markerBaseX - width / 2) * dir
 
       val originalColor = paint.color
       val originalTypeface = paint.typeface

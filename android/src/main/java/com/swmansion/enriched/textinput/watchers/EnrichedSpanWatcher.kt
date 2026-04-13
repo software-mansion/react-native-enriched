@@ -2,6 +2,7 @@ package com.swmansion.enriched.textinput.watchers
 
 import android.text.SpanWatcher
 import android.text.Spannable
+import android.text.style.AlignmentSpan
 import android.text.style.ParagraphStyle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -85,8 +86,8 @@ class EnrichedSpanWatcher(
     // Do not parse spannable and emit event if onChangeHtml is not provided
     if (!view.shouldEmitHtml) return
 
-    // Emit event only if we change one of ours spans
-    if (what != null && what !is EnrichedInputSpan) return
+    // Emit event when our spans change or when paragraph alignment changes.
+    if (what != null && what !is EnrichedInputSpan && what !is AlignmentSpan) return
 
     val html = EnrichedParser.toHtml(s)
     if (html == previousHtml) return

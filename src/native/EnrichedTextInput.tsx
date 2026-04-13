@@ -270,6 +270,11 @@ export const EnrichedTextInput = ({
     setSelection: (start: number, end: number) => {
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
     },
+    setTextAlignment: (
+      alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+    ) => {
+      Commands.setTextAlignment(nullthrows(nativeRef.current), alignment);
+    },
   }));
 
   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {

@@ -43,6 +43,30 @@ fun Spannable.getParagraphBounds(
 
 fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> = this.getParagraphBounds(index, index)
 
+/**
+ * Returns separate paragraph ranges within the given range (inclusive).
+ * Mirrors iOS ParagraphsUtils.getSeparateParagraphsRangesIn:range: for alignment and list handling.
+ */
+fun Spannable.getParagraphRangesInRange(
+  start: Int,
+  end: Int,
+): List<Pair<Int, Int>> {
+  val (safeStart, safeEnd) = getSafeSpanBoundaries(start, end)
+  if (safeStart >= length) return emptyList()
+
+  val result = mutableListOf<Pair<Int, Int>>()
+  var position = safeStart
+
+  while (position <= safeEnd && position < length) {
+    val (paragraphStart, paragraphEnd) = getParagraphBounds(position, position)
+    if (paragraphStart >= safeEnd) break
+    result.add(Pair(paragraphStart, paragraphEnd.coerceAtMost(length)))
+    position = paragraphEnd + 1
+  }
+
+  return result
+}
+
 fun Spannable.mergeSpannables(
   start: Int,
   end: Int,

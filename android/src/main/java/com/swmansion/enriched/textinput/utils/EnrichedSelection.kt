@@ -55,6 +55,9 @@ class EnrichedSelection(
     start = finalStart
     end = finalEnd
     validateStyles()
+    if (!view.isDuringTransaction) {
+      view.syncTypingAlignmentWithSelection(finalStart, finalEnd)
+    }
     emitSelectionChangeEvent(view.text, finalStart, finalEnd)
   }
 
