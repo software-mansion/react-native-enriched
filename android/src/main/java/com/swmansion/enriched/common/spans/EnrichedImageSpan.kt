@@ -8,6 +8,8 @@ import android.graphics.Paint
 import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.Spannable
 import android.text.style.ImageSpan
@@ -96,15 +98,17 @@ open class EnrichedImageSpan :
       if (spannable == null) {
         return@onLoaded
       }
+      // Ensure we are on the Main Thread before modifying the Spannable
+      Handler(Looper.getMainLooper()).post {
+        val start = spannable.getSpanStart(this@EnrichedImageSpan)
+        val end = spannable.getSpanEnd(this@EnrichedImageSpan)
 
-      val start = spannable.getSpanStart(this@EnrichedImageSpan)
-      val end = spannable.getSpanEnd(this@EnrichedImageSpan)
-
-      if (start != -1 && end != -1) {
-        // trick for adding empty span to force redraw when image is loaded
-        val redrawSpan = ForceRedrawSpan()
-        spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        spannable.removeSpan(redrawSpan)
+        if (start != -1 && end != -1) {
+          // trick for adding empty span to force redraw when image is loaded
+          val redrawSpan = ForceRedrawSpan()
+          spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+          spannable.removeSpan(redrawSpan)
+        }
       }
     }
   }
