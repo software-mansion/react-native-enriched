@@ -3,6 +3,10 @@ import { type Editor } from '@tiptap/react';
 import type { OnChangeStateEvent } from '../types';
 import type { NativeSyntheticEvent } from 'react-native';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
+import {
+  isAnyParagraphFormatActive,
+  isFormatBlocked,
+} from './formats/formatRules';
 
 export const useOnChangeState = (
   editor: Editor | null,
@@ -35,44 +39,32 @@ export const useOnChangeState = (
 };
 
 function buildState(editor: Editor): OnChangeStateEvent {
-  const isCodeBlockActive = editor.isActive('enrichedCodeBlock');
   const isBlockquoteActive = editor.isActive('blockquote');
-  const inlineBlocked = isCodeBlockActive;
+  const isCodeBlockActive = editor.isActive('enrichedCodeBlock');
+  const isAnyBlockActive = isAnyParagraphFormatActive(editor);
+
+  function inlineFormat(tiptapName: string) {
+    return {
+      isActive: editor.isActive(tiptapName),
+      isConflicting: false,
+      isBlocking: isFormatBlocked(tiptapName, editor),
+    };
+  }
 
   function paragraphFormat(isActive: boolean) {
     return {
       isActive,
-      isConflicting: false,
+      isConflicting: !isActive && isAnyBlockActive,
       isBlocking: false,
     };
   }
 
   return {
-    bold: {
-      isActive: editor.isActive('bold'),
-      isConflicting: false,
-      isBlocking: inlineBlocked,
-    },
-    italic: {
-      isActive: editor.isActive('italic'),
-      isConflicting: false,
-      isBlocking: inlineBlocked,
-    },
-    underline: {
-      isActive: editor.isActive('underline'),
-      isConflicting: false,
-      isBlocking: inlineBlocked,
-    },
-    strikeThrough: {
-      isActive: editor.isActive('strike'),
-      isConflicting: false,
-      isBlocking: inlineBlocked,
-    },
-    inlineCode: {
-      isActive: editor.isActive('code'),
-      isConflicting: false,
-      isBlocking: inlineBlocked,
-    },
+    bold: inlineFormat('bold'),
+    italic: inlineFormat('italic'),
+    underline: inlineFormat('underline'),
+    strikeThrough: inlineFormat('strike'),
+    inlineCode: inlineFormat('code'),
     h1: paragraphFormat(editor.isActive('heading', { level: 1 })),
     h2: paragraphFormat(editor.isActive('heading', { level: 2 })),
     h3: paragraphFormat(editor.isActive('heading', { level: 3 })),

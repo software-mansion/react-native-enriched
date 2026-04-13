@@ -1,4 +1,5 @@
 import Blockquote from '@tiptap/extension-blockquote';
+import { toggleParagraphFormat } from './formatRules';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -8,11 +9,9 @@ declare module '@tiptap/core' {
   }
 }
 
-// Native uses <codeblock><p>…</p></codeblock> — the same block+ structure as
-// blockquote, so we extend Blockquote and swap the tag.
 export const EnrichedCodeBlock = Blockquote.extend({
   name: 'enrichedCodeBlock',
-  content: '(paragraph | heading)+',
+  content: '(paragraph)+',
 
   parseHTML() {
     return [{ tag: 'codeblock' }];
@@ -26,8 +25,14 @@ export const EnrichedCodeBlock = Blockquote.extend({
     return {
       toggleEnrichedCodeBlock:
         () =>
-        ({ commands }) =>
-          commands.toggleWrap(this.name),
+        ({ editor, commands, chain }) =>
+          toggleParagraphFormat(
+            editor,
+            chain(),
+            () => editor.isActive('enrichedCodeBlock'),
+            () => commands.lift('enrichedCodeBlock'),
+            (c) => c.toggleWrap('enrichedCodeBlock')
+          ),
     };
   },
 
