@@ -16,9 +16,9 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  [self.input->textView.textStorage addAttribute:NSUnderlineStyleAttributeName
-                                           value:@(NSUnderlineStyleSingle)
-                                           range:range];
+  [self.host.textView.textStorage addAttribute:NSUnderlineStyleAttributeName
+                                         value:@(NSUnderlineStyleSingle)
+                                         range:range];
 }
 
 @end

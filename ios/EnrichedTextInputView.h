@@ -1,7 +1,8 @@
 #pragma once
 #import "AttributesManager.h"
 #import "BaseStyleProtocol.h"
-#import "InputConfig.h"
+#import "EnrichedConfig.h"
+#import "EnrichedViewHost.h"
 #import "InputParser.h"
 #import "InputTextView.h"
 #import "LinkData.h"
@@ -15,11 +16,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EnrichedTextInputView
-    : RCTViewComponentView <MediaAttachmentDelegate> {
+    : RCTViewComponentView <MediaAttachmentDelegate, EnrichedViewHost> {
 @public
   InputTextView *textView;
 @public
-  InputConfig *config;
+  EnrichedConfig *config;
 @public
   InputParser *parser;
 @public
@@ -44,8 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range;
+
 @end
 
 NS_ASSUME_NONNULL_END

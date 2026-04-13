@@ -4,7 +4,7 @@
 #import "TextDecorationLineEnum.h"
 #import <UIKit/UIKit.h>
 
-@interface InputConfig : NSObject <NSCopying>
+@interface EnrichedConfig : NSObject <NSCopying>
 - (instancetype)init;
 - (UIColor *)primaryColor;
 - (void)setPrimaryColor:(UIColor *)newValue;
@@ -101,4 +101,8 @@
 - (void)setCheckboxListBoxColor:(UIColor *)newValue;
 - (UIImage *)checkboxCheckedImage;
 - (UIImage *)checkboxUncheckedImage;
+
+// MARK: - Text only props
+- (UIColor *)linkPressColor;
+- (void)setLinkPressColor:(UIColor *)newValue;
 @end

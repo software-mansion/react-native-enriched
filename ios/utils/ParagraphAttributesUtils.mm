@@ -2,6 +2,7 @@
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 
 @implementation ParagraphAttributesUtils
@@ -159,12 +160,14 @@
 
   StyleType type = [[leftParagraphStyle class] getType];
 
-  NSArray *conflictingStyles = [typedInput
+  NSArray *conflictingStyles = [StyleUtils
       getPresentStyleTypesFrom:typedInput->conflictingStyles[@(type)]
-                         range:rightRange];
+                         range:rightRange
+                       forHost:typedInput];
   NSArray *blockingStyles =
-      [typedInput getPresentStyleTypesFrom:typedInput->blockingStyles[@(type)]
-                                     range:rightRange];
+      [StyleUtils getPresentStyleTypesFrom:typedInput->blockingStyles[@(type)]
+                                     range:rightRange
+                                   forHost:typedInput];
   NSArray *allToBeRemoved =
       [conflictingStyles arrayByAddingObjectsFromArray:blockingStyles];
 

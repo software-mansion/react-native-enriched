@@ -5,7 +5,7 @@
 @protocol BaseStyleProtocol <NSObject>
 + (StyleType)getStyleType;
 + (BOOL)isParagraphStyle;
-- (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
+- (instancetype _Nonnull)initWithHost:(id _Nonnull)host;
 - (void)applyStyle:(NSRange)range;
 - (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr;
 - (void)removeAttributes:(NSRange)range;

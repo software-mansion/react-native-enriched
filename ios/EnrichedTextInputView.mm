@@ -1,4 +1,5 @@
 #import "EnrichedTextInputView.h"
+#import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
 #import "ImageAttachment.h"
@@ -8,6 +9,7 @@
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextBlockTapGestureRecognizer.h"
 #import "UIView+React.h"
 #import "WordsUtils.h"
@@ -21,11 +23,9 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {                                                                            \
-    .isActive = [self isStyleActive:TYPE_ENUM],                                \
-    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
-    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
-  }
+  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -71,6 +71,36 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return NO;
 }
 
+// MARK: - EnrichedViewHost protocol
+
+- (UITextView *)textView {
+  return textView;
+}
+
+- (EnrichedConfig *)config {
+  return config;
+}
+
+- (NSDictionary<NSNumber *, id> *)stylesDict {
+  return stylesDict;
+}
+
+- (AttributesManager *)attributesManager {
+  return attributesManager;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictingStyles {
+  return conflictingStyles;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)blockingStyles {
+  return blockingStyles;
+}
+
+- (NSMutableDictionary<NSAttributedStringKey, id> *)defaultTypingAttributes {
+  return defaultTypingAttributes;
+}
+
 // MARK: - Init
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -103,149 +133,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   defaultTypingAttributes =
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
 
-  stylesDict = @{
-    @([BoldStyle getType]) : [[BoldStyle alloc] initWithInput:self],
-    @([ItalicStyle getType]) : [[ItalicStyle alloc] initWithInput:self],
-    @([UnderlineStyle getType]) : [[UnderlineStyle alloc] initWithInput:self],
-    @([StrikethroughStyle getType]) :
-        [[StrikethroughStyle alloc] initWithInput:self],
-    @([InlineCodeStyle getType]) : [[InlineCodeStyle alloc] initWithInput:self],
-    @([LinkStyle getType]) : [[LinkStyle alloc] initWithInput:self],
-    @([MentionStyle getType]) : [[MentionStyle alloc] initWithInput:self],
-    @([H1Style getType]) : [[H1Style alloc] initWithInput:self],
-    @([H2Style getType]) : [[H2Style alloc] initWithInput:self],
-    @([H3Style getType]) : [[H3Style alloc] initWithInput:self],
-    @([H4Style getType]) : [[H4Style alloc] initWithInput:self],
-    @([H5Style getType]) : [[H5Style alloc] initWithInput:self],
-    @([H6Style getType]) : [[H6Style alloc] initWithInput:self],
-    @([UnorderedListStyle getType]) :
-        [[UnorderedListStyle alloc] initWithInput:self],
-    @([OrderedListStyle getType]) :
-        [[OrderedListStyle alloc] initWithInput:self],
-    @([CheckboxListStyle getType]) :
-        [[CheckboxListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getType]) : [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getType]) : [[CodeBlockStyle alloc] initWithInput:self],
-    @([ImageStyle getType]) : [[ImageStyle alloc] initWithInput:self]
-  };
-
-  conflictingStyles = [@{
-    @([BoldStyle getType]) : @[],
-    @([ItalicStyle getType]) : @[],
-    @([UnderlineStyle getType]) : @[],
-    @([StrikethroughStyle getType]) : @[],
-    @([InlineCodeStyle getType]) :
-        @[ @([LinkStyle getType]), @([MentionStyle getType]) ],
-    @([LinkStyle getType]) : @[
-      @([InlineCodeStyle getType]), @([LinkStyle getType]),
-      @([MentionStyle getType])
-    ],
-    @([MentionStyle getType]) :
-        @[ @([InlineCodeStyle getType]), @([LinkStyle getType]) ],
-    @([H1Style getType]) : @[
-      @([H2Style getType]), @([H3Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H2Style getType]) : @[
-      @([H1Style getType]), @([H3Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H3Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H4Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H4Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H5Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([H6Style getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([UnorderedListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([OrderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([OrderedListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([BlockQuoteStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([CheckboxListStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([CodeBlockStyle getType])
-    ],
-    @([BlockQuoteStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([CodeBlockStyle getType]), @([CheckboxListStyle getType])
-    ],
-    @([CodeBlockStyle getType]) : @[
-      @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
-      @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
-      @([BoldStyle getType]), @([UnderlineStyle getType]),
-      @([ItalicStyle getType]), @([StrikethroughStyle getType]),
-      @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
-      @([BlockQuoteStyle getType]), @([InlineCodeStyle getType]),
-      @([MentionStyle getType]), @([LinkStyle getType]),
-      @([CheckboxListStyle getType])
-    ],
-    @([ImageStyle getType]) :
-        @[ @([LinkStyle getType]), @([MentionStyle getType]) ]
-  } mutableCopy];
-
-  blockingStyles = [@{
-    @([BoldStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([ItalicStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([UnderlineStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
-    @([InlineCodeStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([LinkStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([MentionStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([H1Style getType]) : @[],
-    @([H2Style getType]) : @[],
-    @([H3Style getType]) : @[],
-    @([H4Style getType]) : @[],
-    @([H5Style getType]) : @[],
-    @([H6Style getType]) : @[],
-    @([UnorderedListStyle getType]) : @[],
-    @([OrderedListStyle getType]) : @[],
-    @([CheckboxListStyle getType]) : @[],
-    @([BlockQuoteStyle getType]) : @[],
-    @([CodeBlockStyle getType]) : @[],
-    @([ImageStyle getType]) : @[ @([InlineCodeStyle getType]) ]
-  } mutableCopy];
+  stylesDict = [StyleUtils stylesDictForHost:self isInput:YES];
+  conflictingStyles = [[StyleUtils conflictMap] mutableCopy];
+  blockingStyles = [[StyleUtils blockingMap] mutableCopy];
 
   parser = [[InputParser alloc] initWithInput:self];
   _attachmentViews = [[NSMutableDictionary alloc] init];
@@ -301,13 +191,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // initial config
   if (config == nullptr) {
     isFirstMount = YES;
-    config = [[InputConfig alloc] init];
+    config = [[EnrichedConfig alloc] init];
   }
 
   // any style prop changes:
   // firstly we create the new config for the changes
 
-  InputConfig *newConfig = [config copy];
+  EnrichedConfig *newConfig = [config copy];
 
   if (newViewProps.color != oldViewProps.color) {
     if (isColorMeaningful(newViewProps.color)) {
@@ -369,11 +259,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h1.bold) {
-      [self addStyleBlock:H1 to:Bold];
-      [self addStyleConflict:Bold to:H1];
+      [StyleUtils addStyleBlock:H1 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H1 forHost:self];
     } else {
-      [self removeStyleBlock:H1 from:Bold];
-      [self removeStyleConflict:Bold from:H1];
+      [StyleUtils removeStyleBlock:H1 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H1 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -390,11 +280,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h2.bold) {
-      [self addStyleBlock:H2 to:Bold];
-      [self addStyleConflict:Bold to:H2];
+      [StyleUtils addStyleBlock:H2 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H2 forHost:self];
     } else {
-      [self removeStyleBlock:H2 from:Bold];
-      [self removeStyleConflict:Bold from:H2];
+      [StyleUtils removeStyleBlock:H2 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H2 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -411,11 +301,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h3.bold) {
-      [self addStyleBlock:H3 to:Bold];
-      [self addStyleConflict:Bold to:H3];
+      [StyleUtils addStyleBlock:H3 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H3 forHost:self];
     } else {
-      [self removeStyleBlock:H3 from:Bold];
-      [self removeStyleConflict:Bold from:H3];
+      [StyleUtils removeStyleBlock:H3 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H3 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -432,11 +322,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h4.bold) {
-      [self addStyleBlock:H4 to:Bold];
-      [self addStyleConflict:Bold to:H4];
+      [StyleUtils addStyleBlock:H4 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H4 forHost:self];
     } else {
-      [self removeStyleBlock:H4 from:Bold];
-      [self removeStyleConflict:Bold from:H4];
+      [StyleUtils removeStyleBlock:H4 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H4 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -453,11 +343,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h5.bold) {
-      [self addStyleBlock:H5 to:Bold];
-      [self addStyleConflict:Bold to:H5];
+      [StyleUtils addStyleBlock:H5 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H5 forHost:self];
     } else {
-      [self removeStyleBlock:H5 from:Bold];
-      [self removeStyleConflict:Bold from:H5];
+      [StyleUtils removeStyleBlock:H5 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H5 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -474,11 +364,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     // Update style blocks and conflicts for bold
     if (newViewProps.htmlStyle.h6.bold) {
-      [self addStyleBlock:H6 to:Bold];
-      [self addStyleConflict:Bold to:H6];
+      [StyleUtils addStyleBlock:H6 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H6 forHost:self];
     } else {
-      [self removeStyleBlock:H6 from:Bold];
-      [self removeStyleConflict:Bold from:H6];
+      [StyleUtils removeStyleBlock:H6 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H6 forHost:self];
     }
 
     stylePropChanged = YES;
@@ -1233,38 +1123,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
          [_submitBehavior isEqualToString:@"submit"];
 }
 
-- (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if (![blocksArr containsObject:@(blocking)]) {
-    [blocksArr addObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
-- (void)removeStyleBlock:(StyleType)blocking from:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if ([blocksArr containsObject:@(blocking)]) {
-    [blocksArr removeObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
-- (void)addStyleConflict:(StyleType)conflicting to:(StyleType)conflicted {
-  NSMutableArray *conflictsArr = [conflictingStyles[@(conflicted)] mutableCopy];
-  if (![conflictsArr containsObject:@(conflicting)]) {
-    [conflictsArr addObject:@(conflicting)];
-    conflictingStyles[@(conflicted)] = conflictsArr;
-  }
-}
-
-- (void)removeStyleConflict:(StyleType)conflicting from:(StyleType)conflicted {
-  NSMutableArray *conflictsArr = [conflictingStyles[@(conflicted)] mutableCopy];
-  if ([conflictsArr containsObject:@(conflicting)]) {
-    [conflictsArr removeObject:@(conflicting)];
-    conflictingStyles[@(conflicted)] = conflictsArr;
-  }
-}
-
 // MARK: - Native commands and events
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
@@ -1648,55 +1506,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-// returns false when style shouldn't be applied and true when it can be
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
-  // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking =
-      [self getPresentStyleTypesFrom:blockingStyles[@(type)] range:range];
-  if (blocking.count != 0) {
-    return NO;
-  }
-
-  // handle conflicting styles: remove styles within the range
-  NSArray<NSNumber *> *conflicting =
-      [self getPresentStyleTypesFrom:conflictingStyles[@(type)] range:range];
-  if (conflicting.count != 0) {
-    for (NSNumber *type in conflicting) {
-      StyleBase *style = stylesDict[type];
-
-      if ([style isParagraph]) {
-        // for paragraph styles we can just call remove since it will pick up
-        // proper paragraph range
-        [style remove:range withDirtyRange:YES];
-      } else {
-        // for inline styles we have to differentiate betweeen normal and typing
-        // attributes removal
-        range.length >= 1 ? [style remove:range withDirtyRange:YES]
-                          : [style removeTyping];
-      }
-    }
-  }
-  return YES;
-}
-
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range {
-  NSMutableArray<NSNumber *> *resultArray =
-      [[NSMutableArray<NSNumber *> alloc] init];
-  for (NSNumber *type in types) {
-    StyleBase *style = stylesDict[type];
-
-    if (range.length >= 1) {
-      if ([style any:range]) {
-        [resultArray addObject:type];
-      }
-    } else {
-      if ([style detect:range]) {
-        [resultArray addObject:type];
-      }
-    }
-  }
-  return resultArray;
+  return [StyleUtils handleStyleBlocksAndConflicts:type
+                                             range:range
+                                           forHost:self];
 }
 
 - (void)manageSelectionBasedChanges {
@@ -2149,7 +1962,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     if (checkboxStyle) {
       NSUInteger charIndex = (NSUInteger)gr.characterIndex;
-      [checkboxStyle toggleCheckedAt:charIndex];
+      [checkboxStyle toggleCheckedAt:charIndex withDirtyRange:YES];
       [self anyTextMayHaveBeenModified];
 
       NSString *fullText = textView.textStorage.string;
@@ -2205,129 +2018,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // MARK: - Media attachments delegate
 
 - (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
-  NSTextStorage *storage = textView.textStorage;
-  NSRange fullRange = NSMakeRange(0, storage.length);
-
-  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
-
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:fullRange
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if (value == attachment) {
-                       foundRange = range;
-                       *stop = YES;
-                     }
-                   }];
-
-  if (foundRange.location == NSNotFound) {
-    return;
-  }
-
-  [storage edited:NSTextStorageEditedAttributes
-               range:foundRange
-      changeInLength:0];
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self layoutAttachments];
-  });
+  [AttachmentLayoutUtils handleAttachmentUpdate:attachment
+                                       textView:textView
+                                  onLayoutBlock:^{
+                                    [self layoutAttachments];
+                                  }];
 }
 
 // MARK: - Image/GIF Overlay Management
 
 - (void)layoutAttachments {
-  NSTextStorage *storage = textView.textStorage;
-  NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
-      [NSMutableDictionary dictionary];
-
-  // Iterate over the entire text to find ImageAttachments
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:NSMakeRange(0, storage.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if ([value isKindOfClass:[ImageAttachment class]]) {
-                       ImageAttachment *attachment = (ImageAttachment *)value;
-
-                       CGRect rect = [self frameForAttachment:attachment
-                                                      atRange:range];
-
-                       // Get or Create the UIImageView for this specific
-                       // attachment key
-                       NSValue *key =
-                           [NSValue valueWithNonretainedObject:attachment];
-                       UIImageView *imgView = _attachmentViews[key];
-
-                       if (!imgView) {
-                         // It doesn't exist yet, create it
-                         imgView = [[UIImageView alloc] initWithFrame:rect];
-                         imgView.contentMode = UIViewContentModeScaleAspectFit;
-                         imgView.tintColor = [UIColor labelColor];
-
-                         // Add it directly to the TextView
-                         [textView addSubview:imgView];
-                       }
-
-                       // Update position (in case text moved/scrolled)
-                       if (!CGRectEqualToRect(imgView.frame, rect)) {
-                         imgView.frame = rect;
-                       }
-                       UIImage *targetImage =
-                           attachment.storedAnimatedImage ?: attachment.image;
-
-                       // Only set if different to avoid resetting the animation
-                       // loop
-                       if (imgView.image != targetImage) {
-                         imgView.image = targetImage;
-                       }
-
-                       // Ensure it is visible on top
-                       imgView.hidden = NO;
-                       [textView bringSubviewToFront:imgView];
-
-                       activeAttachmentViews[key] = imgView;
-                       // Remove from the old map so we know it has been claimed
-                       [_attachmentViews removeObjectForKey:key];
-                     }
-                   }];
-
-  // Everything remaining in _attachmentViews is dead or off-screen
-  for (UIImageView *danglingView in _attachmentViews.allValues) {
-    [danglingView removeFromSuperview];
-  }
-  _attachmentViews = activeAttachmentViews;
-}
-
-- (CGRect)frameForAttachment:(ImageAttachment *)attachment
-                     atRange:(NSRange)range {
-  NSLayoutManager *layoutManager = textView.layoutManager;
-  NSTextContainer *textContainer = textView.textContainer;
-  NSTextStorage *storage = textView.textStorage;
-
-  NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range
-                                             actualCharacterRange:NULL];
-  CGRect glyphRect = [layoutManager boundingRectForGlyphRange:glyphRange
-                                              inTextContainer:textContainer];
-
-  CGRect lineRect =
-      [layoutManager lineFragmentRectForGlyphAtIndex:glyphRange.location
-                                      effectiveRange:NULL];
-  CGSize attachmentSize = attachment.bounds.size;
-
-  UIFont *font = [storage attribute:NSFontAttributeName
-                            atIndex:range.location
-                     effectiveRange:NULL];
-  if (!font) {
-    font = [config primaryFont];
-  }
-
-  // Calculate (Baseline Alignment)
-  CGFloat targetY =
-      CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
-  CGRect rect =
-      CGRectMake(glyphRect.origin.x + textView.textContainerInset.left,
-                 targetY + textView.textContainerInset.top,
-                 attachmentSize.width, attachmentSize.height);
-
-  return CGRectIntegral(rect);
+  _attachmentViews =
+      [AttachmentLayoutUtils layoutAttachmentsInTextView:textView
+                                                  config:config
+                                           existingViews:_attachmentViews];
 }
 @end

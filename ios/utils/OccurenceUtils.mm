@@ -4,12 +4,12 @@
 @implementation OccurenceUtils
 
 + (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
   __block NSInteger totalLength = 0;
-  [input->textView.textStorage
+  [host.textView.textStorage
       enumerateAttribute:key
                  inRange:range
                  options:0
@@ -26,24 +26,24 @@
 // it means that first character of paragraph will be checked instead if the
 // detection is not in input's selected range and at the end of the input
 + (BOOL)detect:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           atIndex:(NSUInteger)index
     checkPrevious:(BOOL)checkPrev
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
   NSRange detectionRange = NSMakeRange(index, 0);
   id attrValue;
-  if (NSEqualRanges(input->textView.selectedRange, detectionRange)) {
-    attrValue = input->textView.typingAttributes[key];
-  } else if (index == input->textView.textStorage.string.length) {
+  if (NSEqualRanges(host.textView.selectedRange, detectionRange)) {
+    attrValue = host.textView.typingAttributes[key];
+  } else if (index == host.textView.textStorage.string.length) {
     if (checkPrev) {
-      NSRange paragraphRange = [input->textView.textStorage.string
+      NSRange paragraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:detectionRange];
       if (paragraphRange.location == detectionRange.location) {
         return NO;
       } else {
         return [self detect:key
-                  withInput:input
+                   withHost:host
                     inRange:NSMakeRange(paragraphRange.location, 1)
               withCondition:condition];
       }
@@ -52,21 +52,21 @@
     }
   } else {
     NSRange attrRange = NSMakeRange(0, 0);
-    attrValue = [input->textView.textStorage attribute:key
-                                               atIndex:index
-                                        effectiveRange:&attrRange];
+    attrValue = [host.textView.textStorage attribute:key
+                                             atIndex:index
+                                      effectiveRange:&attrRange];
   }
   return condition(attrValue, detectionRange);
 }
 
 + (BOOL)detectMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-             withInput:(EnrichedTextInputView *_Nonnull)input
+              withHost:(id<EnrichedViewHost> _Nonnull)host
                inRange:(NSRange)range
          withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                      NSRange range))condition {
   __block NSInteger totalLength = 0;
   for (NSString *key in keys) {
-    [input->textView.textStorage
+    [host.textView.textStorage
         enumerateAttribute:key
                    inRange:range
                    options:0
@@ -81,12 +81,12 @@
 }
 
 + (BOOL)any:(NSAttributedStringKey _Nonnull)key
-        withInput:(EnrichedTextInputView *_Nonnull)input
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
   __block BOOL found = NO;
-  [input->textView.textStorage
+  [host.textView.textStorage
       enumerateAttribute:key
                  inRange:range
                  options:0
@@ -101,13 +101,13 @@
 }
 
 + (BOOL)anyMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-          withInput:(EnrichedTextInputView *_Nonnull)input
+           withHost:(id<EnrichedViewHost> _Nonnull)host
             inRange:(NSRange)range
       withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                   NSRange range))condition {
   __block BOOL found = NO;
   for (NSString *key in keys) {
-    [input->textView.textStorage
+    [host.textView.textStorage
         enumerateAttribute:key
                    inRange:range
                    options:0
@@ -126,7 +126,7 @@
 }
 
 + (NSArray<StylePair *> *_Nullable)all:(NSAttributedStringKey _Nonnull)key
-                             withInput:(EnrichedTextInputView *_Nonnull)input
+                              withHost:(id<EnrichedViewHost> _Nonnull)host
                                inRange:(NSRange)range
                          withCondition:
                              (BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
@@ -134,7 +134,7 @@
                                  condition {
   __block NSMutableArray<StylePair *> *occurences =
       [[NSMutableArray<StylePair *> alloc] init];
-  [input->textView.textStorage
+  [host.textView.textStorage
       enumerateAttribute:key
                  inRange:range
                  options:0
@@ -152,14 +152,14 @@
 
 + (NSArray<StylePair *> *_Nullable)
       allMultiple:(NSArray<NSAttributedStringKey> *_Nonnull)keys
-        withInput:(EnrichedTextInputView *_Nonnull)input
+         withHost:(id<EnrichedViewHost> _Nonnull)host
           inRange:(NSRange)range
     withCondition:(BOOL(NS_NOESCAPE ^ _Nonnull)(id _Nullable value,
                                                 NSRange range))condition {
   __block NSMutableArray<StylePair *> *occurences =
       [[NSMutableArray<StylePair *> alloc] init];
   for (NSString *key in keys) {
-    [input->textView.textStorage
+    [host.textView.textStorage
         enumerateAttribute:key
                    inRange:range
                    options:0

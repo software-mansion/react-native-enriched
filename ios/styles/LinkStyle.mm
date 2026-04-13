@@ -31,13 +31,13 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   }
 
   NSMutableDictionary *newAttrs = [[NSMutableDictionary alloc] init];
-  newAttrs[NSForegroundColorAttributeName] = [self.input->config linkColor];
-  newAttrs[NSUnderlineColorAttributeName] = [self.input->config linkColor];
-  newAttrs[NSStrikethroughColorAttributeName] = [self.input->config linkColor];
-  if ([self.input->config linkDecorationLine] == DecorationUnderline) {
+  newAttrs[NSForegroundColorAttributeName] = [self.host.config linkColor];
+  newAttrs[NSUnderlineColorAttributeName] = [self.host.config linkColor];
+  newAttrs[NSStrikethroughColorAttributeName] = [self.host.config linkColor];
+  if ([self.host.config linkDecorationLine] == DecorationUnderline) {
     newAttrs[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
   }
-  [self.input->textView.textStorage addAttributes:newAttrs range:range];
+  [self.host.textView.textStorage addAttributes:newAttrs range:range];
 }
 
 - (void)reapplyFromStylePair:(StylePair *)pair {
@@ -63,34 +63,34 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 // we have to make sure all links in the range get fully removed here
 - (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
   NSArray<StylePair *> *links = [self all:range];
-  [self.input->textView.textStorage beginEditing];
+  [self.host.textView.textStorage beginEditing];
   for (StylePair *pair in links) {
     NSRange linkRange =
         [self getFullLinkRangeAt:[pair.rangeValue rangeValue].location];
-    [self.input->textView.textStorage removeAttribute:ManualLinkAttributeName
-                                                range:linkRange];
-    [self.input->textView.textStorage removeAttribute:AutomaticLinkAttributeName
-                                                range:linkRange];
+    [self.host.textView.textStorage removeAttribute:ManualLinkAttributeName
+                                              range:linkRange];
+    [self.host.textView.textStorage removeAttribute:AutomaticLinkAttributeName
+                                              range:linkRange];
     if (withDirtyRange) {
-      [self.input->attributesManager addDirtyRange:linkRange];
+      [self.host.attributesManager addDirtyRange:linkRange];
     }
   }
-  [self.input->textView.textStorage endEditing];
+  [self.host.textView.textStorage endEditing];
   [self removeLinkMetaFromTypingAttributes];
 }
 
 // used for conflicts, we have to remove the whole link
 - (void)removeTyping {
   NSRange linkRange =
-      [self getFullLinkRangeAt:self.input->textView.selectedRange.location];
+      [self getFullLinkRangeAt:self.host.textView.selectedRange.location];
   if (linkRange.length > 0) {
-    [self.input->textView.textStorage beginEditing];
-    [self.input->textView.textStorage removeAttribute:ManualLinkAttributeName
-                                                range:linkRange];
-    [self.input->textView.textStorage removeAttribute:AutomaticLinkAttributeName
-                                                range:linkRange];
-    [self.input->textView.textStorage endEditing];
-    [self.input->attributesManager addDirtyRange:linkRange];
+    [self.host.textView.textStorage beginEditing];
+    [self.host.textView.textStorage removeAttribute:ManualLinkAttributeName
+                                              range:linkRange];
+    [self.host.textView.textStorage removeAttribute:AutomaticLinkAttributeName
+                                              range:linkRange];
+    [self.host.textView.textStorage endEditing];
+    [self.host.attributesManager addDirtyRange:linkRange];
   }
   [self removeLinkMetaFromTypingAttributes];
 }
@@ -104,7 +104,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   if (range.length >= 1) {
     BOOL onlyLinks = [OccurenceUtils
         detectMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
-             withInput:self.input
+              withHost:self.host
                inRange:range
          withCondition:^BOOL(id _Nullable value, NSRange subrange) {
            return [self styleCondition:value range:subrange];
@@ -117,7 +117,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 - (BOOL)any:(NSRange)range {
   return [OccurenceUtils
         anyMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
-          withInput:self.input
+           withHost:self.host
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange subrange) {
         return [self styleCondition:value range:subrange];
@@ -127,7 +127,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 - (NSArray<StylePair *> *)all:(NSRange)range {
   return [OccurenceUtils
         allMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
-          withInput:self.input
+           withHost:self.host
             inRange:range
       withCondition:^BOOL(id _Nullable value, NSRange subrange) {
         return [self styleCondition:value range:subrange];
@@ -140,21 +140,21 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   }
   NSString *key =
       linkData.isManual ? ManualLinkAttributeName : AutomaticLinkAttributeName;
-  [self.input->textView.textStorage addAttribute:key
-                                           value:[linkData copy]
-                                           range:range];
+  [self.host.textView.textStorage addAttribute:key
+                                         value:[linkData copy]
+                                         range:range];
 }
 
 - (void)removeLinkMetaFromTypingAttributes {
   NSMutableDictionary *newTypingAttrs =
-      [self.input->textView.typingAttributes mutableCopy];
+      [self.host.textView.typingAttributes mutableCopy];
   [newTypingAttrs removeObjectForKey:ManualLinkAttributeName];
   [newTypingAttrs removeObjectForKey:AutomaticLinkAttributeName];
-  self.input->textView.typingAttributes = newTypingAttrs;
+  self.host.textView.typingAttributes = newTypingAttrs;
 
-  [self.input->attributesManager
+  [self.host.attributesManager
       didRemoveTypingAttribute:ManualLinkAttributeName];
-  [self.input->attributesManager
+  [self.host.attributesManager
       didRemoveTypingAttribute:AutomaticLinkAttributeName];
 }
 
@@ -162,7 +162,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
             range:(NSRange)range
     withSelection:(BOOL)withSelection {
   NSString *currentText =
-      [self.input->textView.textStorage.string substringWithRange:range];
+      [self.host.textView.textStorage.string substringWithRange:range];
 
   NSString *key =
       linkData.isManual ? ManualLinkAttributeName : AutomaticLinkAttributeName;
@@ -175,7 +175,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     [TextInsertionUtils insertText:linkData.text
                                 at:range.location
               additionalAttributes:metaAttrs
-                             input:self.input
+                             input:self.host
                      withSelection:withSelection];
     dirtyRange = NSMakeRange(range.location, linkData.text.length);
   } else if ([currentText isEqualToString:linkData.text]) {
@@ -185,8 +185,8 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     // manually set it behind the link ONLY with manual links, automatic ones
     // don't need the selection fix
     if (linkData.isManual && withSelection) {
-      [self.input->textView reactFocus];
-      self.input->textView.selectedRange =
+      [self.host.textView reactFocus];
+      self.host.textView.selectedRange =
           NSMakeRange(range.location + linkData.text.length, 0);
     }
   } else {
@@ -194,18 +194,18 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     [TextInsertionUtils replaceText:linkData.text
                                  at:range
                additionalAttributes:metaAttrs
-                              input:self.input
+                              input:self.host
                       withSelection:withSelection];
     dirtyRange = NSMakeRange(range.location, linkData.text.length);
   }
 
   // add new dirty range
-  [self.input->attributesManager addDirtyRange:dirtyRange];
+  [self.host.attributesManager addDirtyRange:dirtyRange];
 
   // mandatory connected links check
   NSDictionary *currentWord =
-      [WordsUtils getCurrentWord:self.input->textView.textStorage.string
-                           range:self.input->textView.selectedRange];
+      [WordsUtils getCurrentWord:self.host.textView.textStorage.string
+                           range:self.host.textView.selectedRange];
   if (currentWord != nullptr) {
     // get word properties
     NSString *wordText = (NSString *)[currentWord objectForKey:@"word"];
@@ -221,24 +221,24 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 - (LinkData *)getLinkDataAt:(NSUInteger)location {
   NSRange manualLinkRange = NSMakeRange(0, 0);
   NSRange automaticLinkRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, self.input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.host.textView.textStorage.length);
 
   // don't search at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == self.input->textView.textStorage.length) {
+  if (searchLocation == self.host.textView.textStorage.length) {
     return nullptr;
   }
 
   LinkData *manualData =
-      [self.input->textView.textStorage attribute:ManualLinkAttributeName
-                                          atIndex:searchLocation
-                            longestEffectiveRange:&manualLinkRange
-                                          inRange:inputRange];
+      [self.host.textView.textStorage attribute:ManualLinkAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&manualLinkRange
+                                        inRange:inputRange];
   LinkData *automaticData =
-      [self.input->textView.textStorage attribute:AutomaticLinkAttributeName
-                                          atIndex:searchLocation
-                            longestEffectiveRange:&automaticLinkRange
-                                          inRange:inputRange];
+      [self.host.textView.textStorage attribute:AutomaticLinkAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&automaticLinkRange
+                                        inRange:inputRange];
 
   if ((manualData == nullptr && automaticData == nullptr) ||
       (manualLinkRange.length == 0 && automaticLinkRange.length == 0)) {
@@ -252,11 +252,11 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 - (NSRange)getFullLinkRangeAt:(NSUInteger)location {
   NSRange manualLinkRange = NSMakeRange(0, 0);
   NSRange automaticLinkRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, self.input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.host.textView.textStorage.length);
 
   // get the previous index if possible when at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == self.input->textView.textStorage.length) {
+  if (searchLocation == self.host.textView.textStorage.length) {
     if (searchLocation == 0) {
       return NSMakeRange(0, 0);
     }
@@ -264,15 +264,15 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   }
 
   LinkData *manualData =
-      [self.input->textView.textStorage attribute:ManualLinkAttributeName
-                                          atIndex:searchLocation
-                            longestEffectiveRange:&manualLinkRange
-                                          inRange:inputRange];
+      [self.host.textView.textStorage attribute:ManualLinkAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&manualLinkRange
+                                        inRange:inputRange];
   LinkData *automaticData =
-      [self.input->textView.textStorage attribute:AutomaticLinkAttributeName
-                                          atIndex:searchLocation
-                            longestEffectiveRange:&automaticLinkRange
-                                          inRange:inputRange];
+      [self.host.textView.textStorage attribute:AutomaticLinkAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&automaticLinkRange
+                                        inRange:inputRange];
 
   return manualData == nullptr
              ? automaticData == nullptr ? NSMakeRange(0, 0) : automaticLinkRange
@@ -281,7 +281,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 
 // handles detecting and removing automatic links
 - (void)handleAutomaticLinks:(NSString *)word inRange:(NSRange)wordRange {
-  LinkRegexConfig *linkRegexConfig = [self.input->config linkRegexConfig];
+  LinkRegexConfig *linkRegexConfig = [self.host.config linkRegexConfig];
 
   // no automatic links with isDisabled
   if (linkRegexConfig.isDisabled) {
@@ -289,11 +289,11 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   }
 
   InlineCodeStyle *inlineCodeStyle =
-      [self.input->stylesDict objectForKey:@([InlineCodeStyle getType])];
+      [self.host.stylesDict objectForKey:@([InlineCodeStyle getType])];
   MentionStyle *mentionStyle =
-      [self.input->stylesDict objectForKey:@([MentionStyle getType])];
+      [self.host.stylesDict objectForKey:@([MentionStyle getType])];
   CodeBlockStyle *codeBlockStyle =
-      [self.input->stylesDict objectForKey:@([CodeBlockStyle getType])];
+      [self.host.stylesDict objectForKey:@([CodeBlockStyle getType])];
 
   // we don't recognize links along mentions, inline code or codeblocks
   if (mentionStyle != nullptr && [mentionStyle any:wordRange]) {
@@ -311,7 +311,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 
   // we don't recognize automatic links along manual ones
   __block BOOL manualLinkPresent = NO;
-  [self.input->textView.textStorage
+  [self.host.textView.textStorage
       enumerateAttribute:ManualLinkAttributeName
                  inRange:wordRange
                  options:0
@@ -336,7 +336,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
                                             matchRange:matchingRange];
   } else {
     // use user defined regex if it exists
-    NSRegularExpression *userRegex = [self.input->config parsedLinkRegex];
+    NSRegularExpression *userRegex = [self.host.config parsedLinkRegex];
 
     if (userRegex == nullptr) {
       // fallback to default regex
@@ -368,7 +368,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
       [self addLink:newData range:wordRange withSelection:NO];
 
       // emit onLinkDetected if style was added
-      [self.input emitOnLinkDetectedEvent:newData range:wordRange];
+      [(id)self.host emitOnLinkDetectedEvent:newData range:wordRange];
     }
   } else if ([self any:wordRange]) {
     // there was some automatic link (because anyOccurence is true and we are
@@ -403,7 +403,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   __block NSInteger manualLinkMinIdx = -1;
   __block NSInteger manualLinkMaxIdx = -1;
 
-  [self.input->textView.textStorage
+  [self.host.textView.textStorage
       enumerateAttribute:ManualLinkAttributeName
                  inRange:wordRange
                  options:0
@@ -437,7 +437,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     NSRange newRange =
         NSMakeRange(manualLinkMinIdx, manualLinkMaxIdx - manualLinkMinIdx + 1);
     [self applyLinkMetaWithData:manualLinkMinValue range:newRange];
-    [self.input->attributesManager addDirtyRange:newRange];
+    [self.host.attributesManager addDirtyRange:newRange];
   }
 }
 
@@ -452,14 +452,14 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
 - (void)removeConnectedLinksIfNeeded:(NSString *)word range:(NSRange)wordRange {
   BOOL anyAutomatic =
       [OccurenceUtils any:AutomaticLinkAttributeName
-                withInput:self.input
+                 withHost:self.host
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange subrange) {
               return [self styleCondition:value range:subrange];
             }];
   BOOL anyManual =
       [OccurenceUtils any:ManualLinkAttributeName
-                withInput:self.input
+                 withHost:self.host
                   inRange:wordRange
             withCondition:^BOOL(id _Nullable value, NSRange subrange) {
               return [self styleCondition:value range:subrange];
@@ -474,7 +474,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
   // covers the whole word
   BOOL onlyLinks = [OccurenceUtils
       detectMultiple:@[ ManualLinkAttributeName, AutomaticLinkAttributeName ]
-           withInput:self.input
+            withHost:self.host
              inRange:wordRange
        withCondition:^BOOL(id _Nullable value, NSRange r) {
          return [self styleCondition:value range:r];
