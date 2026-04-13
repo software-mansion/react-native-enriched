@@ -449,6 +449,8 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCorrect?: boolean;
+  spellCheck?: boolean;
   htmlStyle?: HtmlStyle;
   style?: ViewStyle | TextStyle;
   scrollEnabled?: boolean;

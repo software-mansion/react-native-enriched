@@ -897,6 +897,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  // autoCorrect
+  if (newViewProps.autoCorrect != oldViewProps.autoCorrect) {
+    textView.autocorrectionType = newViewProps.autoCorrect
+                                      ? UITextAutocorrectionTypeYes
+                                      : UITextAutocorrectionTypeNo;
+  }
+
+  // spellCheck
+  if (newViewProps.spellCheck != oldViewProps.spellCheck) {
+    textView.spellCheckingType = newViewProps.spellCheck
+                                     ? UITextSpellCheckingTypeYes
+                                     : UITextSpellCheckingTypeNo;
+  }
+
   // isOnChangeHtmlSet
   _emitHtml = newViewProps.isOnChangeHtmlSet;
 
