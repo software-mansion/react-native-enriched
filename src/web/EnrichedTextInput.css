@@ -14,3 +14,13 @@
   height: 0;
   pointer-events: none;
 }
+
+.eti-editor code {
+  font-family: monospace;
+  background-color: var(--eti-code-bg-color);
+  color: var(--eti-code-color);
+  display: inline;
+  padding: 0.125em 0;
+  line-height: inherit;
+  vertical-align: baseline;
+}
