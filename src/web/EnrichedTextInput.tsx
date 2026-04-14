@@ -1,4 +1,10 @@
-import { useImperativeHandle, useMemo, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  type CSSProperties,
+} from 'react';
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
@@ -32,6 +38,10 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import {
+  createStripBoldInStyledHeadingsExtension,
+  transactionStripBoldInCssBoldHeadings,
+} from './formats/stripBoldInStyledHeadings';
 import { StrictMarksPlugin } from './StrictMarksPlugin';
 
 export const EnrichedTextInput = ({
@@ -55,6 +65,19 @@ export const EnrichedTextInput = ({
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
+  const resolvedHtmlStyle = useMemo(
+    () => mergeWithDefaultHtmlStyle(htmlStyle),
+    [htmlStyle]
+  );
+
+  const htmlStyleRef = useRef(resolvedHtmlStyle);
+  htmlStyleRef.current = resolvedHtmlStyle;
+
+  const stripBoldInStyledHeadingsExtension = useMemo(
+    () => createStripBoldInStyledHeadingsExtension(htmlStyleRef),
+    []
+  );
+
   const editor = useEditor(
     {
       extensions: [
@@ -69,6 +92,7 @@ export const EnrichedTextInput = ({
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
+        stripBoldInStyledHeadingsExtension,
         StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
@@ -106,13 +130,18 @@ export const EnrichedTextInput = ({
     [tiptapContent]
   );
 
+  useEffect(() => {
+    if (!editor) return;
+
+    const tr = transactionStripBoldInCssBoldHeadings(
+      editor.state,
+      resolvedHtmlStyle
+    );
+    if (tr) editor.view.dispatch(tr);
+  }, [editor, resolvedHtmlStyle]);
+
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
-
-  const resolvedHtmlStyle = useMemo(
-    () => mergeWithDefaultHtmlStyle(htmlStyle),
-    [htmlStyle]
-  );
 
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
 
