@@ -43,10 +43,11 @@ export const EnrichedCodeBlock = Blockquote.extend({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        // Preventing selecting marks when enrichedCodeBlock is active is not
-        // enough on it's own, because it does not handle for example pasting
-        // text with marks into the code block. This plugin makes sure no marks
-        // are applied to the text inside the code block.
+        // Preventing selecting inline styles when enrichedCodeBlock is active
+        // is not enough on its own, because it does not handle for example
+        // pasting text with inline styles into the code block. This plugin
+        // makes sure no inline styles are applied to the text inside the code
+        // block when the code block is active.
         key: new PluginKey('stripMarksInEnrichedCodeBlock'),
         appendTransaction: (transactions, _oldState, newState) => {
           if (!transactions.some((tr) => tr.docChanged)) return;
