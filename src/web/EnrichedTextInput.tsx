@@ -43,6 +43,7 @@ import {
   transactionStripBoldInCssBoldHeadings,
 } from './formats/stripBoldInStyledHeadings';
 import { StrictMarksPlugin } from './StrictMarksPlugin';
+import { MergeAdjacentSameKindBlocks } from './mergeAdjacentSameKindBlocks';
 
 export const EnrichedTextInput = ({
   ref,
@@ -93,6 +94,7 @@ export const EnrichedTextInput = ({
         EnrichedBlockquote,
         EnrichedCodeBlock,
         stripBoldInStyledHeadingsExtension,
+        MergeAdjacentSameKindBlocks,
         StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
