@@ -29,10 +29,17 @@ function ToolbarButton({
 }: ToolbarButtonProps) {
   return (
     <button
+      type="button"
       data-testid={testId}
       disabled={isDisabled}
       className={`toolbar-btn toolbar-btn--${variant} ${isActive ? 'toolbar-btn--active' : ''} ${isDisabled ? 'toolbar-btn--disabled' : ''}`}
       onPointerDown={(e) => {
+        // Mouse only: keep focus in the editor. Skip touch so the strip can scroll.
+        if (e.pointerType === 'mouse') {
+          e.preventDefault();
+        }
+      }}
+      onClick={(e) => {
         e.preventDefault();
         if (!isDisabled) {
           onPress();

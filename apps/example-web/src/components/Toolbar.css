@@ -10,9 +10,12 @@
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
 }
 
 .toolbar-fill {
@@ -33,6 +36,8 @@
   justify-content: center;
   cursor: pointer;
   color: #fff;
+  touch-action: pan-x;
+  user-select: none;
 }
 
 .toolbar-btn--active {
