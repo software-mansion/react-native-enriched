@@ -1,5 +1,9 @@
 import Blockquote from '@tiptap/extension-blockquote';
 import { toggleParagraphFormat } from './formatRules';
+import {
+  wrappedBlockBackspace,
+  wrappedBlockEnter,
+} from './wrappedBlockKeyboard';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -38,5 +42,13 @@ export const EnrichedCodeBlock = Blockquote.extend({
 
   addInputRules() {
     return [];
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      Enter: ({ editor }) => wrappedBlockEnter(editor, 'enrichedCodeBlock'),
+      Backspace: ({ editor }) =>
+        wrappedBlockBackspace(editor, 'enrichedCodeBlock'),
+    };
   },
 });
