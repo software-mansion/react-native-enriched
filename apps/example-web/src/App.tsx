@@ -5,21 +5,27 @@ import {
   type OnKeyPressEvent,
   type OnChangeTextEvent,
   type OnChangeSelectionEvent,
+  type OnChangeStateEvent,
   type FocusEvent,
   type BlurEvent,
   type EnrichedInputStyle,
+  type HtmlStyle,
 } from 'react-native-enriched';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
 import { SetValueModal } from './components/SetValueModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
+import { Toolbar } from './components/Toolbar';
 
 function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
   const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
+  const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
+    null
+  );
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -48,6 +54,11 @@ function App() {
     console.log('[EnrichedTextInput] onChangeSelection event', e.nativeEvent);
   };
 
+  const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
+    console.log('[EnrichedTextInput] onChangeState event', e.nativeEvent);
+    setEditorState(e.nativeEvent);
+  };
+
   return (
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
@@ -66,7 +77,11 @@ function App() {
         onChangeText={handleOnChangeText}
         onChangeSelection={handleChangeSelection}
         onChangeHtml={handleOnChangeHtml}
+        onChangeState={handleChangeState}
+        htmlStyle={htmlStyle}
       />
+
+      <Toolbar editorRef={ref} state={editorState} />
 
       <EditorActions
         showHtmlOutput={showHtmlOutput}
@@ -111,6 +126,14 @@ const enrichedInputStyle: EnrichedInputStyle = {
   paddingVertical: 12,
   paddingHorizontal: 14,
   borderRadius: 8,
+  fontSize: 18,
+};
+
+const htmlStyle: HtmlStyle = {
+  code: {
+    color: 'purple',
+    backgroundColor: 'yellow',
+  },
 };
 
 export default App;
