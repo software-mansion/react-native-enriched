@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSDictionary<NSNumber *, id> *stylesDict;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
+  NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkPressEvent:(NSString *)url;

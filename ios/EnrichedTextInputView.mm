@@ -1224,6 +1224,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
   if (initiallyProcessedHtml == nullptr) {
     // just plain text
+    textView.typingAttributes = defaultTypingAttributes;
     textView.text = value;
   } else {
     // we've got some seemingly proper html
