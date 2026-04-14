@@ -30,7 +30,7 @@ export function transactionStripBoldInCssBoldHeadings(
 }
 
 // When htmlStyle says a heading level is bold via CSS, redundant bold marks must be stripped
-export function createStripBoldInStyledHeadingsExtension(htmlStyleRef: {
+export function createStripBoldInStyledHeadingsPlugin(htmlStyleRef: {
   current: Required<HtmlStyle>;
 }) {
   return Extension.create({

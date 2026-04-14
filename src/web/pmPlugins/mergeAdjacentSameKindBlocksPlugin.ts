@@ -4,7 +4,7 @@ import { canJoin } from '@tiptap/pm/transform';
 
 const MERGEABLE_TYPE_NAMES = new Set(['blockquote', 'enrichedCodeBlock']);
 
-export const MergeAdjacentSameKindBlocks = Extension.create({
+export const MergeAdjacentSameKindBlocksPlugin = Extension.create({
   name: 'mergeAdjacentSameKindBlocks',
 
   addProseMirrorPlugins() {

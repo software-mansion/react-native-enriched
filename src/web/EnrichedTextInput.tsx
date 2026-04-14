@@ -39,11 +39,12 @@ import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import {
-  createStripBoldInStyledHeadingsExtension,
+  createStripBoldInStyledHeadingsPlugin,
   transactionStripBoldInCssBoldHeadings,
-} from './formats/stripBoldInStyledHeadings';
-import { StrictMarksPlugin } from './StrictMarksPlugin';
-import { MergeAdjacentSameKindBlocks } from './mergeAdjacentSameKindBlocks';
+} from './pmPlugins/stripBoldInStyledHeadingsPlugin';
+import { StrictMarksPlugin } from './pmPlugins/StrictMarksPlugin';
+import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
+import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
 
 export const EnrichedTextInput = ({
   ref,
@@ -74,8 +75,8 @@ export const EnrichedTextInput = ({
   const htmlStyleRef = useRef(resolvedHtmlStyle);
   htmlStyleRef.current = resolvedHtmlStyle;
 
-  const stripBoldInStyledHeadingsExtension = useMemo(
-    () => createStripBoldInStyledHeadingsExtension(htmlStyleRef),
+  const stripBoldInStyledHeadingsPlugin = useMemo(
+    () => createStripBoldInStyledHeadingsPlugin(htmlStyleRef),
     []
   );
 
@@ -93,8 +94,9 @@ export const EnrichedTextInput = ({
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
-        stripBoldInStyledHeadingsExtension,
-        MergeAdjacentSameKindBlocks,
+        StripMarksInCodeBlockPlugin,
+        stripBoldInStyledHeadingsPlugin,
+        MergeAdjacentSameKindBlocksPlugin,
         StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
