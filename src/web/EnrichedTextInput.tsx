@@ -103,9 +103,12 @@ export const EnrichedTextInput = ({
           showOnlyWhenEditable: true,
         }),
       ],
-      content: tiptapContent,
       editable,
       autofocus: autoFocus,
+      onCreate: ({ editor: _editor }) => {
+        // Setting initial content in this way ensures all custom plugins are run and applied
+        _editor.commands.setContent(tiptapContent ?? '');
+      },
       onFocus: ({ event }) => {
         onFocus?.(adaptWebToNativeEvent(event, { target: -1 }));
       },
