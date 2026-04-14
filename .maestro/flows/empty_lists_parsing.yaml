@@ -1,6 +1,6 @@
 appId: swmansion.enriched.example
 ---
-# PR #524 - fix(android): parsing empty lists
+# PR #542 - fix(android): parsing empty lists
 # Validates that lists with empty and whitespace-only items are parsed and displayed correctly
 - launchApp
 
