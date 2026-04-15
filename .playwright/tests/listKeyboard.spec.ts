@@ -19,14 +19,14 @@ const LIST_VARIANTS = [
     wrap: (inner: string) => `<html><ul>${inner}</ul></html>`,
     wrapperSelector: '.eti-editor ul',
     toolbarTestId: 'unorderedList' as const,
-    listTagForCount: 'bullet' as const,
+    listTagName: 'ul' as const,
   },
   {
     label: 'ordered',
     wrap: (inner: string) => `<html><ol>${inner}</ol></html>`,
     wrapperSelector: '.eti-editor ol',
     toolbarTestId: 'orderedList' as const,
-    listTagForCount: 'ol' as const,
+    listTagName: 'ol' as const,
   },
 ] as const;
 
@@ -35,7 +35,7 @@ for (const {
   wrap,
   wrapperSelector,
   toolbarTestId,
-  listTagForCount,
+  listTagName,
 } of LIST_VARIANTS) {
   test.describe(`list keyboard (${label})`, () => {
     test.beforeEach(async ({ page }) => {
@@ -123,10 +123,7 @@ for (const {
       await expect
         .poll(async () => {
           const h = await getSerializedHtml(page);
-          if (listTagForCount === 'bullet') {
-            return countOpeningTag(h, 'ul');
-          }
-          return countOpeningTag(h, 'ol');
+          return countOpeningTag(h, listTagName);
         })
         .toBe(1);
 

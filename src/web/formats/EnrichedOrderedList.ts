@@ -20,7 +20,6 @@ export const EnrichedOrderedList = OrderedList.extend({
 
   addCommands() {
     return {
-      ...this.parent?.(),
       toggleEnrichedOrderedList:
         () =>
         ({ editor, commands }) =>
@@ -28,7 +27,7 @@ export const EnrichedOrderedList = OrderedList.extend({
             editor,
             () => editor.isActive('orderedList'),
             () => commands.liftListItem('listItem'),
-            (c) => c.toggleOrderedList()
+            (c) => c.toggleList('orderedList', 'listItem')
           ),
     };
   },

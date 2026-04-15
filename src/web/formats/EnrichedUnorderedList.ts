@@ -11,15 +11,7 @@ declare module '@tiptap/core' {
 
 export const EnrichedUnorderedList = BulletList.extend({
   parseHTML() {
-    return [
-      {
-        tag: 'ul',
-        getAttrs: (el) =>
-          (el as HTMLElement).getAttribute('data-type') !== 'checkbox'
-            ? null
-            : false,
-      },
-    ];
+    return [{ tag: 'ul' }];
   },
 
   addInputRules() {
@@ -32,15 +24,14 @@ export const EnrichedUnorderedList = BulletList.extend({
 
   addCommands() {
     return {
-      ...this.parent?.(),
       toggleEnrichedUnorderedList:
         () =>
         ({ editor, commands }) =>
           toggleParagraphFormat(
             editor,
-            () => editor.isActive('unorderedList'),
-            () => commands.lift('listItem'),
-            (c) => c.toggleBulletList()
+            () => editor.isActive('bulletList'),
+            () => commands.liftListItem('listItem'),
+            (c) => c.toggleList('bulletList', 'listItem')
           ),
     };
   },

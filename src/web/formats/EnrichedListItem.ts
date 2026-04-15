@@ -9,7 +9,6 @@ export const EnrichedListItem = ListItem.extend({
 
   addKeyboardShortcuts() {
     return {
-      ...this.parent?.(),
       Enter: ({ editor }) => listEnter(editor, 'listItem'),
       Backspace: ({ editor }) =>
         listBackspace(editor, 'listItem', LIST_WRAPPERS),

@@ -8,26 +8,6 @@ import {
   setEditorHtml,
 } from '../helpers/visual-regression';
 
-function isBulletUl(html: string): boolean {
-  return /<ul(?:\s|>)/i.test(html);
-}
-
-function isOrderedList(html: string): boolean {
-  return /<ol(?:\s|>)/i.test(html);
-}
-
-async function waitForSerializedBulletUl(page: Page): Promise<void> {
-  await expect
-    .poll(async () => isBulletUl(await getSerializedHtml(page)))
-    .toBe(true);
-}
-
-async function waitForSerializedOrderedList(page: Page): Promise<void> {
-  await expect
-    .poll(async () => isOrderedList(await getSerializedHtml(page)))
-    .toBe(true);
-}
-
 function hasOpeningTag(html: string, tag: string): boolean {
   return new RegExp(`<${tag}(?:\\s|>)`, 'i').test(html);
 }
@@ -55,48 +35,12 @@ type ToolbarKey =
   | 'unorderedList'
   | 'orderedList';
 
-type ExpectShape =
-  | { type: 'tag'; value: string }
-  | { type: 'bulletUl' }
-  | { type: 'ol' };
-
-async function waitForExpectShape(
-  page: Page,
-  shape: ExpectShape
-): Promise<void> {
-  switch (shape.type) {
-    case 'tag':
-      await waitForOpeningTagInSerializedHtml(page, shape.value);
-      return;
-    case 'bulletUl':
-      await waitForSerializedBulletUl(page);
-      return;
-    case 'ol':
-      await waitForSerializedOrderedList(page);
-      return;
-  }
-}
-
-function assertExpectShape(html: string, shape: ExpectShape): void {
-  switch (shape.type) {
-    case 'tag':
-      expect(hasOpeningTag(html, shape.value)).toBe(true);
-      return;
-    case 'bulletUl':
-      expect(isBulletUl(html)).toBe(true);
-      return;
-    case 'ol':
-      expect(isOrderedList(html)).toBe(true);
-      return;
-  }
-}
-
 const CASES: readonly {
   name: string;
   html: string;
   focusSelector: string;
   click: ToolbarKey;
-  expectShape: ExpectShape;
+  expectTag: string;
   notTags: readonly string[];
   expectText: string;
 }[] = [
@@ -105,7 +49,7 @@ const CASES: readonly {
     html: '<html><h1>Heading</h1></html>',
     focusSelector: '.eti-editor h1',
     click: 'blockQuote',
-    expectShape: { type: 'tag', value: 'blockquote' },
+    expectTag: 'blockquote',
     notTags: ['h1'],
     expectText: 'Heading',
   },
@@ -114,7 +58,7 @@ const CASES: readonly {
     html: '<html><h1>Heading</h1></html>',
     focusSelector: '.eti-editor h1',
     click: 'codeBlock',
-    expectShape: { type: 'tag', value: 'codeblock' },
+    expectTag: 'codeblock',
     notTags: ['h1'],
     expectText: 'Heading',
   },
@@ -123,7 +67,7 @@ const CASES: readonly {
     html: '<html><h2>Heading</h2></html>',
     focusSelector: '.eti-editor h2',
     click: 'blockQuote',
-    expectShape: { type: 'tag', value: 'blockquote' },
+    expectTag: 'blockquote',
     notTags: ['h2'],
     expectText: 'Heading',
   },
@@ -132,7 +76,7 @@ const CASES: readonly {
     html: '<html><blockquote><p>Quote</p></blockquote></html>',
     focusSelector: '.eti-editor blockquote p',
     click: 'h1',
-    expectShape: { type: 'tag', value: 'h1' },
+    expectTag: 'h1',
     notTags: ['blockquote'],
     expectText: 'Quote',
   },
@@ -141,7 +85,7 @@ const CASES: readonly {
     html: '<html><codeblock><p>Code</p></codeblock></html>',
     focusSelector: '.eti-editor codeblock p',
     click: 'blockQuote',
-    expectShape: { type: 'tag', value: 'blockquote' },
+    expectTag: 'blockquote',
     notTags: ['codeblock'],
     expectText: 'Code',
   },
@@ -150,7 +94,7 @@ const CASES: readonly {
     html: '<html><blockquote><p>Quote</p></blockquote></html>',
     focusSelector: '.eti-editor blockquote p',
     click: 'codeBlock',
-    expectShape: { type: 'tag', value: 'codeblock' },
+    expectTag: 'codeblock',
     notTags: ['blockquote'],
     expectText: 'Quote',
   },
@@ -159,7 +103,7 @@ const CASES: readonly {
     html: '<html><h1>Heading</h1></html>',
     focusSelector: '.eti-editor h1',
     click: 'h2',
-    expectShape: { type: 'tag', value: 'h2' },
+    expectTag: 'h2',
     notTags: ['h1'],
     expectText: 'Heading',
   },
@@ -168,7 +112,7 @@ const CASES: readonly {
     html: '<html><h3>Heading</h3></html>',
     focusSelector: '.eti-editor h3',
     click: 'blockQuote',
-    expectShape: { type: 'tag', value: 'blockquote' },
+    expectTag: 'blockquote',
     notTags: ['h3'],
     expectText: 'Heading',
   },
@@ -177,7 +121,7 @@ const CASES: readonly {
     html: '<html><h1>Heading</h1></html>',
     focusSelector: '.eti-editor h1',
     click: 'unorderedList',
-    expectShape: { type: 'bulletUl' },
+    expectTag: 'ul',
     notTags: ['h1'],
     expectText: 'Heading',
   },
@@ -186,7 +130,7 @@ const CASES: readonly {
     html: '<html><h1>Heading</h1></html>',
     focusSelector: '.eti-editor h1',
     click: 'orderedList',
-    expectShape: { type: 'ol' },
+    expectTag: 'ol',
     notTags: ['h1'],
     expectText: 'Heading',
   },
@@ -195,7 +139,7 @@ const CASES: readonly {
     html: '<html><blockquote><p>Quote</p></blockquote></html>',
     focusSelector: '.eti-editor blockquote p',
     click: 'unorderedList',
-    expectShape: { type: 'bulletUl' },
+    expectTag: 'ul',
     notTags: ['blockquote'],
     expectText: 'Quote',
   },
@@ -204,7 +148,7 @@ const CASES: readonly {
     html: '<html><codeblock><p>Code</p></codeblock></html>',
     focusSelector: '.eti-editor codeblock p',
     click: 'unorderedList',
-    expectShape: { type: 'bulletUl' },
+    expectTag: 'ul',
     notTags: ['codeblock'],
     expectText: 'Code',
   },
@@ -213,7 +157,7 @@ const CASES: readonly {
     html: '<html><ul><li><p>Item</p></li></ul></html>',
     focusSelector: '.eti-editor ul li p',
     click: 'h2',
-    expectShape: { type: 'tag', value: 'h2' },
+    expectTag: 'h2',
     notTags: ['ul'],
     expectText: 'Item',
   },
@@ -222,7 +166,7 @@ const CASES: readonly {
     html: '<html><ol><li><p>Item</p></li></ol></html>',
     focusSelector: '.eti-editor ol li p',
     click: 'h2',
-    expectShape: { type: 'tag', value: 'h2' },
+    expectTag: 'h2',
     notTags: ['ol'],
     expectText: 'Item',
   },
@@ -238,7 +182,7 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
     html,
     focusSelector,
     click: toolbarKey,
-    expectShape,
+    expectTag,
     notTags,
     expectText,
   } of CASES) {
@@ -248,10 +192,10 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
       await page.locator(focusSelector).click();
       await toolbarButton(page, toolbarKey).click();
 
-      await waitForExpectShape(page, expectShape);
+      await waitForOpeningTagInSerializedHtml(page, expectTag);
 
       const out = await getSerializedHtml(page);
-      assertExpectShape(out, expectShape);
+      expect(hasOpeningTag(out, expectTag)).toBe(true);
       for (const t of notTags) {
         expect(hasOpeningTag(out, t)).toBe(false);
       }
