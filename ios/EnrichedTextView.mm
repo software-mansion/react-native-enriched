@@ -644,6 +644,14 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   // shift subsequent ranges by this offset.
   NSInteger zeroWidthSpaceOffset = 0;
 
+  // Inline styles collected during the first pass so their applyStyling: can
+  // be re-run after all paragraph styles have applied their visual attributes.
+  // Each entry is @[style, adjustedRange].
+  NSMutableArray *pendingInlineApply = [NSMutableArray array];
+
+  // Paragraph styles call applyStyling: immediately; inline styles
+  // defer it so that paragraph visual attributes are already in
+  // place when inline styles override them.
   for (NSArray *arr in processedStyles) {
     NSNumber *styleType = (NSNumber *)arr[0];
     StylePair *stylePair = (StylePair *)arr[1];
@@ -655,7 +663,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     NSUInteger textLengthBeforeStyleApplied =
         textView.textStorage.string.length;
 
-    // range must be taking zeroWidthSpaceOffset into consideration
+    // Range must be taking zeroWidthSpaceOffset into consideration
     // because processed styles ranges are relative to only the new text while
     // we need absolute ranges relative to the whole existing text
     NSRange styleRange = NSMakeRange(
@@ -714,13 +722,26 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     // after a ZWS was inserted.
     NSRange adjustedStyleRange = NSMakeRange(
         styleRange.location, styleRange.length + (NSUInteger)MAX(0LL, delta));
-    [style applyStyling:adjustedStyleRange];
+
+    if ([style isParagraph]) {
+      [style applyStyling:adjustedStyleRange];
+    } else {
+      [pendingInlineApply
+          addObject:@[ style, [NSValue valueWithRange:adjustedStyleRange] ]];
+    }
 
     // Image shifts are already handled by _precedingImageCount during tag
     // finalization.
     if (delta != 0 && ![styleType isEqualToNumber:@([ImageStyle getType])]) {
       zeroWidthSpaceOffset += delta;
     }
+  }
+
+  // Apply visual styling for inline styles
+  for (NSArray *entry in pendingInlineApply) {
+    StyleBase *style = entry[0];
+    NSRange adjustedStyleRange = [((NSValue *)entry[1]) rangeValue];
+    [style applyStyling:adjustedStyleRange];
   }
 }
 
