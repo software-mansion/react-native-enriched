@@ -1,0 +1,23 @@
+appId: swmansion.enriched.example
+tags:
+    - ios-only
+---
+# PR #500 - fix: handling of zero-width space (ZWS) offset inside parser
+# Reproduces the bug from issue #419.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+      VALUE: "<html><codeblock><p>Code</p><br><br><br></codeblock><h3>H3</h3></html>"
+
+- tapOn:
+    id: "size-max-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "codeblock_br_preservation"
