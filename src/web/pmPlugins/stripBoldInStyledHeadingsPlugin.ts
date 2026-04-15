@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core';
+import { Extension, type CommandProps } from '@tiptap/core';
 import {
   Plugin,
   PluginKey,
@@ -8,7 +8,16 @@ import {
 import type { HtmlStyle } from '../../types';
 import { HEADING_TAGS } from '../formats/EnrichedHeading';
 
-export function transactionStripBoldInCssBoldHeadings(
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    stripBoldInStyledHeadings: {
+      // Remove redundant bold marks from headings whose level is already bold via `htmlStyle` CSS.
+      normalizeBoldInStyledHeadings: () => ReturnType;
+    };
+  }
+}
+
+function transactionStripBoldInCssBoldHeadings(
   state: EditorState,
   htmlStyle: Required<HtmlStyle>
 ): Transaction | null {
@@ -30,12 +39,26 @@ export function transactionStripBoldInCssBoldHeadings(
   return tr.steps.length > 0 ? tr : null;
 }
 
-// When htmlStyle says a heading level is bold via CSS, redundant bold marks must be stripped
 export function createStripBoldInStyledHeadingsPlugin(htmlStyleRef: {
   current: Required<HtmlStyle>;
 }) {
   return Extension.create({
     name: 'stripBoldInStyledHeadings',
+    addCommands() {
+      return {
+        normalizeBoldInStyledHeadings:
+          () =>
+          ({ state, dispatch }: CommandProps) => {
+            const tr = transactionStripBoldInCssBoldHeadings(
+              state,
+              htmlStyleRef.current
+            );
+            if (!tr) return false;
+            if (dispatch) dispatch(tr);
+            return true;
+          },
+      };
+    },
     addProseMirrorPlugins() {
       return [
         new Plugin({

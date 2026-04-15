@@ -38,10 +38,7 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
-import {
-  createStripBoldInStyledHeadingsPlugin,
-  transactionStripBoldInCssBoldHeadings,
-} from './pmPlugins/stripBoldInStyledHeadingsPlugin';
+import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/StrictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
@@ -139,12 +136,7 @@ export const EnrichedTextInput = ({
 
   useEffect(() => {
     if (!editor) return;
-
-    const tr = transactionStripBoldInCssBoldHeadings(
-      editor.state,
-      resolvedHtmlStyle
-    );
-    if (tr) editor.view.dispatch(tr);
+    editor.commands.normalizeBoldInStyledHeadings();
   }, [editor, resolvedHtmlStyle]);
 
   useOnChangeHtml(editor, onChangeHtml);
