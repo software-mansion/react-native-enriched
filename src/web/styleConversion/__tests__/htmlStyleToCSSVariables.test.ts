@@ -142,4 +142,15 @@ describe('htmlStyleToCSSVariables', () => {
       '--eti-codeblock-border-radius': '8px',
     } as CSSProperties);
   });
+
+  it('maps anchor link styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        a: { color: 'blue', textDecorationLine: 'underline' },
+      })
+    ).toEqual({
+      '--eti-link-color': 'blue',
+      '--eti-link-text-decoration-line': 'underline',
+    } as CSSProperties);
+  });
 });

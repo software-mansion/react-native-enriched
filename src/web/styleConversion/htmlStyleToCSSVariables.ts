@@ -30,6 +30,8 @@ const ETI_CSS_VARS = {
   codeblockBgColor: '--eti-codeblock-bg-color',
   codeblockColor: '--eti-codeblock-color',
   codeblockBorderRadius: '--eti-codeblock-border-radius',
+  linkColor: '--eti-link-color',
+  linkTextDecorationLine: '--eti-link-text-decoration-line',
 } as const;
 
 function setColorVar(
@@ -89,11 +91,22 @@ function applyCodeblockVars(
   setPxVar(vars, ETI_CSS_VARS.codeblockBorderRadius, cb?.borderRadius);
 }
 
+function applyLinkVars(
+  vars: Record<string, string>,
+  anchor?: HtmlStyle['a']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.linkColor, anchor?.color);
+  if (anchor?.textDecorationLine != null) {
+    vars[ETI_CSS_VARS.linkTextDecorationLine] = anchor.textDecorationLine;
+  }
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
   applyHeadingVars(vars, htmlStyle);
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
+  applyLinkVars(vars, htmlStyle?.a);
   return vars as CSSProperties;
 }

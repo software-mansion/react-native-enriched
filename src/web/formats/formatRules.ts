@@ -12,6 +12,10 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
   );
 }
 
+export function isLinkBlocked(editor: Editor): boolean {
+  return editor.isActive('code') || editor.isActive('enrichedCodeBlock');
+}
+
 export function isFormatBlocked(
   tiptapName: string,
   editor: Editor,

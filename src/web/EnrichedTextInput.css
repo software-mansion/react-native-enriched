@@ -54,3 +54,8 @@
 .eti-editor codeblock p {
   margin: 0;
 }
+
+.eti-editor a {
+  color: var(--eti-link-color);
+  text-decoration-line: var(--eti-link-text-decoration-line);
+}

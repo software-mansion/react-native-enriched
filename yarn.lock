@@ -4174,6 +4174,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-link@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-link@npm:3.20.4"
+  dependencies:
+    linkifyjs: "npm:^4.3.2"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+    "@tiptap/pm": ^3.20.4
+  checksum: 10c0/f7dca7cdca476f2f401b71030dee13357354e094be9283e87782717281451830fca4968bff325dd795705c40d79d78764207b70f8f37426a00409166f5365324
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-paragraph@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-paragraph@npm:3.20.4"
@@ -10213,6 +10225,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"linkifyjs@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "linkifyjs@npm:4.3.2"
+  checksum: 10c0/1a85e6b368304a4417567fe5e38651681e3e82465590836942d1b4f3c834cc35532898eb1e2479f6337d9144b297d418eb708b6be8ed0b3dc3954a3588e07971
+  languageName: node
+  linkType: hard
+
 "locate-path@npm:^5.0.0":
   version: 5.0.0
   resolution: "locate-path@npm:5.0.0"
@@ -12646,6 +12665,7 @@ __metadata:
     "@tiptap/extension-document": "npm:3.20.4"
     "@tiptap/extension-heading": "npm:3.20.4"
     "@tiptap/extension-italic": "npm:3.20.4"
+    "@tiptap/extension-link": "npm:3.20.4"
     "@tiptap/extension-paragraph": "npm:3.20.4"
     "@tiptap/extension-strike": "npm:3.20.4"
     "@tiptap/extension-text": "npm:3.20.4"

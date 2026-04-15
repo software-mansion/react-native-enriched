@@ -6,6 +6,7 @@ import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import {
   isAnyParagraphFormatActive,
   isFormatBlocked,
+  isLinkBlocked,
 } from './formats/formatRules';
 import type { HtmlStyle } from '../types';
 
@@ -46,10 +47,10 @@ function buildState(
 ): OnChangeStateEvent {
   const isAnyBlockActive = isAnyParagraphFormatActive(editor);
 
-  function inlineFormat(tiptapName: string) {
+  function inlineFormat(tiptapName: string, conflictingWithLink = false) {
     return {
       isActive: editor.isActive(tiptapName),
-      isConflicting: false,
+      isConflicting: conflictingWithLink && editor.isActive('link'),
       isBlocking: isFormatBlocked(tiptapName, editor, htmlStyle),
     };
   }
@@ -67,7 +68,7 @@ function buildState(
     italic: inlineFormat('italic'),
     underline: inlineFormat('underline'),
     strikeThrough: inlineFormat('strike'),
-    inlineCode: inlineFormat('code'),
+    inlineCode: inlineFormat('code', true),
     h1: paragraphFormat(editor.isActive('heading', { level: 1 })),
     h2: paragraphFormat(editor.isActive('heading', { level: 2 })),
     h3: paragraphFormat(editor.isActive('heading', { level: 3 })),
@@ -79,7 +80,11 @@ function buildState(
     orderedList: paragraphFormat(false),
     unorderedList: paragraphFormat(false),
     checkboxList: paragraphFormat(false),
-    link: { isActive: false, isConflicting: false, isBlocking: false },
+    link: {
+      isActive: editor.isActive('link'),
+      isConflicting: false,
+      isBlocking: isLinkBlocked(editor),
+    },
     mention: { isActive: false, isConflicting: false, isBlocking: false },
     image: { isActive: false, isConflicting: false, isBlocking: false },
   };
