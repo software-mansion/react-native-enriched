@@ -89,11 +89,34 @@ function applyCodeblockVars(
   setPxVar(vars, ETI_CSS_VARS.codeblockBorderRadius, cb?.borderRadius);
 }
 
+function applyUnorderedListVars(
+  vars: Record<string, string>,
+  ul?: HtmlStyle['ul']
+): void {
+  setColorVar(vars, '--eti-ul-bullet-color', ul?.bulletColor);
+  setPxVar(vars, '--eti-ul-margin-left', ul?.marginLeft);
+  setPxVar(vars, '--eti-ul-gap-width', ul?.gapWidth);
+}
+
+function applyOrderedListVars(
+  vars: Record<string, string>,
+  ol?: HtmlStyle['ol']
+): void {
+  setPxVar(vars, '--eti-ol-margin-left', ol?.marginLeft);
+  setPxVar(vars, '--eti-ol-gap-width', ol?.gapWidth);
+  setColorVar(vars, '--eti-ol-marker-color', ol?.markerColor);
+  if (ol?.markerFontWeight != null) {
+    vars['--eti-ol-marker-font-weight'] = String(ol.markerFontWeight);
+  }
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
   applyHeadingVars(vars, htmlStyle);
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
+  applyUnorderedListVars(vars, htmlStyle?.ul);
+  applyOrderedListVars(vars, htmlStyle?.ol);
   return vars as CSSProperties;
 }

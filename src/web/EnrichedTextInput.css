@@ -54,3 +54,38 @@
 .eti-editor codeblock p {
   margin: 0;
 }
+
+.eti-editor ul,
+.eti-editor ol {
+  margin: 0;
+  padding-left: var(--eti-ul-margin-left, 16px);
+}
+
+.eti-editor ol {
+  padding-left: var(--eti-ol-margin-left, 16px);
+}
+
+.eti-editor ul:not([data-type]) {
+  list-style-type: disc;
+}
+
+.eti-editor ol {
+  list-style-type: decimal;
+}
+
+.eti-editor li {
+  margin: 0;
+}
+
+.eti-editor li p {
+  margin: 0;
+}
+
+.eti-editor ul:not([data-type]) > li::marker {
+  color: var(--eti-ul-bullet-color);
+}
+
+.eti-editor ol > li::marker {
+  color: var(--eti-ol-marker-color);
+  font-weight: var(--eti-ol-marker-font-weight);
+}
