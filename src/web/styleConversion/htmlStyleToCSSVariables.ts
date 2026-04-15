@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
+import type { ColorValue } from 'react-native';
 import type { HtmlStyle } from '../../types';
 import { DEFAULT_HTML_STYLE } from '../../utils/defaultHtmlStyle';
+import { HEADING_TAGS } from '../formats/EnrichedHeading';
 import { toColor } from './toColor';
 
 export function mergeWithDefaultHtmlStyle(
@@ -18,41 +20,80 @@ export function mergeWithDefaultHtmlStyle(
   return merged as Required<HtmlStyle>;
 }
 
-export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
-  const vars: Record<string, string> = {};
+const ETI_CSS_VARS = {
+  codeColor: '--eti-code-color',
+  codeBgColor: '--eti-code-bg-color',
+  blockquoteBorderColor: '--eti-blockquote-border-color',
+  blockquoteBorderWidth: '--eti-blockquote-border-width',
+  blockquoteGapWidth: '--eti-blockquote-gap-width',
+  blockquoteColor: '--eti-blockquote-color',
+  codeblockBgColor: '--eti-codeblock-bg-color',
+  codeblockColor: '--eti-codeblock-color',
+  codeblockBorderRadius: '--eti-codeblock-border-radius',
+} as const;
 
-  const codeColor = toColor(htmlStyle?.code?.color);
-  if (codeColor) vars['--eti-code-color'] = codeColor;
+function setColorVar(
+  vars: Record<string, string>,
+  name: string,
+  value?: ColorValue
+): void {
+  const c = toColor(value);
+  if (c) vars[name] = c;
+}
 
-  const codeBackgroundColor = toColor(htmlStyle?.code?.backgroundColor);
-  if (codeBackgroundColor) vars['--eti-code-bg-color'] = codeBackgroundColor;
+function setPxVar(
+  vars: Record<string, string>,
+  name: string,
+  n?: number | null
+): void {
+  if (n != null) vars[name] = `${n}px`;
+}
 
-  const headingLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
-  for (const level of headingLevels) {
+function applyCodeVars(
+  vars: Record<string, string>,
+  code?: HtmlStyle['code']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.codeColor, code?.color);
+  setColorVar(vars, ETI_CSS_VARS.codeBgColor, code?.backgroundColor);
+}
+
+function applyHeadingVars(
+  vars: Record<string, string>,
+  htmlStyle?: HtmlStyle
+): void {
+  for (const level of HEADING_TAGS) {
     const h = htmlStyle?.[level];
     if (h?.fontSize != null)
       vars[`--eti-${level}-font-size`] = `${h.fontSize}px`;
     if (h?.bold != null)
       vars[`--eti-${level}-font-weight`] = h.bold ? 'bold' : 'normal';
   }
+}
 
-  const bq = htmlStyle?.blockquote;
-  const bqBorderColor = toColor(bq?.borderColor);
-  if (bqBorderColor) vars['--eti-blockquote-border-color'] = bqBorderColor;
-  if (bq?.borderWidth != null)
-    vars['--eti-blockquote-border-width'] = `${bq.borderWidth}px`;
-  if (bq?.gapWidth != null)
-    vars['--eti-blockquote-gap-width'] = `${bq.gapWidth}px`;
-  const bqColor = toColor(bq?.color);
-  if (bqColor) vars['--eti-blockquote-color'] = bqColor;
+function applyBlockquoteVars(
+  vars: Record<string, string>,
+  bq?: HtmlStyle['blockquote']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.blockquoteBorderColor, bq?.borderColor);
+  setPxVar(vars, ETI_CSS_VARS.blockquoteBorderWidth, bq?.borderWidth);
+  setPxVar(vars, ETI_CSS_VARS.blockquoteGapWidth, bq?.gapWidth);
+  setColorVar(vars, ETI_CSS_VARS.blockquoteColor, bq?.color);
+}
 
-  const cb = htmlStyle?.codeblock;
-  const cbBgColor = toColor(cb?.backgroundColor);
-  if (cbBgColor) vars['--eti-codeblock-bg-color'] = cbBgColor;
-  const cbColor = toColor(cb?.color);
-  if (cbColor) vars['--eti-codeblock-color'] = cbColor;
-  if (cb?.borderRadius != null)
-    vars['--eti-codeblock-border-radius'] = `${cb.borderRadius}px`;
+function applyCodeblockVars(
+  vars: Record<string, string>,
+  cb?: HtmlStyle['codeblock']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.codeblockBgColor, cb?.backgroundColor);
+  setColorVar(vars, ETI_CSS_VARS.codeblockColor, cb?.color);
+  setPxVar(vars, ETI_CSS_VARS.codeblockBorderRadius, cb?.borderRadius);
+}
 
+export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
+  const vars: Record<string, string> = {};
+  applyCodeVars(vars, htmlStyle?.code);
+  applyHeadingVars(vars, htmlStyle);
+  applyBlockquoteVars(vars, htmlStyle?.blockquote);
+  applyCodeblockVars(vars, htmlStyle?.codeblock);
   return vars as CSSProperties;
 }

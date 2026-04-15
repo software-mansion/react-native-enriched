@@ -1,11 +1,9 @@
 import { isTextSelection, type Editor } from '@tiptap/core';
 import type { ResolvedPos } from '@tiptap/pm/model';
 
-/**
- * Same as prosemirror-commands `findCutBefore` (not exported from that package).
- * Resolves to the gap between this block and the block above it.
- */
-export function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
+// Same as prosemirror-commands `findCutBefore` (not exported from that package)
+// Resolves to the gap between this block and the block above it.
+function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
   if (!$pos.parent.type.spec.isolating) {
     for (let i = $pos.depth - 1; i >= 0; i--) {
       if ($pos.index(i) > 0) {
@@ -19,16 +17,7 @@ export function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
   return null;
 }
 
-/**
- * Enter / Backspace behavior for block-level wrappers that use `(paragraph)+` and can be
- * lifted with `lift(wrapperNodeName)` (e.g. blockquote, enriched code block).
- *
- * - Enter: only split inside the wrapper so the default handler does not exit the block.
- * - Backspace at line start inside the wrapper: lift the current paragraph out.
- * - Backspace at line start in a paragraph *below* the wrapper: use `joinTextblockBackward`
- *   so default `joinBackward` / `deleteBarrier` does not re-wrap the paragraph into the
- *   wrapper above.
- */
+// Enter only splits inside the wrapper so the default handler does not exit the block.
 export function wrappedBlockEnter(
   editor: Editor,
   wrapperNodeName: string
@@ -39,6 +28,10 @@ export function wrappedBlockEnter(
   return false;
 }
 
+// Backspace at line start inside the wrapper lifts the current paragraph out.
+// Backspace at line start in a paragraph below the wrapper uses `joinTextblockBackward`
+// so default `joinBackward` / `deleteBarrier` does not re-wrap the paragraph into the
+// wrapper above.
 export function wrappedBlockBackspace(
   editor: Editor,
   wrapperNodeName: string

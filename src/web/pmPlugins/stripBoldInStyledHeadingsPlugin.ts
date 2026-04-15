@@ -6,6 +6,7 @@ import {
   type Transaction,
 } from '@tiptap/pm/state';
 import type { HtmlStyle } from '../../types';
+import { HEADING_TAGS } from '../formats/EnrichedHeading';
 
 export function transactionStripBoldInCssBoldHeadings(
   state: EditorState,
@@ -18,8 +19,8 @@ export function transactionStripBoldInCssBoldHeadings(
   state.doc.descendants((node, pos) => {
     if (node.type.name !== 'heading') return true;
     const level = node.attrs.level as number;
-    if (level < 1 || level > 6) return false;
-    const key = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+    if (level < 1 || level > HEADING_TAGS.length) return false;
+    const key = HEADING_TAGS[level - 1]!;
     if (htmlStyle[key].bold) {
       tr.removeMark(pos + 1, pos + node.nodeSize - 1, boldType);
     }

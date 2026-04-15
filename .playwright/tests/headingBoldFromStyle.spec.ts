@@ -14,7 +14,6 @@ function h1Inner(serialized: string): string | null {
   return m ? m[1] : null;
 }
 
-/** Merged into VisualRegression default htmlStyle — only `h1.bold` is varied in these tests. */
 const HTML_STYLE_H1_BOLD_TRUE = '{ "h1": { "bold": true } }';
 const HTML_STYLE_H1_BOLD_FALSE = '{ "h1": { "bold": false } }';
 

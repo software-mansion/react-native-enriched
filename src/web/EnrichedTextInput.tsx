@@ -176,38 +176,15 @@ export const EnrichedTextInput = ({
       toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
       toggleStrikeThrough: () => editor.chain().focus().toggleStrike().run(),
       toggleInlineCode: () => editor.chain().focus().toggleCode().run(),
-      toggleH1: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 1 });
-      },
-      toggleH2: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 2 });
-      },
-      toggleH3: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 3 });
-      },
-      toggleH4: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 4 });
-      },
-      toggleH5: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 5 });
-      },
-      toggleH6: () => {
-        editor.commands.focus();
-        editor.commands.toggleHeading({ level: 6 });
-      },
-      toggleCodeBlock: () => {
-        editor.commands.focus();
-        editor.commands.toggleEnrichedCodeBlock();
-      },
-      toggleBlockQuote: () => {
-        editor.commands.focus();
-        editor.commands.toggleBlockquote();
-      },
+      toggleH1: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      toggleH2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      toggleH3: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+      toggleH4: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
+      toggleH5: () => editor.chain().focus().toggleHeading({ level: 5 }).run(),
+      toggleH6: () => editor.chain().focus().toggleHeading({ level: 6 }).run(),
+      toggleCodeBlock: () =>
+        editor.chain().focus().toggleEnrichedCodeBlock().run(),
+      toggleBlockQuote: () => editor.chain().focus().toggleBlockquote().run(),
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       toggleCheckboxList: () => {},

@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/core';
 import type { HtmlStyle } from '../../types';
-import { HEADING_LEVELS } from './EnrichedHeading';
+import { HEADING_LEVELS, HEADING_TAGS } from './EnrichedHeading';
 
 type ChainedCommands = ReturnType<Editor['chain']>;
 
@@ -41,7 +41,7 @@ export function isFormatBlocked(
   }
   for (const level of HEADING_LEVELS) {
     if (editor.isActive('heading', { level })) {
-      const key = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+      const key = HEADING_TAGS[level - 1]!;
       if (tiptapName === 'bold' && htmlStyle[key].bold) return true;
     }
   }
