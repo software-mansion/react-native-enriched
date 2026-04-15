@@ -43,6 +43,9 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import { EnrichedListItem } from './formats/EnrichedListItem';
+import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
+import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
 import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
@@ -105,6 +108,9 @@ export const EnrichedTextInput = ({
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
+        EnrichedListItem,
+        EnrichedUnorderedList,
+        EnrichedOrderedList,
         StripMarksInCodeBlockPlugin,
         stripBoldInStyledHeadingsPlugin,
         MergeAdjacentSameKindBlocksPlugin,
@@ -187,8 +193,10 @@ export const EnrichedTextInput = ({
       toggleH6: () => runFocused(editor, (c) => c.toggleHeading({ level: 6 })),
       toggleCodeBlock: () => runFocused(editor, (c) => c.toggleCodeBlock()),
       toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
-      toggleOrderedList: () => {},
-      toggleUnorderedList: () => {},
+      toggleOrderedList: () =>
+        runFocused(editor, (c) => c.toggleEnrichedOrderedList()),
+      toggleUnorderedList: () =>
+        runFocused(editor, (c) => c.toggleEnrichedUnorderedList()),
       toggleCheckboxList: () => {},
       setLink: () => {},
       removeLink: () => {},
