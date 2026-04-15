@@ -39,8 +39,7 @@ function ToolbarButton({
           e.preventDefault();
         }
       }}
-      onClick={(e) => {
-        e.preventDefault();
+      onClick={() => {
         if (!isDisabled) {
           onPress();
         }

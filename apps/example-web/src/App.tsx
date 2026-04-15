@@ -9,8 +9,8 @@ import {
   type FocusEvent,
   type BlurEvent,
   type EnrichedInputStyle,
-  type HtmlStyle,
 } from 'react-native-enriched';
+import { defaultHtmlStyle } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
 import { SetValueModal } from './components/SetValueModal';
@@ -78,7 +78,7 @@ function App() {
         onChangeSelection={handleChangeSelection}
         onChangeHtml={handleOnChangeHtml}
         onChangeState={handleChangeState}
-        htmlStyle={htmlStyle}
+        htmlStyle={defaultHtmlStyle}
       />
 
       <Toolbar editorRef={ref} state={editorState} />
@@ -127,48 +127,6 @@ const enrichedInputStyle: EnrichedInputStyle = {
   paddingHorizontal: 14,
   borderRadius: 8,
   fontSize: 18,
-};
-
-const htmlStyle: HtmlStyle = {
-  h1: {
-    fontSize: 72,
-    bold: true,
-  },
-  h2: {
-    fontSize: 60,
-    bold: true,
-  },
-  h3: {
-    fontSize: 50,
-    bold: true,
-  },
-  h4: {
-    fontSize: 40,
-    bold: true,
-  },
-  h5: {
-    fontSize: 30,
-    bold: true,
-  },
-  h6: {
-    fontSize: 24,
-    bold: true,
-  },
-  blockquote: {
-    borderColor: 'navy',
-    borderWidth: 4,
-    gapWidth: 16,
-    color: 'navy',
-  },
-  codeblock: {
-    color: '#008000',
-    borderRadius: 8,
-    backgroundColor: '#bfbfbf',
-  },
-  code: {
-    color: 'purple',
-    backgroundColor: 'yellow',
-  },
 };
 
 export default App;

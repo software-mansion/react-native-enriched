@@ -16,7 +16,7 @@ export const MergeAdjacentSameKindBlocksPlugin = Extension.create({
             return;
           }
 
-          let tr = newState.tr;
+          const tr = newState.tr;
           const joinPositions: number[] = [];
 
           newState.doc.descendants((node, pos) => {

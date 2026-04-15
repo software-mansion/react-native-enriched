@@ -1,7 +1,5 @@
 import type { Locator } from '@playwright/test';
 
-const PASTE_SETTLE_MS = 300;
-
 export async function copySelectionFrom(locator: Locator): Promise<void> {
   await locator.click();
   await locator.click({ clickCount: 3 });
@@ -20,5 +18,4 @@ export async function copyAndPasteBetween(
 ): Promise<void> {
   await copySelectionFrom(source);
   await pasteInto(dest);
-  await source.page().waitForTimeout(PASTE_SETTLE_MS);
 }

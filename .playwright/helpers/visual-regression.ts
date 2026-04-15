@@ -32,7 +32,7 @@ export async function setEditorHtml(page: Page, html: string): Promise<void> {
   await expect
     .poll(async () => {
       const t = await getSerializedHtml(page);
-      return t.startsWith('<html>') && t.length > 0;
+      return t.startsWith('<html>');
     })
     .toBe(true);
 }
