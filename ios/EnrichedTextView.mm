@@ -182,9 +182,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   // fontStyle
   if (newViewProps.fontStyle != oldViewProps.fontStyle) {
     // TODO: Implement fontStyle setter on EnrichedConfig
-    // fontStyle doesn't have a dedicated setter on EnrichedConfig yet,
-    // but we track it for future use
-    stylePropChanged = YES;
+    //    stylePropChanged = YES;
   }
 
   // htmlStyle headings
@@ -713,7 +711,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     // Use an adjusted range so that applyStyling covers any ZWS characters that
     // were just inserted by handleZeroWidthSpacesInInput. Without this, a style
     // applied to an empty range {0,0} would call applyStyling on {0,0} even
-    // after a ZWS was inserted, leaving headIndent/firstLineHeadIndent unset.
+    // after a ZWS was inserted.
     NSRange adjustedStyleRange = NSMakeRange(
         styleRange.location, styleRange.length + (NSUInteger)MAX(0LL, delta));
     [style applyStyling:adjustedStyleRange];
@@ -798,6 +796,8 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 }
 
 - (void)emitOnLinkPressEvent:(NSString *)url {
+  if (!url)
+    return;
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     emitter->onLinkPress({.url = [url toCppString]});
@@ -808,24 +808,31 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     folly::dynamic attrsObj = folly::dynamic::object;
-    if (mention.attributes != nullptr) {
+    if (mention.attributes != nil) {
       NSData *data =
           [mention.attributes dataUsingEncoding:NSUTF8StringEncoding];
-      NSError *error;
+      NSError *error = nil;
       NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data
                                                            options:0
                                                              error:&error];
-      if (dict != nil) {
-        for (NSString *key in dict) {
-          attrsObj[[key toCppString]] = [dict[key] toCppString];
+      if (error != nil) {
+        NSLog(@"[EnrichedTextView] Failed to parse mention attributes JSON: %@",
+              error);
+        return;
+      }
+
+      for (NSString *key in dict) {
+        id val = dict[key];
+        if ([val isKindOfClass:[NSString class]]) {
+          attrsObj[[key toCppString]] = [val toCppString];
         }
       }
     }
 
     emitter->onMentionPress({
-        .text = mention.text ? [mention.text toCppString] : std::string(""),
-        .indicator = mention.indicator ? [mention.indicator toCppString]
-                                       : std::string(""),
+        .text = mention.text ? [mention.text toCppString] : std::string{},
+        .indicator =
+            mention.indicator ? [mention.indicator toCppString] : std::string{},
         .attributes = attrsObj,
     });
   }

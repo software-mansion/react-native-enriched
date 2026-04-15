@@ -520,7 +520,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
       [text substringWithRange:NSMakeRange(1, text.length - 1)];
   _activeMentionIndicator = indicatorString;
   _activeMentionRange = [NSValue valueWithRange:range];
-  [(id)self.host emitOnMentionEvent:indicatorString text:textString];
+  [self.host emitOnMentionEvent:indicatorString text:textString];
 }
 
 // removes stored mention range + indicator, which means that we no longer edit
@@ -530,7 +530,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
     NSString *indicatorCopy = [_activeMentionIndicator copy];
     _activeMentionIndicator = nullptr;
     _activeMentionRange = nullptr;
-    [(id)self.host emitOnMentionEvent:indicatorCopy text:nullptr];
+    [self.host emitOnMentionEvent:indicatorCopy text:nullptr];
   }
 }
 

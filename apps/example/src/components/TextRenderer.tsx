@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   text: {
-    fontSize: 16,
+    fontSize: 18,
     color: 'black',
     marginTop: 4,
     fontFamily: 'Nunito-Regular',
