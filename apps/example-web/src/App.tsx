@@ -129,7 +129,7 @@ const enrichedInputStyle: EnrichedInputStyle = {
   fontSize: 18,
 };
 
-export const htmlStyle: HtmlStyle = {
+const htmlStyle: HtmlStyle = {
   h1: {
     fontSize: 72,
     bold: true,
@@ -161,9 +161,9 @@ export const htmlStyle: HtmlStyle = {
     color: 'navy',
   },
   codeblock: {
-    color: 'green',
+    color: '#008000',
     borderRadius: 8,
-    backgroundColor: 'grey',
+    backgroundColor: '#bfbfbf',
   },
   code: {
     color: 'purple',
