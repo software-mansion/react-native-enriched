@@ -40,13 +40,7 @@
       NSRange paragraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:detectionRange];
       if (paragraphRange.location == detectionRange.location) {
-        // At the start of an empty paragraph at the end of text.
-        // Fall back to typing attributes so non-editable views (where
-        // selectedRange != detectionRange) can still detect paragraph styles
-        // that were applied via add: (which only updates typingAttributes when
-        // the textStorage range is empty).
-        attrValue = host.textView.typingAttributes[key];
-        // fall through to condition(attrValue, detectionRange) below
+        return NO;
       } else {
         return [self detect:key
                    withHost:host
