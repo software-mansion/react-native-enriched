@@ -148,6 +148,20 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
         editor?.toggleCodeBlock();
       },
     },
+    {
+      key: 'unorderedList',
+      label: '• List',
+      onPress: (editor) => {
+        editor?.toggleUnorderedList();
+      },
+    },
+    {
+      key: 'orderedList',
+      label: '1. List',
+      onPress: (editor) => {
+        editor?.toggleOrderedList();
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
