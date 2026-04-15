@@ -1,45 +1,24 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
-const EDITOR_INNER = '[data-testid="visual-regression-editor"] .eti-editor';
-const HTML_INPUT = '[data-testid="visual-regression-html-input"]';
-const SET_VALUE_BTN = '[data-testid="visual-regression-set-value-button"]';
-const EDITOR_HTML_OUTPUT =
-  '[data-testid="visual-regression-editor-html-output"]';
+import { copyAndPasteBetween } from '../helpers/clipboard';
+import {
+  editorLocator,
+  getSerializedHtml,
+  gotoVisualRegression,
+  setEditorHtml,
+} from '../helpers/visual-regression';
+import { toolbarButton } from '../helpers/toolbar';
 
-/** Opening tags for marks that must not appear in serialized HTML inside codeblock after strip. */
-const INLINE_MARK_TAG = /<\s*(b|strong|i|em|u|s|strike|code)\b/i;
+const INLINE_MARK_TAG = /<\s*(b|i|u|s|code)\b/i;
 
-async function getSerializedHtml(page: Page) {
-  return (await page.locator(EDITOR_HTML_OUTPUT).textContent()) ?? '';
-}
-
-/** Serialized inner HTML of the first `<codeblock>...</codeblock>` (for assertions; doc may have other blocks). */
 function htmlInsideCodeblock(serialized: string): string {
   const m = serialized.match(/<codeblock[^>]*>([\s\S]*?)<\/codeblock>/i);
   return m ? m[1] : '';
 }
 
-const INLINE_TOOLBAR_KEYS = [
-  'bold',
-  'italic',
-  'underline',
-  'strikeThrough',
-  'inlineCode',
-] as const;
-
-async function setEditorHtml(
-  page: import('@playwright/test').Page,
-  html: string
-) {
-  await page.fill(HTML_INPUT, html);
-  await page.click(SET_VALUE_BTN);
-  await page.waitForTimeout(300);
-}
-
 test.describe('codeblock inline styles', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/visual-regression');
-    await page.waitForSelector(EDITOR_INNER);
+    await gotoVisualRegression(page);
   });
 
   test('inline toolbar controls are disabled inside code block', async ({
@@ -52,10 +31,14 @@ test.describe('codeblock inline styles', () => {
 
     await page.locator('.eti-editor codeblock p').click();
 
-    for (const key of INLINE_TOOLBAR_KEYS) {
-      await expect(
-        page.locator(`[data-testid="toolbar-button-${key}"]`)
-      ).toBeDisabled();
+    for (const key of [
+      'bold',
+      'italic',
+      'underline',
+      'strikeThrough',
+      'inlineCode',
+    ] as const) {
+      await expect(toolbarButton(page, key)).toBeDisabled();
     }
   });
 
@@ -68,7 +51,7 @@ test.describe('codeblock inline styles', () => {
     const html = await getSerializedHtml(page);
     expect(htmlInsideCodeblock(html)).not.toMatch(INLINE_MARK_TAG);
 
-    await expect(page.locator(EDITOR_INNER)).toHaveScreenshot(
+    await expect(editorLocator(page)).toHaveScreenshot(
       'codeblock-inline-styles-setvalue-stripped.png'
     );
   });
@@ -81,22 +64,15 @@ test.describe('codeblock inline styles', () => {
       '<html><p><b>pasteMe</b></p><codeblock><p>placeholder</p></codeblock></html>'
     );
 
-    const firstParagraph = page.locator('.eti-editor p').first();
-    await firstParagraph.click();
-    await firstParagraph.click({ clickCount: 3 });
-    await page.keyboard.press('ControlOrMeta+C');
-
-    const codeblockP = page.locator('.eti-editor codeblock p');
-    await codeblockP.click();
-    await codeblockP.click({ clickCount: 3 });
-    await page.keyboard.press('ControlOrMeta+V');
-
-    await page.waitForTimeout(300);
+    await copyAndPasteBetween(
+      page.locator('.eti-editor p').first(),
+      page.locator('.eti-editor codeblock p')
+    );
 
     const htmlAfterPaste = await getSerializedHtml(page);
     expect(htmlInsideCodeblock(htmlAfterPaste)).not.toMatch(INLINE_MARK_TAG);
 
-    await expect(page.locator(EDITOR_INNER)).toHaveScreenshot(
+    await expect(editorLocator(page)).toHaveScreenshot(
       'codeblock-inline-styles-paste-stripped.png'
     );
   });

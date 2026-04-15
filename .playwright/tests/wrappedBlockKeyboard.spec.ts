@@ -1,17 +1,13 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
-const EDITOR_INNER = '[data-testid="visual-regression-editor"] .eti-editor';
-const HTML_INPUT = '[data-testid="visual-regression-html-input"]';
-const SET_VALUE_BTN = '[data-testid="visual-regression-set-value-button"]';
-const EDITOR_HTML_OUTPUT =
-  '[data-testid="visual-regression-editor-html-output"]';
-const H1_TOOLBAR = '[data-testid="toolbar-button-h1"]';
+import {
+  editorLocator,
+  getSerializedHtml,
+  gotoVisualRegression,
+  setEditorHtml,
+} from '../helpers/visual-regression';
+import { toolbarButton } from '../helpers/toolbar';
 
-async function getSerializedHtml(page: Page) {
-  return (await page.locator(EDITOR_HTML_OUTPUT).textContent()) ?? '';
-}
-
-/** Count opening tags (allows attributes), e.g. `<blockquote ...>` or `<codeblock>`. */
 function countOpeningTag(html: string, tagName: string): number {
   const re = new RegExp(`<${tagName}(?:\\s[^>]*)?>`, 'gi');
   return (html.match(re) ?? []).length;
@@ -22,44 +18,26 @@ const WRAPPED_BLOCKS = [
     label: 'blockquote',
     tag: 'blockquote',
     wrapperSelector: '.eti-editor blockquote',
-    toolbarTestId: 'toolbar-button-blockQuote',
+    toolbarTestId: 'blockQuote',
   },
   {
     label: 'codeblock',
     tag: 'codeblock',
     wrapperSelector: '.eti-editor codeblock',
-    toolbarTestId: 'toolbar-button-codeBlock',
+    toolbarTestId: 'codeBlock',
   },
 ] as const;
-
-async function setEditorHtml(page: Page, html: string) {
-  await page.fill(HTML_INPUT, html);
-  await page.click(SET_VALUE_BTN);
-  await page.waitForTimeout(300);
-}
-
-async function setEditorHtmlAndWaitForOutput(page: Page, html: string) {
-  await page.fill(HTML_INPUT, html);
-  await page.click(SET_VALUE_BTN);
-  await expect
-    .poll(async () => {
-      const t = await getSerializedHtml(page);
-      return t.startsWith('<html>') && t.length > 0;
-    })
-    .toBe(true);
-}
 
 for (const { label, tag, wrapperSelector, toolbarTestId } of WRAPPED_BLOCKS) {
   test.describe(`wrapped block keyboard (${label})`, () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/visual-regression');
-      await page.waitForSelector(EDITOR_INNER);
+      await gotoVisualRegression(page);
     });
 
     test('Enter splits inside wrapper and keeps block active', async ({
       page,
     }) => {
-      const editor = page.locator(EDITOR_INNER);
+      const editor = editorLocator(page);
       const wrapper = page.locator(wrapperSelector);
       const paragraphs = wrapper.locator('p');
 
@@ -83,7 +61,7 @@ for (const { label, tag, wrapperSelector, toolbarTestId } of WRAPPED_BLOCKS) {
     test('Backspace at line start lifts paragraph then merges backward', async ({
       page,
     }) => {
-      const editor = page.locator(EDITOR_INNER);
+      const editor = editorLocator(page);
       const wrapper = page.locator(wrapperSelector);
       const paragraphsInWrapper = wrapper.locator('p');
 
@@ -117,12 +95,12 @@ for (const { label, tag, wrapperSelector, toolbarTestId } of WRAPPED_BLOCKS) {
     test('heading round-trip on middle line merges to single wrapper in HTML', async ({
       page,
     }) => {
-      const editor = page.locator(EDITOR_INNER);
-      const toolbarBtn = page.locator(`[data-testid="${toolbarTestId}"]`);
+      const editor = editorLocator(page);
+      const toolbarBtn = toolbarButton(page, toolbarTestId);
       const wrapper = page.locator(wrapperSelector);
-      const h1Btn = page.locator(H1_TOOLBAR);
+      const h1Btn = toolbarButton(page, 'h1');
 
-      await setEditorHtmlAndWaitForOutput(
+      await setEditorHtml(
         page,
         `<html><${tag}><p>line1</p><p>line2</p><p>line3</p></${tag}></html>`
       );
