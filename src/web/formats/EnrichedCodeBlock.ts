@@ -13,6 +13,7 @@ declare module '@tiptap/core' {
   }
 }
 
+// We extend Blockquote, not CodeBlock: this node wraps (paragraph)+; TipTap's CodeBlock is a leaf block, not a paragraph container.
 export const EnrichedCodeBlock = Blockquote.extend({
   name: 'enrichedCodeBlock',
   content: '(paragraph)+',
