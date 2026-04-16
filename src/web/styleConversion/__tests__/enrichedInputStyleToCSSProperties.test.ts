@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { EnrichedInputStyle } from '../../types';
+import type { EnrichedInputStyle } from '../../../types';
 import { enrichedInputStyleToCSSProperties } from '../enrichedInputStyleToCSSProperties';
 
 type TestCase = {

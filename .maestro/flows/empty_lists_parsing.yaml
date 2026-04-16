@@ -1,0 +1,38 @@
+appId: swmansion.enriched.example
+---
+# PR #542 - fix(android): parsing empty lists
+# Validates that lists with empty and whitespace-only items are parsed and displayed correctly
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+        VALUE: >
+            <html>
+                <ol>
+                    <li>First</li>
+                    <li> </li>
+                    <li>Third</li>
+                </ol>
+                <ul>
+                    <li>First</li>
+                    <li> </li>
+                    <li>Third</li>
+                </ul>
+                <ul data-type="checkbox">
+                    <li>First</li>
+                    <li> </li>
+                    <li>Third</li>
+                </ul>
+            </html>
+
+- tapOn:
+    id: "size-max-button"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+        SCREENSHOT_NAME: "empty_lists_parsing"
