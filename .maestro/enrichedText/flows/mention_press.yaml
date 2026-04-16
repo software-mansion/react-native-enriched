@@ -1,6 +1,8 @@
 appId: swmansion.enriched.example
+tags:
+  - android-only
 ---
-# Validates that link press events are triggered correctly
+# Validates that mention press events are triggered correctly
 - launchApp
 
 - tapOn:

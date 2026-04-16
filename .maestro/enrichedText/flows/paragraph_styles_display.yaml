@@ -1,4 +1,6 @@
 appId: swmansion.enriched.example
+tags:
+  - android-only
 ---
 # Validates that paragraph styles are displayed correctly
 - launchApp

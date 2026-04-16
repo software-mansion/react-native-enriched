@@ -62,6 +62,11 @@ class EnrichedTextView : AppCompatTextView {
     setFontSize(EnrichedConstants.TEXT_DEFAULT_FONT_SIZE)
   }
 
+  override fun setTextIsSelectable(selectable: Boolean) {
+    super.setTextIsSelectable(selectable)
+    movementMethod = EnrichedTextMovementMethod.getInstance()
+  }
+
   private fun updateValue() {
     val text = value ?: return
     val style = enrichedStyle ?: return

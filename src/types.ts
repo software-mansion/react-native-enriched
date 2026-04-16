@@ -511,3 +511,13 @@ export interface EnrichedTextHtmlStyle
     | Record<string, EnrichedTextMentionStyleProperties>
     | EnrichedTextMentionStyleProperties;
 }
+
+export interface OnLinkPressEvent {
+  url: string;
+}
+
+export interface OnMentionPressEvent {
+  text: string;
+  indicator: string;
+  attributes: Record<string, string>;
+}

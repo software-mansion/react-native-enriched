@@ -1,23 +1,10 @@
 appId: swmansion.enriched.example
 ---
 - tapOn:
-    id: "blur-button"
+    id: 'blur-button'
 
 - runFlow:
-    when:
-      true: ${UPDATE_SCREENSHOTS === "true"}
-    commands:
-      - takeScreenshot:
-          path: "${SCREENSHOT_ROOT}/enrichedInput/screenshots/${maestro.platform}/${SCREENSHOT_NAME}"
-          cropOn:
-            id: "editor-input"
-
-- runFlow:
-    when:
-      true: ${UPDATE_SCREENSHOTS !== "true"}
-    commands:
-      - assertScreenshot:
-          path: "${SCREENSHOT_ROOT}/enrichedInput/screenshots/${maestro.platform}/${SCREENSHOT_NAME}"
-          thresholdPercentage: 100
-          cropOn:
-            id: "editor-input"
+    file: '../../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      ELEMENT_ID: 'editor-input'
+      SCREENSHOT_PREFIX: 'enrichedInput'
