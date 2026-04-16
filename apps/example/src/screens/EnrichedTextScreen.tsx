@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { EnrichedText } from 'react-native-enriched';
+import {
+  EnrichedText,
+  type OnLinkPressEvent,
+  type OnMentionPressEvent,
+} from 'react-native-enriched';
 import { Button } from '../components/Button';
 import { ValueModal } from '../components/ValueModal';
 import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
@@ -16,6 +20,16 @@ export function EnrichedTextScreen({ onSwitch }: EnrichedTextScreenProps) {
   const handleSubmit = (value: string) => {
     setHtml(value);
     setIsModalOpen(false);
+  };
+
+  const handleLinkPress = (e: OnLinkPressEvent) => {
+    setHtml(`You pressed the link: ${e.url}`);
+  };
+
+  const handleMentionPress = (e: OnMentionPressEvent) => {
+    setHtml(
+      `You pressed the mention: text: ${e.text}, type: ${e.indicator}, attributes: ${JSON.stringify(e.attributes)}`
+    );
   };
 
   return (
@@ -39,8 +53,13 @@ export function EnrichedTextScreen({ onSwitch }: EnrichedTextScreenProps) {
           />
         </View>
         {html !== null && (
-          <View style={styles.rendererContainer} testID="enriched-text-display">
-            <EnrichedText style={styles.text} htmlStyle={enrichedTextHtmlStyle}>
+          <View style={styles.rendererContainer} testID="enriched-text">
+            <EnrichedText
+              style={styles.text}
+              htmlStyle={enrichedTextHtmlStyle}
+              onLinkPress={handleLinkPress}
+              onMentionPress={handleMentionPress}
+            >
               {html}
             </EnrichedText>
           </View>

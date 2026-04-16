@@ -1,8 +1,5 @@
 appId: swmansion.enriched.example
 ---
-- tapOn:
-    id: 'value-modal-submit-button'
-
 - runFlow:
     when:
       true: ${UPDATE_SCREENSHOTS === "true"}
@@ -10,7 +7,7 @@ appId: swmansion.enriched.example
       - takeScreenshot:
           path: '${SCREENSHOT_ROOT}/enrichedText/screenshots/${maestro.platform}/${SCREENSHOT_NAME}'
           cropOn:
-            id: 'enriched-text-display'
+            id: 'enriched-text'
 
 - runFlow:
     when:
@@ -20,4 +17,4 @@ appId: swmansion.enriched.example
           path: '${SCREENSHOT_ROOT}/enrichedText/screenshots/${maestro.platform}/${SCREENSHOT_NAME}'
           thresholdPercentage: 100
           cropOn:
-            id: 'enriched-text-display'
+            id: 'enriched-text'
