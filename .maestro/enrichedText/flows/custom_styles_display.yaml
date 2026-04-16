@@ -1,0 +1,25 @@
+appId: swmansion.enriched.example
+---
+# Validates that custom styles are displayed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <p><a href="https://www.google.com">Link</a></p>
+          <p><mention text="@John Doe" indicator="@" id="1" type="user">@John Doe</mention> </p>
+          <p><img src="https://picsum.photos/id/1/200/200" width="80" height="80"/></p>
+        </html>
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'custom_styles_display'

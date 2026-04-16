@@ -157,8 +157,20 @@ animatedImageWithReleasingSource(CGImageSourceRef CF_RELEASES_ARGUMENT source) {
 }
 
 + (UIImage *)animatedImageWithData:(NSData *)data {
-  return animatedImageWithReleasingSource(
-      CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL));
+  CGImageSourceRef source =
+      CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
+  if (!source) {
+    return nil;
+  }
+
+  // Preserve EXIF orientation for static images (e.g. JPEG/HEIC camera photos)
+  // by using UIKit decoding path directly.
+  if (CGImageSourceGetCount(source) <= 1) {
+    CFRelease(source);
+    return [UIImage imageWithData:data];
+  }
+
+  return animatedImageWithReleasingSource(source);
 }
 
 @end

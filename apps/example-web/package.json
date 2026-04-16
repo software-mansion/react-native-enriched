@@ -10,11 +10,13 @@
     "lint": "eslint . --ext ts,tsx"
   },
   "dependencies": {
+    "js-beautify": "^1.15.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/js-beautify": "^1.14.3",
     "@types/node": "^24.10.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.2.3",

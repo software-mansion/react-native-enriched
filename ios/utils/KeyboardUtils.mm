@@ -1,5 +1,4 @@
 #import "KeyboardUtils.h"
-#import "RCTTextInputUtils.h"
 
 @implementation KeyboardUtils
 + (UIReturnKeyType)getUIReturnKeyTypeFromReturnKeyType:

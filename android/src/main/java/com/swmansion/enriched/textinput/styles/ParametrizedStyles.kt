@@ -236,7 +236,7 @@ class ParametrizedStyles(
 
     val indicatorsPattern = mentionIndicators.joinToString("|") { Regex.escape(it) }
     val mentionIndicatorRegex = Regex("^($indicatorsPattern)")
-    val mentionRegex = Regex("^($indicatorsPattern)\\w*")
+    val mentionRegex = Regex("^($indicatorsPattern)\\S*")
 
     var indicator: String
     var finalStart: Int
