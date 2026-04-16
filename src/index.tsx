@@ -19,8 +19,6 @@ export type {
   ContextMenuItem,
   OnChangeMentionEvent,
   EnrichedTextHtmlStyle,
-} from './types';
-export type {
   OnMentionPressEvent,
   OnLinkPressEvent,
-} from './spec/EnrichedTextNativeComponent';
+} from './types';

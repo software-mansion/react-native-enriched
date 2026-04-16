@@ -8,20 +8,10 @@ import type {
 import type { EnrichedTextHtmlStyleInternal } from '../spec/EnrichedTextNativeComponent';
 
 const MENTION_DEFAULT_KEY = '_default';
-import { DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
-
-const defaultEnrichedTextStyle: Required<EnrichedTextHtmlStyle> = {
-  ...DEFAULT_HTML_STYLE,
-  a: {
-    ...DEFAULT_HTML_STYLE.a,
-    pressColor: 'darkblue',
-  },
-  mention: {
-    ...DEFAULT_HTML_STYLE.mention,
-    pressColor: 'darkblue',
-    pressBackgroundColor: 'yellow',
-  },
-};
+import {
+  DEFAULT_HTML_STYLE,
+  DEFAULT_ENRICHED_TEXT_STYLE,
+} from './defaultHtmlStyle';
 
 const isMentionStyleRecord = (
   mentionStyle: HtmlStyle['mention']
@@ -109,12 +99,12 @@ const convertToEnrichedTextHtmlStyleInternal = (
 
       if (typeof value === 'object' && value !== null) {
         mentionStyles[key] = {
-          ...defaultEnrichedTextStyle.mention,
+          ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
           ...(value as MentionStyleProperties),
         };
       } else {
         mentionStyles[MENTION_DEFAULT_KEY] = {
-          ...defaultEnrichedTextStyle.mention,
+          ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
           ...(mention as MentionStyleProperties),
         };
       }
@@ -123,7 +113,7 @@ const convertToEnrichedTextHtmlStyleInternal = (
 
   if (mentionStyles[MENTION_DEFAULT_KEY] === undefined) {
     mentionStyles[MENTION_DEFAULT_KEY] = {
-      ...defaultEnrichedTextStyle.mention,
+      ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
     };
   }
 
@@ -210,6 +200,9 @@ export const normalizeEnrichedTextHtmlStyle = (
   style: EnrichedTextHtmlStyle
 ): EnrichedTextHtmlStyleInternal => {
   const converted = convertToEnrichedTextHtmlStyleInternal(style);
-  const withDefaults = assignDefaultValues(converted, defaultEnrichedTextStyle);
+  const withDefaults = assignDefaultValues(
+    converted,
+    DEFAULT_ENRICHED_TEXT_STYLE
+  );
   return parseColors(withDefaults);
 };
