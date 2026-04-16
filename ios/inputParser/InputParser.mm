@@ -4,6 +4,7 @@
 #import "StringExtension.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
+#import <React/RCTLog.h>
 
 @implementation InputParser {
   EnrichedTextInputView __weak *_input;
@@ -591,7 +592,7 @@
   _input->textView.typingAttributes = _input->defaultTypingAttributes;
 
   @try {
-    NSArray *processingResult = [self getTextAndStylesFromHtml:html];
+    NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
     NSString *plainText = (NSString *)processingResult[0];
     NSArray *stylesInfo = (NSArray *)processingResult[1];
 
