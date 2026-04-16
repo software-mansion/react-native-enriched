@@ -56,11 +56,8 @@ class EnrichedTextMovementMethod : LinkMovementMethod() {
         return true
       } else {
         val allSpans = buffer.getSpans(0, buffer.length, EnrichedTextClickableSpan::class.java)
-        val hadPressedLink = allSpans.any { it.isPressed }
         allSpans.forEach { it.isPressed = false }
-        if (hadPressedLink) {
-          Selection.removeSelection(buffer)
-        }
+        Selection.removeSelection(buffer)
         widget.invalidate()
       }
     }
