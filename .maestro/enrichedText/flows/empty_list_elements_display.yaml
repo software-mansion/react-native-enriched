@@ -1,4 +1,6 @@
 appId: swmansion.enriched.example
+tags:
+  - android-only
 ---
 # Validates that lists with empty items are parsed and displayed correctly
 - launchApp
