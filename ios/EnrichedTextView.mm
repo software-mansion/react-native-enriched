@@ -617,7 +617,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   }
 
   NSString *normalized = [HtmlParser initiallyProcessHtml:html
-                                        useHtmlNormalizer:NO];
+                                        useHtmlNormalizer:YES];
   if (normalized == nil) {
     [textView.textStorage
         setAttributedString:[[NSAttributedString alloc]
