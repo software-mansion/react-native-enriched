@@ -23,7 +23,13 @@ class EnrichedTextMovementMethod : LinkMovementMethod() {
       val line = layout.getLineForVertical(y)
       val off = layout.getOffsetForHorizontal(line, x.toFloat())
 
-      val links = buffer.getSpans(off, off, EnrichedTextClickableSpan::class.java)
+      val inLineBounds = x >= layout.getLineLeft(line) && x <= layout.getLineRight(line)
+      val links =
+        if (inLineBounds) {
+          buffer.getSpans(off, off, EnrichedTextClickableSpan::class.java)
+        } else {
+          emptyArray()
+        }
 
       if (links.isNotEmpty()) {
         val link = links[0]
@@ -50,8 +56,11 @@ class EnrichedTextMovementMethod : LinkMovementMethod() {
         return true
       } else {
         val allSpans = buffer.getSpans(0, buffer.length, EnrichedTextClickableSpan::class.java)
+        val hadPressedLink = allSpans.any { it.isPressed }
         allSpans.forEach { it.isPressed = false }
-        Selection.removeSelection(buffer)
+        if (hadPressedLink) {
+          Selection.removeSelection(buffer)
+        }
         widget.invalidate()
       }
     }
