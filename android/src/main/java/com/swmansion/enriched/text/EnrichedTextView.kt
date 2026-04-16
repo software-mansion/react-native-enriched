@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -19,6 +20,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.text.spans.EnrichedTextImageSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 import kotlin.math.ceil
 
@@ -75,9 +77,18 @@ class EnrichedTextView : AppCompatTextView {
     try {
       val parsed = EnrichedParser.fromHtml(text, style, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
-      this.text = withoutLastNewLine
+      setText(withoutLastNewLine, BufferType.SPANNABLE)
+      observeAsyncImages()
     } catch (e: Exception) {
       this.text = text
+    }
+  }
+
+  private fun observeAsyncImages() {
+    val spannable = text as? Spannable ?: return
+    val spans = spannable.getSpans(0, spannable.length, EnrichedTextImageSpan::class.java)
+    for (span in spans) {
+      span.observeAsyncDrawableLoaded(spannable)
     }
   }
 
