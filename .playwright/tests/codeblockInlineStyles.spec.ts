@@ -37,9 +37,20 @@ test.describe('codeblock inline styles', () => {
       'underline',
       'strikeThrough',
       'inlineCode',
+      'link',
     ] as const) {
       await expect(toolbarButton(page, key)).toBeDisabled();
     }
+  });
+
+  test('link toolbar control is disabled inside inline code', async ({
+    page,
+  }) => {
+    await setEditorHtml(page, '<html><p><code>inside</code></p></html>');
+
+    await page.locator('.eti-editor code').click();
+
+    await expect(toolbarButton(page, 'link')).toBeDisabled();
   });
 
   test('setValue strips inline styles inside code block', async ({ page }) => {
