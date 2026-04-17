@@ -9,6 +9,7 @@ import {
   type FocusEvent,
   type BlurEvent,
   type EnrichedInputStyle,
+  type OnLinkDetected,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -83,6 +84,10 @@ function App() {
     setEditorState(e.nativeEvent);
   };
 
+  const handleOnLinkDetected = (e: OnLinkDetected) => {
+    console.log('[EnrichedTextInput] onLinkDetected event', e);
+  };
+
   return (
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
@@ -102,6 +107,7 @@ function App() {
         onChangeSelection={handleChangeSelection}
         onChangeHtml={handleOnChangeHtml}
         onChangeState={handleChangeState}
+        onLinkDetected={handleOnLinkDetected}
         htmlStyle={WEB_DEFAULT_HTML_STYLE}
       />
 
