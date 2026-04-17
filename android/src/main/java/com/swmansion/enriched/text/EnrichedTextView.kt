@@ -169,7 +169,7 @@ class EnrichedTextView : AppCompatTextView {
   fun setFontWeight(weight: String?) {
     val fontWeight = parseFontWeight(weight)
 
-    if (fontWeight != fontStyle) {
+    if (fontWeight != this.fontWeight) {
       this.fontWeight = fontWeight
       typefaceDirty = true
     }
