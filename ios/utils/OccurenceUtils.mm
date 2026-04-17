@@ -33,7 +33,14 @@
                                                 NSRange range))condition {
   NSRange detectionRange = NSMakeRange(index, 0);
   id attrValue;
-  if (NSEqualRanges(host.textView.selectedRange, detectionRange)) {
+  // Only trust typingAttributes when the textView is actually editable.
+  // Non-editable hosts (e.g. EnrichedTextView) keep selectedRange pinned at
+  // (0, 0), so without this gate every detection at index 0 would match the
+  // selection and read stale/default typingAttributes instead of the real
+  // attribute at that position in textStorage.
+  if (host.textView.isEditable &&
+      NSEqualRanges(host.textView.selectedRange, detectionRange)) {
+    NSLog(@"[OccurenceUtils] isEditable srodek: %d", host.textView.isEditable);
     attrValue = host.textView.typingAttributes[key];
   } else if (index == host.textView.textStorage.string.length) {
     if (checkPrev) {

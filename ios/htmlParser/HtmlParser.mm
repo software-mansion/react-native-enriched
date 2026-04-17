@@ -154,24 +154,23 @@
 
   NSArray *tagData = ongoingTags[tagName];
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
+  NSInteger openImageCount = [((NSNumber *)tagData[1]) intValue];
+  NSInteger currentImageCount = *precedingImageCount;
 
-  // 'tagLocation' is an index based on 'plainText' which currently only holds
-  // raw text.
-  //
-  // Since 'plainText' does not yet contain the special placeholders for images,
-  // the indices for any text following an image are lower than they will be
-  // in the final NSTextStorage.
-  //
-  // We add 'precedingImageCount' to shift the start index forward, aligning
-  // this style's range with the actual position in the final text (where each
-  // image adds 1 character).
-  NSRange tagRange = NSMakeRange(tagLocation + *precedingImageCount,
-                                 plainText.length - tagLocation);
+  // 'plainText' doesn't contain image placeholders yet, but the final
+  // NSTextStorage will, so each image adds one character that ranges here
+  // must account for. 'openImageCount' (captured when the tag opened) shifts
+  // the start past images finalized BEFORE this tag, while the diff against
+  // 'currentImageCount' extends the length to cover images finalized INSIDE
+  // it.
+  NSRange tagRange = NSMakeRange(tagLocation + openImageCount,
+                                 (plainText.length - tagLocation) +
+                                     (currentImageCount - openImageCount));
 
   [tagEntry addObject:[tagName copy]];
   [tagEntry addObject:[NSValue valueWithRange:tagRange]];
-  if (tagData.count > 1) {
-    [tagEntry addObject:[(NSString *)tagData[1] copy]];
+  if (tagData.count > 2) {
+    [tagEntry addObject:[(NSString *)tagData[2] copy]];
   }
 
   [processedTags addObject:tagEntry];
@@ -416,6 +415,18 @@
         stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
                                   withString:@"<p>\u200B</p>\n</codeblock>"];
 
+    // The same like above for (blockquote and codeblock) this is more like a
+    // hack but for some reason the last <li></li> in <ul> and <ol> are not
+    // properly changed into zero width space so we do that manually here
+    // TODO: investigate this further, issue is already described here:
+    // https://github.com/software-mansion/react-native-enriched/issues/505
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<li></li>\n</ul>"
+                                  withString:@"<li>\u200B</li>\n</ul>"];
+    fixedHtml = [fixedHtml
+        stringByReplacingOccurrencesOfString:@"<li></li>\n</ol>"
+                                  withString:@"<li>\u200B</li>\n</ol>"];
+
     // replace "<br>" at the end with "<br>\n" if input is not empty to properly
     // handle last <br> in html
     if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
@@ -481,10 +492,14 @@
           checkboxStates[@(plainText.length)] = @(isChecked);
         }
       } else if (!closingTag) {
-        // we finish opening tag - get its location and optionally params and
-        // put them under tag name key in ongoingTags
+        // we finish opening tag - get its location, the current
+        // precedingImageCount and optionally params and put them under tag name
+        // key in ongoingTags. Storing the open-time image count lets
+        // finalizeTagEntry: correctly shift the start and extend the length
+        // so the range covers any images finalized between open and close.
         NSMutableArray *tagArr = [[NSMutableArray alloc] init];
         [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
+        [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
         if (currentTagParams.length > 0) {
           [tagArr addObject:[currentTagParams copy]];
         }

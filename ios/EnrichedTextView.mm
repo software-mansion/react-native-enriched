@@ -693,7 +693,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 
       [cbStyle addWithChecked:NO
                         range:styleRange
-                   withTyping:YES
+                   withTyping:NO
                withDirtyRange:NO];
 
       if (checkboxStates && checkboxStates.count > 0) {
@@ -708,18 +708,18 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
         }
       }
     } else {
-      [style add:styleRange withTyping:YES withDirtyRange:NO];
+      [style add:styleRange withTyping:NO withDirtyRange:NO];
     }
 
-    [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
+    [ZeroWidthSpaceUtils addSpacesIfNeededinInput:self inRange:styleRange];
 
     NSInteger delta =
         textView.textStorage.string.length - textLengthBeforeStyleApplied;
 
     // Use an adjusted range so that applyStyling covers any ZWS characters that
-    // were just inserted by handleZeroWidthSpacesInInput. Without this, a style
-    // applied to an empty range {0,0} would call applyStyling on {0,0} even
-    // after a ZWS was inserted.
+    // were just inserted by addSpacesIfNeededinInput:inRange:. Without this, a
+    // style applied to an empty range {0,0} would call applyStyling on {0,0}
+    // even after a ZWS was inserted.
     NSRange adjustedStyleRange = NSMakeRange(
         styleRange.location, styleRange.length + (NSUInteger)MAX(0LL, delta));
 

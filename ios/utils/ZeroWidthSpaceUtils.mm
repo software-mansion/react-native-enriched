@@ -11,7 +11,10 @@
   }
 
   [self removeSpacesIfNeededinInput:host];
-  [self addSpacesIfNeededinInput:host];
+  [self
+      addSpacesIfNeededinInput:host
+                       inRange:NSMakeRange(
+                                   0, host.textView.textStorage.string.length)];
 }
 
 + (void)removeSpacesIfNeededinInput:(id<EnrichedViewHost>)host {
@@ -97,11 +100,18 @@
   return metaAttrs.count > 0 ? metaAttrs : nullptr;
 }
 
-+ (void)addSpacesIfNeededinInput:(id<EnrichedViewHost>)host {
++ (void)addSpacesIfNeededinInput:(id<EnrichedViewHost>)host
+                         inRange:(NSRange)range {
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = host.textView.selectedRange;
 
-  for (NSUInteger i = 0; i < host.textView.textStorage.string.length; i++) {
+  // Expand to paragraph boundaries so callers can pass any style range
+  // without worrying about missing the terminating newline of an empty
+  // paragraph that starts before range.location.
+  NSRange scanRange =
+      [host.textView.textStorage.string paragraphRangeForRange:range];
+
+  for (NSUInteger i = scanRange.location; i < NSMaxRange(scanRange); i++) {
     unichar character = [host.textView.textStorage.string characterAtIndex:i];
 
     if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
@@ -141,17 +151,20 @@
     }
   }
 
-  // additional check for last index of the input
-  NSRange lastRange = NSMakeRange(host.textView.textStorage.string.length, 0);
-  NSRange lastParagraphRange =
-      [host.textView.textStorage.string paragraphRangeForRange:lastRange];
-  if (lastParagraphRange.length == 0 &&
-      [self anyZWSStylePresentInRange:lastRange input:host]) {
-    [TextInsertionUtils insertText:@"\u200B"
-                                at:lastRange.location
-              additionalAttributes:metaAttrs
-                             input:host
-                     withSelection:NO];
+  // additional check for last index of the input - only when the caller's
+  // range actually reaches the end of the input
+  if (NSMaxRange(scanRange) == host.textView.textStorage.string.length) {
+    NSRange lastRange = NSMakeRange(host.textView.textStorage.string.length, 0);
+    NSRange lastParagraphRange =
+        [host.textView.textStorage.string paragraphRangeForRange:lastRange];
+    if (lastParagraphRange.length == 0 &&
+        [self anyZWSStylePresentInRange:lastRange input:host]) {
+      [TextInsertionUtils insertText:@"\u200B"
+                                  at:lastRange.location
+                additionalAttributes:metaAttrs
+                               input:host
+                       withSelection:NO];
+    }
   }
 
   // fix the selection if needed
