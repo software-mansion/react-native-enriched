@@ -20,6 +20,13 @@ import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
 import { Toolbar } from './components/Toolbar';
 
+const DEFAULT_LINK_STATE: OnLinkDetected = {
+  text: '',
+  url: '',
+  start: 0,
+  end: 0,
+};
+
 function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [currentHtml, setCurrentHtml] = useState('');
@@ -31,7 +38,17 @@ function App() {
   const [selection, setSelection] = useState<OnChangeSelectionEvent | null>(
     null
   );
+  const [currentLink, setCurrentLink] =
+    useState<OnLinkDetected>(DEFAULT_LINK_STATE);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+
+  const insideCurrentLink =
+    !!editorState?.link.isActive &&
+    currentLink.url.length > 0 &&
+    !!(currentLink.start || currentLink.end) &&
+    selection !== null &&
+    selection.start >= currentLink.start &&
+    selection.end <= currentLink.end;
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -75,7 +92,11 @@ function App() {
       return;
     }
     const newText = text.length > 0 ? text : url;
-    ref.current?.setLink(selection.start, selection.end, newText, url);
+    if (insideCurrentLink) {
+      ref.current?.setLink(currentLink.start, currentLink.end, newText, url);
+    } else {
+      ref.current?.setLink(selection.start, selection.end, newText, url);
+    }
     closeLinkModal();
   };
 
@@ -86,6 +107,7 @@ function App() {
 
   const handleOnLinkDetected = (e: OnLinkDetected) => {
     console.log('[EnrichedTextInput] onLinkDetected event', e);
+    setCurrentLink(e);
   };
 
   return (
@@ -151,8 +173,10 @@ function App() {
 
       {isLinkModalOpen && (
         <LinkModal
-          editedText={selection?.text ?? ''}
-          editedUrl=""
+          editedText={
+            insideCurrentLink ? currentLink.text : (selection?.text ?? '')
+          }
+          editedUrl={insideCurrentLink ? currentLink.url : ''}
           onSubmit={submitLink}
           onClose={closeLinkModal}
         />
