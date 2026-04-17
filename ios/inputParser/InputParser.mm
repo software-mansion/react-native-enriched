@@ -584,8 +584,6 @@
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
   NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
-  NSString *plainText = (NSString *)processingResult[0];
-  NSArray *stylesInfo = (NSArray *)processingResult[1];
 
   // reset the text first and reset typing attributes
   _input->textView.text = @"";

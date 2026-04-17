@@ -347,7 +347,7 @@ static void const *kInputKey = &kInputKey;
 
     // seek for previous lists
     while (true) {
-      if ([olStyle detect:NSMakeRange(recentParagraphLocation, 0)]) {
+      if ([olStyle detect:NSMakeRange(recentParagraphLocation, 1)]) {
         prevParagraphsCount += 1;
 
         if (recentParagraphLocation > 0) {
