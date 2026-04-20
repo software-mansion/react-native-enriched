@@ -7,7 +7,7 @@ import {
   type OnChangeStateEvent,
 } from 'react-native-enriched';
 import { Toolbar } from '../components/Toolbar';
-import { defaultHtmlStyle } from '../defaultHtmlStyle';
+import { WEB_DEFAULT_HTML_STYLE } from '../defaultHtmlStyle';
 
 function mergeHtmlStyle(
   base: HtmlStyle,
@@ -39,13 +39,13 @@ export function VisualRegression() {
   const htmlStyle = useMemo<HtmlStyle>(() => {
     const raw = htmlStyleOverrideJson.trim();
     if (!raw) {
-      return defaultHtmlStyle;
+      return WEB_DEFAULT_HTML_STYLE;
     }
     try {
       const parsed = JSON.parse(raw) as Partial<HtmlStyle>;
-      return mergeHtmlStyle(defaultHtmlStyle, parsed);
+      return mergeHtmlStyle(WEB_DEFAULT_HTML_STYLE, parsed);
     } catch {
-      return defaultHtmlStyle;
+      return WEB_DEFAULT_HTML_STYLE;
     }
   }, [htmlStyleOverrideJson]);
 

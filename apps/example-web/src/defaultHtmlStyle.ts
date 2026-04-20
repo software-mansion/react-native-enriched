@@ -1,6 +1,6 @@
 import type { HtmlStyle } from 'react-native-enriched';
 
-export const defaultHtmlStyle: HtmlStyle = {
+export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
   h1: {
     fontSize: 72,
     bold: true,
