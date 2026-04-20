@@ -70,10 +70,12 @@ export const EnrichedTextInput = ({
   );
 
   const htmlStyleRef = useRef(resolvedHtmlStyle);
-  htmlStyleRef.current = resolvedHtmlStyle;
+  useEffect(() => {
+    htmlStyleRef.current = resolvedHtmlStyle;
+  }, [resolvedHtmlStyle]);
 
   const stripBoldInStyledHeadingsPlugin = useMemo(
-    () => createStripBoldInStyledHeadingsPlugin(htmlStyleRef),
+    () => createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
     []
   );
 

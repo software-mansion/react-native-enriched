@@ -39,9 +39,9 @@ function transactionStripBoldInCssBoldHeadings(
   return tr.steps.length > 0 ? tr : null;
 }
 
-export function createStripBoldInStyledHeadingsPlugin(htmlStyleRef: {
-  current: Required<HtmlStyle>;
-}) {
+export function createStripBoldInStyledHeadingsPlugin(
+  getStyle: () => Required<HtmlStyle>
+) {
   return Extension.create({
     name: 'stripBoldInStyledHeadings',
     addCommands() {
@@ -49,10 +49,7 @@ export function createStripBoldInStyledHeadingsPlugin(htmlStyleRef: {
         normalizeBoldInStyledHeadings:
           () =>
           ({ state, dispatch }: CommandProps) => {
-            const tr = transactionStripBoldInCssBoldHeadings(
-              state,
-              htmlStyleRef.current
-            );
+            const tr = transactionStripBoldInCssBoldHeadings(state, getStyle());
             if (!tr) return false;
             if (dispatch) dispatch(tr);
             return true;
@@ -66,10 +63,7 @@ export function createStripBoldInStyledHeadingsPlugin(htmlStyleRef: {
           appendTransaction: (transactions, _oldState, newState) => {
             if (!transactions.some((tr) => tr.docChanged)) return;
 
-            return transactionStripBoldInCssBoldHeadings(
-              newState,
-              htmlStyleRef.current
-            );
+            return transactionStripBoldInCssBoldHeadings(newState, getStyle());
           },
         }),
       ];
