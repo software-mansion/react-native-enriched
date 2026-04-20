@@ -2,7 +2,7 @@ import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { canJoin } from '@tiptap/pm/transform';
 
-const MERGEABLE_TYPE_NAMES = new Set(['blockquote', 'enrichedCodeBlock']);
+const MERGEABLE_TYPE_NAMES = new Set(['blockquote', 'codeBlock']);
 
 export const MergeAdjacentSameKindBlocksPlugin = Extension.create({
   name: 'mergeAdjacentSameKindBlocks',

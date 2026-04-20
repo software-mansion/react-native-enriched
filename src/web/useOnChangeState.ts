@@ -45,7 +45,7 @@ function buildState(
   htmlStyle: Required<HtmlStyle>
 ): OnChangeStateEvent {
   const isBlockquoteActive = editor.isActive('blockquote');
-  const isCodeBlockActive = editor.isActive('enrichedCodeBlock');
+  const isCodeBlockActive = editor.isActive('codeBlock');
   const isAnyBlockActive = isAnyParagraphFormatActive(editor);
 
   function inlineFormat(tiptapName: string) {

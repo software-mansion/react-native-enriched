@@ -7,15 +7,15 @@ import {
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    enrichedCodeBlock: {
-      toggleEnrichedCodeBlock: () => ReturnType;
+    codeBlock: {
+      toggleCodeBlock: () => ReturnType;
     };
   }
 }
 
 // We extend Blockquote, not CodeBlock: this node wraps (paragraph)+; TipTap's CodeBlock is a leaf block, not a paragraph container.
 export const EnrichedCodeBlock = Blockquote.extend({
-  name: 'enrichedCodeBlock',
+  name: 'codeBlock',
   content: '(paragraph)+',
 
   parseHTML() {
@@ -28,14 +28,14 @@ export const EnrichedCodeBlock = Blockquote.extend({
 
   addCommands() {
     return {
-      toggleEnrichedCodeBlock:
+      toggleCodeBlock:
         () =>
         ({ editor, commands }) =>
           toggleParagraphFormat(
             editor,
-            () => editor.isActive('enrichedCodeBlock'),
-            () => commands.lift('enrichedCodeBlock'),
-            (c) => c.toggleWrap('enrichedCodeBlock')
+            () => editor.isActive('codeBlock'),
+            () => commands.lift('codeBlock'),
+            (c) => c.toggleWrap('codeBlock')
           ),
     };
   },
@@ -46,9 +46,8 @@ export const EnrichedCodeBlock = Blockquote.extend({
 
   addKeyboardShortcuts() {
     return {
-      Enter: ({ editor }) => wrappedBlockEnter(editor, 'enrichedCodeBlock'),
-      Backspace: ({ editor }) =>
-        wrappedBlockBackspace(editor, 'enrichedCodeBlock'),
+      Enter: ({ editor }) => wrappedBlockEnter(editor, 'codeBlock'),
+      Backspace: ({ editor }) => wrappedBlockBackspace(editor, 'codeBlock'),
     };
   },
 });

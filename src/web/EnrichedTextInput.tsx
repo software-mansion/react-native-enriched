@@ -174,8 +174,7 @@ export const EnrichedTextInput = ({
       toggleH4: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
       toggleH5: () => editor.chain().focus().toggleHeading({ level: 5 }).run(),
       toggleH6: () => editor.chain().focus().toggleHeading({ level: 6 }).run(),
-      toggleCodeBlock: () =>
-        editor.chain().focus().toggleEnrichedCodeBlock().run(),
+      toggleCodeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
       toggleBlockQuote: () => editor.chain().focus().toggleBlockquote().run(),
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},

@@ -16,7 +16,7 @@ export const StripMarksInCodeBlockPlugin = Extension.create({
           const allMarks = Object.values(newState.schema.marks);
 
           newState.doc.descendants((node, pos) => {
-            if (node.type.name === 'enrichedCodeBlock') {
+            if (node.type.name === 'codeBlock') {
               allMarks.forEach((markType) => {
                 tr.removeMark(pos + 1, pos + node.nodeSize - 1, markType);
               });

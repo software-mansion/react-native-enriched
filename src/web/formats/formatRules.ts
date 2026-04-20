@@ -7,7 +7,7 @@ type ChainedCommands = ReturnType<Editor['chain']>;
 export function isAnyParagraphFormatActive(editor: Editor): boolean {
   return (
     editor.isActive('blockquote') ||
-    editor.isActive('enrichedCodeBlock') ||
+    editor.isActive('codeBlock') ||
     HEADING_LEVELS.some((level) => editor.isActive('heading', { level }))
   );
 }
@@ -17,7 +17,7 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
-  if (editor.isActive('enrichedCodeBlock')) {
+  if (editor.isActive('codeBlock')) {
     return ['bold', 'italic', 'underline', 'strike', 'code'].includes(
       tiptapName
     );
