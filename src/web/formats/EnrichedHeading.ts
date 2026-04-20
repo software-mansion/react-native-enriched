@@ -24,10 +24,9 @@ export const EnrichedHeading = Heading.configure({
       ...this.parent?.(),
       toggleHeading:
         (attrs) =>
-        ({ editor, commands, chain }) =>
+        ({ editor, commands }) =>
           toggleParagraphFormat(
             editor,
-            chain(),
             () => editor.isActive('heading', attrs),
             () => commands.setParagraph(),
             (c) => c.setHeading(attrs)

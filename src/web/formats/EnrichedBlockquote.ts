@@ -24,10 +24,9 @@ export const EnrichedBlockquote = Blockquote.extend({
       ...this.parent?.(),
       toggleBlockquote:
         () =>
-        ({ editor, commands, chain }) =>
+        ({ editor, commands }) =>
           toggleParagraphFormat(
             editor,
-            chain(),
             () => editor.isActive('blockquote'),
             () => commands.lift('blockquote'),
             (c) => c.toggleWrap('blockquote')
