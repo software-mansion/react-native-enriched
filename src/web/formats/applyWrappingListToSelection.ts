@@ -2,22 +2,21 @@ import type { Editor } from '@tiptap/core';
 import type { Node } from '@tiptap/pm/model';
 import { Fragment } from '@tiptap/pm/model';
 
+type ChainedCommands = ReturnType<Editor['chain']>;
+
 /**
  * Clears block styling with `setParagraph`, then wraps the selection’s blocks in a flat
- * `listTypeName` (one `itemTypeName` per block). Uses `block.copy(block.content)` so text
- * is preserved (bare `copy()` clears children).
+ * `listTypeName` (one `itemTypeName` per block).
  *
- * Does not use `toggleList`: with `listItem` content `'paragraph'`, stock wrap often fails on
- * multiline selections; the replace step builds `list → listItem → paragraph` explicitly.
+ * We don't use toggleList because we've changed ListItem's content to
+ * 'paragraph' causing the default toggle behavior to fail.
  */
 export function applyWrappingListToSelection(
-  editor: Editor,
+  chain: () => ChainedCommands,
   listTypeName: string,
   itemTypeName: string
 ): boolean {
-  return editor
-    .chain()
-    .focus()
+  return chain()
     .setParagraph()
     .command(({ tr, state }) => {
       const listType = state.schema.nodes[listTypeName];

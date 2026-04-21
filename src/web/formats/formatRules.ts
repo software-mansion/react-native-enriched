@@ -34,11 +34,11 @@ export function isFormatBlocked(
 }
 
 export function toggleParagraphFormat(
-  editor: Editor,
   isActive: () => boolean,
   deactivate: () => boolean,
-  activate: (c: ChainedCommands) => ChainedCommands
+  activate: (c: ChainedCommands) => ChainedCommands,
+  chain: () => ChainedCommands
 ): boolean {
   if (isActive()) return deactivate();
-  return activate(editor.chain().focus().clearNodes()).run();
+  return activate(chain().clearNodes()).run();
 }

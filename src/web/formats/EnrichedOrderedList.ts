@@ -23,16 +23,12 @@ export const EnrichedOrderedList = OrderedList.extend({
     return {
       toggleEnrichedOrderedList:
         () =>
-        ({ editor, commands }) => {
+        ({ editor, commands, chain }) => {
           if (editor.isActive('orderedList')) {
             return commands.setParagraph();
           }
 
-          return applyWrappingListToSelection(
-            editor,
-            'orderedList',
-            'listItem'
-          );
+          return applyWrappingListToSelection(chain, 'orderedList', 'listItem');
         },
     };
   },

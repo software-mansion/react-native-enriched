@@ -26,12 +26,12 @@ export const EnrichedUnorderedList = BulletList.extend({
     return {
       toggleEnrichedUnorderedList:
         () =>
-        ({ editor, commands }) => {
+        ({ editor, commands, chain }) => {
           if (editor.isActive('bulletList')) {
             return commands.setParagraph();
           }
 
-          return applyWrappingListToSelection(editor, 'bulletList', 'listItem');
+          return applyWrappingListToSelection(chain, 'bulletList', 'listItem');
         },
     };
   },
