@@ -28,7 +28,12 @@ export const EnrichedOrderedList = OrderedList.extend({
             return commands.setParagraph();
           }
 
-          return applyWrappingListToSelection(chain, 'orderedList', 'listItem');
+          return applyWrappingListToSelection(
+            editor,
+            chain,
+            'orderedList',
+            'listItem'
+          );
         },
     };
   },

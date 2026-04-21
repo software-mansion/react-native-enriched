@@ -150,14 +150,14 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
     },
     {
       key: 'unorderedList',
-      label: '• List',
+      label: '•',
       onPress: (editor) => {
         editor?.toggleUnorderedList();
       },
     },
     {
       key: 'orderedList',
-      label: '1. List',
+      label: '1.',
       onPress: (editor) => {
         editor?.toggleOrderedList();
       },

@@ -31,7 +31,12 @@ export const EnrichedUnorderedList = BulletList.extend({
             return commands.setParagraph();
           }
 
-          return applyWrappingListToSelection(chain, 'bulletList', 'listItem');
+          return applyWrappingListToSelection(
+            editor,
+            chain,
+            'bulletList',
+            'listItem'
+          );
         },
     };
   },
