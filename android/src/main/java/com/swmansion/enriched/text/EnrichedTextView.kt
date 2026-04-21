@@ -4,11 +4,12 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
@@ -21,6 +22,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.text.spans.EnrichedTextImageSpan
+import com.swmansion.enriched.text.spans.interfaces.EnrichedTextClickableSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
 import kotlin.math.ceil
 
@@ -35,6 +37,10 @@ class EnrichedTextView : AppCompatTextView {
 
   private var enrichedStyle: EnrichedTextStyle? = null
   private val spannableFactory = EnrichedTextSpanFactory()
+
+  // We keep the parsedText around so that when an async image finishes loading we can re-call
+  // setText with the same instance and force the TextView to rebuild its layout.
+  private var parsedText: CharSequence? = null
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -57,14 +63,68 @@ class EnrichedTextView : AppCompatTextView {
       breakStrategy = LineBreaker.BREAK_STRATEGY_HIGH_QUALITY
     }
 
-    movementMethod = EnrichedTextMovementMethod.getInstance()
     setPadding(0, 0, 0, 0)
     setFontSize(EnrichedConstants.TEXT_DEFAULT_FONT_SIZE)
   }
 
-  override fun setTextIsSelectable(selectable: Boolean) {
-    super.setTextIsSelectable(selectable)
-    movementMethod = EnrichedTextMovementMethod.getInstance()
+  override fun onTouchEvent(event: MotionEvent): Boolean {
+    val spanned = text as? Spanned
+    val action = event.action
+
+    if (spanned == null || layout == null) {
+      return super.onTouchEvent(event)
+    }
+
+    if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_CANCEL) {
+      val x = (event.x - totalPaddingLeft + scrollX).toInt()
+      val y = (event.y - totalPaddingTop + scrollY).toInt()
+
+      val line = layout.getLineForVertical(y)
+      val off = layout.getOffsetForHorizontal(line, x.toFloat())
+
+      val inLineBounds = x >= layout.getLineLeft(line) && x <= layout.getLineRight(line)
+      val links =
+        if (inLineBounds) {
+          spanned.getSpans(off, off, EnrichedTextClickableSpan::class.java)
+        } else {
+          emptyArray()
+        }
+
+      if (links.isNotEmpty()) {
+        val link = links[0]
+
+        when (action) {
+          MotionEvent.ACTION_DOWN -> {
+            link.isPressed = true
+          }
+
+          MotionEvent.ACTION_UP -> {
+            link.onClick(this)
+            link.isPressed = false
+            performClick()
+          }
+
+          MotionEvent.ACTION_CANCEL -> {
+            link.isPressed = false
+          }
+        }
+
+        invalidate()
+        return true
+      } else {
+        val allSpans = spanned.getSpans(0, spanned.length, EnrichedTextClickableSpan::class.java)
+        allSpans.forEach { it.isPressed = false }
+        invalidate()
+      }
+    }
+
+    return super.onTouchEvent(event)
+  }
+
+  // Required for accessibility when overriding onTouchEvent.
+  override fun performClick(): Boolean {
+    super.performClick()
+    return true
   }
 
   private fun updateValue() {
@@ -75,6 +135,7 @@ class EnrichedTextView : AppCompatTextView {
     valueDirty = false
     val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
     if (!isHtml) {
+      parsedText = null
       this.text = text
       return
     }
@@ -82,18 +143,23 @@ class EnrichedTextView : AppCompatTextView {
     try {
       val parsed = EnrichedParser.fromHtml(text, style, spannableFactory)
       val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine, BufferType.SPANNABLE)
+      parsedText = withoutLastNewLine
+      setText(withoutLastNewLine, BufferType.NORMAL)
       observeAsyncImages()
     } catch (e: Exception) {
+      parsedText = null
       this.text = text
     }
   }
 
   private fun observeAsyncImages() {
-    val spannable = text as? Spannable ?: return
-    val spans = spannable.getSpans(0, spannable.length, EnrichedTextImageSpan::class.java)
+    val spanned = parsedText as? Spanned ?: return
+    val spans = spanned.getSpans(0, spanned.length, EnrichedTextImageSpan::class.java)
     for (span in spans) {
-      span.observeAsyncDrawableLoaded(spannable)
+      span.observeAsyncDrawableLoaded {
+        // Rebuild the TextView layout with the newly loaded drawable bounds.
+        parsedText?.let { setText(it, BufferType.NORMAL) }
+      }
     }
   }
 
