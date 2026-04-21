@@ -12,7 +12,12 @@ import type {
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
-import { useEditor, EditorContent } from '@tiptap/react';
+import {
+  useEditor,
+  EditorContent,
+  type ChainedCommands,
+  Editor,
+} from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
@@ -42,6 +47,13 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+
+function runFocused(
+  editor: Editor,
+  apply: (chain: ChainedCommands) => ChainedCommands
+) {
+  apply(editor.chain().focus()).run();
+}
 
 export const EnrichedTextInput = ({
   ref,
@@ -137,8 +149,7 @@ export const EnrichedTextInput = ({
   );
 
   useEffect(() => {
-    if (!editor) return;
-    editor.commands.normalizeBoldInStyledHeadings();
+    editor?.commands.normalizeBoldInStyledHeadings();
   }, [editor, resolvedHtmlStyle]);
 
   useOnChangeHtml(editor, onChangeHtml);
@@ -155,29 +166,27 @@ export const EnrichedTextInput = ({
         editor.commands.setContent(prepareHtmlForTiptap(value)),
       setSelection: (start, end) => {
         const doc = editor.state.doc;
-        editor
-          .chain()
-          .focus()
-          .setTextSelection({
+        runFocused(editor, (c) =>
+          c.setTextSelection({
             from: nativePosToTiptapPos(doc, start),
             to: nativePosToTiptapPos(doc, end),
           })
-          .run();
+        );
       },
       getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
-      toggleBold: () => editor.chain().focus().toggleBold().run(),
-      toggleItalic: () => editor.chain().focus().toggleItalic().run(),
-      toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
-      toggleStrikeThrough: () => editor.chain().focus().toggleStrike().run(),
-      toggleInlineCode: () => editor.chain().focus().toggleCode().run(),
-      toggleH1: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      toggleH2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      toggleH3: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      toggleH4: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
-      toggleH5: () => editor.chain().focus().toggleHeading({ level: 5 }).run(),
-      toggleH6: () => editor.chain().focus().toggleHeading({ level: 6 }).run(),
-      toggleCodeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
-      toggleBlockQuote: () => editor.chain().focus().toggleBlockquote().run(),
+      toggleBold: () => runFocused(editor, (c) => c.toggleBold()),
+      toggleItalic: () => runFocused(editor, (c) => c.toggleItalic()),
+      toggleUnderline: () => runFocused(editor, (c) => c.toggleUnderline()),
+      toggleStrikeThrough: () => runFocused(editor, (c) => c.toggleStrike()),
+      toggleInlineCode: () => runFocused(editor, (c) => c.toggleCode()),
+      toggleH1: () => runFocused(editor, (c) => c.toggleHeading({ level: 1 })),
+      toggleH2: () => runFocused(editor, (c) => c.toggleHeading({ level: 2 })),
+      toggleH3: () => runFocused(editor, (c) => c.toggleHeading({ level: 3 })),
+      toggleH4: () => runFocused(editor, (c) => c.toggleHeading({ level: 4 })),
+      toggleH5: () => runFocused(editor, (c) => c.toggleHeading({ level: 5 })),
+      toggleH6: () => runFocused(editor, (c) => c.toggleHeading({ level: 6 })),
+      toggleCodeBlock: () => runFocused(editor, (c) => c.toggleCodeBlock()),
+      toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       toggleCheckboxList: () => {},

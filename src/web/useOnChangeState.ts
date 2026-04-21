@@ -44,8 +44,6 @@ function buildState(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): OnChangeStateEvent {
-  const isBlockquoteActive = editor.isActive('blockquote');
-  const isCodeBlockActive = editor.isActive('codeBlock');
   const isAnyBlockActive = isAnyParagraphFormatActive(editor);
 
   function inlineFormat(tiptapName: string) {
@@ -76,8 +74,8 @@ function buildState(
     h4: paragraphFormat(editor.isActive('heading', { level: 4 })),
     h5: paragraphFormat(editor.isActive('heading', { level: 5 })),
     h6: paragraphFormat(editor.isActive('heading', { level: 6 })),
-    blockQuote: paragraphFormat(isBlockquoteActive),
-    codeBlock: paragraphFormat(isCodeBlockActive),
+    blockQuote: paragraphFormat(editor.isActive('blockquote')),
+    codeBlock: paragraphFormat(editor.isActive('codeBlock')),
     orderedList: paragraphFormat(false),
     unorderedList: paragraphFormat(false),
     checkboxList: paragraphFormat(false),
