@@ -1,0 +1,42 @@
+import type { Editor } from '@tiptap/core';
+import type { HtmlStyle } from '../../types';
+import { HEADING_LEVELS, HEADING_TAGS } from './EnrichedHeading';
+
+type ChainedCommands = ReturnType<Editor['chain']>;
+
+export function isAnyParagraphFormatActive(editor: Editor): boolean {
+  return (
+    editor.isActive('blockquote') ||
+    editor.isActive('codeBlock') ||
+    HEADING_LEVELS.some((level) => editor.isActive('heading', { level }))
+  );
+}
+
+export function isFormatBlocked(
+  tiptapName: string,
+  editor: Editor,
+  htmlStyle: Required<HtmlStyle>
+): boolean {
+  if (editor.isActive('codeBlock')) {
+    return ['bold', 'italic', 'underline', 'strike', 'code'].includes(
+      tiptapName
+    );
+  }
+  for (const level of HEADING_LEVELS) {
+    if (editor.isActive('heading', { level })) {
+      const key = HEADING_TAGS[level - 1]!;
+      if (tiptapName === 'bold' && htmlStyle[key].bold) return true;
+    }
+  }
+  return false;
+}
+
+export function toggleParagraphFormat(
+  editor: Editor,
+  isActive: () => boolean,
+  deactivate: () => boolean,
+  activate: (c: ChainedCommands) => ChainedCommands
+): boolean {
+  if (isActive()) return deactivate();
+  return activate(editor.chain().focus().clearNodes()).run();
+}

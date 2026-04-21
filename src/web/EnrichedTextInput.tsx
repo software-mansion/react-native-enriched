@@ -1,4 +1,10 @@
-import { useImperativeHandle, useMemo, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  type CSSProperties,
+} from 'react';
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
@@ -6,7 +12,12 @@ import type {
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
-import { useEditor, EditorContent } from '@tiptap/react';
+import {
+  useEditor,
+  EditorContent,
+  type ChainedCommands,
+  Editor,
+} from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
@@ -20,13 +31,29 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
-import { htmlStyleWithDefaultsToCSSVariables } from './styleConversion/htmlStyleToCSSVariables';
+import {
+  htmlStyleToCSSVariables,
+  mergeWithDefaultHtmlStyle,
+} from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
 import { EnrichedStrike } from './formats/EnrichedStrike';
 import { EnrichedUnderline } from './formats/EnrichedUnderline';
 import { EnrichedCode } from './formats/EnrichedCode';
-import { StrictMarksPlugin } from './StrictMarksPlugin';
+import { EnrichedHeading } from './formats/EnrichedHeading';
+import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
+import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
+import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
+import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
+import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+
+function runFocused(
+  editor: Editor,
+  apply: (chain: ChainedCommands) => ChainedCommands
+) {
+  apply(editor.chain().focus()).run();
+}
 
 export const EnrichedTextInput = ({
   ref,
@@ -49,6 +76,21 @@ export const EnrichedTextInput = ({
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
+  const resolvedHtmlStyle = useMemo(
+    () => mergeWithDefaultHtmlStyle(htmlStyle),
+    [htmlStyle]
+  );
+
+  const htmlStyleRef = useRef(resolvedHtmlStyle);
+  useEffect(() => {
+    htmlStyleRef.current = resolvedHtmlStyle;
+  }, [resolvedHtmlStyle]);
+
+  const stripBoldInStyledHeadingsPlugin = useMemo(
+    () => createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
+    []
+  );
+
   const editor = useEditor(
     {
       extensions: [
@@ -60,15 +102,24 @@ export const EnrichedTextInput = ({
         EnrichedUnderline,
         EnrichedStrike,
         EnrichedCode,
+        EnrichedHeading,
+        EnrichedBlockquote,
+        EnrichedCodeBlock,
+        StripMarksInCodeBlockPlugin,
+        stripBoldInStyledHeadingsPlugin,
+        MergeAdjacentSameKindBlocksPlugin,
         StrictMarksPlugin,
         Placeholder.configure({
           placeholder,
           showOnlyWhenEditable: true,
         }),
       ],
-      content: tiptapContent,
       editable,
       autofocus: autoFocus,
+      onCreate: ({ editor: _editor }) => {
+        // Setting initial content in this way ensures all custom plugins are run and applied
+        _editor.commands.setContent(tiptapContent ?? '');
+      },
       onFocus: ({ event }) => {
         onFocus?.(adaptWebToNativeEvent(event, { target: -1 }));
       },
@@ -97,9 +148,14 @@ export const EnrichedTextInput = ({
     [tiptapContent]
   );
 
+  useEffect(() => {
+    editor?.commands.normalizeBoldInStyledHeadings();
+  }, [editor, resolvedHtmlStyle]);
+
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
-  useOnChangeState(editor, onChangeState);
+
+  useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
 
   useImperativeHandle(
     ref,
@@ -110,29 +166,27 @@ export const EnrichedTextInput = ({
         editor.commands.setContent(prepareHtmlForTiptap(value)),
       setSelection: (start, end) => {
         const doc = editor.state.doc;
-        editor
-          .chain()
-          .focus()
-          .setTextSelection({
+        runFocused(editor, (c) =>
+          c.setTextSelection({
             from: nativePosToTiptapPos(doc, start),
             to: nativePosToTiptapPos(doc, end),
           })
-          .run();
+        );
       },
       getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
-      toggleBold: () => editor.chain().focus().toggleBold().run(),
-      toggleItalic: () => editor.chain().focus().toggleItalic().run(),
-      toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
-      toggleStrikeThrough: () => editor.chain().focus().toggleStrike().run(),
-      toggleInlineCode: () => editor.chain().focus().toggleCode().run(),
-      toggleH1: () => {},
-      toggleH2: () => {},
-      toggleH3: () => {},
-      toggleH4: () => {},
-      toggleH5: () => {},
-      toggleH6: () => {},
-      toggleCodeBlock: () => {},
-      toggleBlockQuote: () => {},
+      toggleBold: () => runFocused(editor, (c) => c.toggleBold()),
+      toggleItalic: () => runFocused(editor, (c) => c.toggleItalic()),
+      toggleUnderline: () => runFocused(editor, (c) => c.toggleUnderline()),
+      toggleStrikeThrough: () => runFocused(editor, (c) => c.toggleStrike()),
+      toggleInlineCode: () => runFocused(editor, (c) => c.toggleCode()),
+      toggleH1: () => runFocused(editor, (c) => c.toggleHeading({ level: 1 })),
+      toggleH2: () => runFocused(editor, (c) => c.toggleHeading({ level: 2 })),
+      toggleH3: () => runFocused(editor, (c) => c.toggleHeading({ level: 3 })),
+      toggleH4: () => runFocused(editor, (c) => c.toggleHeading({ level: 4 })),
+      toggleH5: () => runFocused(editor, (c) => c.toggleHeading({ level: 5 })),
+      toggleH6: () => runFocused(editor, (c) => c.toggleHeading({ level: 6 })),
+      toggleCodeBlock: () => runFocused(editor, (c) => c.toggleCodeBlock()),
+      toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       toggleCheckboxList: () => {},
@@ -154,8 +208,8 @@ export const EnrichedTextInput = ({
   );
 
   const cssVars = useMemo(
-    () => htmlStyleWithDefaultsToCSSVariables(htmlStyle),
-    [htmlStyle]
+    () => htmlStyleToCSSVariables(resolvedHtmlStyle),
+    [resolvedHtmlStyle]
   );
 
   const finalStyle = useMemo(
