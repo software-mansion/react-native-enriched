@@ -1,5 +1,6 @@
 import { OrderedList } from '@tiptap/extension-list';
-import { toggleParagraphFormat } from './formatRules';
+
+import { applyWrappingListToSelection } from './applyWrappingListToSelection';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -22,13 +23,17 @@ export const EnrichedOrderedList = OrderedList.extend({
     return {
       toggleEnrichedOrderedList:
         () =>
-        ({ editor, commands }) =>
-          toggleParagraphFormat(
+        ({ editor, commands }) => {
+          if (editor.isActive('orderedList')) {
+            return commands.setParagraph();
+          }
+
+          return applyWrappingListToSelection(
             editor,
-            () => editor.isActive('orderedList'),
-            () => commands.liftListItem('listItem'),
-            (c) => c.toggleList('orderedList', 'listItem')
-          ),
+            'orderedList',
+            'listItem'
+          );
+        },
     };
   },
 });

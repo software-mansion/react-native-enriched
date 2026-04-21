@@ -9,8 +9,8 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
     editor.isActive('blockquote') ||
     editor.isActive('codeBlock') ||
     HEADING_LEVELS.some((level) => editor.isActive('heading', { level })) ||
-    editor.isActive('enrichedOrderedList') ||
-    editor.isActive('enrichedUnorderedList')
+    editor.isActive('orderedList') ||
+    editor.isActive('bulletList')
   );
 }
 

@@ -1,5 +1,5 @@
 import { BulletList } from '@tiptap/extension-list';
-import { toggleParagraphFormat } from './formatRules';
+import { applyWrappingListToSelection } from './applyWrappingListToSelection';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -26,13 +26,13 @@ export const EnrichedUnorderedList = BulletList.extend({
     return {
       toggleEnrichedUnorderedList:
         () =>
-        ({ editor, commands }) =>
-          toggleParagraphFormat(
-            editor,
-            () => editor.isActive('bulletList'),
-            () => commands.liftListItem('listItem'),
-            (c) => c.toggleList('bulletList', 'listItem')
-          ),
+        ({ editor, commands }) => {
+          if (editor.isActive('bulletList')) {
+            return commands.setParagraph();
+          }
+
+          return applyWrappingListToSelection(editor, 'bulletList', 'listItem');
+        },
     };
   },
 });
