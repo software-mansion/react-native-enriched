@@ -1995,8 +1995,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
-  // Capture the attributes of the word being replaced (autocorrect /
-  // predictive) so didProcessEditing: can re-stamp them onto the replacement.
+  // Capture the attributes at range.location that are being replaced
+  // (autocorrect / predictive) so didProcessEditing: can re-stamp them onto the
+  // replacement.
   if (range.length > 0) {
     _capturedAttributesBeforeChange =
         [textView.textStorage attributesAtIndex:range.location
@@ -2199,28 +2200,26 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                 editedRange:editedRange
                                       delta:delta];
 
-  // Re-stamp custom meta-attributes captured in shouldChangeTextInRange: onto
-  // the new range so autocorrect/predictive replacements keep their styling.
-  if ((editedMask & NSTextStorageEditedCharacters) != 0 &&
-      _capturedAttributesBeforeChange != nil) {
-    // Skip while an IME composition is in progress; restamp on commit.
-    if (textView.markedTextRange == nil) {
-      NSSet *customKeys = [attributesManager customAttributesKeys];
-      for (NSString *key in _capturedAttributesBeforeChange) {
-        if ([customKeys containsObject:key]) {
-          [textStorage addAttribute:key
-                              value:_capturedAttributesBeforeChange[key]
-                              range:editedRange];
-        }
-      }
-    }
-
-    // Clear after consuming
-    _capturedAttributesBeforeChange = nil;
-  }
-
   // Needed dirty ranges adjustments happen on every character edition.
   if ((editedMask & NSTextStorageEditedCharacters) != 0) {
+    // Re-stamp custom meta-attributes captured in shouldChangeTextInRange: onto
+    // the new range so autocorrect/predictive replacements keep their styling.
+    if (_capturedAttributesBeforeChange != nil) {
+      // Skip while an IME composition is in progress; restamp on commit.
+      if (textView.markedTextRange == nil) {
+        NSSet *customKeys = [attributesManager customAttributesKeys];
+        for (NSString *key in _capturedAttributesBeforeChange) {
+          if ([customKeys containsObject:key]) {
+            [textStorage addAttribute:key
+                                value:_capturedAttributesBeforeChange[key]
+                                range:editedRange];
+          }
+        }
+      }
+
+      // Clear after consuming
+      _capturedAttributesBeforeChange = nil;
+    }
     // Always try shifting dirty ranges (happens only with delta != 0).
     [attributesManager shiftDirtyRangesWithEditedRange:editedRange
                                         changeInLength:delta];
