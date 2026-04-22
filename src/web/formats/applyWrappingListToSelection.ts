@@ -8,17 +8,19 @@ import { nativePosToTiptapPos, tiptapPosToNativePos } from '../positionMapping';
 type ChainedCommands = ReturnType<Editor['chain']>;
 
 /**
- * Clears block styling with `setParagraph`, then wraps the selection’s blocks in a flat
+ * Clears block styling with `clearNodes`, then wraps the selection’s blocks in a flat
  * `listTypeName` (one `itemTypeName` per block).
  *
  * We don't use toggleList because we've changed ListItem's content to
- * 'paragraph' causing the default toggle behavior to fail.
+ * 'paragraph', in order not to allow nested lists. This however caused the
+ * default toggle implementation to fail.
  *
- *
- * Selection is preserved via {@link tiptapPosToNativePos} / {@link nativePosToTiptapPos}:
- * Operations in this function collapse PM positions causing the selection to be
- * invalid, because PM positions are effected by node boundaries and such. So we use the fact that
- * the equivalent native selection before and after the operation is the same.
+ * SELECTION PRESERVATION: Modifying node boundaries here (destroying and
+ * recreating blocks) causes ProseMirror's built-in selection to be invalid. To
+ * fix this, we use our Android/iOS native coordinate system. Because the native
+ * selection only cares about raw content and ignores Tiptap's node boundary
+ * tokens, we store the cursor positions in the native format before the
+ * transaction, and map them back to the new Tiptap document afterward.
  */
 export function applyWrappingListToSelection(
   editor: Editor,
@@ -31,7 +33,7 @@ export function applyWrappingListToSelection(
   const nativeHead = tiptapPosToNativePos(docBefore, selBefore.head);
 
   return chain()
-    .setParagraph()
+    .clearNodes()
     .command(({ tr, state }) => {
       const listType = state.schema.nodes[listTypeName];
       const itemType = state.schema.nodes[itemTypeName];
