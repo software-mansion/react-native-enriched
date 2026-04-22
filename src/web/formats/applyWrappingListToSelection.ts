@@ -1,11 +1,9 @@
-import type { Editor } from '@tiptap/core';
+import type { ChainedCommands, Editor } from '@tiptap/core';
 import type { Node } from '@tiptap/pm/model';
 import { Fragment } from '@tiptap/pm/model';
 import { TextSelection } from '@tiptap/pm/state';
 
 import { nativePosToTiptapPos, tiptapPosToNativePos } from '../positionMapping';
-
-type ChainedCommands = ReturnType<Editor['chain']>;
 
 /**
  * Clears block styling with `clearNodes`, then wraps the selection’s blocks in a flat
