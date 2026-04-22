@@ -899,7 +899,9 @@ class EnrichedTextInputView :
     val isValid = verifyStyle(name)
     if (!isValid) return
 
-    toggleStyle(name)
+    runAsATransaction {
+      toggleStyle(name)
+    }
   }
 
   fun toggleCheckboxListItem(checked: Boolean) {

@@ -222,15 +222,6 @@ class ParametrizedStyles(
     if (isSettingLinkSpan || !canLinkBeApplied()) return
     val spannable = view.text as? Spannable ?: return
 
-    // ZWS-only insertions are internal anchors for paragraph/list spans,
-    // not user input. Skip auto-detection for them so toggle operations
-    // don't accidentally re-apply links they just removed.
-    if (editEnd - editStart == 1 &&
-      editStart < spannable.length &&
-      spannable[editStart] == EnrichedConstants.ZWS
-    ) {
-      return
-    }
     val affectedRange = getLinksAffectedRange(spannable, editStart, editEnd)
     detectLinksInRange(spannable, affectedRange.first, affectedRange.last)
   }
