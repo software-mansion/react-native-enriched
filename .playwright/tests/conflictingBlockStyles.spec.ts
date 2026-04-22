@@ -35,132 +35,132 @@ type ToolbarKey =
   | 'unorderedList'
   | 'orderedList';
 
-const cases: readonly {
-  name: string;
-  html: string;
-  focusSelector: string;
-  click: ToolbarKey;
-  expectTag: string;
-  expectText: string;
-}[] = [
-  {
-    name: 'h1 → blockquote',
-    html: '<html><h1>Heading</h1></html>',
-    focusSelector: '.eti-editor h1',
-    click: 'blockQuote',
-    expectTag: 'blockquote',
-    expectText: 'Heading',
-  },
-  {
-    name: 'h1 → codeblock',
-    html: '<html><h1>Heading</h1></html>',
-    focusSelector: '.eti-editor h1',
-    click: 'codeBlock',
-    expectTag: 'codeblock',
-    expectText: 'Heading',
-  },
-  {
-    name: 'h2 → blockquote',
-    html: '<html><h2>Heading</h2></html>',
-    focusSelector: '.eti-editor h2',
-    click: 'blockQuote',
-    expectTag: 'blockquote',
-    expectText: 'Heading',
-  },
-  {
-    name: 'blockquote → h1',
-    html: '<html><blockquote><p>Quote</p></blockquote></html>',
-    focusSelector: '.eti-editor blockquote p',
-    click: 'h1',
-    expectTag: 'h1',
-    expectText: 'Quote',
-  },
-  {
-    name: 'codeblock → blockquote',
-    html: '<html><codeblock><p>Code</p></codeblock></html>',
-    focusSelector: '.eti-editor codeblock p',
-    click: 'blockQuote',
-    expectTag: 'blockquote',
-    expectText: 'Code',
-  },
-  {
-    name: 'blockquote → codeblock',
-    html: '<html><blockquote><p>Quote</p></blockquote></html>',
-    focusSelector: '.eti-editor blockquote p',
-    click: 'codeBlock',
-    expectTag: 'codeblock',
-    expectText: 'Quote',
-  },
-  {
-    name: 'h1 → h2 (heading swap)',
-    html: '<html><h1>Heading</h1></html>',
-    focusSelector: '.eti-editor h1',
-    click: 'h2',
-    expectTag: 'h2',
-    expectText: 'Heading',
-  },
-  {
-    name: 'h3 → blockquote',
-    html: '<html><h3>Heading</h3></html>',
-    focusSelector: '.eti-editor h3',
-    click: 'blockQuote',
-    expectTag: 'blockquote',
-    expectText: 'Heading',
-  },
-  {
-    name: 'h1 → unordered list',
-    html: '<html><h1>Heading</h1></html>',
-    focusSelector: '.eti-editor h1',
-    click: 'unorderedList',
-    expectTag: 'ul',
-    expectText: 'Heading',
-  },
-  {
-    name: 'h1 → ordered list',
-    html: '<html><h1>Heading</h1></html>',
-    focusSelector: '.eti-editor h1',
-    click: 'orderedList',
-    expectTag: 'ol',
-    expectText: 'Heading',
-  },
-  {
-    name: 'blockquote → unordered list',
-    html: '<html><blockquote><p>Quote</p></blockquote></html>',
-    focusSelector: '.eti-editor blockquote p',
-    click: 'unorderedList',
-    expectTag: 'ul',
-    expectText: 'Quote',
-  },
-  {
-    name: 'codeblock → unordered list',
-    html: '<html><codeblock><p>Code</p></codeblock></html>',
-    focusSelector: '.eti-editor codeblock p',
-    click: 'unorderedList',
-    expectTag: 'ul',
-    expectText: 'Code',
-  },
-  {
-    name: 'unordered list → h2',
-    html: '<html><ul><li><p>Item</p></li></ul></html>',
-    focusSelector: '.eti-editor ul li p',
-    click: 'h2',
-    expectTag: 'h2',
-    expectText: 'Item',
-  },
-  {
-    name: 'ordered list → h2',
-    html: '<html><ol><li><p>Item</p></li></ol></html>',
-    focusSelector: '.eti-editor ol li p',
-    click: 'h2',
-    expectTag: 'h2',
-    expectText: 'Item',
-  },
-];
-
 test.describe('conflicting block styles (toolbar replaces active block)', () => {
   test.beforeEach(async ({ page }) => {
     await gotoVisualRegression(page);
   });
+
+  const cases: readonly {
+    name: string;
+    html: string;
+    focusSelector: string;
+    click: ToolbarKey;
+    expectTag: string;
+    expectText: string;
+  }[] = [
+    {
+      name: 'h1 → blockquote',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'blockQuote',
+      expectTag: 'blockquote',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h1 → codeblock',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'codeBlock',
+      expectTag: 'codeblock',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h2 → blockquote',
+      html: '<html><h2>Heading</h2></html>',
+      focusSelector: '.eti-editor h2',
+      click: 'blockQuote',
+      expectTag: 'blockquote',
+      expectText: 'Heading',
+    },
+    {
+      name: 'blockquote → h1',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'h1',
+      expectTag: 'h1',
+      expectText: 'Quote',
+    },
+    {
+      name: 'codeblock → blockquote',
+      html: '<html><codeblock><p>Code</p></codeblock></html>',
+      focusSelector: '.eti-editor codeblock p',
+      click: 'blockQuote',
+      expectTag: 'blockquote',
+      expectText: 'Code',
+    },
+    {
+      name: 'blockquote → codeblock',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'codeBlock',
+      expectTag: 'codeblock',
+      expectText: 'Quote',
+    },
+    {
+      name: 'h1 → h2 (heading swap)',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h3 → blockquote',
+      html: '<html><h3>Heading</h3></html>',
+      focusSelector: '.eti-editor h3',
+      click: 'blockQuote',
+      expectTag: 'blockquote',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h1 → unordered list',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h1 → ordered list',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'orderedList',
+      expectTag: 'ol',
+      expectText: 'Heading',
+    },
+    {
+      name: 'blockquote → unordered list',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Quote',
+    },
+    {
+      name: 'codeblock → unordered list',
+      html: '<html><codeblock><p>Code</p></codeblock></html>',
+      focusSelector: '.eti-editor codeblock p',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Code',
+    },
+    {
+      name: 'unordered list → h2',
+      html: '<html><ul><li><p>Item</p></li></ul></html>',
+      focusSelector: '.eti-editor ul li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+    {
+      name: 'ordered list → h2',
+      html: '<html><ol><li><p>Item</p></li></ol></html>',
+      focusSelector: '.eti-editor ol li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+  ];
 
   for (const {
     name,
