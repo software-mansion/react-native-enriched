@@ -36,11 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
   BOOL useHtmlNormalizer;
 @public
   NSValue *dotReplacementRange;
+@public
+  NSInteger maxLength;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
+- (void)emitOnMaxLengthExceededEvent:(NSInteger)maxLength;
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
 - (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;

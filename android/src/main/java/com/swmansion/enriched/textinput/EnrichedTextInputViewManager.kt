@@ -24,6 +24,7 @@ import com.swmansion.enriched.textinput.events.OnInputBlurEvent
 import com.swmansion.enriched.textinput.events.OnInputFocusEvent
 import com.swmansion.enriched.textinput.events.OnInputKeyPressEvent
 import com.swmansion.enriched.textinput.events.OnLinkDetectedEvent
+import com.swmansion.enriched.textinput.events.OnMaxLengthExceededEvent
 import com.swmansion.enriched.textinput.events.OnMentionDetectedEvent
 import com.swmansion.enriched.textinput.events.OnMentionEvent
 import com.swmansion.enriched.textinput.events.OnPasteImagesEvent
@@ -74,6 +75,7 @@ class EnrichedTextInputViewManager :
     map.put(OnRequestHtmlResultEvent.EVENT_NAME, mapOf("registrationName" to OnRequestHtmlResultEvent.EVENT_NAME))
     map.put(OnInputKeyPressEvent.EVENT_NAME, mapOf("registrationName" to OnInputKeyPressEvent.EVENT_NAME))
     map.put(OnPasteImagesEvent.EVENT_NAME, mapOf("registrationName" to OnPasteImagesEvent.EVENT_NAME))
+    map.put(OnMaxLengthExceededEvent.EVENT_NAME, mapOf("registrationName" to OnMaxLengthExceededEvent.EVENT_NAME))
     map.put(OnContextMenuItemPressEvent.EVENT_NAME, mapOf("registrationName" to OnContextMenuItemPressEvent.EVENT_NAME))
     map.put(OnSubmitEditingEvent.EVENT_NAME, mapOf("registrationName" to OnSubmitEditingEvent.EVENT_NAME))
 
@@ -94,6 +96,14 @@ class EnrichedTextInputViewManager :
     value: String?,
   ) {
     view?.setPlaceholder(value)
+  }
+
+  @ReactProp(name = "maxLength", defaultInt = 0)
+  override fun setMaxLength(
+    view: EnrichedTextInputView?,
+    value: Int,
+  ) {
+    view?.setMaxLength(value.takeIf { it > 0 })
   }
 
   @ReactProp(name = "placeholderTextColor", customType = "Color")

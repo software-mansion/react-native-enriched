@@ -73,6 +73,7 @@ export const EnrichedTextInput = ({
   onChangeSelection,
   onKeyPress,
   onSubmitEditing,
+  onMaxLengthExceeded,
   returnKeyType,
   returnKeyLabel,
   submitBehavior,
@@ -80,6 +81,7 @@ export const EnrichedTextInput = ({
   androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.androidExperimentalSynchronousEvents,
   useHtmlNormalizer = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.useHtmlNormalizer,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
+  maxLength,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -348,6 +350,7 @@ export const EnrichedTextInput = ({
       onChangeSelection={onChangeSelection}
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
+      onMaxLengthExceeded={onMaxLengthExceeded}
       contextMenuItems={nativeContextMenuItems}
       onContextMenuItemPress={handleContextMenuItemPress}
       onSubmitEditing={onSubmitEditing}
@@ -359,6 +362,7 @@ export const EnrichedTextInput = ({
       }
       useHtmlNormalizer={useHtmlNormalizer}
       scrollEnabled={scrollEnabled}
+      maxLength={maxLength}
       {...rest}
     />
   );
