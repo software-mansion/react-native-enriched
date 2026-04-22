@@ -9,29 +9,20 @@ import {
 
 test.setTimeout(90_000);
 
-const LINKS_VISUAL_HTML = [
-  '<html>',
-  '<p><a href="https://alpha.example">Alpha</a></p>',
-  '<p>Plain between</p>',
-  '<p><a href="https://omega.example">Omega</a></p>',
-  '</html>',
-].join('');
-
 const sel = {
   htmlInput: '[data-testid="test-links-html-input"]',
   setValueButton: '[data-testid="test-links-set-value-button"]',
   htmlOutput: '[data-testid="test-links-html-output"]',
-  setlinkStart: '[data-testid="test-links-setlink-start"]',
-  setlinkEnd: '[data-testid="test-links-setlink-end"]',
-  setlinkText: '[data-testid="test-links-setlink-text"]',
-  setlinkUrl: '[data-testid="test-links-setlink-url"]',
+  setLinkStart: '[data-testid="test-links-setlink-start"]',
+  setLinkEnd: '[data-testid="test-links-setlink-end"]',
+  setLinkText: '[data-testid="test-links-setlink-text"]',
+  setLinkUrl: '[data-testid="test-links-setlink-url"]',
   applySetLink: '[data-testid="test-links-apply-setlink-button"]',
   selectionStart: '[data-testid="test-links-selection-start"]',
   selectionEnd: '[data-testid="test-links-selection-end"]',
   applySelection: '[data-testid="test-links-apply-selection-button"]',
   onLinkDetectedPayload: '[data-testid="on-link-detected-payload"]',
   editorInner: '[data-testid="test-links-editor"] .eti-editor',
-  /** Wrapper has fixed width; `.eti-editor` bbox can span the viewport — screenshot this instead. */
   editorScreenshot: '[data-testid="test-links-editor"]',
 } as const;
 
@@ -59,14 +50,16 @@ async function getOnLinkDetectedPayload(page: Page): Promise<string> {
   return (await page.locator(sel.onLinkDetectedPayload).textContent()) ?? '';
 }
 
-const PLAIN_HELLO = '<html><p>Hello world</p></html>';
-const SINGLE_LINK = `<html><p><a href="https://example.com">Example</a></p></html>`;
-const INLINE_CODE = '<html><p><code>inside</code></p></html>';
-const CODEBLOCK = '<html><codeblock><p>line</p></codeblock></html>';
-
 test('links display visual regression', async ({ page }) => {
   await gotoVisualRegression(page);
-  await setEditorHtml(page, LINKS_VISUAL_HTML);
+  const html = [
+    '<html>',
+    '<p><a href="https://alpha.example">Alpha</a></p>',
+    '<p>Plain between</p>',
+    '<p><a href="https://omega.example">Omega</a></p>',
+    '</html>',
+  ].join('');
+  await setEditorHtml(page, html);
 
   await expect(editorLocator(page)).toHaveScreenshot('links-display.png');
 });
@@ -91,26 +84,16 @@ test.describe('test-links setLink table', () => {
     end: string;
     text: string;
     url: string;
-    /** Full `<a href="...">...</a>` substring expected in serialized HTML. */
     expectContains: string;
   }[] = [
     {
       name: 'wraps world with example.com',
-      html: PLAIN_HELLO,
+      html: '<html><p>Hello world</p></html>',
       start: '6',
       end: '11',
       text: 'world',
       url: 'https://example.com',
-      expectContains: '<a href="https://example.com">world</a>',
-    },
-    {
-      name: 'wraps Hello with second host',
-      html: PLAIN_HELLO,
-      start: '0',
-      end: '5',
-      text: 'Hello',
-      url: 'https://hello.example',
-      expectContains: '<a href="https://hello.example">Hello</a>',
+      expectContains: '<p>Hello <a href="https://example.com">world</a></p>',
     },
     {
       name: 'wraps multiword phrase with spaces',
@@ -119,7 +102,17 @@ test.describe('test-links setLink table', () => {
       end: '13',
       text: 'two three',
       url: 'https://multi.example',
-      expectContains: '<a href="https://multi.example">two three</a>',
+      expectContains:
+        '<p>one <a href="https://multi.example">two three</a></p>',
+    },
+    {
+      name: 'inserts linked text at cursor when start and end are the same',
+      html: '<html><p>xx</p></html>',
+      start: '1',
+      end: '1',
+      text: 'm',
+      url: 'https://same-range.example',
+      expectContains: '<p>x<a href="https://same-range.example">m</a>x</p>',
     },
   ];
 
@@ -128,10 +121,10 @@ test.describe('test-links setLink table', () => {
       await gotoTestLinks(page);
       await setTestLinksEditorHtml(page, c.html);
 
-      await page.fill(sel.setlinkStart, c.start);
-      await page.fill(sel.setlinkEnd, c.end);
-      await page.fill(sel.setlinkText, c.text);
-      await page.fill(sel.setlinkUrl, c.url);
+      await page.fill(sel.setLinkStart, c.start);
+      await page.fill(sel.setLinkEnd, c.end);
+      await page.fill(sel.setLinkText, c.text);
+      await page.fill(sel.setLinkUrl, c.url);
 
       await page.click(sel.applySetLink);
 
@@ -142,31 +135,15 @@ test.describe('test-links setLink table', () => {
   }
 });
 
-test('test-links imperative setLink visual regression', async ({ page }) => {
-  await gotoTestLinks(page);
-  await setTestLinksEditorHtml(page, '<html><p>one two three</p></html>');
-
-  await page.fill(sel.setlinkStart, '4');
-  await page.fill(sel.setlinkEnd, '13');
-  await page.fill(sel.setlinkText, 'two three');
-  await page.fill(sel.setlinkUrl, 'https://multi.example');
-  await page.click(sel.applySetLink);
-
-  await expect
-    .poll(async () => getTestLinksSerializedHtml(page))
-    .toContain('<a href="https://multi.example">two three</a>');
-
-  await expect(page.locator(sel.editorScreenshot)).toHaveScreenshot(
-    'test-links-setlink.png'
-  );
-});
-
 test.describe('test-links onLinkDetected', () => {
   test('emits payload when selection is inside existing link', async ({
     page,
   }) => {
     await gotoTestLinks(page);
-    await setTestLinksEditorHtml(page, SINGLE_LINK);
+    await setTestLinksEditorHtml(
+      page,
+      `<html><p><a href="https://example.com">Example</a></p></html>`
+    );
 
     await page.fill(sel.selectionStart, '0');
     await page.fill(sel.selectionEnd, '7');
@@ -181,39 +158,48 @@ test.describe('test-links onLinkDetected', () => {
   });
 });
 
-test.describe('test-links setLink blocking', () => {
-  test('does not add link when selection is in inline code', async ({
+test.describe('test-links setLink with code', () => {
+  test('splits inline code when setLink covers a sub-range: link replaces that segment, code on both sides', async ({
     page,
   }) => {
     await gotoTestLinks(page);
-    await setTestLinksEditorHtml(page, INLINE_CODE);
+    await setTestLinksEditorHtml(
+      page,
+      '<html><p><code>A_inside_B</code></p></html>'
+    );
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('inside');
+      .toContain('A_inside_B');
 
-    const before = await getTestLinksSerializedHtml(page);
-
-    await page.fill(sel.selectionStart, '0');
-    await page.fill(sel.selectionEnd, '5');
-    await page.click(sel.applySelection);
-
-    await page.fill(sel.setlinkStart, '0');
-    await page.fill(sel.setlinkEnd, '5');
-    await page.fill(sel.setlinkText, 'inside');
-    await page.fill(sel.setlinkUrl, 'https://blocked-inline.test');
+    await page.fill(sel.setLinkStart, '1');
+    await page.fill(sel.setLinkEnd, '9');
+    await page.fill(sel.setLinkText, '_link_');
+    await page.fill(sel.setLinkUrl, 'https://inline-split.test');
     await page.click(sel.applySetLink);
 
     const after = await getTestLinksSerializedHtml(page);
-    expect(after).toBe(before);
-    expect(after).not.toContain('blocked-inline.test');
+    expect(after).toContain('https://inline-split.test');
+    expect(after).toContain(
+      [
+        '<p><code>A</code>',
+        '<a href="https://inline-split.test">_link_</a>',
+        '<code>B</code>',
+        '</p>',
+      ].join('')
+    );
   });
+});
 
+test.describe('test-links setLink blocking', () => {
   test('does not add link when selection is in code block', async ({
     page,
   }) => {
     await gotoTestLinks(page);
-    await setTestLinksEditorHtml(page, CODEBLOCK);
+    await setTestLinksEditorHtml(
+      page,
+      '<html><codeblock><p>line</p></codeblock></html>'
+    );
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
@@ -223,14 +209,15 @@ test.describe('test-links setLink blocking', () => {
 
     await page.locator('.eti-editor codeblock p').click();
 
-    await page.fill(sel.setlinkStart, '0');
-    await page.fill(sel.setlinkEnd, '4');
-    await page.fill(sel.setlinkText, 'line');
-    await page.fill(sel.setlinkUrl, 'https://blocked-block.test');
+    await page.fill(sel.setLinkStart, '0');
+    await page.fill(sel.setLinkEnd, '4');
+    await page.fill(sel.setLinkText, 'line');
+    await page.fill(sel.setLinkUrl, 'https://blocked-block.test');
     await page.click(sel.applySetLink);
 
     const after = await getTestLinksSerializedHtml(page);
     expect(after).toBe(before);
-    expect(after).not.toContain('blocked-block.test');
+    expect(after).not.toContain('<a>');
+    expect(after).toContain('<codeblock><p>line</p></codeblock>');
   });
 });

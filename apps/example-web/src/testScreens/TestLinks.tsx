@@ -39,17 +39,21 @@ export function TestLinks() {
           scrollEnabled
           style={editorStyle}
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
-          onChangeHtml={(e) => setEditorHtml(e.nativeEvent.value)}
-          onLinkDetected={(e) => setLastOnLinkDetected(e)}
+          onChangeHtml={(e) => {
+            setEditorHtml(e.nativeEvent.value);
+          }}
+          onLinkDetected={(e) => {
+            setLastOnLinkDetected(e);
+          }}
         />
       </div>
 
       <textarea
         data-testid="test-links-html-input"
         value={htmlInput}
-        onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-          setHtmlInput(e.target.value)
-        }
+        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+          setHtmlInput(e.target.value);
+        }}
         rows={4}
       />
       <button
@@ -65,23 +69,31 @@ export function TestLinks() {
           data-testid="test-links-setlink-start"
           type="number"
           value={startInput}
-          onChange={(e) => setStartInput(e.target.value)}
+          onChange={(e) => {
+            setStartInput(e.target.value);
+          }}
         />
         <input
           data-testid="test-links-setlink-end"
           type="number"
           value={endInput}
-          onChange={(e) => setEndInput(e.target.value)}
+          onChange={(e) => {
+            setEndInput(e.target.value);
+          }}
         />
         <input
           data-testid="test-links-setlink-text"
           value={linkTextInput}
-          onChange={(e) => setLinkTextInput(e.target.value)}
+          onChange={(e) => {
+            setLinkTextInput(e.target.value);
+          }}
         />
         <input
           data-testid="test-links-setlink-url"
           value={linkUrlInput}
-          onChange={(e) => setLinkUrlInput(e.target.value)}
+          onChange={(e) => {
+            setLinkUrlInput(e.target.value);
+          }}
         />
         <button
           type="button"
@@ -104,13 +116,17 @@ export function TestLinks() {
           data-testid="test-links-selection-start"
           type="number"
           value={selStartInput}
-          onChange={(e) => setSelStartInput(e.target.value)}
+          onChange={(e) => {
+            setSelStartInput(e.target.value);
+          }}
         />
         <input
           data-testid="test-links-selection-end"
           type="number"
           value={selEndInput}
-          onChange={(e) => setSelEndInput(e.target.value)}
+          onChange={(e) => {
+            setSelEndInput(e.target.value);
+          }}
         />
         <button
           type="button"
@@ -135,7 +151,6 @@ export function TestLinks() {
   );
 }
 
-/** Fixed width + overflow so `.eti-editor` / ProseMirror cannot widen the layout box (Playwright screenshots). */
 const editorWrapStyle: CSSProperties = {
   width: 360,
   overflow: 'hidden',

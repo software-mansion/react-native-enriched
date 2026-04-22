@@ -44,13 +44,11 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
-import { EnrichedLink } from './formats/EnrichedLink';
+import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
 import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
-import { isLinkBlocked } from './formats/formatRules';
-
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -195,48 +193,10 @@ export const EnrichedTextInput = ({
       toggleOrderedList: () => {},
       toggleUnorderedList: () => {},
       toggleCheckboxList: () => {},
-      setLink: (start: number, end: number, text: string, url: string) => {
-        if (!editor || url.length === 0 || text.length === 0) {
-          return;
-        }
-        if (isLinkBlocked(editor)) {
-          return;
-        }
-        const { state } = editor;
-        const doc = state.doc;
-        const from = nativePosToTiptapPos(doc, start);
-        const to = nativePosToTiptapPos(doc, end);
-        const linkType = state.schema.marks.link;
-        if (!linkType) return;
-        const linkMark = linkType.create({ href: url });
-        editor
-          .chain()
-          .focus()
-          .command(({ tr, state: s }) => {
-            const marksAtRangeStart = doc.resolve(from).marks();
-            const marksWithLink = linkMark.addToSet(marksAtRangeStart);
-            tr.delete(from, to);
-            tr.insert(from, s.schema.text(text, marksWithLink));
-            return true;
-          })
-          .run();
-      },
-      removeLink: (start: number, end: number) => {
-        if (!editor) return;
-        const doc = editor.state.doc;
-        const from = nativePosToTiptapPos(doc, start);
-        const to = nativePosToTiptapPos(doc, end);
-        const linkType = editor.state.schema.marks.link;
-        if (!linkType) return;
-        editor
-          .chain()
-          .focus()
-          .command(({ tr }) => {
-            tr.removeMark(from, to, linkType);
-            return true;
-          })
-          .run();
-      },
+      setLink: (start: number, end: number, text: string, url: string) =>
+        setLink(editor, start, end, text, url),
+      removeLink: (start: number, end: number) =>
+        removeLink(editor, start, end),
       setImage: () => {},
       startMention: () => {},
       setMention: () => {},
