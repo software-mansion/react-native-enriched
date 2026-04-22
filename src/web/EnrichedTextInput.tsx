@@ -193,10 +193,9 @@ export const EnrichedTextInput = ({
       toggleH6: () => runFocused(editor, (c) => c.toggleHeading({ level: 6 })),
       toggleCodeBlock: () => runFocused(editor, (c) => c.toggleCodeBlock()),
       toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
-      toggleOrderedList: () =>
-        runFocused(editor, (c) => c.toggleEnrichedOrderedList()),
+      toggleOrderedList: () => runFocused(editor, (c) => c.toggleOrderedList()),
       toggleUnorderedList: () =>
-        runFocused(editor, (c) => c.toggleEnrichedUnorderedList()),
+        runFocused(editor, (c) => c.toggleBulletList()),
       toggleCheckboxList: () => {},
       setLink: () => {},
       removeLink: () => {},

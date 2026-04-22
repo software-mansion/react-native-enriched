@@ -1,19 +1,7 @@
 import { BulletList } from '@tiptap/extension-list';
 import { applyWrappingListToSelection } from './applyWrappingListToSelection';
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    enrichedUnorderedList: {
-      toggleEnrichedUnorderedList: () => ReturnType;
-    };
-  }
-}
-
 export const EnrichedUnorderedList = BulletList.extend({
-  parseHTML() {
-    return [{ tag: 'ul' }];
-  },
-
   addInputRules() {
     return [];
   },
@@ -24,7 +12,7 @@ export const EnrichedUnorderedList = BulletList.extend({
 
   addCommands() {
     return {
-      toggleEnrichedUnorderedList:
+      toggleBulletList:
         () =>
         ({ editor, commands, chain }) => {
           if (editor.isActive('bulletList')) {

@@ -5,6 +5,8 @@ export function prepareHtmlForTiptap(html: string): string {
 export function normalizeHtmlFromTiptap(html: string): string {
   // Strip <p> wrappers inside <li> elements.
   // TipTap renders <li><p>text</p></li> but native expects <li>text</li>.
+  // This regex is safe because EnrichedListItem.content is 'paragraph', which
+  // prevents TipTap from ever emitting nested lists
   let content = html.replace(
     /<li([^>]*)><p>(.*?)<\/p><\/li>/gs,
     '<li$1>$2</li>'

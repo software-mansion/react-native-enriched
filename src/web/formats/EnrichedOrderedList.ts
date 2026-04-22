@@ -2,14 +2,6 @@ import { OrderedList } from '@tiptap/extension-list';
 
 import { applyWrappingListToSelection } from './applyWrappingListToSelection';
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    enrichedOrderedList: {
-      toggleEnrichedOrderedList: () => ReturnType;
-    };
-  }
-}
-
 export const EnrichedOrderedList = OrderedList.extend({
   addInputRules() {
     return [];
@@ -21,7 +13,7 @@ export const EnrichedOrderedList = OrderedList.extend({
 
   addCommands() {
     return {
-      toggleEnrichedOrderedList:
+      toggleOrderedList:
         () =>
         ({ editor, commands, chain }) => {
           if (editor.isActive('orderedList')) {

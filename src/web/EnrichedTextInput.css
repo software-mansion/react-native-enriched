@@ -73,7 +73,10 @@
   left: calc(
     -1 * var(--eti-ul-gap-width, 16px) - var(--eti-ul-bullet-size, 8px)
   );
-  top: 0.5lh;
+  top: 0.6em; 
+  @supports (top: 0.5lh) {
+    top: 0.5lh;
+  }
   transform: translateY(-50%);
   width: var(--eti-ul-bullet-size, 8px);
   height: var(--eti-ul-bullet-size, 8px);
