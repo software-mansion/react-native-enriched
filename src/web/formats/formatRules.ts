@@ -13,7 +13,7 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
 }
 
 export function isLinkBlocked(editor: Editor): boolean {
-  return editor.isActive('code') || editor.isActive('enrichedCodeBlock');
+  return editor.isActive('codeBlock');
 }
 
 export function isFormatBlocked(
@@ -21,6 +21,10 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
+  if (tiptapName === 'link') {
+    return isLinkBlocked(editor);
+  }
+
   if (editor.isActive('codeBlock')) {
     return ['bold', 'italic', 'underline', 'strike', 'code'].includes(
       tiptapName

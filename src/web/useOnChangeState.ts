@@ -6,7 +6,6 @@ import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import {
   isAnyParagraphFormatActive,
   isFormatBlocked,
-  isLinkBlocked,
 } from './formats/formatRules';
 import type { HtmlStyle } from '../types';
 
@@ -47,28 +46,31 @@ function buildState(
 ): OnChangeStateEvent {
   const isAnyBlockActive = isAnyParagraphFormatActive(editor);
 
-  function inlineFormat(tiptapName: string, conflictingWithLink = false) {
+  function inlineFormat(tiptapName: string, isConflicting: boolean) {
     return {
       isActive: editor.isActive(tiptapName),
-      isConflicting: conflictingWithLink && editor.isActive('link'),
+      isConflicting,
       isBlocking: isFormatBlocked(tiptapName, editor, htmlStyle),
     };
   }
 
-  function paragraphFormat(isActive: boolean) {
+  function paragraphFormat(
+    isActive: boolean,
+    additionalIsConflicting: boolean = false
+  ) {
     return {
       isActive,
-      isConflicting: !isActive && isAnyBlockActive,
+      isConflicting: (!isActive && isAnyBlockActive) || additionalIsConflicting,
       isBlocking: false,
     };
   }
 
   return {
-    bold: inlineFormat('bold'),
-    italic: inlineFormat('italic'),
-    underline: inlineFormat('underline'),
-    strikeThrough: inlineFormat('strike'),
-    inlineCode: inlineFormat('code', true),
+    bold: inlineFormat('bold', false),
+    italic: inlineFormat('italic', false),
+    underline: inlineFormat('underline', false),
+    strikeThrough: inlineFormat('strike', false),
+    inlineCode: inlineFormat('code', editor.isActive('link')),
     h1: paragraphFormat(editor.isActive('heading', { level: 1 })),
     h2: paragraphFormat(editor.isActive('heading', { level: 2 })),
     h3: paragraphFormat(editor.isActive('heading', { level: 3 })),
@@ -76,15 +78,19 @@ function buildState(
     h5: paragraphFormat(editor.isActive('heading', { level: 5 })),
     h6: paragraphFormat(editor.isActive('heading', { level: 6 })),
     blockQuote: paragraphFormat(editor.isActive('blockquote')),
-    codeBlock: paragraphFormat(editor.isActive('codeBlock')),
+    codeBlock: paragraphFormat(
+      editor.isActive('codeBlock'),
+      editor.isActive('link')
+    ),
     orderedList: paragraphFormat(false),
     unorderedList: paragraphFormat(false),
     checkboxList: paragraphFormat(false),
-    link: {
-      isActive: editor.isActive('link'),
-      isConflicting: false,
-      isBlocking: isLinkBlocked(editor),
-    },
+    link: inlineFormat(
+      'link',
+      editor.isActive('code') ||
+        editor.isActive('link') ||
+        editor.isActive('enrichedCodeBlock')
+    ),
     mention: { isActive: false, isConflicting: false, isBlocking: false },
     image: { isActive: false, isConflicting: false, isBlocking: false },
   };
