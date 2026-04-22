@@ -94,6 +94,7 @@ function applyUnorderedListVars(
   ul?: HtmlStyle['ul']
 ): void {
   setColorVar(vars, '--eti-ul-bullet-color', ul?.bulletColor);
+  setPxVar(vars, '--eti-ul-bullet-size', ul?.bulletSize);
   setPxVar(vars, '--eti-ul-margin-left', ul?.marginLeft);
   setPxVar(vars, '--eti-ul-gap-width', ul?.gapWidth);
 }

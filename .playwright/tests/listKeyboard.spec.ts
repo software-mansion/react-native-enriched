@@ -9,7 +9,7 @@ import {
 } from '../helpers/visual-regression';
 
 function countOpeningTag(html: string, tagName: string): number {
-  const re = new RegExp(`<${tagName}(?:\\s[^>]*)?>`, 'gi');
+  const re = new RegExp(`<${tagName}[^>]*>`, 'gi');
   return (html.match(re) ?? []).length;
 }
 

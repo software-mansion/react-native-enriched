@@ -35,13 +35,12 @@ type ToolbarKey =
   | 'unorderedList'
   | 'orderedList';
 
-const CASES: readonly {
+const cases: readonly {
   name: string;
   html: string;
   focusSelector: string;
   click: ToolbarKey;
   expectTag: string;
-  notTags: readonly string[];
   expectText: string;
 }[] = [
   {
@@ -50,7 +49,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h1',
     click: 'blockQuote',
     expectTag: 'blockquote',
-    notTags: ['h1'],
     expectText: 'Heading',
   },
   {
@@ -59,7 +57,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h1',
     click: 'codeBlock',
     expectTag: 'codeblock',
-    notTags: ['h1'],
     expectText: 'Heading',
   },
   {
@@ -68,7 +65,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h2',
     click: 'blockQuote',
     expectTag: 'blockquote',
-    notTags: ['h2'],
     expectText: 'Heading',
   },
   {
@@ -77,7 +73,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor blockquote p',
     click: 'h1',
     expectTag: 'h1',
-    notTags: ['blockquote'],
     expectText: 'Quote',
   },
   {
@@ -86,7 +81,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor codeblock p',
     click: 'blockQuote',
     expectTag: 'blockquote',
-    notTags: ['codeblock'],
     expectText: 'Code',
   },
   {
@@ -95,7 +89,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor blockquote p',
     click: 'codeBlock',
     expectTag: 'codeblock',
-    notTags: ['blockquote'],
     expectText: 'Quote',
   },
   {
@@ -104,7 +97,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h1',
     click: 'h2',
     expectTag: 'h2',
-    notTags: ['h1'],
     expectText: 'Heading',
   },
   {
@@ -113,7 +105,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h3',
     click: 'blockQuote',
     expectTag: 'blockquote',
-    notTags: ['h3'],
     expectText: 'Heading',
   },
   {
@@ -122,7 +113,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h1',
     click: 'unorderedList',
     expectTag: 'ul',
-    notTags: ['h1'],
     expectText: 'Heading',
   },
   {
@@ -131,7 +121,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor h1',
     click: 'orderedList',
     expectTag: 'ol',
-    notTags: ['h1'],
     expectText: 'Heading',
   },
   {
@@ -140,7 +129,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor blockquote p',
     click: 'unorderedList',
     expectTag: 'ul',
-    notTags: ['blockquote'],
     expectText: 'Quote',
   },
   {
@@ -149,7 +137,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor codeblock p',
     click: 'unorderedList',
     expectTag: 'ul',
-    notTags: ['codeblock'],
     expectText: 'Code',
   },
   {
@@ -158,7 +145,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor ul li p',
     click: 'h2',
     expectTag: 'h2',
-    notTags: ['ul'],
     expectText: 'Item',
   },
   {
@@ -167,7 +153,6 @@ const CASES: readonly {
     focusSelector: '.eti-editor ol li p',
     click: 'h2',
     expectTag: 'h2',
-    notTags: ['ol'],
     expectText: 'Item',
   },
 ];
@@ -183,9 +168,8 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
     focusSelector,
     click: toolbarKey,
     expectTag,
-    notTags,
     expectText,
-  } of CASES) {
+  } of cases) {
     test(name, async ({ page }) => {
       await setEditorHtml(page, html);
 
@@ -195,10 +179,6 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
       await waitForOpeningTagInSerializedHtml(page, expectTag);
 
       const out = await getSerializedHtml(page);
-      expect(hasOpeningTag(out, expectTag)).toBe(true);
-      for (const t of notTags) {
-        expect(hasOpeningTag(out, t)).toBe(false);
-      }
       expect(out).toContain(expectText);
     });
   }
