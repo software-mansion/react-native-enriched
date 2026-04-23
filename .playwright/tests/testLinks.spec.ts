@@ -18,6 +18,13 @@ const sel = {
   setLinkText: '[data-testid="test-links-setlink-text"]',
   setLinkUrl: '[data-testid="test-links-setlink-url"]',
   applySetLink: '[data-testid="test-links-apply-setlink-button"]',
+  removeLinkStart: '[data-testid="test-links-removelink-start"]',
+  removeLinkEnd: '[data-testid="test-links-removelink-end"]',
+  applyRemoveLink: '[data-testid="test-links-apply-removelink-button"]',
+  selectionStart: '[data-testid="test-links-selection-start"]',
+  selectionEnd: '[data-testid="test-links-selection-end"]',
+  applySelection: '[data-testid="test-links-apply-selection-button"]',
+  onLinkDetectedPayload: '[data-testid="on-link-detected-payload"]',
   editorInner: '[data-testid="test-links-editor"] .eti-editor',
   editorScreenshot: '[data-testid="test-links-editor"]',
 } as const;
@@ -40,6 +47,10 @@ async function setTestLinksEditorHtml(page: Page, html: string): Promise<void> {
       return t.startsWith('<html>');
     })
     .toBe(true);
+}
+
+async function getOnLinkDetectedPayload(page: Page): Promise<string> {
+  return (await page.locator(sel.onLinkDetectedPayload).textContent()) ?? '';
 }
 
 test('links display visual regression', async ({ page }) => {
@@ -171,4 +182,88 @@ test.describe('test-links setLink table', () => {
         .toContain(c.expectContains);
     });
   }
+});
+
+test.describe('test-links removeLink table', () => {
+  const cases: {
+    name: string;
+    html: string;
+    start: string;
+    end: string;
+    expectContains: string;
+  }[] = [
+    {
+      name: 'entire link removal',
+      html: '<html><p>Hello <a href="https://example.com">world</a></p></html>',
+      start: '6',
+      end: '11',
+      expectContains: '<p>Hello world</p>',
+    },
+    {
+      name: 'partial removal: 2 of 5 link chars unlinked, rest stays linked',
+      html: '<html><p><a href="https://partial.test">abcde</a></p></html>',
+      start: '0',
+      end: '2',
+      expectContains: '<p>ab<a href="https://partial.test">cde</a></p>',
+    },
+    {
+      name: 'no link: plain paragraph unchanged',
+      html: '<html><p>Hello world</p></html>',
+      start: '0',
+      end: '11',
+      expectContains: '<p>Hello world</p>',
+    },
+    {
+      name: 'removeLink clamps end past document; unlinks full range',
+      html: '<html><p><a href="https://clamp.rm">ab</a></p></html>',
+      start: '0',
+      end: '9999',
+      expectContains: '<p>ab</p>',
+    },
+    {
+      name: 'removeLink clamps both past doc; selection at end outside link, link unchanged',
+      html: '<html><p>prefix <a href="https://noop.rm">ab</a> tail</p></html>',
+      start: '1000',
+      end: '1000',
+      expectContains: '<a href="https://noop.rm">ab</a>',
+    },
+  ];
+
+  for (const c of cases) {
+    test(c.name, async ({ page }) => {
+      await gotoTestLinks(page);
+      await setTestLinksEditorHtml(page, c.html);
+
+      await page.fill(sel.removeLinkStart, c.start);
+      await page.fill(sel.removeLinkEnd, c.end);
+      await page.click(sel.applyRemoveLink);
+
+      await expect
+        .poll(async () => getTestLinksSerializedHtml(page))
+        .toContain(c.expectContains);
+    });
+  }
+});
+
+test.describe('test-links onLinkDetected', () => {
+  test('emits payload when selection is inside existing link', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await setTestLinksEditorHtml(
+      page,
+      `<html><p><a href="https://example.com">Example</a></p></html>`
+    );
+
+    await page.fill(sel.selectionStart, '0');
+    await page.fill(sel.selectionEnd, '7');
+    await page.click(sel.applySelection);
+
+    await expect
+      .poll(async () => getOnLinkDetectedPayload(page))
+      .toContain('https://example.com');
+    await expect
+      .poll(async () => getOnLinkDetectedPayload(page))
+      .toContain('"text":"Example"');
+  });
 });

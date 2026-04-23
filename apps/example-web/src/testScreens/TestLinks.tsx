@@ -3,6 +3,7 @@ import {
   EnrichedTextInput,
   type EnrichedInputStyle,
   type EnrichedTextInputInstance,
+  type OnLinkDetected,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from '../defaultHtmlStyle';
 
@@ -19,6 +20,12 @@ export function TestLinks() {
   const [endInput, setEndInput] = useState('11');
   const [linkTextInput, setLinkTextInput] = useState('world');
   const [linkUrlInput, setLinkUrlInput] = useState('https://example.com');
+  const [selStartInput, setSelStartInput] = useState('0');
+  const [selEndInput, setSelEndInput] = useState('0');
+  const [removeStartInput, setRemoveStartInput] = useState('6');
+  const [removeEndInput, setRemoveEndInput] = useState('11');
+  const [lastOnLinkDetected, setLastOnLinkDetected] =
+    useState<OnLinkDetected | null>(null);
 
   return (
     <div data-testid="test-links-root">
@@ -32,6 +39,9 @@ export function TestLinks() {
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
           onChangeHtml={(e) => {
             setEditorHtml(e.nativeEvent.value);
+          }}
+          onLinkDetected={(e) => {
+            setLastOnLinkDetected(e);
           }}
         />
       </div>
@@ -98,6 +108,72 @@ export function TestLinks() {
           setLink
         </button>
       </div>
+
+      <div>
+        <input
+          data-testid="test-links-removelink-start"
+          type="number"
+          value={removeStartInput}
+          onChange={(e) => {
+            setRemoveStartInput(e.target.value);
+          }}
+        />
+        <input
+          data-testid="test-links-removelink-end"
+          type="number"
+          value={removeEndInput}
+          onChange={(e) => {
+            setRemoveEndInput(e.target.value);
+          }}
+        />
+        <button
+          type="button"
+          data-testid="test-links-apply-removelink-button"
+          onClick={() =>
+            ref.current?.removeLink(
+              toInteger(removeStartInput),
+              toInteger(removeEndInput)
+            )
+          }
+        >
+          removeLink
+        </button>
+      </div>
+
+      <div>
+        <input
+          data-testid="test-links-selection-start"
+          type="number"
+          value={selStartInput}
+          onChange={(e) => {
+            setSelStartInput(e.target.value);
+          }}
+        />
+        <input
+          data-testid="test-links-selection-end"
+          type="number"
+          value={selEndInput}
+          onChange={(e) => {
+            setSelEndInput(e.target.value);
+          }}
+        />
+        <button
+          type="button"
+          data-testid="test-links-apply-selection-button"
+          onClick={() =>
+            ref.current?.setSelection(
+              toInteger(selStartInput),
+              toInteger(selEndInput)
+            )
+          }
+        >
+          setSelection
+        </button>
+      </div>
+
+      <pre data-testid="on-link-detected-payload">
+        {JSON.stringify(lastOnLinkDetected)}
+      </pre>
 
       <pre data-testid="test-links-html-output">{editorHtml}</pre>
     </div>
