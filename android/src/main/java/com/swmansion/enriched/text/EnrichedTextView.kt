@@ -32,7 +32,6 @@ class EnrichedTextView : AppCompatTextView {
   private var valueDirty = false
   private var value: String? = null
   private var typefaceDirty = false
-  var useHtmlNormalizer = false
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
@@ -44,6 +43,8 @@ class EnrichedTextView : AppCompatTextView {
   // We keep the parsedText around so that when an async image finishes loading we can re-call
   // setText with the same instance and force the TextView to rebuild its layout.
   private var parsedText: CharSequence? = null
+
+  var useHtmlNormalizer = false
 
   constructor(context: Context) : super(context) {
     prepareComponent()
