@@ -59,6 +59,7 @@ export function EnrichedTextScreen({ onSwitch }: EnrichedTextScreenProps) {
               htmlStyle={enrichedTextHtmlStyle}
               onLinkPress={handleLinkPress}
               onMentionPress={handleMentionPress}
+              useHtmlNormalizer
             >
               {html}
             </EnrichedText>

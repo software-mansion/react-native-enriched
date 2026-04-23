@@ -19,11 +19,11 @@
   return self;
 }
 
-- (void)replaceWholeFromHtml:(NSString *_Nonnull)html
-           useHtmlNormalizer:(BOOL)useHtmlNormalizer {
+- (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
   @try {
-    NSString *normalized = [HtmlParser initiallyProcessHtml:html
-                                          useHtmlNormalizer:useHtmlNormalizer];
+    NSString *normalized =
+        [HtmlParser initiallyProcessHtml:html
+                       useHtmlNormalizer:_view->useHtmlNormalizer];
     if (normalized == nil) {
       [_view->textView.textStorage
           setAttributedString:[[NSAttributedString alloc]

@@ -576,6 +576,11 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     }
   }
 
+  // useHtmlNormalizer
+  if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
+    useHtmlNormalizer = newViewProps.useHtmlNormalizer;
+  }
+
   if (stylePropChanged) {
     config = newConfig;
   }
@@ -612,7 +617,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
         setAttributedString:[[NSAttributedString alloc] initWithString:@""]];
     return;
   }
-  [_textParser replaceWholeFromHtml:html useHtmlNormalizer:YES];
+  [_textParser replaceWholeFromHtml:html];
   [self layoutAttachments];
 }
 
