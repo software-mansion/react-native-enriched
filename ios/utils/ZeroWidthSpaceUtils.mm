@@ -266,7 +266,7 @@
   return NO;
 }
 
-+ (BOOL)removeZWSStyleInRange:(NSRange)range input:(id<EnrichedViewHost>)host {
++ (BOOL)removeZWSStyleInRange:(NSRange)range host:(id<EnrichedViewHost>)host {
   for (NSNumber *type in host.stylesDict) {
     StyleBase *style = host.stylesDict[type];
     if ([style needsZWS] && [style detect:range]) {
