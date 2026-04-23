@@ -1,6 +1,4 @@
 appId: swmansion.enriched.example
-tags:
-  - android-only
 ---
 # Validates all ellipsizeMode and numberOfLines combinations.
 - launchApp
