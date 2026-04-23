@@ -57,7 +57,7 @@
         [TextInsertionUtils replaceText:text
                                      at:range
                    additionalAttributes:nullptr
-                                  input:typedInput
+                                   host:typedInput
                           withSelection:YES];
         typedInput->textView.typingAttributes =
             typedInput->defaultTypingAttributes;
@@ -81,7 +81,7 @@
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
-                              input:typedInput
+                               host:typedInput
                       withSelection:YES];
     typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
     return YES;
@@ -185,7 +185,7 @@
   [TextInsertionUtils replaceText:text
                                at:range
              additionalAttributes:nullptr
-                            input:typedInput
+                             host:typedInput
                     withSelection:YES];
   return YES;
 }
@@ -237,7 +237,7 @@
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
-                              input:typedInput
+                               host:typedInput
                       withSelection:YES];
 
     typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;

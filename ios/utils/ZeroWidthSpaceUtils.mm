@@ -5,19 +5,19 @@
 #import "UIView+React.h"
 
 @implementation ZeroWidthSpaceUtils
-+ (void)handleZeroWidthSpacesInInput:(id<EnrichedViewHost>)host {
++ (void)handleZeroWidthSpacesInHost:(id<EnrichedViewHost>)host {
   if (host == nullptr) {
     return;
   }
 
-  [self removeSpacesIfNeededinInput:host];
+  [self removeSpacesIfNeededinHost:host];
   [self
-      addSpacesIfNeededinInput:host
-                       inRange:NSMakeRange(
-                                   0, host.textView.textStorage.string.length)];
+      addSpacesIfNeededInHost:host
+                      inRange:NSMakeRange(
+                                  0, host.textView.textStorage.string.length)];
 }
 
-+ (void)removeSpacesIfNeededinInput:(id<EnrichedViewHost>)host {
++ (void)removeSpacesIfNeededinHost:(id<EnrichedViewHost>)host {
   NSMutableArray *indexesToBeRemoved = [[NSMutableArray alloc] init];
   NSRange preRemoveSelection = host.textView.selectedRange;
 
@@ -46,7 +46,7 @@
       }
 
       // zero width spaces with no needsZWS style on them get removed
-      if (![self anyZWSStylePresentInRange:characterRange input:host]) {
+      if (![self anyZWSStylePresentInRange:characterRange host:host]) {
         [indexesToBeRemoved addObject:@(characterRange.location)];
       }
     }
@@ -61,7 +61,7 @@
     [TextInsertionUtils replaceText:@""
                                  at:replaceRange
                additionalAttributes:nullptr
-                              input:host
+                               host:host
                       withSelection:NO];
     offset -= 1;
     if ([index integerValue] < preRemoveSelection.location) {
@@ -85,7 +85,7 @@
 // dictionary so that ZWS characters carry the same meta-attributes that are
 // currently active in the typing attributes. Only within the currently selected
 // range!
-+ (NSDictionary *)inlineMetaAttributesForInput:(id<EnrichedViewHost>)host {
++ (NSDictionary *)inlineMetaAttributesForHost:(id<EnrichedViewHost>)host {
   NSMutableDictionary *metaAttrs = [NSMutableDictionary new];
   for (NSNumber *type in host.stylesDict) {
     StyleBase *style = host.stylesDict[type];
@@ -100,8 +100,8 @@
   return metaAttrs.count > 0 ? metaAttrs : nullptr;
 }
 
-+ (void)addSpacesIfNeededinInput:(id<EnrichedViewHost>)host
-                         inRange:(NSRange)range {
++ (void)addSpacesIfNeededInHost:(id<EnrichedViewHost>)host
+                        inRange:(NSRange)range {
   NSMutableArray *indexesToBeInserted = [[NSMutableArray alloc] init];
   NSRange preAddSelection = host.textView.selectedRange;
 
@@ -120,7 +120,7 @@
           paragraphRangeForRange:characterRange];
 
       if (paragraphRange.length == 1) {
-        if ([self anyZWSStylePresentInRange:characterRange input:host]) {
+        if ([self anyZWSStylePresentInRange:characterRange host:host]) {
           // we have an empty list or quote item with no space: add it!
           [indexesToBeInserted addObject:@(paragraphRange.location)];
         }
@@ -128,7 +128,7 @@
     }
   }
 
-  NSDictionary *metaAttrs = [self inlineMetaAttributesForInput:host];
+  NSDictionary *metaAttrs = [self inlineMetaAttributesForHost:host];
 
   // do the replacing
   NSInteger offset = 0;
@@ -139,7 +139,7 @@
     [TextInsertionUtils replaceText:@"\u200B\n"
                                  at:replaceRange
                additionalAttributes:metaAttrs
-                              input:host
+                               host:host
                       withSelection:NO];
     offset += 1;
     if ([index integerValue] < preAddSelection.location) {
@@ -158,11 +158,11 @@
     NSRange lastParagraphRange =
         [host.textView.textStorage.string paragraphRangeForRange:lastRange];
     if (lastParagraphRange.length == 0 &&
-        [self anyZWSStylePresentInRange:lastRange input:host]) {
+        [self anyZWSStylePresentInRange:lastRange host:host]) {
       [TextInsertionUtils insertText:@"\u200B"
                                   at:lastRange.location
                 additionalAttributes:metaAttrs
-                               input:host
+                                host:host
                        withSelection:NO];
     }
   }
@@ -177,7 +177,7 @@
 
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
-                         input:(id<EnrichedViewHost>)host {
+                          host:(id<EnrichedViewHost>)host {
   if (![text isEqualToString:@""]) {
     return NO;
   }
@@ -191,7 +191,7 @@
   if (range.length == 0 && range.location == 0) {
     NSRange firstParagraphRange = [host.textView.textStorage.string
         paragraphRangeForRange:NSMakeRange(0, 0)];
-    if ([self removeZWSStyleInRange:firstParagraphRange input:host]) {
+    if ([self removeZWSStyleInRange:firstParagraphRange host:host]) {
       return YES;
     }
     return NO;
@@ -228,11 +228,11 @@
     [TextInsertionUtils replaceText:@""
                                  at:removalRange
                additionalAttributes:nullptr
-                              input:host
+                               host:host
                       withSelection:YES];
 
     // and then remove associated styling
-    [self removeZWSStyleInRange:styleRemovalRange input:host];
+    [self removeZWSStyleInRange:styleRemovalRange host:host];
 
     return YES;
   }
@@ -246,7 +246,7 @@
     if (nextParaStart < host.textView.textStorage.string.length) {
       NSRange nextParagraphRange = [host.textView.textStorage.string
           paragraphRangeForRange:NSMakeRange(nextParaStart, 0)];
-      if ([self removeZWSStyleInRange:nextParagraphRange input:host]) {
+      if ([self removeZWSStyleInRange:nextParagraphRange host:host]) {
         return YES;
       }
     }
@@ -256,7 +256,7 @@
 }
 
 + (BOOL)anyZWSStylePresentInRange:(NSRange)range
-                            input:(id<EnrichedViewHost>)host {
+                             host:(id<EnrichedViewHost>)host {
   for (NSNumber *type in host.stylesDict) {
     StyleBase *style = host.stylesDict[type];
     if ([style needsZWS] && [style detect:range]) {
@@ -266,7 +266,7 @@
   return NO;
 }
 
-+ (BOOL)removeZWSStyleInRange:(NSRange)range input:(id<EnrichedViewHost>)host {
++ (BOOL)removeZWSStyleInRange:(NSRange)range host:(id<EnrichedViewHost>)host {
   for (NSNumber *type in host.stylesDict) {
     StyleBase *style = host.stylesDict[type];
     if ([style needsZWS] && [style detect:range]) {

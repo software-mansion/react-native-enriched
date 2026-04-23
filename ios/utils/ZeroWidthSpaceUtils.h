@@ -3,10 +3,10 @@
 #pragma once
 
 @interface ZeroWidthSpaceUtils : NSObject
-+ (void)handleZeroWidthSpacesInInput:(id<EnrichedViewHost>)host;
-+ (void)addSpacesIfNeededinInput:(id<EnrichedViewHost>)host
-                         inRange:(NSRange)range;
++ (void)handleZeroWidthSpacesInHost:(id<EnrichedViewHost>)host;
++ (void)addSpacesIfNeededInHost:(id<EnrichedViewHost>)host
+                        inRange:(NSRange)range;
 + (BOOL)handleBackspaceInRange:(NSRange)range
                replacementText:(NSString *)text
-                         input:(id<EnrichedViewHost>)host;
+                          host:(id<EnrichedViewHost>)host;
 @end

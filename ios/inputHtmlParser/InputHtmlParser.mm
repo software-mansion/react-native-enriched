@@ -1,12 +1,13 @@
-#import "InputParser.h"
+#import "InputHtmlParser.h"
 #import "EnrichedTextInputView.h"
 #import "HtmlParser.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 #import <React/RCTLog.h>
 
-@implementation InputParser {
+@implementation InputHtmlParser {
   EnrichedTextInputView __weak *_input;
 }
 
@@ -621,7 +622,7 @@
     [TextInsertionUtils replaceText:plainText
                                  at:range
                additionalAttributes:nil
-                              input:_input
+                               host:_input
                       withSelection:YES];
 
     [self applyProcessedStyles:stylesInfo
@@ -634,7 +635,7 @@
     [TextInsertionUtils replaceText:html
                                  at:range
                additionalAttributes:nil
-                              input:_input
+                               host:_input
                       withSelection:YES];
   }
 }
@@ -649,7 +650,7 @@
     [TextInsertionUtils insertText:plainText
                                 at:location
               additionalAttributes:nil
-                             input:_input
+                              host:_input
                      withSelection:YES];
 
     [self applyProcessedStyles:stylesInfo
@@ -662,7 +663,7 @@
     [TextInsertionUtils insertText:html
                                 at:location
               additionalAttributes:nil
-                             input:_input
+                              host:_input
                      withSelection:YES];
   }
 }
@@ -692,8 +693,9 @@
 
     // of course any changes here need to take blocks and conflicts into
     // consideration
-    if ([_input handleStyleBlocksAndConflicts:[[baseStyle class] getType]
-                                        range:styleRange]) {
+    if ([StyleUtils handleStyleBlocksAndConflicts:[[baseStyle class] getType]
+                                            range:styleRange
+                                          forHost:_input]) {
       BOOL shouldAddTypingAttr =
           styleRange.location + styleRange.length ==
           plainTextLength + offset + zeroWidthSpaceOffset;

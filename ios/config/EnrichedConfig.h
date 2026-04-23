@@ -6,6 +6,8 @@
 
 @interface EnrichedConfig : NSObject <NSCopying>
 - (instancetype)init;
+
+// MARK: - Shared props (Text and input)
 - (UIColor *)primaryColor;
 - (void)setPrimaryColor:(UIColor *)newValue;
 - (NSNumber *)primaryFontSize;
@@ -86,9 +88,6 @@
 - (void)setCodeBlockBgColor:(UIColor *)newValue;
 - (CGFloat)codeBlockBorderRadius;
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue;
-- (LinkRegexConfig *)linkRegexConfig;
-- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
-- (NSRegularExpression *)parsedLinkRegex;
 - (void)invalidateFonts;
 - (NSNumber *)scaledPrimaryFontSize;
 - (CGFloat)checkboxListBoxSize;
@@ -101,6 +100,11 @@
 - (void)setCheckboxListBoxColor:(UIColor *)newValue;
 - (UIImage *)checkboxCheckedImage;
 - (UIImage *)checkboxUncheckedImage;
+
+// MARK: - Input only props
+- (LinkRegexConfig *)linkRegexConfig;
+- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
+- (NSRegularExpression *)parsedLinkRegex;
 
 // MARK: - Text only props
 - (UIColor *)linkPressColor;

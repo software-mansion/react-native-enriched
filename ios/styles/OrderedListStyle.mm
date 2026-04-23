@@ -1,6 +1,7 @@
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 
 @implementation OrderedListStyle
@@ -56,8 +57,9 @@
         characterAtIndex:range.location - 1];
     if (charBefore == '1') {
       // we got a match - add a list if possible
-      if ([self.host handleStyleBlocksAndConflicts:[[self class] getType]
-                                             range:paragraphRange]) {
+      if ([StyleUtils handleStyleBlocksAndConflicts:[[self class] getType]
+                                              range:paragraphRange
+                                            forHost:self.host]) {
         // don't emit during the replacing
         self.host.blockEmitting = YES;
 
@@ -65,7 +67,7 @@
         [TextInsertionUtils replaceText:@""
                                      at:NSMakeRange(paragraphRange.location, 1)
                    additionalAttributes:nullptr
-                                  input:self.host
+                                   host:self.host
                           withSelection:YES];
 
         self.host.blockEmitting = NO;

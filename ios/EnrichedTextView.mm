@@ -3,7 +3,6 @@
 #import "EnrichedTextStyleHeaders.h"
 #import "EnrichedTextTouchHandler.h"
 #import "EnrichedTouchableTextView.h"
-#import "HtmlParser.h"
 #import "LayoutManagerExtension.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -12,7 +11,7 @@
 #import "StringExtension.h"
 #import "StyleUtils.h"
 #import "TextDecorationLineEnum.h"
-#import "ZeroWidthSpaceUtils.h"
+#import "TextHtmlParser.h"
 #import <React/RCTConversions.h>
 #import <ReactNativeEnriched/EnrichedTextComponentDescriptor.h>
 #import <ReactNativeEnriched/EventEmitters.h>
@@ -29,6 +28,7 @@ using namespace facebook::react;
   EnrichedTextViewShadowNode::ConcreteState::Shared _state;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   EnrichedTextTouchHandler *_touchHandler;
+  TextHtmlParser *_textParser;
 }
 
 @synthesize blockEmitting = _blockEmitting;
@@ -56,6 +56,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     _props = defaultProps;
     _attachmentViews = [[NSMutableDictionary alloc] init];
     defaultTypingAttributes = [[NSMutableDictionary alloc] init];
+    _textParser = [[TextHtmlParser alloc] initWithView:self];
     [self setupTextView];
     [self setupStyles];
     self.contentView = textView;
@@ -96,10 +97,6 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 
 - (NSDictionary<NSNumber *, id> *)stylesDict {
   return stylesDict;
-}
-
-- (AttributesManager *)attributesManager {
-  return nil;
 }
 
 - (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictingStyles {
@@ -615,134 +612,8 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
         setAttributedString:[[NSAttributedString alloc] initWithString:@""]];
     return;
   }
-
-  NSString *normalized = [HtmlParser initiallyProcessHtml:html
-                                        useHtmlNormalizer:YES];
-  if (normalized == nil) {
-    [textView.textStorage
-        setAttributedString:[[NSAttributedString alloc]
-                                initWithString:html
-                                    attributes:defaultTypingAttributes]];
-    return;
-  }
-
-  NSArray *result = [HtmlParser getTextAndStylesFromHtml:normalized];
-  NSString *plainText = result[0];
-  NSArray *processedStyles = result[1];
-
-  NSMutableAttributedString *body = [[NSMutableAttributedString alloc]
-      initWithString:plainText
-          attributes:defaultTypingAttributes];
-  [textView.textStorage setAttributedString:body];
-  [self applyProcessedStyles:processedStyles];
+  [_textParser replaceWholeFromHtml:html useHtmlNormalizer:YES];
   [self layoutAttachments];
-}
-
-- (void)applyProcessedStyles:(NSArray *)processedStyles {
-  // Some paragraph styles (codeblock, blockquote, etc.) insert \u200B
-  // into empty lines, mutating NSTextStorage length. We need to
-  // shift subsequent ranges by this offset.
-  NSInteger zeroWidthSpaceOffset = 0;
-
-  // Inline styles collected during the first pass so their applyStyling: can
-  // be re-run after all paragraph styles have applied their visual attributes.
-  // Each entry is @[style, adjustedRange].
-  NSMutableArray *pendingInlineApply = [NSMutableArray array];
-
-  // Paragraph styles call applyStyling: immediately; inline styles
-  // defer it so that paragraph visual attributes are already in
-  // place when inline styles override them.
-  for (NSArray *arr in processedStyles) {
-    NSNumber *styleType = (NSNumber *)arr[0];
-    StylePair *stylePair = (StylePair *)arr[1];
-    StyleBase *style = stylesDict[styleType];
-    if (style == nullptr)
-      continue;
-
-    NSRange parsedRange = [stylePair.rangeValue rangeValue];
-    NSUInteger textLengthBeforeStyleApplied =
-        textView.textStorage.string.length;
-
-    // Range must be taking zeroWidthSpaceOffset into consideration
-    // because processed styles ranges are relative to only the new text while
-    // we need absolute ranges relative to the whole existing text
-    NSRange styleRange = NSMakeRange(
-        zeroWidthSpaceOffset + parsedRange.location, parsedRange.length);
-
-    if (![StyleUtils handleStyleBlocksAndConflicts:[[style class] getType]
-                                             range:styleRange
-                                           forHost:self]) {
-      continue;
-    }
-
-    if ([styleType isEqualToNumber:@([LinkStyle getType])]) {
-      LinkData *linkData = (LinkData *)stylePair.styleValue;
-      [((LinkStyle *)style) applyLinkMetaWithData:linkData range:styleRange];
-    } else if ([styleType isEqualToNumber:@([MentionStyle getType])]) {
-      MentionParams *params = (MentionParams *)stylePair.styleValue;
-      [((MentionStyle *)style) applyMentionMeta:params range:styleRange];
-    } else if ([styleType isEqualToNumber:@([ImageStyle getType])]) {
-      ImageData *imgData = (ImageData *)stylePair.styleValue;
-      [((ImageStyle *)style) addImageAtRange:styleRange
-                                   imageData:imgData
-                               withSelection:NO
-                              withDirtyRange:NO];
-    } else if ([styleType isEqualToNumber:@([CheckboxListStyle getType])]) {
-      NSDictionary *checkboxStates = (NSDictionary *)stylePair.styleValue;
-      CheckboxListStyle *cbStyle = (CheckboxListStyle *)style;
-
-      [cbStyle addWithChecked:NO
-                        range:styleRange
-                   withTyping:NO
-               withDirtyRange:NO];
-
-      if (checkboxStates && checkboxStates.count > 0) {
-        for (NSNumber *key in checkboxStates) {
-          NSUInteger checkboxPosition =
-              zeroWidthSpaceOffset + [key unsignedIntegerValue];
-          BOOL isChecked = [checkboxStates[key] boolValue];
-
-          if (isChecked) {
-            [cbStyle toggleCheckedAt:checkboxPosition withDirtyRange:NO];
-          }
-        }
-      }
-    } else {
-      [style add:styleRange withTyping:NO withDirtyRange:NO];
-    }
-
-    [ZeroWidthSpaceUtils addSpacesIfNeededinInput:self inRange:styleRange];
-
-    NSInteger delta =
-        textView.textStorage.string.length - textLengthBeforeStyleApplied;
-
-    // Use an adjusted range so that applyStyling covers any ZWS characters that
-    // were just inserted by addSpacesIfNeededinInput:inRange:. Without this, a
-    // style applied to an empty range {0,0} would call applyStyling on {0,0}
-    // even after a ZWS was inserted.
-    NSRange adjustedStyleRange = NSMakeRange(
-        styleRange.location, styleRange.length + (NSUInteger)MAX(0LL, delta));
-
-    if ([style isParagraph]) {
-      [style applyStyling:adjustedStyleRange];
-    } else {
-      [pendingInlineApply
-          addObject:@[ style, [NSValue valueWithRange:adjustedStyleRange] ]];
-    }
-
-    // Image shifts are already handled by _precedingImageCount during tag
-    // finalization.
-    if (delta != 0 && ![styleType isEqualToNumber:@([ImageStyle getType])]) {
-      zeroWidthSpaceOffset += delta;
-    }
-  }
-
-  // Apply visual styling for inline styles
-  for (NSArray *entry in pendingInlineApply) {
-    StyleBase *style = entry[0];
-    NSRange adjustedStyleRange = [((NSValue *)entry[1]) rangeValue];
-    [style applyStyling:adjustedStyleRange];
-  }
 }
 
 // MARK: - Measuring and state

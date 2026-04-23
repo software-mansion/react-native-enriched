@@ -40,7 +40,6 @@
   // attribute at that position in textStorage.
   if (host.textView.isEditable &&
       NSEqualRanges(host.textView.selectedRange, detectionRange)) {
-    NSLog(@"[OccurenceUtils] isEditable srodek: %d", host.textView.isEditable);
     attrValue = host.textView.typingAttributes[key];
   } else if (index == host.textView.textStorage.string.length) {
     if (checkPrev) {

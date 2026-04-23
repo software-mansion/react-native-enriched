@@ -175,7 +175,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     [TextInsertionUtils insertText:linkData.text
                                 at:range.location
               additionalAttributes:metaAttrs
-                             input:self.host
+                              host:self.host
                      withSelection:withSelection];
     dirtyRange = NSMakeRange(range.location, linkData.text.length);
   } else if ([currentText isEqualToString:linkData.text]) {
@@ -194,7 +194,7 @@ static NSString *const AutomaticLinkAttributeName = @"EnrichedAutomaticLink";
     [TextInsertionUtils replaceText:linkData.text
                                  at:range
                additionalAttributes:metaAttrs
-                              input:self.host
+                               host:self.host
                       withSelection:withSelection];
     dirtyRange = NSMakeRange(range.location, linkData.text.length);
   }

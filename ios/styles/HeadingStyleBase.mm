@@ -52,7 +52,7 @@
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
-                              input:self.host
+                               host:self.host
                       withSelection:YES];
     // remove the attributes at the new selection
     [self remove:self.host.textView.selectedRange withDirtyRange:YES];

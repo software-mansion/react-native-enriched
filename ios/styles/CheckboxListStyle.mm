@@ -139,7 +139,7 @@
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
-                              input:self.host
+                               host:self.host
                       withSelection:YES];
     // apply unchecked checkbox attributes to the new paragraph
     [self addWithChecked:NO

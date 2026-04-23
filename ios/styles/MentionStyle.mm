@@ -82,8 +82,8 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   // no-op for mentions
 }
 
-// Strip meta only, AttributesManager dirty pass resets visuals and reapplies
-// other styles
+// Strip meta only, InputAttributesManager dirty pass resets visuals and
+// reapplies other styles
 - (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
   NSArray<StylePair *> *mentions = [self all:range];
   [self.host.textView.textStorage beginEditing];
@@ -158,7 +158,7 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   [TextInsertionUtils replaceText:newText
                                at:rangeToBeReplaced
              additionalAttributes:nullptr
-                            input:self.host
+                             host:self.host
                     withSelection:YES];
 
   // THEN, add the attributes to not apply them on the space
@@ -216,13 +216,13 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
     [TextInsertionUtils insertText:finalString
                                 at:currentRange.location
               additionalAttributes:nullptr
-                             input:self.host
+                              host:self.host
                      withSelection:NO];
   } else {
     [TextInsertionUtils replaceText:finalString
                                  at:currentRange
                additionalAttributes:nullptr
-                              input:self.host
+                               host:self.host
                       withSelection:NO];
   }
 

@@ -3,7 +3,7 @@
 
 @class EnrichedTextInputView;
 
-@interface AttributesManager : NSObject
+@interface InputAttributesManager : NSObject
 @property(nonatomic, weak) EnrichedTextInputView *input;
 - (instancetype)initWithInput:(EnrichedTextInputView *)input;
 - (void)addDirtyRange:(NSRange)range;

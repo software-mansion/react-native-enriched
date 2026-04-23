@@ -1,7 +1,7 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@interface InputParser : NSObject
+@interface InputHtmlParser : NSObject
 - (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
 - (NSString *_Nonnull)parseToHtmlFromRange:(NSRange)range;
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html;

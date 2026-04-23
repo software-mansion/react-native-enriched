@@ -119,13 +119,13 @@ static NSString *const ImageAttributeName = @"EnrichedImage";
     [TextInsertionUtils insertText:placeholderChar
                                 at:range.location
               additionalAttributes:attributes
-                             input:self.host
+                              host:self.host
                      withSelection:withSelection];
   } else {
     [TextInsertionUtils replaceText:placeholderChar
                                  at:range
                additionalAttributes:attributes
-                              input:self.host
+                               host:self.host
                       withSelection:withSelection];
   }
 

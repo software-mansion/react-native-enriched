@@ -38,63 +38,64 @@
                       (NSMutableDictionary<NSValue *, UIImageView *> *)
                           attachmentViews {
   NSTextStorage *storage = textView.textStorage;
-  if (storage.length == 0)
-    return attachmentViews;
-
   NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
       [NSMutableDictionary dictionary];
 
-  // Iterate over the entire text to find ImageAttachments
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:NSMakeRange(0, storage.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if ([value isKindOfClass:[ImageAttachment class]]) {
-                       ImageAttachment *attachment = (ImageAttachment *)value;
+  if (storage.length > 0) {
+    // Iterate over the entire text to find ImageAttachments
+    [storage enumerateAttribute:NSAttachmentAttributeName
+                        inRange:NSMakeRange(0, storage.length)
+                        options:0
+                     usingBlock:^(id value, NSRange range, BOOL *stop) {
+                       if ([value isKindOfClass:[ImageAttachment class]]) {
+                         ImageAttachment *attachment = (ImageAttachment *)value;
 
-                       CGRect rect = [self frameForAttachment:attachment
-                                                      atRange:range
-                                                     textView:textView
-                                                       config:config];
+                         CGRect rect = [self frameForAttachment:attachment
+                                                        atRange:range
+                                                       textView:textView
+                                                         config:config];
 
-                       // Get or Create the UIImageView for this specific
-                       // attachment key
-                       NSValue *key =
-                           [NSValue valueWithNonretainedObject:attachment];
-                       UIImageView *imgView = attachmentViews[key];
+                         // Get or Create the UIImageView for this specific
+                         // attachment key
+                         NSValue *key =
+                             [NSValue valueWithNonretainedObject:attachment];
+                         UIImageView *imgView = attachmentViews[key];
 
-                       if (!imgView) {
-                         // It doesn't exist yet, create it
-                         imgView = [[UIImageView alloc] initWithFrame:rect];
-                         imgView.contentMode = UIViewContentModeScaleAspectFit;
-                         imgView.tintColor = [UIColor labelColor];
+                         if (!imgView) {
+                           // It doesn't exist yet, create it
+                           imgView = [[UIImageView alloc] initWithFrame:rect];
+                           imgView.contentMode =
+                               UIViewContentModeScaleAspectFit;
+                           imgView.tintColor = [UIColor labelColor];
 
-                         // Add it directly to the TextView
-                         [textView addSubview:imgView];
+                           // Add it directly to the TextView
+                           [textView addSubview:imgView];
+                         }
+
+                         // Update position (in case text moved/scrolled)
+                         if (!CGRectEqualToRect(imgView.frame, rect)) {
+                           imgView.frame = rect;
+                         }
+                         UIImage *targetImage =
+                             attachment.storedAnimatedImage ?: attachment.image;
+
+                         // Only set if different to avoid resetting the
+                         // animation loop
+                         if (imgView.image != targetImage) {
+                           imgView.image = targetImage;
+                         }
+
+                         // Ensure it is visible on top
+                         imgView.hidden = NO;
+                         [textView bringSubviewToFront:imgView];
+
+                         activeAttachmentViews[key] = imgView;
+                         // Remove from the old map so we know it has been
+                         // claimed
+                         [attachmentViews removeObjectForKey:key];
                        }
-
-                       // Update position (in case text moved/scrolled)
-                       if (!CGRectEqualToRect(imgView.frame, rect)) {
-                         imgView.frame = rect;
-                       }
-                       UIImage *targetImage =
-                           attachment.storedAnimatedImage ?: attachment.image;
-
-                       // Only set if different to avoid resetting the animation
-                       // loop
-                       if (imgView.image != targetImage) {
-                         imgView.image = targetImage;
-                       }
-
-                       // Ensure it is visible on top
-                       imgView.hidden = NO;
-                       [textView bringSubviewToFront:imgView];
-
-                       activeAttachmentViews[key] = imgView;
-                       // Remove from the old map so we know it has been claimed
-                       [attachmentViews removeObjectForKey:key];
-                     }
-                   }];
+                     }];
+  }
 
   // Everything remaining in attachmentViews is dead or off-screen
   for (UIImageView *danglingView in attachmentViews.allValues) {

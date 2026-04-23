@@ -2,6 +2,7 @@
 #import <React/RCTFont.h>
 
 @implementation EnrichedConfig {
+  // shared (text and input)
   UIColor *_primaryColor;
   NSNumber *_primaryFontSize;
   CGFloat _primaryLineHeight;
@@ -46,14 +47,16 @@
   UIColor *_codeBlockFgColor;
   CGFloat _codeBlockBorderRadius;
   UIColor *_codeBlockBgColor;
-  LinkRegexConfig *_linkRegexConfig;
-  NSRegularExpression *_parsedLinkRegex;
   CGFloat _checkboxListBoxSize;
   CGFloat _checkboxListGapWidth;
   CGFloat _checkboxListMarginLeft;
   UIColor *_checkboxListBoxColor;
   UIImage *_checkboxCheckedImage;
   UIImage *_checkboxUncheckedImage;
+
+  // input only
+  LinkRegexConfig *_linkRegexConfig;
+  NSRegularExpression *_parsedLinkRegex;
 
   // text only
   UIColor *_linkPressColor;
@@ -69,6 +72,7 @@
 
 - (id)copyWithZone:(NSZone *)zone {
   EnrichedConfig *copy = [[[self class] allocWithZone:zone] init];
+  // shared (text and input)
   copy->_primaryColor = [_primaryColor copy];
   copy->_primaryFontSize = [_primaryFontSize copy];
   copy->_primaryLineHeight = _primaryLineHeight;
@@ -110,8 +114,6 @@
   copy->_codeBlockFgColor = [_codeBlockFgColor copy];
   copy->_codeBlockBgColor = [_codeBlockBgColor copy];
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
-  copy->_linkRegexConfig = [_linkRegexConfig copy];
-  copy->_parsedLinkRegex = [_parsedLinkRegex copy];
   copy->_checkboxListBoxSize = _checkboxListBoxSize;
   copy->_checkboxListGapWidth = _checkboxListGapWidth;
   copy->_checkboxListMarginLeft = _checkboxListMarginLeft;
@@ -119,10 +121,16 @@
   copy->_checkboxCheckedImage = _checkboxCheckedImage;
   copy->_checkboxUncheckedImage = _checkboxUncheckedImage;
 
+  // input only
+  copy->_linkRegexConfig = [_linkRegexConfig copy];
+  copy->_parsedLinkRegex = [_parsedLinkRegex copy];
+
   // text only
   copy->_linkPressColor = [_linkPressColor copy];
   return copy;
 }
+
+// MARK: - Shared props (Text and input)
 
 - (UIColor *)primaryColor {
   return _primaryColor != nullptr ? _primaryColor : UIColor.blackColor;
@@ -512,42 +520,6 @@
   _codeBlockBorderRadius = newValue;
 }
 
-- (LinkRegexConfig *)linkRegexConfig {
-  return _linkRegexConfig;
-}
-
-- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue {
-  _linkRegexConfig = newValue;
-
-  // try initializing the native regular expression if it applies
-  if (_linkRegexConfig.isDefault || _linkRegexConfig.isDisabled) {
-    return;
-  }
-
-  NSError *regexInitError;
-  NSRegularExpressionOptions options =
-      (_linkRegexConfig.caseInsensitive ? NSRegularExpressionCaseInsensitive
-                                        : 0) |
-      (_linkRegexConfig.dotAll ? NSRegularExpressionDotMatchesLineSeparators
-                               : 0);
-  NSRegularExpression *userRegex =
-      [NSRegularExpression regularExpressionWithPattern:_linkRegexConfig.pattern
-                                                options:options
-                                                  error:&regexInitError];
-
-  if (regexInitError) {
-    RCTLogWarn(@"[EnrichedTextInput]: Couldn't parse the user-defined link "
-               @"regex, falling back to a default regex.");
-    _parsedLinkRegex = nullptr;
-  } else {
-    _parsedLinkRegex = userRegex;
-  }
-}
-
-- (NSRegularExpression *)parsedLinkRegex {
-  return _parsedLinkRegex;
-}
-
 - (void)invalidateFonts {
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
@@ -665,6 +637,44 @@
   UIGraphicsEndImageContext();
 
   return result;
+}
+
+// MARK: - Input only props
+
+- (LinkRegexConfig *)linkRegexConfig {
+  return _linkRegexConfig;
+}
+
+- (void)setLinkRegexConfig:(LinkRegexConfig *)newValue {
+  _linkRegexConfig = newValue;
+
+  // try initializing the native regular expression if it applies
+  if (_linkRegexConfig.isDefault || _linkRegexConfig.isDisabled) {
+    return;
+  }
+
+  NSError *regexInitError;
+  NSRegularExpressionOptions options =
+      (_linkRegexConfig.caseInsensitive ? NSRegularExpressionCaseInsensitive
+                                        : 0) |
+      (_linkRegexConfig.dotAll ? NSRegularExpressionDotMatchesLineSeparators
+                               : 0);
+  NSRegularExpression *userRegex =
+      [NSRegularExpression regularExpressionWithPattern:_linkRegexConfig.pattern
+                                                options:options
+                                                  error:&regexInitError];
+
+  if (regexInitError) {
+    RCTLogWarn(@"[EnrichedTextInput]: Couldn't parse the user-defined link "
+               @"regex, falling back to a default regex.");
+    _parsedLinkRegex = nullptr;
+  } else {
+    _parsedLinkRegex = userRegex;
+  }
+}
+
+- (NSRegularExpression *)parsedLinkRegex {
+  return _parsedLinkRegex;
 }
 
 // MARK: - Text only props

@@ -89,7 +89,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   return stylesDict;
 }
 
-- (AttributesManager *)attributesManager {
+- (InputAttributesManager *)attributesManager {
   return attributesManager;
 }
 
@@ -141,9 +141,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   conflictingStyles = [[StyleUtils conflictMap] mutableCopy];
   blockingStyles = [[StyleUtils blockingMap] mutableCopy];
 
-  parser = [[InputParser alloc] initWithInput:self];
+  parser = [[InputHtmlParser alloc] initWithInput:self];
   _attachmentViews = [[NSMutableDictionary alloc] init];
-  attributesManager = [[AttributesManager alloc] initWithInput:self];
+  attributesManager = [[InputAttributesManager alloc] initWithInput:self];
 }
 
 - (void)setupTextView {
@@ -1399,7 +1399,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if ([style isParagraph]) {
     range = [textView.textStorage.string paragraphRangeForRange:range];
   }
-  if ([self handleStyleBlocksAndConflicts:type range:range]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:type
+                                          range:range
+                                        forHost:self]) {
     [style toggle:range];
     [self anyTextMayHaveBeenModified];
   }
@@ -1413,8 +1415,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   NSRange range = [textView.textStorage.string
       paragraphRangeForRange:textView.selectedRange];
-  if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getType]
-                                    range:range]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[CheckboxListStyle getType]
+                                          range:range
+                                        forHost:self]) {
     [style toggleWithChecked:checked range:range];
     [self anyTextMayHaveBeenModified];
   }
@@ -1431,8 +1434,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // translate the output start-end notation to range
   NSRange linkRange = NSMakeRange(start, end - start);
-  if ([self handleStyleBlocksAndConflicts:[LinkStyle getType]
-                                    range:linkRange]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[LinkStyle getType]
+                                          range:linkRange
+                                        forHost:self]) {
     LinkData *linkData = [[LinkData alloc] init];
     linkData.text = text;
     linkData.url = url;
@@ -1476,10 +1480,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
 
-  if ([self handleStyleBlocksAndConflicts:[MentionStyle getType]
-                                    range:[[mentionStyleClass
-                                              getActiveMentionRange]
-                                              rangeValue]]) {
+  if ([StyleUtils
+          handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                  range:[[mentionStyleClass
+                                            getActiveMentionRange] rangeValue]
+                                forHost:self]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
     [self anyTextMayHaveBeenModified];
   }
@@ -1492,8 +1497,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
 
-  if ([self handleStyleBlocksAndConflicts:[ImageStyle getType]
-                                    range:textView.selectedRange]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[ImageStyle getType]
+                                          range:textView.selectedRange
+                                        forHost:self]) {
     [imageStyleClass addImage:uri width:width height:height];
     [self anyTextMayHaveBeenModified];
   }
@@ -1506,17 +1512,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     return;
   }
 
-  if ([self handleStyleBlocksAndConflicts:[MentionStyle getType]
-                                    range:textView.selectedRange]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                          range:textView.selectedRange
+                                        forHost:self]) {
     [mentionStyleClass startMentionWithIndicator:indicator];
     [self anyTextMayHaveBeenModified];
   }
-}
-
-- (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
-  return [StyleUtils handleStyleBlocksAndConflicts:type
-                                             range:range
-                                           forHost:self];
 }
 
 - (void)manageSelectionBasedChanges {
@@ -1571,7 +1572,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // zero width space adding or removal
-  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInHost:self];
 
   // emptying input typing attributes management
   if (textView.textStorage.string.length == 0 &&
@@ -1853,7 +1854,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // ZWS backspace handling for paragraph styles
       [ZeroWidthSpaceUtils handleBackspaceInRange:range
                                   replacementText:text
-                                            input:self] ||
+                                             host:self] ||
       [uStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [oStyle tryHandlingListShorcutInRange:range replacementText:text] ||
       [cbLStyle handleNewlinesInRange:range replacementText:text] ||
@@ -2024,7 +2025,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 // MARK: - Media attachments delegate
 
-- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
+- (void)mediaAttachmentDidUpdate:(MediaAttachment *)attachment {
   [AttachmentLayoutUtils handleAttachmentUpdate:attachment
                                        textView:textView
                                   onLayoutBlock:^{

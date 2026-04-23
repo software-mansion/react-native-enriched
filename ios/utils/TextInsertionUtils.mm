@@ -6,7 +6,7 @@
                       at:(NSInteger)index
     additionalAttributes:
         (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
-                   input:(id<EnrichedViewHost>)host
+                    host:(id<EnrichedViewHost>)host
            withSelection:(BOOL)withSelection {
   if (host == nullptr) {
     return;
@@ -36,7 +36,7 @@
                       at:(NSRange)range
     additionalAttributes:
         (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
-                   input:(id<EnrichedViewHost>)host
+                    host:(id<EnrichedViewHost>)host
            withSelection:(BOOL)withSelection {
   if (host == nullptr) {
     return;

@@ -246,12 +246,12 @@
   range.length > 0 ? [TextInsertionUtils replaceText:plainText
                                                   at:range
                                 additionalAttributes:nullptr
-                                               input:input
+                                                host:input
                                        withSelection:YES]
                    : [TextInsertionUtils insertText:plainText
                                                  at:range.location
                                additionalAttributes:nullptr
-                                              input:input
+                                               host:input
                                       withSelection:YES];
 }
 
@@ -265,7 +265,7 @@
   [TextInsertionUtils replaceText:@""
                                at:typedInput->textView.selectedRange
              additionalAttributes:nullptr
-                            input:typedInput
+                             host:typedInput
                     withSelection:YES];
 
   [typedInput anyTextMayHaveBeenModified];
