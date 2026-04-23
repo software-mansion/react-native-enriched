@@ -39,6 +39,8 @@ tags:
           </ul>
         </html>
 
+- scroll
+
 - runFlow:
     file: '../subflows/capture_or_assert_screenshot.yaml'
     env:
