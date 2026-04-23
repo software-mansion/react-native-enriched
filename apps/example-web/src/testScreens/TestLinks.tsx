@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import {
   EnrichedTextInput,
   type EnrichedInputStyle,
@@ -27,11 +27,7 @@ export function TestLinks() {
 
   return (
     <div data-testid="test-links-root">
-      <div
-        data-testid="test-links-editor"
-        style={editorWrapStyle}
-        onClick={() => ref.current?.focus()}
-      >
+      <div data-testid="test-links-editor" onClick={() => ref.current?.focus()}>
         <EnrichedTextInput
           ref={ref}
           defaultValue="<html><p></p></html>"
@@ -150,11 +146,6 @@ export function TestLinks() {
     </div>
   );
 }
-
-const editorWrapStyle: CSSProperties = {
-  width: 360,
-  overflow: 'hidden',
-};
 
 const editorStyle: EnrichedInputStyle = {
   width: '100%',
