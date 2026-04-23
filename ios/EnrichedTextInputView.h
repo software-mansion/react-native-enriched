@@ -16,7 +16,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EnrichedTextInputView
-    : RCTViewComponentView <MediaAttachmentDelegate, EnrichedViewHost> {
+    : RCTViewComponentView <EnrichedViewHost, MediaAttachmentDelegate> {
 @public
   InputTextView *textView;
 @public
