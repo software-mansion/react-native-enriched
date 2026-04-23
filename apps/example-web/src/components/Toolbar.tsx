@@ -8,6 +8,7 @@ import type { RefObject } from 'react';
 interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
+  onOpenLinkModal: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -50,7 +51,7 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ editorRef, state }: ToolbarProps) {
+export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
   const s = state;
 
   const toolbarItems = [
@@ -146,6 +147,13 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
       label: '{ }',
       onPress: (editor) => {
         editor?.toggleCodeBlock();
+      },
+    },
+    {
+      key: 'link',
+      label: '🔗',
+      onPress: () => {
+        onOpenLinkModal();
       },
     },
   ] satisfies {

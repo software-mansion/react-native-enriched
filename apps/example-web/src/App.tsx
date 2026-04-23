@@ -14,6 +14,7 @@ import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
 import { SetValueModal } from './components/SetValueModal';
+import { LinkModal } from './components/LinkModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
 import { Toolbar } from './components/Toolbar';
@@ -26,6 +27,10 @@ function App() {
   const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
     null
   );
+  const [selection, setSelection] = useState<OnChangeSelectionEvent | null>(
+    null
+  );
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -52,6 +57,25 @@ function App() {
     e: NativeSyntheticEvent<OnChangeSelectionEvent>
   ) => {
     console.log('[EnrichedTextInput] onChangeSelection event', e.nativeEvent);
+    setSelection(e.nativeEvent);
+  };
+
+  const openLinkModal = () => {
+    setIsLinkModalOpen(true);
+  };
+
+  const closeLinkModal = () => {
+    setIsLinkModalOpen(false);
+  };
+
+  const submitLink = (text: string, url: string) => {
+    if (!selection || url.length === 0) {
+      closeLinkModal();
+      return;
+    }
+    const newText = text.length > 0 ? text : url;
+    ref.current?.setLink(selection.start, selection.end, newText, url);
+    closeLinkModal();
   };
 
   const handleChangeState = (e: NativeSyntheticEvent<OnChangeStateEvent>) => {
@@ -81,7 +105,11 @@ function App() {
         htmlStyle={WEB_DEFAULT_HTML_STYLE}
       />
 
-      <Toolbar editorRef={ref} state={editorState} />
+      <Toolbar
+        editorRef={ref}
+        state={editorState}
+        onOpenLinkModal={openLinkModal}
+      />
 
       <EditorActions
         showHtmlOutput={showHtmlOutput}
@@ -112,6 +140,15 @@ function App() {
           onClose={() => {
             setIsSetValueModalOpen(false);
           }}
+        />
+      )}
+
+      {isLinkModalOpen && (
+        <LinkModal
+          editedText={selection?.text ?? ''}
+          editedUrl=""
+          onSubmit={submitLink}
+          onClose={closeLinkModal}
         />
       )}
     </div>
