@@ -1,10 +1,10 @@
-#import "AttributesManager.h"
+#import "InputAttributesManager.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 
-@implementation AttributesManager {
+@implementation InputAttributesManager {
   NSMutableArray<NSValue *> *_dirtyRanges;
   NSSet *_customAttributesKeys;
   NSMutableSet *_removedTypingAttributes;

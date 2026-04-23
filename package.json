@@ -220,6 +220,7 @@
     },
     "ios": {
       "componentProvider": {
+        "EnrichedTextView": "EnrichedTextView",
         "EnrichedTextInputView": "EnrichedTextInputView"
       }
     },

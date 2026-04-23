@@ -4,7 +4,7 @@ import {
   type OnLinkPressEvent,
   type OnMentionPressEvent,
 } from 'react-native-enriched';
-import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
+import { enrichedTextHtmlStyle } from '../constants/editorConfig';
 
 interface TextRendererProps {
   nodes: Array<string>;
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   text: {
-    fontSize: 16,
+    fontSize: 18,
     color: 'black',
     marginTop: 4,
     fontFamily: 'Nunito-Regular',

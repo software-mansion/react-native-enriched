@@ -21,9 +21,9 @@
 }
 
 - (void)applyStyling:(NSRange)range {
-  CGFloat indent = [self.input->config blockquoteBorderWidth] +
-                   [self.input->config blockquoteGapWidth];
-  [self.input->textView.textStorage
+  CGFloat indent = [self.host.config blockquoteBorderWidth] +
+                   [self.host.config blockquoteGapWidth];
+  [self.host.textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
                  inRange:range
                  options:0
@@ -33,23 +33,22 @@
                     [(NSParagraphStyle *)value mutableCopy];
                 pStyle.headIndent = indent;
                 pStyle.firstLineHeadIndent = indent;
-                [self.input->textView.textStorage
+                [self.host.textView.textStorage
                     addAttribute:NSParagraphStyleAttributeName
                            value:pStyle
                            range:subRange];
               }];
 
-  UIColor *bqColor = [self.input->config blockquoteColor];
-  [self.input->textView.textStorage addAttribute:NSForegroundColorAttributeName
-                                           value:bqColor
-                                           range:range];
-  [self.input->textView.textStorage addAttribute:NSUnderlineColorAttributeName
-                                           value:bqColor
-                                           range:range];
-  [self.input->textView.textStorage
-      addAttribute:NSStrikethroughColorAttributeName
-             value:bqColor
-             range:range];
+  UIColor *bqColor = [self.host.config blockquoteColor];
+  [self.host.textView.textStorage addAttribute:NSForegroundColorAttributeName
+                                         value:bqColor
+                                         range:range];
+  [self.host.textView.textStorage addAttribute:NSUnderlineColorAttributeName
+                                         value:bqColor
+                                         range:range];
+  [self.host.textView.textStorage addAttribute:NSStrikethroughColorAttributeName
+                                         value:bqColor
+                                         range:range];
 }
 
 @end
