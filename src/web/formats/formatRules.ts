@@ -13,7 +13,7 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
 }
 
 export function isLinkBlocked(editor: Editor): boolean {
-  return editor.isActive('codeBlock');
+  return editor.isActive('code') || editor.isActive('codeBlock');
 }
 
 export function isFormatBlocked(

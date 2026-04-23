@@ -18,6 +18,9 @@ const sel = {
   setLinkText: '[data-testid="test-links-setlink-text"]',
   setLinkUrl: '[data-testid="test-links-setlink-url"]',
   applySetLink: '[data-testid="test-links-apply-setlink-button"]',
+  removeLinkStart: '[data-testid="test-links-removelink-start"]',
+  removeLinkEnd: '[data-testid="test-links-removelink-end"]',
+  applyRemoveLink: '[data-testid="test-links-apply-removelink-button"]',
   selectionStart: '[data-testid="test-links-selection-start"]',
   selectionEnd: '[data-testid="test-links-selection-end"]',
   applySelection: '[data-testid="test-links-apply-selection-button"]',
@@ -114,6 +117,52 @@ test.describe('test-links setLink table', () => {
       url: 'https://same-range.example',
       expectContains: '<p>x<a href="https://same-range.example">m</a>x</p>',
     },
+    {
+      name: 'setLink blocked when selection entirely in codeblock',
+      html: '<html><codeblock><p>line</p></codeblock></html>',
+      start: '0',
+      end: '4',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><codeblock><p>line</p></codeblock></html>',
+    },
+    {
+      name: 'setLink blocked when selection partially in codeblock',
+      html: '<html><codeblock><p>line</p></codeblock><p>suffix</p></html>',
+      start: '0',
+      end: '10',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains:
+        '<html><codeblock><p>line</p></codeblock><p>suffix</p></html>',
+    },
+    {
+      name: 'setLink blocked when selection entirely in code',
+      html: '<html><p><code>line</code></p></html>',
+      start: '0',
+      end: '4',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><p><code>line</code></p></html>',
+    },
+    {
+      name: 'setLink blocked when selection partially in code',
+      html: '<html><p><code>line</code> suffix</p></html>',
+      start: '2',
+      end: '10',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><p><code>line</code> suffix</p></html>',
+    },
+    {
+      name: 'setLink clamps out-of-bounds start/end to document range',
+      html: '<html><p>Hello world</p></html>',
+      start: '0',
+      end: '99999',
+      text: 'Z',
+      url: 'https://clamp.setlink',
+      expectContains: '<p><a href="https://clamp.setlink">Z</a></p>',
+    },
   ];
 
   for (const c of cases) {
@@ -127,6 +176,67 @@ test.describe('test-links setLink table', () => {
       await page.fill(sel.setLinkUrl, c.url);
 
       await page.click(sel.applySetLink);
+
+      await expect
+        .poll(async () => getTestLinksSerializedHtml(page))
+        .toContain(c.expectContains);
+    });
+  }
+});
+
+test.describe('test-links removeLink table', () => {
+  const cases: {
+    name: string;
+    html: string;
+    start: string;
+    end: string;
+    expectContains: string;
+  }[] = [
+    {
+      name: 'entire link removal',
+      html: '<html><p>Hello <a href="https://example.com">world</a></p></html>',
+      start: '6',
+      end: '11',
+      expectContains: '<p>Hello world</p>',
+    },
+    {
+      name: 'partial removal: 2 of 5 link chars unlinked, rest stays linked',
+      html: '<html><p><a href="https://partial.test">abcde</a></p></html>',
+      start: '0',
+      end: '2',
+      expectContains: '<p>ab<a href="https://partial.test">cde</a></p>',
+    },
+    {
+      name: 'no link: plain paragraph unchanged',
+      html: '<html><p>Hello world</p></html>',
+      start: '0',
+      end: '11',
+      expectContains: '<p>Hello world</p>',
+    },
+    {
+      name: 'removeLink clamps end past document; unlinks full range',
+      html: '<html><p><a href="https://clamp.rm">ab</a></p></html>',
+      start: '0',
+      end: '9999',
+      expectContains: '<p>ab</p>',
+    },
+    {
+      name: 'removeLink clamps both past doc; selection at end outside link, link unchanged',
+      html: '<html><p>prefix <a href="https://noop.rm">ab</a> tail</p></html>',
+      start: '1000',
+      end: '1000',
+      expectContains: '<a href="https://noop.rm">ab</a>',
+    },
+  ];
+
+  for (const c of cases) {
+    test(c.name, async ({ page }) => {
+      await gotoTestLinks(page);
+      await setTestLinksEditorHtml(page, c.html);
+
+      await page.fill(sel.removeLinkStart, c.start);
+      await page.fill(sel.removeLinkEnd, c.end);
+      await page.click(sel.applyRemoveLink);
 
       await expect
         .poll(async () => getTestLinksSerializedHtml(page))
@@ -155,69 +265,5 @@ test.describe('test-links onLinkDetected', () => {
     await expect
       .poll(async () => getOnLinkDetectedPayload(page))
       .toContain('"text":"Example"');
-  });
-});
-
-test.describe('test-links setLink with code', () => {
-  test('splits inline code when setLink covers a sub-range: link replaces that segment, code on both sides', async ({
-    page,
-  }) => {
-    await gotoTestLinks(page);
-    await setTestLinksEditorHtml(
-      page,
-      '<html><p><code>A_inside_B</code></p></html>'
-    );
-
-    await expect
-      .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('A_inside_B');
-
-    await page.fill(sel.setLinkStart, '1');
-    await page.fill(sel.setLinkEnd, '9');
-    await page.fill(sel.setLinkText, '_link_');
-    await page.fill(sel.setLinkUrl, 'https://inline-split.test');
-    await page.click(sel.applySetLink);
-
-    const after = await getTestLinksSerializedHtml(page);
-    expect(after).toContain('https://inline-split.test');
-    expect(after).toContain(
-      [
-        '<p><code>A</code>',
-        '<a href="https://inline-split.test">_link_</a>',
-        '<code>B</code>',
-        '</p>',
-      ].join('')
-    );
-  });
-});
-
-test.describe('test-links setLink blocking', () => {
-  test('does not add link when selection is in code block', async ({
-    page,
-  }) => {
-    await gotoTestLinks(page);
-    await setTestLinksEditorHtml(
-      page,
-      '<html><codeblock><p>line</p></codeblock></html>'
-    );
-
-    await expect
-      .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('line');
-
-    const before = await getTestLinksSerializedHtml(page);
-
-    await page.locator('.eti-editor codeblock p').click();
-
-    await page.fill(sel.setLinkStart, '0');
-    await page.fill(sel.setLinkEnd, '4');
-    await page.fill(sel.setLinkText, 'line');
-    await page.fill(sel.setLinkUrl, 'https://blocked-block.test');
-    await page.click(sel.applySetLink);
-
-    const after = await getTestLinksSerializedHtml(page);
-    expect(after).toBe(before);
-    expect(after).not.toContain('<a>');
-    expect(after).toContain('<codeblock><p>line</p></codeblock>');
   });
 });

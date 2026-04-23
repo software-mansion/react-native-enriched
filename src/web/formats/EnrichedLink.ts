@@ -57,6 +57,13 @@ export const EnrichedLink = Link.extend({
   },
 });
 
+export function removeLink(editor: Editor, start: number, end: number) {
+  const doc = editor.state.doc;
+  const from = nativePosToTiptapPos(doc, start);
+  const to = nativePosToTiptapPos(doc, end);
+  editor.chain().focus().setTextSelection({ from, to }).unsetLink().run();
+}
+
 export function setLink(
   editor: Editor,
   start: number,
@@ -67,13 +74,15 @@ export function setLink(
   if (url.length === 0 || text.length === 0) {
     return;
   }
-  if (isLinkBlocked(editor)) {
-    return;
-  }
   const { state } = editor;
   const doc = state.doc;
   const from = nativePosToTiptapPos(doc, start);
   const to = nativePosToTiptapPos(doc, end);
+
+  if (isRangeLinkBlocked(editor, from, to)) {
+    return;
+  }
+
   const linkType = state.schema.marks.link;
   if (!linkType) return;
   const linkMark = linkType.create({ href: url });
@@ -90,9 +99,27 @@ export function setLink(
     .run();
 }
 
-export function removeLink(editor: Editor, start: number, end: number) {
-  const doc = editor.state.doc;
-  const from = nativePosToTiptapPos(doc, start);
-  const to = nativePosToTiptapPos(doc, end);
-  editor.chain().focus().setTextSelection({ from, to }).unsetLink().run();
+// We use this function instead of relying on editor.isActive('...') because it
+// checks the current selection, not start and end passed by user
+function isRangeLinkBlocked(editor: Editor, from: number, to: number): boolean {
+  const { doc, schema } = editor.state;
+
+  const hasInlineCode =
+    schema.marks.code && doc.rangeHasMark(from, to, schema.marks.code);
+
+  if (hasInlineCode) {
+    return true;
+  }
+
+  let hasCodeBlock = false;
+  doc.nodesBetween(from, to, (node) => {
+    if (hasCodeBlock) return false;
+    if (node.type.name === 'codeBlock') {
+      hasCodeBlock = true;
+      return false;
+    }
+    return true;
+  });
+
+  return hasCodeBlock;
 }
