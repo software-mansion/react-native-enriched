@@ -93,7 +93,7 @@ export function setLink(
 }
 
 // We use this function instead of relying on editor.isActive('...') because it
-// checks the current selection, not start and end passed by user
+// checks the current selection, not from and to passed by user
 function isRangeLinkBlocked(editor: Editor, from: number, to: number): boolean {
   const { doc, schema } = editor.state;
 
