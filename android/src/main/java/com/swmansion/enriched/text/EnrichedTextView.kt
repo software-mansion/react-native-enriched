@@ -44,6 +44,8 @@ class EnrichedTextView : AppCompatTextView {
   // setText with the same instance and force the TextView to rebuild its layout.
   private var parsedText: CharSequence? = null
 
+  var useHtmlNormalizer = false
+
   constructor(context: Context) : super(context) {
     prepareComponent()
   }
@@ -159,10 +161,18 @@ class EnrichedTextView : AppCompatTextView {
         return parsed.trimEnd('\n')
       } catch (e: Exception) {
         Log.e(TAG, "Error parsing HTML: ${e.message}")
-        return parseNormalizedHtml(text, style)
+        return normalizeHtmlIfNeeded(text, style)
       }
     }
 
+    return normalizeHtmlIfNeeded(text, style)
+  }
+
+  private fun normalizeHtmlIfNeeded(
+    text: String,
+    style: EnrichedTextStyle,
+  ): CharSequence? {
+    if (!useHtmlNormalizer) return null
     return parseNormalizedHtml(text, style)
   }
 

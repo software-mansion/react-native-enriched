@@ -34,6 +34,7 @@ export interface EnrichedTextProps extends ViewProps {
   children: string;
   style?: TextStyle;
   htmlStyle?: EnrichedTextHtmlStyle;
+  useHtmlNormalizer?: boolean;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
   numberOfLines?: number;
   selectable?: boolean;
@@ -49,6 +50,7 @@ export const EnrichedText = ({
   children,
   style,
   htmlStyle: _htmlStyle = {},
+  useHtmlNormalizer = false,
   ellipsizeMode = 'tail',
   numberOfLines = 0,
   selectable = false,
@@ -119,6 +121,7 @@ export const EnrichedText = ({
       text={children}
       style={style}
       htmlStyle={htmlStyle}
+      useHtmlNormalizer={useHtmlNormalizer}
       ellipsizeMode={ellipsizeMode}
       numberOfLines={numberOfLines}
       selectable={selectable}

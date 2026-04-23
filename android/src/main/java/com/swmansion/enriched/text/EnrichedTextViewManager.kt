@@ -121,6 +121,13 @@ class EnrichedTextViewManager :
     view?.setHtmlStyle(value)
   }
 
+  override fun setUseHtmlNormalizer(
+    view: EnrichedTextView?,
+    value: Boolean,
+  ) {
+    view?.useHtmlNormalizer = value
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextView) {
     view.afterUpdateTransaction()
   }
