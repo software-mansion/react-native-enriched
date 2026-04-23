@@ -9,7 +9,7 @@ import { Button } from '../components/Button';
 import { ValueModal } from '../components/ValueModal';
 import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
 
-type EllipsizeMode = 'head' | 'middle' | 'tail';
+type EllipsizeMode = EnrichedTextProps['ellipsizeMode']
 
 interface EnrichedTextScreenProps {
   onSwitch: () => void;
