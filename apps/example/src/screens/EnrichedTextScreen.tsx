@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import {
   EnrichedText,
+  type EnrichedTextProps,
   type OnLinkPressEvent,
   type OnMentionPressEvent,
 } from 'react-native-enriched';
 import { Button } from '../components/Button';
 import { ValueModal } from '../components/ValueModal';
 import { enrichedTextHtmlStyle } from '../constants/editorConfig';
+
+type EllipsizeMode = EnrichedTextProps['ellipsizeMode'];
 
 interface EnrichedTextScreenProps {
   onSwitch: () => void;
@@ -16,6 +19,8 @@ interface EnrichedTextScreenProps {
 export function EnrichedTextScreen({ onSwitch }: EnrichedTextScreenProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
+  const [ellipsizeMode, setEllipsizeMode] = useState<EllipsizeMode>('tail');
+  const [numberOfLines, setNumberOfLines] = useState<number>(0);
 
   const handleSubmit = (value: string) => {
     setHtml(value);
@@ -52,11 +57,63 @@ export function EnrichedTextScreen({ onSwitch }: EnrichedTextScreenProps) {
             testID="set-enriched-text-button"
           />
         </View>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle} testID="ellipsize-current-mode">
+            ellipsizeMode: {ellipsizeMode}
+          </Text>
+          <View style={styles.buttonRow}>
+            <Button
+              title="Head"
+              onPress={() => setEllipsizeMode('head')}
+              style={styles.rowButton}
+              testID="ellipsize-head-button"
+            />
+            <Button
+              title="Middle"
+              onPress={() => setEllipsizeMode('middle')}
+              style={styles.rowButton}
+              testID="ellipsize-middle-button"
+            />
+            <Button
+              title="Tail"
+              onPress={() => setEllipsizeMode('tail')}
+              style={styles.rowButton}
+              testID="ellipsize-tail-button"
+            />
+          </View>
+        </View>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle} testID="number-of-lines-current">
+            numberOfLines: {numberOfLines === 0 ? 'unset' : numberOfLines}
+          </Text>
+          <View style={styles.buttonRow}>
+            <Button
+              title="All"
+              onPress={() => setNumberOfLines(0)}
+              style={styles.rowButton}
+              testID="number-of-lines-all-button"
+            />
+            <Button
+              title="1"
+              onPress={() => setNumberOfLines(1)}
+              style={styles.rowButton}
+              testID="number-of-lines-1-button"
+            />
+            <Button
+              title="2"
+              onPress={() => setNumberOfLines(2)}
+              style={styles.rowButton}
+              testID="number-of-lines-2-button"
+            />
+          </View>
+        </View>
         {html !== null && (
           <View style={styles.rendererContainer} testID="enriched-text">
             <EnrichedText
               style={styles.text}
               htmlStyle={enrichedTextHtmlStyle}
+              numberOfLines={numberOfLines}
+              ellipsizeMode={ellipsizeMode}
               onLinkPress={handleLinkPress}
               onMentionPress={handleMentionPress}
               useHtmlNormalizer
@@ -84,13 +141,26 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 16,
-    paddingTop: 100,
+    paddingTop: 50,
     alignItems: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
     width: '100%',
     gap: 8,
+  },
+  sectionContainer: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'gray',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    alignSelf: 'flex-start',
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'black',
   },
   rowButton: {
     flex: 1,

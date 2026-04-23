@@ -20,7 +20,37 @@
   background-color: var(--eti-code-bg-color);
   color: var(--eti-code-color);
   display: inline;
-  padding: 0.125em 0;
+  padding: 0;
   line-height: inherit;
   vertical-align: baseline;
+}
+
+.eti-editor h1 { font-size: var(--eti-h1-font-size); font-weight: var(--eti-h1-font-weight); margin: 0; line-height: normal; }
+.eti-editor h2 { font-size: var(--eti-h2-font-size); font-weight: var(--eti-h2-font-weight); margin: 0; line-height: normal; }
+.eti-editor h3 { font-size: var(--eti-h3-font-size); font-weight: var(--eti-h3-font-weight); margin: 0; line-height: normal; }
+.eti-editor h4 { font-size: var(--eti-h4-font-size); font-weight: var(--eti-h4-font-weight); margin: 0; line-height: normal; }
+.eti-editor h5 { font-size: var(--eti-h5-font-size); font-weight: var(--eti-h5-font-weight); margin: 0; line-height: normal; }
+.eti-editor h6 { font-size: var(--eti-h6-font-size); font-weight: var(--eti-h6-font-weight); margin: 0; line-height: normal; }
+
+.eti-editor blockquote {
+  border-left: var(--eti-blockquote-border-width) solid var(--eti-blockquote-border-color);
+  padding-left: var(--eti-blockquote-gap-width);
+  margin: 0;
+  color: var(--eti-blockquote-color);
+}
+
+.eti-editor blockquote p {
+  margin: 0;
+}
+
+.eti-editor codeblock {
+  display: block;
+  font-family: monospace;
+  background-color: var(--eti-codeblock-bg-color);
+  color: var(--eti-codeblock-color);
+  border-radius: var(--eti-codeblock-border-radius);
+}
+
+.eti-editor codeblock p {
+  margin: 0;
 }

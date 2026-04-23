@@ -15,7 +15,8 @@ appId: swmansion.enriched.example
       VALUE: '<html><p><a href="https://www.google.com">Link</a></p></html>'
 
 - tapOn:
-    text: 'Link'
+    id: 'enriched-text'
+    point: '5%,50%'
 
 - runFlow:
     file: '../subflows/capture_or_assert_screenshot.yaml'

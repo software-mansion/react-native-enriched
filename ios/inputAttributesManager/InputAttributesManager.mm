@@ -25,6 +25,9 @@
 
   return self;
 }
+- (NSSet<NSString *> *)customAttributesKeys {
+  return _customAttributesKeys;
+}
 
 - (void)addDirtyRange:(NSRange)range {
   [_dirtyRanges addObject:[NSValue valueWithRange:range]];

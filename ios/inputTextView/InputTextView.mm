@@ -87,7 +87,13 @@
           [type isEqual:UTTypePNG.identifier] ||
           [type isEqual:UTTypeHEIC.identifier] ||
           [type isEqual:UTTypeTIFF.identifier]) {
-        imageData = [self getDataForImageItem:item[type] type:type];
+        id value = item[type];
+        if ([value isKindOfClass:[NSData class]]) {
+          // raw bytes available — no re-encoding needed
+          imageData = (NSData *)value;
+        } else if ([value isKindOfClass:[UIImage class]]) {
+          imageData = [self getDataForImageItem:(UIImage *)value type:type];
+        }
       } else if ([type isEqual:UTTypeWebP.identifier] ||
                  [type isEqual:UTTypeGIF.identifier]) {
         // webp and gifs: read raw bytes directly — no re-encoding needed
@@ -184,9 +190,7 @@
   }
 }
 
-- (NSData *)getDataForImageItem:(NSData *)imageData type:(NSString *)type {
-  UIImage *image = (UIImage *)imageData;
-
+- (NSData *)getDataForImageItem:(UIImage *)image type:(NSString *)type {
   if ([type isEqual:UTTypePNG.identifier]) {
     return UIImagePNGRepresentation(image);
   } else if ([type isEqual:UTTypeHEIC.identifier]) {

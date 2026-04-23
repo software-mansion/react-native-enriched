@@ -4097,6 +4097,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-blockquote@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-blockquote@npm:3.20.4"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+  checksum: 10c0/c29bef4eedaec8735a2a8d1b7f6ff811d2115bf51f8c58305323ed5190538c18393d58e4e4afcaacdbcc704310f1dc5c7ae974355dc5e5b83769a8f854b88d64
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-bold@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-bold@npm:3.20.4"
@@ -4144,6 +4153,15 @@ __metadata:
     "@tiptap/core": ^3.20.4
     "@tiptap/pm": ^3.20.4
   checksum: 10c0/a05e72d9510a26b71abc51f33d8ada08532cb67b59d0daa5eb402bef23c3dc7e7669692cd07d4fe9ec38055234c09aa45171e474a2e5c0ab0770882513d17a1a
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-heading@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-heading@npm:3.20.4"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+  checksum: 10c0/f75a3622699ed634a6d18527f6b2406e0f664ad395644c6993b3be90320ffdbbaaa97505991056ae07a3918fa7ce35c61827e4293637fb7e4358101377704280
   languageName: node
   linkType: hard
 
@@ -12622,9 +12640,11 @@ __metadata:
     "@react-native/eslint-config": "npm:^0.81.0"
     "@release-it/conventional-changelog": "npm:^9.0.2"
     "@tiptap/core": "npm:3.20.4"
+    "@tiptap/extension-blockquote": "npm:3.20.4"
     "@tiptap/extension-bold": "npm:3.20.4"
     "@tiptap/extension-code": "npm:3.20.4"
     "@tiptap/extension-document": "npm:3.20.4"
+    "@tiptap/extension-heading": "npm:3.20.4"
     "@tiptap/extension-italic": "npm:3.20.4"
     "@tiptap/extension-paragraph": "npm:3.20.4"
     "@tiptap/extension-strike": "npm:3.20.4"

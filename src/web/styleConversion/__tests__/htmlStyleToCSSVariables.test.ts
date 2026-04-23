@@ -83,4 +83,63 @@ describe('htmlStyleToCSSVariables', () => {
       expect(htmlStyleToCSSVariables({ code })).toEqual(expected);
     });
   });
+
+  describe('heading styles', () => {
+    const cases = [
+      [
+        { h1: { fontSize: 24, bold: true } },
+        {
+          '--eti-h1-font-size': '24px',
+          '--eti-h1-font-weight': 'bold',
+        },
+      ],
+      [
+        { h2: { fontSize: 20, bold: false } },
+        {
+          '--eti-h2-font-size': '20px',
+          '--eti-h2-font-weight': 'normal',
+        },
+      ],
+      [{ h3: { fontSize: 18 } }, { '--eti-h3-font-size': '18px' }],
+      [{}, {}],
+    ] as Array<[HtmlStyle, CSSProperties]>;
+
+    it.each(cases)('%j → %j', (input, expected) => {
+      expect(htmlStyleToCSSVariables(input)).toEqual(expected);
+    });
+  });
+
+  it('maps blockquote styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        blockquote: {
+          borderColor: '#ccc',
+          borderWidth: 3,
+          gapWidth: 12,
+          color: '#444',
+        },
+      })
+    ).toEqual({
+      '--eti-blockquote-border-color': '#ccc',
+      '--eti-blockquote-border-width': '3px',
+      '--eti-blockquote-gap-width': '12px',
+      '--eti-blockquote-color': '#444',
+    } as CSSProperties);
+  });
+
+  it('maps codeblock styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        codeblock: {
+          backgroundColor: '#1e1e1e',
+          color: '#d4d4d4',
+          borderRadius: 8,
+        },
+      })
+    ).toEqual({
+      '--eti-codeblock-bg-color': '#1e1e1e',
+      '--eti-codeblock-color': '#d4d4d4',
+      '--eti-codeblock-border-radius': '8px',
+    } as CSSProperties);
+  });
 });
