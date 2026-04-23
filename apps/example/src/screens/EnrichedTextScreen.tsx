@@ -7,7 +7,7 @@ import {
 } from 'react-native-enriched';
 import { Button } from '../components/Button';
 import { ValueModal } from '../components/ValueModal';
-import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
+import { enrichedTextHtmlStyle } from '../constants/editorConfig';
 
 interface EnrichedTextScreenProps {
   onSwitch: () => void;

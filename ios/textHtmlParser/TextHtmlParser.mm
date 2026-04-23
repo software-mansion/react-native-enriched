@@ -8,9 +8,6 @@
 #import "ZeroWidthSpaceUtils.h"
 #import <React/RCTLog.h>
 
-@interface TextHtmlParser ()
-@end
-
 @implementation TextHtmlParser
 
 - (instancetype)initWithView:(EnrichedTextView *)view {

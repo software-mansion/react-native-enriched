@@ -1,4 +1,5 @@
 #import "EnrichedTextTouchHandler.h"
+#import "ColorExtension.h"
 #import "EnrichedTextView.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -113,7 +114,8 @@
       newAttrs[NSStrikethroughColorAttributeName] = color;
     }
     if (bgColor) {
-      newAttrs[NSBackgroundColorAttributeName] = bgColor;
+      newAttrs[NSBackgroundColorAttributeName] =
+          [bgColor colorWithAlphaIfNotTransparent:0.4];
     }
 
     [self.view.textView.textStorage addAttributes:newAttrs range:_activeRange];

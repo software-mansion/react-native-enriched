@@ -4,7 +4,7 @@ import {
   type OnLinkPressEvent,
   type OnMentionPressEvent,
 } from 'react-native-enriched';
-import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
+import { enrichedTextHtmlStyle } from '../constants/editorConfig';
 
 interface TextRendererProps {
   nodes: Array<string>;
