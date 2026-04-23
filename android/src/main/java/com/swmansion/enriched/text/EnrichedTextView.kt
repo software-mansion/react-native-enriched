@@ -6,8 +6,10 @@ import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
 import android.text.TextUtils
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReactContext
@@ -19,6 +21,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.text.spans.EnrichedTextImageSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
@@ -73,19 +76,47 @@ class EnrichedTextView : AppCompatTextView {
     if (!valueDirty) return
 
     valueDirty = false
-    val isHtml = text.startsWith("<html>") && text.endsWith("</html>")
-    if (!isHtml) {
+
+    val parsed = parseText(text, style)
+    if (parsed != null) {
+      setText(parsed, BufferType.SPANNABLE)
+      observeAsyncImages()
+    } else {
       this.text = text
-      return
+    }
+  }
+
+  private fun parseText(
+    text: String,
+    style: EnrichedTextStyle,
+  ): CharSequence? {
+    val isInternalHtml = text.startsWith("<html>") && text.endsWith("</html>")
+
+    if (isInternalHtml) {
+      try {
+        val parsed = EnrichedParser.fromHtml(text, style, spannableFactory)
+        return parsed.trimEnd('\n')
+      } catch (e: Exception) {
+        Log.e(TAG, "Error parsing HTML: ${e.message}")
+        return parseNormalizedHtml(text, style)
+      }
     }
 
-    try {
-      val parsed = EnrichedParser.fromHtml(text, style, spannableFactory)
-      val withoutLastNewLine = parsed.trimEnd('\n')
-      setText(withoutLastNewLine, BufferType.SPANNABLE)
-      observeAsyncImages()
+    return parseNormalizedHtml(text, style)
+  }
+
+  private fun parseNormalizedHtml(
+    text: String,
+    style: EnrichedTextStyle,
+  ): CharSequence? {
+    val normalized = GumboNormalizer.normalizeHtml(text) ?: return null
+
+    return try {
+      val parsed: Spanned = EnrichedParser.fromHtml(normalized, style, spannableFactory)
+      parsed.trimEnd('\n')
     } catch (e: Exception) {
-      this.text = text
+      Log.e(TAG, "Error parsing normalized HTML: ${e.message}")
+      null
     }
   }
 
@@ -208,5 +239,9 @@ class EnrichedTextView : AppCompatTextView {
   fun afterUpdateTransaction() {
     updateTypeface()
     updateValue()
+  }
+
+  companion object {
+    private const val TAG = "EnrichedTextView"
   }
 }
