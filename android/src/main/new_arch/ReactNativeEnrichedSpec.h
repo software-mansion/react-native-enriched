@@ -4,6 +4,7 @@
 #include <ReactCommon/TurboModule.h>
 #include <jsi/jsi.h>
 
+#include <react/renderer/components/ReactNativeEnrichedSpec/EnrichedTextComponentDescriptor.h>
 #include <react/renderer/components/ReactNativeEnrichedSpec/EnrichedTextInputComponentDescriptor.h>
 
 namespace facebook::react {

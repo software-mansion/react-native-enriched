@@ -1,4 +1,5 @@
 export { EnrichedTextInput } from './native/EnrichedTextInput';
+export * from './EnrichedText';
 export type {
   EnrichedTextInputProps,
   OnChangeTextEvent,
@@ -17,4 +18,7 @@ export type {
   EnrichedTextInputInstance,
   ContextMenuItem,
   OnChangeMentionEvent,
+  EnrichedTextHtmlStyle,
+  OnMentionPressEvent,
+  OnLinkPressEvent,
 } from './types';
