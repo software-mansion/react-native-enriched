@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import {
   EnrichedText,
+  type EnrichedTextProps,
   type OnLinkPressEvent,
   type OnMentionPressEvent,
 } from 'react-native-enriched';
@@ -9,7 +10,7 @@ import { Button } from '../components/Button';
 import { ValueModal } from '../components/ValueModal';
 import { enrichedTextHtmlStyle } from '../constants/htmlStyle';
 
-type EllipsizeMode = EnrichedTextProps['ellipsizeMode']
+type EllipsizeMode = EnrichedTextProps['ellipsizeMode'];
 
 interface EnrichedTextScreenProps {
   onSwitch: () => void;
