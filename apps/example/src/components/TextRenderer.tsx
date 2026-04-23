@@ -35,6 +35,7 @@ export const TextRenderer = ({ nodes }: TextRendererProps) => {
           htmlStyle={enrichedTextHtmlStyle}
           onLinkPress={handleLinkPress}
           onMentionPress={handleMentionPress}
+          useHtmlNormalizer
         >
           {node}
         </EnrichedText>

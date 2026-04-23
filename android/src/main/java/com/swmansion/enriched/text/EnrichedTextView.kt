@@ -31,6 +31,7 @@ class EnrichedTextView : AppCompatTextView {
   private var valueDirty = false
   private var value: String? = null
   private var typefaceDirty = false
+  var useHtmlNormalizer = false
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
@@ -98,10 +99,18 @@ class EnrichedTextView : AppCompatTextView {
         return parsed.trimEnd('\n')
       } catch (e: Exception) {
         Log.e(TAG, "Error parsing HTML: ${e.message}")
-        return parseNormalizedHtml(text, style)
+        return normalizeHtmlIfNeeded(text, style)
       }
     }
 
+    return normalizeHtmlIfNeeded(text, style)
+  }
+
+  private fun normalizeHtmlIfNeeded(
+    text: String,
+    style: EnrichedTextStyle,
+  ): CharSequence? {
+    if (!useHtmlNormalizer) return null
     return parseNormalizedHtml(text, style)
   }
 
