@@ -25,6 +25,7 @@ import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import { useOnChangeState } from './useOnChangeState';
+import { useOnLinkDetected } from './useOnLinkDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
@@ -71,6 +72,7 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
+  onLinkDetected,
   htmlStyle,
 }: EnrichedTextInputWebProps) => {
   const tiptapContent =
@@ -156,6 +158,7 @@ export const EnrichedTextInput = ({
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
+  useOnLinkDetected(editor, onLinkDetected);
 
   useImperativeHandle(
     ref,
