@@ -199,6 +199,7 @@ export const EnrichedTextInput = ({
       measureInWindow: () => {},
       measureLayout: () => {},
       setNativeProps: () => {},
+      insertValue: () => {},
     })
   );
 

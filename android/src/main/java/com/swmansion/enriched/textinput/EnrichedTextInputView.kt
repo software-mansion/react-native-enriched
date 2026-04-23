@@ -436,6 +436,39 @@ class EnrichedTextInputView :
     setSelection(actualStart, actualEnd)
   }
 
+  fun insertValue(
+    value: String,
+    start: Int,
+    end: Int,
+  ) {
+    val currentText = text as Editable
+    val textLength = currentText.length
+
+    if (textLength == 0) {
+      setValue(value)
+      return
+    }
+
+    val actualStart = getActualIndex(start)
+    val actualEnd = getActualIndex(end)
+
+    // Use coerceIn to ensure indices are within [0, textLength] and that start <= end
+    val safeStart = actualStart.coerceIn(0, textLength)
+    val safeEnd = actualEnd.coerceIn(safeStart, textLength)
+
+    runAsATransaction {
+      val newText = parseText(value) as Spannable
+
+      val finalText = currentText.mergeSpannables(safeStart, safeEnd, newText)
+      setValue(finalText, false)
+
+      // replacement-safe: oldLength - removed + inserted
+      val insertedLength = finalText.length - (textLength - (safeEnd - safeStart))
+      val insertedEnd = (safeStart + insertedLength).coerceIn(0, finalText.length)
+      setSelection(insertedEnd)
+    }
+  }
+
   // Helper: Walks through the string skipping ZWSPs to find the Nth visible character
   private fun getActualIndex(visibleIndex: Int): Int {
     val currentText = text as Spannable
