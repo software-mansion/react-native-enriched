@@ -202,4 +202,28 @@ test.describe('test-links onLinkDetected', () => {
       .poll(async () => getOnLinkDetectedPayload(page))
       .toContain('"text":"Example"');
   });
+
+  test('emits empty text and url with cursor native positions when selection leaves a link', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await setTestLinksEditorHtml(
+      page,
+      `<html><p><a href="https://example.com">Example</a></p></html>`
+    );
+
+    const editor = page.locator(sel.editorInner);
+    await editor.click();
+    await editor.press('End');
+    await editor.press('Enter', { delay: 50 });
+
+    await expect
+      .poll(async () => JSON.parse(await getOnLinkDetectedPayload(page)) as any)
+      .toEqual({
+        text: '',
+        url: '',
+        start: 8,
+        end: 8,
+      });
+  });
 });

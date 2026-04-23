@@ -9,6 +9,7 @@ export const useOnLinkDetected = (
   onLinkDetected?: (e: OnLinkDetected) => void
 ) => {
   const lastEmittedRef = useRef<OnLinkDetected | null>(null);
+  const wasInLinkRef = useRef(false);
 
   useEffect(() => {
     if (!editor || !onLinkDetected) return;
@@ -18,10 +19,20 @@ export const useOnLinkDetected = (
       const linkType = state.schema.marks.link;
       if (!linkType) return;
 
+      const { from: selFrom, to: selTo } = state.selection;
       const $pos = state.selection.$from;
       const range = getMarkRange($pos, linkType);
 
       if (!range) {
+        if (wasInLinkRef.current) {
+          wasInLinkRef.current = false;
+          onLinkDetected({
+            text: '',
+            url: '',
+            start: tiptapPosToNativePos(state.doc, selFrom),
+            end: tiptapPosToNativePos(state.doc, selTo),
+          });
+        }
         lastEmittedRef.current = null;
         return;
       }
@@ -31,9 +42,12 @@ export const useOnLinkDetected = (
       )?.mark;
 
       if (!linkMark) {
+        wasInLinkRef.current = false;
         lastEmittedRef.current = null;
         return;
       }
+
+      wasInLinkRef.current = true;
 
       const { from, to } = range;
       const url = (linkMark.attrs.href as string | undefined) ?? '';
@@ -62,6 +76,7 @@ export const useOnLinkDetected = (
     editor.on('transaction', handleUpdate);
 
     return () => {
+      wasInLinkRef.current = false;
       editor.off('transaction', handleUpdate);
     };
   }, [editor, onLinkDetected]);
