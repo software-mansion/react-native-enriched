@@ -57,13 +57,6 @@ export const EnrichedLink = Link.extend({
   },
 });
 
-export function removeLink(editor: Editor, start: number, end: number) {
-  const doc = editor.state.doc;
-  const from = nativePosToTiptapPos(doc, start);
-  const to = nativePosToTiptapPos(doc, end);
-  editor.chain().focus().setTextSelection({ from, to }).unsetLink().run();
-}
-
 export function setLink(
   editor: Editor,
   start: number,

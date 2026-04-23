@@ -44,7 +44,7 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
-import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
+import { EnrichedLink, setLink } from './formats/EnrichedLink';
 import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
@@ -195,8 +195,7 @@ export const EnrichedTextInput = ({
       toggleCheckboxList: () => {},
       setLink: (start: number, end: number, text: string, url: string) =>
         setLink(editor, start, end, text, url),
-      removeLink: (start: number, end: number) =>
-        removeLink(editor, start, end),
+      removeLink: () => {},
       setImage: () => {},
       startMention: () => {},
       setMention: () => {},
