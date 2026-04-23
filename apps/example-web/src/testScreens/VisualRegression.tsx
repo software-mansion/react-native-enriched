@@ -80,7 +80,7 @@ export function VisualRegression() {
         />
       </div>
 
-      <Toolbar editorRef={ref} state={editorState} onOpenLinkModal={() => {}} />
+      <Toolbar editorRef={ref} state={editorState} />
 
       <div style={styles.controlsContainer}>
         <label
