@@ -655,13 +655,27 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     }
   }
 
-  CGRect boundingBox =
-      [currentStr boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                               options:NSStringDrawingUsesLineFragmentOrigin |
-                                       NSStringDrawingUsesFontLeading
-                               context:nullptr];
+  // Use TextKit measurement so height respects:
+  // - maximumNumberOfLines / lineBreakMode
+  // - varying line heights (e.g. headings)
+  NSTextStorage *measurementStorage =
+      [[NSTextStorage alloc] initWithAttributedString:currentStr];
+  NSLayoutManager *measurementLayoutManager = [[NSLayoutManager alloc] init];
+  NSTextContainer *measurementContainer =
+      [[NSTextContainer alloc] initWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)];
+  measurementContainer.lineFragmentPadding = 0;
+  measurementContainer.maximumNumberOfLines =
+      textView.textContainer.maximumNumberOfLines;
+  measurementContainer.lineBreakMode = textView.textContainer.lineBreakMode;
+  [measurementLayoutManager addTextContainer:measurementContainer];
+  [measurementStorage addLayoutManager:measurementLayoutManager];
+  [measurementLayoutManager ensureLayoutForTextContainer:measurementContainer];
 
-  return CGSizeMake(maxWidth, ceil(boundingBox.size.height));
+  CGRect usedRect =
+      [measurementLayoutManager usedRectForTextContainer:measurementContainer];
+  CGFloat measuredHeight = ceil(usedRect.size.height);
+
+  return CGSizeMake(maxWidth, measuredHeight);
 }
 
 - (void)updateState:(State::Shared const &)state
