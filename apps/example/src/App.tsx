@@ -1,13 +1,25 @@
 import { useState } from 'react';
 import { DevScreen } from './screens/DevScreen';
 import { TestScreen } from './screens/TestScreen';
+import { EnrichedTextScreen } from './screens/EnrichedTextScreen';
+
+type Screen = 'dev' | 'test' | 'enrichedText';
 
 export default function App() {
-  const [isTestScreen, setIsTestScreen] = useState(false);
+  const [screen, setScreen] = useState<Screen>('dev');
 
-  if (isTestScreen) {
-    return <TestScreen onSwitch={() => setIsTestScreen(false)} />;
+  if (screen === 'test') {
+    return (
+      <TestScreen
+        onSwitch={() => setScreen('dev')}
+        onSwitchEnrichedText={() => setScreen('enrichedText')}
+      />
+    );
   }
 
-  return <DevScreen onSwitch={() => setIsTestScreen(true)} />;
+  if (screen === 'enrichedText') {
+    return <EnrichedTextScreen onSwitch={() => setScreen('test')} />;
+  }
+
+  return <DevScreen onSwitch={() => setScreen('test')} />;
 }

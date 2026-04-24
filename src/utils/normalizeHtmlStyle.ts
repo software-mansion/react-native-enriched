@@ -1,7 +1,17 @@
 import { type ColorValue, processColor } from 'react-native';
 import type { HtmlStyleInternal } from '../spec/EnrichedTextInputNativeComponent';
-import type { HtmlStyle, MentionStyleProperties } from '../types';
-import { DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
+import type {
+  EnrichedTextHtmlStyle,
+  HtmlStyle,
+  MentionStyleProperties,
+} from '../types';
+import type { EnrichedTextHtmlStyleInternal } from '../spec/EnrichedTextNativeComponent';
+
+const MENTION_DEFAULT_KEY = '_default';
+import {
+  DEFAULT_HTML_STYLE,
+  DEFAULT_ENRICHED_TEXT_STYLE,
+} from './defaultHtmlStyle';
 
 const isMentionStyleRecord = (
   mentionStyle: HtmlStyle['mention']
@@ -23,6 +33,22 @@ const isMentionStyleRecord = (
     );
   }
   return false;
+};
+
+const parseOlStyles = (style: HtmlStyle) => {
+  let markerFontWeight: string | undefined;
+  if (style.ol?.markerFontWeight) {
+    if (typeof style.ol?.markerFontWeight === 'number') {
+      markerFontWeight = String(style.ol?.markerFontWeight);
+    } else if (typeof style.ol?.markerFontWeight === 'string') {
+      markerFontWeight = style.ol?.markerFontWeight;
+    }
+  }
+
+  return {
+    ...style.ol,
+    markerFontWeight: markerFontWeight,
+  };
 };
 
 const convertToHtmlStyleInternal = (
@@ -61,8 +87,48 @@ const convertToHtmlStyleInternal = (
   };
 };
 
-const assignDefaultValues = (style: HtmlStyleInternal): HtmlStyleInternal => {
-  const merged: Record<string, any> = { ...DEFAULT_HTML_STYLE };
+const convertToEnrichedTextHtmlStyleInternal = (
+  style: EnrichedTextHtmlStyle
+): EnrichedTextHtmlStyleInternal => {
+  const mentionStyles: Record<string, MentionStyleProperties> = {};
+
+  const mention = style.mention;
+  if (mention && typeof mention === 'object' && !Array.isArray(mention)) {
+    for (const key of Object.keys(mention)) {
+      const value = (mention as Record<string, unknown>)[key];
+
+      if (typeof value === 'object' && value !== null) {
+        mentionStyles[key] = {
+          ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
+          ...(value as MentionStyleProperties),
+        };
+      } else {
+        mentionStyles[MENTION_DEFAULT_KEY] = {
+          ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
+          ...(mention as MentionStyleProperties),
+        };
+      }
+    }
+  }
+
+  if (mentionStyles[MENTION_DEFAULT_KEY] === undefined) {
+    mentionStyles[MENTION_DEFAULT_KEY] = {
+      ...DEFAULT_ENRICHED_TEXT_STYLE.mention,
+    };
+  }
+
+  return {
+    ...style,
+    mention: mentionStyles,
+    ol: parseOlStyles(style),
+  };
+};
+
+const assignDefaultValues = <T extends Record<string, any>>(
+  style: T,
+  base: Record<string, any>
+): HtmlStyleInternal => {
+  const merged: Record<string, any> = { ...base };
 
   for (const key in style) {
     if (key === 'mention') {
@@ -74,12 +140,12 @@ const assignDefaultValues = (style: HtmlStyleInternal): HtmlStyleInternal => {
     }
 
     merged[key] = {
-      ...DEFAULT_HTML_STYLE[key as keyof HtmlStyle],
-      ...(style[key as keyof HtmlStyle] as object),
+      ...(base[key] ?? {}),
+      ...(style[key as keyof typeof style] as object),
     };
   }
 
-  return merged;
+  return merged as HtmlStyleInternal;
 };
 
 const parseStyle = (name: string, value: unknown) => {
@@ -126,6 +192,17 @@ export const normalizeHtmlStyle = (
   mentionIndicators: string[]
 ): HtmlStyleInternal => {
   const converted = convertToHtmlStyleInternal(style, mentionIndicators);
-  const withDefaults = assignDefaultValues(converted);
+  const withDefaults = assignDefaultValues(converted, DEFAULT_HTML_STYLE);
+  return parseColors(withDefaults);
+};
+
+export const normalizeEnrichedTextHtmlStyle = (
+  style: EnrichedTextHtmlStyle
+): EnrichedTextHtmlStyleInternal => {
+  const converted = convertToEnrichedTextHtmlStyleInternal(style);
+  const withDefaults = assignDefaultValues(
+    converted,
+    DEFAULT_ENRICHED_TEXT_STYLE
+  );
   return parseColors(withDefaults);
 };

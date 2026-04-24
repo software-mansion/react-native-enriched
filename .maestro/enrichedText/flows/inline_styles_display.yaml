@@ -1,0 +1,25 @@
+appId: swmansion.enriched.example
+---
+# Validates that inline styles are displayed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <p>Plain text</p>
+          <p><b>Bold</b> <i>Italic</i> <u>Underline</u> <s>Strike</s> <code>Code</code> </p>
+          <p><b><i><u><s>Combined</s></u></i></b></p>
+        </html>
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'inline_styles_display'
