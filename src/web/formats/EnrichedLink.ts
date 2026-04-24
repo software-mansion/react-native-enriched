@@ -6,7 +6,7 @@ import { nativePosToTiptapPos } from '../positionMapping';
 import { isLinkBlocked } from './formatRules';
 
 export const EnrichedLink = Link.extend({
-  excludes: 'code',
+  excludes: 'link code',
 
   renderHTML({ HTMLAttributes }) {
     return ['a', { href: HTMLAttributes.href }, 0];
