@@ -1,5 +1,6 @@
 #import "InputTextView.h"
 #import "EnrichedTextInputView.h"
+#import "HtmlParser.h"
 #import "StringExtension.h"
 #import "TextInsertionUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -29,8 +30,9 @@
   NSString *fixedPlainText =
       [plainText stringByReplacingOccurrencesOfString:@"\u200B" withString:@""];
 
-  NSString *parsedHtml = [typedInput->parser
-      parseToHtmlFromRange:typedInput->textView.selectedRange];
+  NSString *parsedHtml =
+      [HtmlParser parseToHtmlFromRange:typedInput->textView.selectedRange
+                                  host:typedInput];
 
   NSMutableAttributedString *attrStr = [[typedInput->textView.textStorage
       attributedSubstringFromRange:typedInput->textView.selectedRange]

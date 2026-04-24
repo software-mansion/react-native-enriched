@@ -68,6 +68,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   EnrichedTouchableTextView *tv = [[EnrichedTouchableTextView alloc] init];
   _touchHandler = [[EnrichedTextTouchHandler alloc] initWithView:self];
   tv.touchHandler = _touchHandler;
+  tv.host = self;
   textView = tv;
 
   textView.backgroundColor = UIColor.clearColor;
