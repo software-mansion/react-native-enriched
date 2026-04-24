@@ -5,7 +5,7 @@ import { canJoin } from '@tiptap/pm/transform';
 const MERGEABLE_TYPE_NAMES = new Set([
   'blockquote',
   'codeBlock',
-  'bulletList',
+  'unorderedList',
   'orderedList',
 ]);
 

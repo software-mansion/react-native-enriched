@@ -77,7 +77,7 @@ function buildState(
     blockQuote: paragraphFormat(editor.isActive('blockquote')),
     codeBlock: paragraphFormat(editor.isActive('codeBlock')),
     orderedList: paragraphFormat(editor.isActive('orderedList')),
-    unorderedList: paragraphFormat(editor.isActive('bulletList')),
+    unorderedList: paragraphFormat(editor.isActive('unorderedList')),
     checkboxList: paragraphFormat(false),
     link: { isActive: false, isConflicting: false, isBlocking: false },
     mention: { isActive: false, isConflicting: false, isBlocking: false },

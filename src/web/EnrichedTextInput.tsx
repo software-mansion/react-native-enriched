@@ -195,7 +195,7 @@ export const EnrichedTextInput = ({
       toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
       toggleOrderedList: () => runFocused(editor, (c) => c.toggleOrderedList()),
       toggleUnorderedList: () =>
-        runFocused(editor, (c) => c.toggleBulletList()),
+        runFocused(editor, (c) => c.toggleUnorderedList()),
       toggleCheckboxList: () => {},
       setLink: () => {},
       removeLink: () => {},
