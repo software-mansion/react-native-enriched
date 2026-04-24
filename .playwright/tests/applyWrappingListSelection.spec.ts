@@ -49,8 +49,8 @@ const FIVE_PARAS_HTML = [
 const ROUND_TRIP_SNAPSHOT = 'list-wrap-selection-round-trip.png';
 
 const LIST_VARIANTS = [
-  { label: 'bullet', toolbarTestId: 'unorderedList' as const },
-  { label: 'ordered', toolbarTestId: 'orderedList' as const },
+  { label: 'bullet', toolbarTestId: 'unorderedList' },
+  { label: 'ordered', toolbarTestId: 'orderedList' },
 ] as const;
 
 for (const { label, toolbarTestId } of LIST_VARIANTS) {

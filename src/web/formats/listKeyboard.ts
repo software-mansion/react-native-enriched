@@ -19,7 +19,7 @@ export function listEnter(editor: Editor, itemName: string): boolean {
   }
 
   const { selection } = editor.state;
-  if (!isTextSelection(selection) || !selection.empty) {
+  if (!selection.empty || !isTextSelection(selection)) {
     return false;
   }
 
@@ -30,6 +30,9 @@ export function listEnter(editor: Editor, itemName: string): boolean {
 
   // Flat lists only: list item is always the parent block of the paragraph (depth − 1).
   const itemDepth = $from.depth - 1;
+  if (itemDepth < 1) {
+    return false;
+  }
   const insertPos = $from.after(itemDepth);
 
   return editor

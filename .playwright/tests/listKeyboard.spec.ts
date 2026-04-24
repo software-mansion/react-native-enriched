@@ -13,20 +13,23 @@ function countOpeningTag(html: string, tagName: string): number {
   return (html.match(re) ?? []).length;
 }
 
+const SCREENSHOT_STABILIZE_MS = 200;
+const KEY_ACTION_DELAY = 60;
+
 const LIST_VARIANTS = [
   {
     label: 'bullet',
     wrap: (inner: string) => `<html><ul>${inner}</ul></html>`,
     wrapperSelector: '.eti-editor ul',
-    toolbarTestId: 'unorderedList' as const,
-    listTagName: 'ul' as const,
+    toolbarTestId: 'unorderedList',
+    listTagName: 'ul',
   },
   {
     label: 'ordered',
     wrap: (inner: string) => `<html><ol>${inner}</ol></html>`,
     wrapperSelector: '.eti-editor ol',
-    toolbarTestId: 'orderedList' as const,
-    listTagName: 'ol' as const,
+    toolbarTestId: 'orderedList',
+    listTagName: 'ol',
   },
 ] as const;
 
@@ -53,12 +56,11 @@ for (const {
       await items.first().click();
       await editor.press('End');
 
-      const enters = 3;
-      for (let i = 0; i < enters; i++) {
-        await editor.press('Enter', { delay: 60 });
+      for (let i = 0; i < 3; i++) {
+        await editor.press('Enter', { delay: KEY_ACTION_DELAY });
       }
 
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(SCREENSHOT_STABILIZE_MS);
       await expect(editor).toHaveScreenshot(`list-keyboard-enter-${label}.png`);
     });
 
@@ -78,19 +80,19 @@ for (const {
       await secondLine.click();
       await editor.press('End');
       for (let i = 0; i < 'second'.length; i++) {
-        await editor.press('ArrowLeft', { delay: 60 });
+        await editor.press('ArrowLeft', { delay: KEY_ACTION_DELAY });
       }
 
-      await editor.press('Backspace', { delay: 60 });
+      await editor.press('Backspace', { delay: KEY_ACTION_DELAY });
 
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(SCREENSHOT_STABILIZE_MS);
       await expect(editor).toHaveScreenshot(
         `list-keyboard-backspace-after-lift-${label}.png`
       );
 
-      await editor.press('Backspace', { delay: 60 });
+      await editor.press('Backspace', { delay: KEY_ACTION_DELAY });
 
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(SCREENSHOT_STABILIZE_MS);
       await expect(editor).toHaveScreenshot(
         `list-keyboard-backspace-after-merge-${label}.png`
       );

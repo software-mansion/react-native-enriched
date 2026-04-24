@@ -10,25 +10,25 @@ const CASES = [
   {
     name: 'ul under ul',
     html: '<html><ul><li>item<ul><li>nested</li></ul></li></ul></html>',
-    markers: ['item', 'nested'] as const,
+    markers: ['item', 'nested'],
     screenshot: 'list-nested-html-ul-in-ul.png',
   },
   {
     name: 'ol under ul',
     html: '<html><ul><li>outer<ol><li>nested</li></ol></li></ul></html>',
-    markers: ['outer', 'nested'] as const,
+    markers: ['outer', 'nested'],
     screenshot: 'list-nested-html-ol-in-ul.png',
   },
   {
     name: 'ul under ol',
     html: '<html><ol><li>outer<ul><li>nested</li></ul></li></ol></html>',
-    markers: ['outer', 'nested'] as const,
+    markers: ['outer', 'nested'],
     screenshot: 'list-nested-html-ul-in-ol.png',
   },
   {
     name: 'triple nested ul',
     html: '<html><ul><li>outer<ul><li>nested<ul><li>deep</li></ul></li></ul></ul></html>',
-    markers: ['outer', 'nested', 'deep'] as const,
+    markers: ['outer', 'nested', 'deep'],
     screenshot: 'list-nested-html-triple-nested-ul.png',
   },
 ] as const;
