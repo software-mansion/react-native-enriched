@@ -1,0 +1,27 @@
+appId: swmansion.enriched.example
+---
+# Validates that images inside empty <li></li> elements are parsed and displayed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- runFlow:
+    file: '../subflows/set_editor_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <ul>
+            <li><img src="https://picsum.photos/id/1/200/200" width="80" height="80"/></li>
+            <li>A</li>
+            <li>B</li>
+          </ul>
+        </html>
+
+- tapOn:
+    id: 'size-max-button'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'image_inside_list_parsing'
