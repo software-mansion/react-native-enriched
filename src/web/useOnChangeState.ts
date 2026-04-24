@@ -54,10 +54,7 @@ function buildState(
     };
   }
 
-  function paragraphFormat(
-    isActive: boolean,
-    additionalIsConflicting: boolean = false
-  ) {
+  function paragraphFormat(isActive: boolean, additionalIsConflicting = false) {
     return {
       isActive,
       isConflicting: (!isActive && isAnyBlockActive) || additionalIsConflicting,

@@ -154,9 +154,7 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
     {
       key: 'link',
       label: '🔗',
-      onPress: () => {
-        onOpenLinkModal();
-      },
+      onPress: onOpenLinkModal,
     },
   ] satisfies {
     key: keyof OnChangeStateEvent;
