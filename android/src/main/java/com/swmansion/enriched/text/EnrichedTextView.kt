@@ -1,9 +1,12 @@
 package com.swmansion.enriched.text
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.text.LineBreaker
 import android.os.Build
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
@@ -129,6 +132,31 @@ class EnrichedTextView : AppCompatTextView {
   override fun performClick(): Boolean {
     super.performClick()
     return true
+  }
+
+  override fun onTextContextMenuItem(id: Int): Boolean {
+    when (id) {
+      android.R.id.copy -> {
+        handleCustomCopy()
+        return true
+      }
+    }
+    return super.onTextContextMenuItem(id)
+  }
+
+  private fun handleCustomCopy() {
+    val start = selectionStart
+    val end = selectionEnd
+    val spannable = text as Spannable
+
+    if (start < end) {
+      val selectedText = spannable.subSequence(start, end) as Spannable
+      val selectedHtml = EnrichedParser.toHtml(selectedText)
+
+      val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      clipboard.setPrimaryClip(clip)
+    }
   }
 
   private fun updateValue() {
@@ -317,5 +345,6 @@ class EnrichedTextView : AppCompatTextView {
 
   companion object {
     private const val TAG = "EnrichedTextView"
+    private const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
   }
 }

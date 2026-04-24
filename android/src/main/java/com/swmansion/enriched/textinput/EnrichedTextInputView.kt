@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
@@ -55,7 +54,6 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
