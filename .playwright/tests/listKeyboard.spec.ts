@@ -31,6 +31,14 @@ const LIST_VARIANTS = [
     toolbarTestId: 'orderedList',
     listTagName: 'ol',
   },
+  {
+    label: 'checkbox',
+    wrap: (inner: string) =>
+      `<html><ul data-type="checkbox">${inner}</ul></html>`,
+    wrapperSelector: '.eti-editor ul[data-type="checkboxList"]',
+    toolbarTestId: 'checkboxList',
+    listTagName: 'ul',
+  },
 ] as const;
 
 for (const {
@@ -50,7 +58,7 @@ for (const {
       const wrapper = page.locator(wrapperSelector);
       const items = wrapper.locator('li');
 
-      await setEditorHtml(page, wrap('<li><p>Line</p></li>'));
+      await setEditorHtml(page, wrap('<li>Line</li>'));
 
       await editor.click();
       await items.first().click();
@@ -71,10 +79,7 @@ for (const {
       const wrapper = page.locator(wrapperSelector);
       const lines = wrapper.locator('li');
 
-      await setEditorHtml(
-        page,
-        wrap('<li><p>first</p></li><li><p>second</p></li>')
-      );
+      await setEditorHtml(page, wrap('<li>first</li><li>second</li>'));
 
       const secondLine = lines.nth(1);
       await secondLine.click();
@@ -108,7 +113,7 @@ for (const {
 
       await setEditorHtml(
         page,
-        wrap('<li><p>line1</p></li><li><p>line2</p></li><li><p>line3</p></li>')
+        wrap('<li>line1</li><li>line2</li><li>line3</li>')
       );
 
       await wrapper.locator('li p').nth(1).click();

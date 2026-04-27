@@ -33,7 +33,8 @@ type ToolbarKey =
   | 'blockQuote'
   | 'codeBlock'
   | 'unorderedList'
-  | 'orderedList';
+  | 'orderedList'
+  | 'checkboxList';
 
 test.describe('conflicting block styles (toolbar replaces active block)', () => {
   test.beforeEach(async ({ page }) => {
@@ -146,7 +147,7 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
     },
     {
       name: 'unordered list → h2',
-      html: '<html><ul><li><p>Item</p></li></ul></html>',
+      html: '<html><ul><li>Item></li></ul></html>',
       focusSelector: '.eti-editor ul li p',
       click: 'h2',
       expectTag: 'h2',
@@ -154,11 +155,27 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
     },
     {
       name: 'ordered list → h2',
-      html: '<html><ol><li><p>Item</p></li></ol></html>',
+      html: '<html><ol><li>Item</li></ol></html>',
       focusSelector: '.eti-editor ol li p',
       click: 'h2',
       expectTag: 'h2',
       expectText: 'Item',
+    },
+    {
+      name: 'checkbox list -> h2',
+      html: '<html><ul data-type="checkbox"><li>Item</li></ul></html>',
+      focusSelector: '.eti-editor ul[data-type="checkboxList"] li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+    {
+      name: 'blockquote -> checkbox list',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'checkboxList',
+      expectTag: 'ul data-type="checkbox"',
+      expectText: 'Quote',
     },
   ];
 
