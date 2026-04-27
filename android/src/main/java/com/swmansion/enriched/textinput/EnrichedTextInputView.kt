@@ -331,7 +331,7 @@ class EnrichedTextInputView :
       val selectedHtml = EnrichedParser.toHtml(selectedText)
 
       val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      val clip = ClipData.newHtmlText(EnrichedConstants.CLIPBOARD_TAG, selectedText, selectedHtml)
       clipboard.setPrimaryClip(clip)
     }
   }
@@ -1089,7 +1089,6 @@ class EnrichedTextInputView :
 
   companion object {
     const val TAG = "EnrichedTextInputView"
-    const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
     private const val CONTEXT_MENU_ITEM_ID = 10000
     const val DEFAULT_IME_ACTION_LABEL = "DONE"
   }

@@ -154,7 +154,7 @@ class EnrichedTextView : AppCompatTextView {
       val selectedHtml = EnrichedParser.toHtml(selectedText)
 
       val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      val clip = ClipData.newHtmlText(EnrichedConstants.CLIPBOARD_TAG, selectedText, selectedHtml)
       clipboard.setPrimaryClip(clip)
     }
   }
@@ -345,6 +345,5 @@ class EnrichedTextView : AppCompatTextView {
 
   companion object {
     private const val TAG = "EnrichedTextView"
-    private const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
   }
 }
