@@ -203,7 +203,7 @@ test.describe('test-links onLinkDetected', () => {
       .toContain('"text":"Example"');
   });
 
-  test('emits empty text and url with cursor native positions when selection leaves a link', async ({
+  test('emits empty text and url with when selection leaves a link', async ({
     page,
   }) => {
     await gotoTestLinks(page);
@@ -215,7 +215,7 @@ test.describe('test-links onLinkDetected', () => {
     const editor = page.locator(sel.editorInner);
     await editor.click();
     await editor.press('End');
-    await editor.press('Enter', { delay: 50 });
+    await editor.press('Enter');
 
     await expect
       .poll(async () => JSON.parse(await getOnLinkDetectedPayload(page)) as any)

@@ -1,0 +1,97 @@
+appId: swmansion.enriched.example
+---
+# Validates all ellipsizeMode and numberOfLines combinations.
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: >
+        <html><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p></html>
+
+# numberOfLines: all
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: 'all'
+      NOL_LABEL: 'unset'
+      ELLIPSIZE_MODE: 'head'
+      SCREENSHOT_NAME: 'ellipsize_head_all'
+
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: 'all'
+      NOL_LABEL: 'unset'
+      ELLIPSIZE_MODE: 'middle'
+      SCREENSHOT_NAME: 'ellipsize_middle_all'
+
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: 'all'
+      NOL_LABEL: 'unset'
+      ELLIPSIZE_MODE: 'tail'
+      SCREENSHOT_NAME: 'ellipsize_tail_all'
+
+# numberOfLines: 1
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '1'
+      NOL_LABEL: '1'
+      ELLIPSIZE_MODE: 'head'
+      SCREENSHOT_NAME: 'ellipsize_head_1'
+
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '1'
+      NOL_LABEL: '1'
+      ELLIPSIZE_MODE: 'middle'
+      SCREENSHOT_NAME: 'ellipsize_middle_1'
+
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '1'
+      NOL_LABEL: '1'
+      ELLIPSIZE_MODE: 'tail'
+      SCREENSHOT_NAME: 'ellipsize_tail_1'
+
+# numberOfLines: 2
+# on Android head with numberOfLines > 1 does not work: https://reactnative.dev/docs/text#ellipsizemode
+- runFlow:
+    when:
+      platform: iOS
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '2'
+      NOL_LABEL: '2'
+      ELLIPSIZE_MODE: 'head'
+      SCREENSHOT_NAME: 'ellipsize_head_2'
+
+# on Android middle with numberOfLines > 1 does not work: https://reactnative.dev/docs/text#ellipsizemode
+- runFlow:
+    when:
+      platform: iOS
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '2'
+      NOL_LABEL: '2'
+      ELLIPSIZE_MODE: 'middle'
+      SCREENSHOT_NAME: 'ellipsize_middle_2'
+
+- runFlow:
+    file: '../subflows/run_ellipsize_case.yaml'
+    env:
+      NOL_BUTTON: '2'
+      NOL_LABEL: '2'
+      ELLIPSIZE_MODE: 'tail'
+      SCREENSHOT_NAME: 'ellipsize_tail_2'

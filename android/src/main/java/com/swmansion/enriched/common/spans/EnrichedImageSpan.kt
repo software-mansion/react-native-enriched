@@ -10,16 +10,13 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
 import android.text.Spannable
 import android.text.style.ImageSpan
 import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
-import com.swmansion.enriched.R
 import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ForceRedrawSpan
-import com.swmansion.enriched.common.ResourceManager
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import java.io.File
 
@@ -90,10 +87,10 @@ open class EnrichedImageSpan :
 
   private fun registerDrawableLoadCallback(
     d: AsyncDrawable,
-    text: Editable?,
+    text: Spannable?,
   ) {
     d.onLoaded = onLoaded@{
-      val spannable = text as? Spannable
+      val spannable = text
 
       if (spannable == null) {
         return@onLoaded
@@ -113,7 +110,7 @@ open class EnrichedImageSpan :
     }
   }
 
-  fun observeAsyncDrawableLoaded(text: Editable?) {
+  fun observeAsyncDrawableLoaded(text: Spannable?) {
     val d = drawable
 
     if (d !is AsyncDrawable) {

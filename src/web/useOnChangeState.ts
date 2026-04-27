@@ -54,10 +54,7 @@ function buildState(
     };
   }
 
-  function paragraphFormat(
-    isActive: boolean,
-    additionalIsConflicting: boolean = false
-  ) {
+  function paragraphFormat(isActive: boolean, additionalIsConflicting = false) {
     return {
       isActive,
       isConflicting: (!isActive && isAnyBlockActive) || additionalIsConflicting,
@@ -82,8 +79,8 @@ function buildState(
       editor.isActive('codeBlock'),
       editor.isActive('link')
     ),
-    orderedList: paragraphFormat(false),
-    unorderedList: paragraphFormat(false),
+    orderedList: paragraphFormat(editor.isActive('orderedList')),
+    unorderedList: paragraphFormat(editor.isActive('unorderedList')),
     checkboxList: paragraphFormat(false),
     link: inlineFormat(
       'link',

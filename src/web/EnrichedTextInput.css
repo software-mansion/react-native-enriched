@@ -59,3 +59,67 @@
   color: var(--eti-link-color);
   text-decoration-line: var(--eti-link-text-decoration-line);
 }
+
+.eti-editor ul:not([data-type]) {
+  margin: 0;
+  list-style: none;
+  padding-left: calc(
+    var(--eti-ul-margin-left, 16px) + var(--eti-ul-gap-width, 16px)
+  );
+}
+
+.eti-editor ul:not([data-type]) > li {
+  position: relative;
+}
+
+.eti-editor ul:not([data-type]) > li::before {
+  content: '';
+  position: absolute;
+  left: calc(
+    -1 * var(--eti-ul-gap-width, 16px) - var(--eti-ul-bullet-size, 8px)
+  );
+  top: 0.6em; 
+  @supports (top: 0.5lh) {
+    top: 0.5lh;
+  }
+  transform: translateY(-50%);
+  width: var(--eti-ul-bullet-size, 8px);
+  height: var(--eti-ul-bullet-size, 8px);
+  border-radius: 50%;
+  background-color: var(--eti-ul-bullet-color, currentColor);
+  pointer-events: none;
+}
+
+.eti-editor ol {
+  margin: 0;
+  list-style: none;
+  padding-left: calc(
+    var(--eti-ol-margin-left, 16px) + var(--eti-ol-gap-width, 16px)
+  );
+  counter-reset: eti-ol;
+}
+
+.eti-editor ol > li {
+  position: relative;
+  counter-increment: eti-ol;
+}
+
+.eti-editor ol > li::before {
+  content: counter(eti-ol) '.';
+  position: absolute;
+  left: calc(-1 * var(--eti-ol-gap-width, 16px));
+  top: 0;
+  transform: translateX(-50%);
+  color: var(--eti-ol-marker-color, currentColor);
+  font-weight: var(--eti-ol-marker-font-weight, inherit);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.eti-editor li {
+  margin: 0;
+}
+
+.eti-editor li p {
+  margin: 0;
+}

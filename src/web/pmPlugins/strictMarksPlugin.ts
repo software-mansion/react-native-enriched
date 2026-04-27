@@ -22,7 +22,7 @@ function resolveStrictMarks(
     // Link is non-inclusive: do not carry the link onto text typed after the last
     // linked character (e.g. Space must "exit" the link, matching native).
     const linkType = newState.schema.marks.link;
-    if (linkType && linkType.isInSet(marks)) {
+    if (linkType?.isInSet(marks)) {
       const afterHasLink =
         $from.nodeAfter != null && linkType.isInSet($from.nodeAfter.marks);
       if (!afterHasLink) {

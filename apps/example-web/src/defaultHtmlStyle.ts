@@ -44,4 +44,16 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
     color: 'green',
     textDecorationLine: 'underline',
   },
+  ol: {
+    gapWidth: 16,
+    marginLeft: 24,
+    markerColor: 'navy',
+    markerFontWeight: 'bold',
+  },
+  ul: {
+    bulletColor: 'aquamarine',
+    bulletSize: 8,
+    marginLeft: 24,
+    gapWidth: 16,
+  },
 };

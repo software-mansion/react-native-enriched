@@ -32,6 +32,14 @@ const ETI_CSS_VARS = {
   codeblockBorderRadius: '--eti-codeblock-border-radius',
   linkColor: '--eti-link-color',
   linkTextDecorationLine: '--eti-link-text-decoration-line',
+  ulBulletColor: '--eti-ul-bullet-color',
+  ulBulletSize: '--eti-ul-bullet-size',
+  ulMarginLeft: '--eti-ul-margin-left',
+  ulGapWidth: '--eti-ul-gap-width',
+  olMarginLeft: '--eti-ol-margin-left',
+  olGapWidth: '--eti-ol-gap-width',
+  olMarkerColor: '--eti-ol-marker-color',
+  olMarkerFontWeight: '--eti-ol-marker-font-weight',
 } as const;
 
 function setColorVar(
@@ -101,6 +109,28 @@ function applyLinkVars(
   }
 }
 
+function applyUnorderedListVars(
+  vars: Record<string, string>,
+  ul?: HtmlStyle['ul']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.ulBulletColor, ul?.bulletColor);
+  setPxVar(vars, ETI_CSS_VARS.ulBulletSize, ul?.bulletSize);
+  setPxVar(vars, ETI_CSS_VARS.ulMarginLeft, ul?.marginLeft);
+  setPxVar(vars, ETI_CSS_VARS.ulGapWidth, ul?.gapWidth);
+}
+
+function applyOrderedListVars(
+  vars: Record<string, string>,
+  ol?: HtmlStyle['ol']
+): void {
+  setPxVar(vars, ETI_CSS_VARS.olMarginLeft, ol?.marginLeft);
+  setPxVar(vars, ETI_CSS_VARS.olGapWidth, ol?.gapWidth);
+  setColorVar(vars, ETI_CSS_VARS.olMarkerColor, ol?.markerColor);
+  if (ol?.markerFontWeight != null) {
+    vars[ETI_CSS_VARS.olMarkerFontWeight] = String(ol.markerFontWeight);
+  }
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
@@ -108,5 +138,7 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
   applyLinkVars(vars, htmlStyle?.a);
+  applyUnorderedListVars(vars, htmlStyle?.ul);
+  applyOrderedListVars(vars, htmlStyle?.ol);
   return vars as CSSProperties;
 }

@@ -21,29 +21,29 @@
 - (void)applyStyling:(NSRange)range {
   // we don't want to apply inline code to newline characters, it looks bad
   NSArray *nonNewlineRanges =
-      [RangeUtils getNonNewlineRangesIn:self.input->textView range:range];
+      [RangeUtils getNonNewlineRangesIn:self.host.textView range:range];
 
   for (NSValue *value in nonNewlineRanges) {
     NSRange subRange = [value rangeValue];
 
-    [self.input->textView.textStorage
+    [self.host.textView.textStorage
         addAttribute:NSBackgroundColorAttributeName
-               value:[[self.input->config inlineCodeBgColor]
+               value:[[self.host.config inlineCodeBgColor]
                          colorWithAlphaIfNotTransparent:0.4]
                range:subRange];
-    [self.input->textView.textStorage
+    [self.host.textView.textStorage
         addAttribute:NSForegroundColorAttributeName
-               value:[self.input->config inlineCodeFgColor]
+               value:[self.host.config inlineCodeFgColor]
                range:subRange];
-    [self.input->textView.textStorage
+    [self.host.textView.textStorage
         addAttribute:NSUnderlineColorAttributeName
-               value:[self.input->config inlineCodeFgColor]
+               value:[self.host.config inlineCodeFgColor]
                range:subRange];
-    [self.input->textView.textStorage
+    [self.host.textView.textStorage
         addAttribute:NSStrikethroughColorAttributeName
-               value:[self.input->config inlineCodeFgColor]
+               value:[self.host.config inlineCodeFgColor]
                range:subRange];
-    [self.input->textView.textStorage
+    [self.host.textView.textStorage
         enumerateAttribute:NSFontAttributeName
                    inRange:subRange
                    options:0
@@ -51,9 +51,9 @@
                              BOOL *_Nonnull stop) {
                   UIFont *font = (UIFont *)value;
                   if (font != nullptr) {
-                    UIFont *newFont = [[[self.input->config monospacedFont]
+                    UIFont *newFont = [[[self.host.config monospacedFont]
                         withFontTraits:font] setSize:font.pointSize];
-                    [self.input->textView.textStorage
+                    [self.host.textView.textStorage
                         addAttribute:NSFontAttributeName
                                value:newFont
                                range:fontRange];
