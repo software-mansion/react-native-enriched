@@ -7,6 +7,7 @@ const MERGEABLE_TYPE_NAMES = new Set([
   'codeBlock',
   'unorderedList',
   'orderedList',
+  'taskList',
 ]);
 
 export const MergeAdjacentSameKindBlocksPlugin = Extension.create({

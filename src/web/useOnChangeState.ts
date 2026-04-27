@@ -81,7 +81,7 @@ function buildState(
     ),
     orderedList: paragraphFormat(editor.isActive('orderedList')),
     unorderedList: paragraphFormat(editor.isActive('unorderedList')),
-    checkboxList: paragraphFormat(false),
+    checkboxList: paragraphFormat(editor.isActive('taskList')),
     link: inlineFormat(
       'link',
       editor.isActive('code') ||

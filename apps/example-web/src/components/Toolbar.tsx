@@ -170,6 +170,13 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
         editor?.toggleOrderedList();
       },
     },
+    {
+      key: 'checkboxList',
+      label: '☐',
+      onPress: (editor) => {
+        editor?.toggleCheckboxList(true);
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;

@@ -47,6 +47,8 @@ import { EnrichedLink, setLink } from './formats/EnrichedLink';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
+import { EnrichedTaskItem } from './formats/EnrichedTaskItem';
+import { EnrichedTaskList } from './formats/EnrichedTaskList';
 import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
@@ -110,8 +112,10 @@ export const EnrichedTextInput = ({
         EnrichedBlockquote,
         EnrichedCodeBlock,
         EnrichedListItem,
+        EnrichedTaskItem,
         EnrichedUnorderedList,
         EnrichedOrderedList,
+        EnrichedTaskList,
         StripMarksInCodeBlockPlugin,
         stripBoldInStyledHeadingsPlugin,
         MergeAdjacentSameKindBlocksPlugin,
@@ -196,7 +200,8 @@ export const EnrichedTextInput = ({
       toggleOrderedList: () => runFocused(editor, (c) => c.toggleOrderedList()),
       toggleUnorderedList: () =>
         runFocused(editor, (c) => c.toggleUnorderedList()),
-      toggleCheckboxList: () => {},
+      toggleCheckboxList: (_checked: boolean) =>
+        runFocused(editor, (c) => c.toggleTaskList()),
       setLink: (start: number, end: number, text: string, url: string) =>
         setLink(editor, start, end, text, url),
       removeLink: () => {},

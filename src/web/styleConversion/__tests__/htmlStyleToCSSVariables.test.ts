@@ -189,4 +189,22 @@ describe('htmlStyleToCSSVariables', () => {
       '--eti-ol-marker-color': '#00ff00',
     } as CSSProperties);
   });
+
+  it('maps ulCheckbox styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ulCheckbox: {
+          boxSize: 20,
+          gapWidth: 8,
+          marginLeft: 12,
+          boxColor: '#336699',
+        },
+      })
+    ).toEqual({
+      '--eti-checkbox-box-size': '20px',
+      '--eti-checkbox-gap-width': '8px',
+      '--eti-checkbox-margin-left': '12px',
+      '--eti-checkbox-box-color': '#336699',
+    } as CSSProperties);
+  });
 });
