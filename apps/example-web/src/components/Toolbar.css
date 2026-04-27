@@ -16,6 +16,17 @@
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+  cursor: grab;
+}
+
+.toolbar-controls.is-drag-scrolling {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.toolbar-controls.is-drag-scrolling .toolbar-btn {
+  cursor: grabbing;
+  pointer-events: none;
 }
 
 .toolbar-fill {

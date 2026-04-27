@@ -49,4 +49,31 @@ test.describe('paragraph styles visual', () => {
       'paragraph-styles-visual-codeblock.png'
     );
   });
+
+  test('unordered list displays correctly', async ({ page }) => {
+    const html =
+      '<html><ul><li><p>Alpha</p></li><li><p>Beta</p></li></ul></html>';
+    await setEditorHtml(page, html);
+
+    const editor = editorLocator(page);
+    await expect(editor).toContainText('Alpha');
+    await expect(editor).toContainText('Beta');
+
+    await expect(editor).toHaveScreenshot(
+      'paragraph-styles-visual-unordered-list.png'
+    );
+  });
+
+  test('ordered list displays correctly', async ({ page }) => {
+    const html = '<html><ol><li><p>One</p></li><li><p>Two</p></li></ol></html>';
+    await setEditorHtml(page, html);
+
+    const editor = editorLocator(page);
+    await expect(editor).toContainText('One');
+    await expect(editor).toContainText('Two');
+
+    await expect(editor).toHaveScreenshot(
+      'paragraph-styles-visual-ordered-list.png'
+    );
+  });
 });

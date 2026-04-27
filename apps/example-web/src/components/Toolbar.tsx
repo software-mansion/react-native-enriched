@@ -4,6 +4,7 @@ import type {
   OnChangeStateEvent,
 } from 'react-native-enriched';
 import type { RefObject } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
@@ -52,6 +53,7 @@ function ToolbarButton({
 
 export function Toolbar({ editorRef, state }: ToolbarProps) {
   const s = state;
+  const dragScroll = useDragScroll();
 
   const toolbarItems = [
     {
@@ -148,6 +150,20 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
         editor?.toggleCodeBlock();
       },
     },
+    {
+      key: 'unorderedList',
+      label: '•',
+      onPress: (editor) => {
+        editor?.toggleUnorderedList();
+      },
+    },
+    {
+      key: 'orderedList',
+      label: '1.',
+      onPress: (editor) => {
+        editor?.toggleOrderedList();
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
@@ -157,7 +173,7 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
 
   return (
     <div className="toolbar">
-      <div className="toolbar-controls">
+      <div className="toolbar-controls" {...dragScroll}>
         {toolbarItems.map((item) => (
           <ToolbarButton
             key={item.key}
