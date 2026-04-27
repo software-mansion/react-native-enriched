@@ -143,6 +143,17 @@ describe('htmlStyleToCSSVariables', () => {
     } as CSSProperties);
   });
 
+  it('maps anchor link styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        a: { color: 'blue', textDecorationLine: 'underline' },
+      })
+    ).toEqual({
+      '--eti-link-color': 'blue',
+      '--eti-link-text-decoration-line': 'underline',
+    } as CSSProperties);
+  });
+
   it('maps ul styles to CSS variables', () => {
     expect(
       htmlStyleToCSSVariables({

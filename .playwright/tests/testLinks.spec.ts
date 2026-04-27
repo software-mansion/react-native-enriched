@@ -1,0 +1,174 @@
+import { test, expect, type Page } from '@playwright/test';
+
+import {
+  editorLocator,
+  getSerializedHtml,
+  gotoVisualRegression,
+  setEditorHtml,
+} from '../helpers/visual-regression';
+
+test.setTimeout(90_000);
+
+const sel = {
+  htmlInput: '[data-testid="test-links-html-input"]',
+  setValueButton: '[data-testid="test-links-set-value-button"]',
+  htmlOutput: '[data-testid="test-links-html-output"]',
+  setLinkStart: '[data-testid="test-links-setlink-start"]',
+  setLinkEnd: '[data-testid="test-links-setlink-end"]',
+  setLinkText: '[data-testid="test-links-setlink-text"]',
+  setLinkUrl: '[data-testid="test-links-setlink-url"]',
+  applySetLink: '[data-testid="test-links-apply-setlink-button"]',
+  editorInner: '[data-testid="test-links-editor"] .eti-editor',
+  editorScreenshot: '[data-testid="test-links-editor"]',
+} as const;
+
+async function gotoTestLinks(page: Page): Promise<void> {
+  await page.goto('/test-links');
+  await page.waitForSelector(sel.editorInner);
+}
+
+async function getTestLinksSerializedHtml(page: Page): Promise<string> {
+  return (await page.locator(sel.htmlOutput).textContent()) ?? '';
+}
+
+async function setTestLinksEditorHtml(page: Page, html: string): Promise<void> {
+  await page.fill(sel.htmlInput, html);
+  await page.click(sel.setValueButton);
+  await expect
+    .poll(async () => {
+      const t = await getTestLinksSerializedHtml(page);
+      return t.startsWith('<html>');
+    })
+    .toBe(true);
+}
+
+test('links display visual regression', async ({ page }) => {
+  await gotoVisualRegression(page);
+  const html = [
+    '<html>',
+    '<p><a href="https://alpha.example">Alpha</a></p>',
+    '<p>Plain between</p>',
+    '<p><a href="https://omega.example">Omega</a></p>',
+    '</html>',
+  ].join('');
+  await setEditorHtml(page, html);
+
+  await expect(editorLocator(page)).toHaveScreenshot('links-display.png');
+});
+
+test('link mark round-trips in serialized HTML', async ({ page }) => {
+  await gotoVisualRegression(page);
+  await setEditorHtml(
+    page,
+    '<html><p><a href="https://example.com">Example</a></p></html>'
+  );
+
+  await expect
+    .poll(async () => getSerializedHtml(page))
+    .toContain('<a href="https://example.com">Example</a>');
+});
+
+test.describe('test-links setLink table', () => {
+  const cases: {
+    name: string;
+    html: string;
+    start: string;
+    end: string;
+    text: string;
+    url: string;
+    expectContains: string;
+  }[] = [
+    {
+      name: 'wraps world with example.com',
+      html: '<html><p>Hello world</p></html>',
+      start: '6',
+      end: '11',
+      text: 'world',
+      url: 'https://example.com',
+      expectContains: '<p>Hello <a href="https://example.com">world</a></p>',
+    },
+    {
+      name: 'wraps multiword phrase with spaces',
+      html: '<html><p>one two three</p></html>',
+      start: '4',
+      end: '13',
+      text: 'two three',
+      url: 'https://multi.example',
+      expectContains:
+        '<p>one <a href="https://multi.example">two three</a></p>',
+    },
+    {
+      name: 'inserts linked text at cursor when start and end are the same',
+      html: '<html><p>xx</p></html>',
+      start: '1',
+      end: '1',
+      text: 'm',
+      url: 'https://same-range.example',
+      expectContains: '<p>x<a href="https://same-range.example">m</a>x</p>',
+    },
+    {
+      name: 'setLink blocked when selection entirely in codeblock',
+      html: '<html><codeblock><p>line</p></codeblock></html>',
+      start: '0',
+      end: '4',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><codeblock><p>line</p></codeblock></html>',
+    },
+    {
+      name: 'setLink blocked when selection partially in codeblock',
+      html: '<html><codeblock><p>line</p></codeblock><p>suffix</p></html>',
+      start: '0',
+      end: '10',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains:
+        '<html><codeblock><p>line</p></codeblock><p>suffix</p></html>',
+    },
+    {
+      name: 'setLink blocked when selection entirely in code',
+      html: '<html><p><code>line</code></p></html>',
+      start: '0',
+      end: '4',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><p><code>line</code></p></html>',
+    },
+    {
+      name: 'setLink blocked when selection partially in code',
+      html: '<html><p><code>line</code> suffix</p></html>',
+      start: '2',
+      end: '10',
+      text: 'line',
+      url: 'https://blocked-block.test',
+      expectContains: '<html><p><code>line</code> suffix</p></html>',
+    },
+    {
+      name: 'setLink clamps out-of-bounds start/end to document range',
+      html: '<html><p>Hello world</p></html>',
+      start: '0',
+      end: '99999',
+      text: 'Z',
+      url: 'https://clamp.setlink',
+      expectContains: '<p><a href="https://clamp.setlink">Z</a></p>',
+    },
+  ];
+
+  for (const c of cases) {
+    test(c.name, async ({ page }) => {
+      await gotoTestLinks(page);
+      await setTestLinksEditorHtml(page, c.html);
+
+      await page.fill(sel.setLinkStart, c.start);
+      await page.fill(sel.setLinkEnd, c.end);
+      await page.fill(sel.setLinkText, c.text);
+      await page.fill(sel.setLinkUrl, c.url);
+
+      await page.click(sel.applySetLink);
+
+      await expect
+        .poll(async () => getTestLinksSerializedHtml(page))
+        .toContain(c.expectContains);
+    });
+  }
+});

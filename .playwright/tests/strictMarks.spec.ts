@@ -2,7 +2,9 @@ import { test, expect, type Page } from '@playwright/test';
 
 import {
   editorLocator,
+  getSerializedHtml,
   gotoVisualRegression,
+  setEditorHtml,
 } from '../helpers/visual-regression';
 import { toolbarButton } from '../helpers/toolbar';
 
@@ -286,5 +288,29 @@ test.describe('strict marks', () => {
     }
 
     await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('typing after the last linked character does not extend the link', async ({
+    page,
+  }) => {
+    await setEditorHtml(
+      page,
+      '<html><p><a href="https://example.com">Hello</a></p></html>'
+    );
+
+    const editor = editorLocator(page);
+    await editor.click();
+    await editor.press('End');
+    await editor.pressSequentially(' more', { delay: 80 });
+
+    await expect
+      .poll(async () => {
+        const html = await getSerializedHtml(page);
+        return (
+          html.includes('<a href="https://example.com">Hello</a>') &&
+          !html.includes('<a href="https://example.com">Hello more</a>')
+        );
+      })
+      .toBe(true);
   });
 });

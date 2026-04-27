@@ -40,6 +40,10 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
     color: 'purple',
     backgroundColor: 'yellow',
   },
+  a: {
+    color: 'green',
+    textDecorationLine: 'underline',
+  },
   ol: {
     gapWidth: 16,
     marginLeft: 24,

@@ -30,6 +30,8 @@ const ETI_CSS_VARS = {
   codeblockBgColor: '--eti-codeblock-bg-color',
   codeblockColor: '--eti-codeblock-color',
   codeblockBorderRadius: '--eti-codeblock-border-radius',
+  linkColor: '--eti-link-color',
+  linkTextDecorationLine: '--eti-link-text-decoration-line',
   ulBulletColor: '--eti-ul-bullet-color',
   ulBulletSize: '--eti-ul-bullet-size',
   ulMarginLeft: '--eti-ul-margin-left',
@@ -97,6 +99,16 @@ function applyCodeblockVars(
   setPxVar(vars, ETI_CSS_VARS.codeblockBorderRadius, cb?.borderRadius);
 }
 
+function applyLinkVars(
+  vars: Record<string, string>,
+  anchor?: HtmlStyle['a']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.linkColor, anchor?.color);
+  if (anchor?.textDecorationLine != null) {
+    vars[ETI_CSS_VARS.linkTextDecorationLine] = anchor.textDecorationLine;
+  }
+}
+
 function applyUnorderedListVars(
   vars: Record<string, string>,
   ul?: HtmlStyle['ul']
@@ -125,6 +137,7 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyHeadingVars(vars, htmlStyle);
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
+  applyLinkVars(vars, htmlStyle?.a);
   applyUnorderedListVars(vars, htmlStyle?.ul);
   applyOrderedListVars(vars, htmlStyle?.ol);
   return vars as CSSProperties;

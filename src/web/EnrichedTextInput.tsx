@@ -43,6 +43,7 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import { EnrichedLink, setLink } from './formats/EnrichedLink';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
@@ -50,7 +51,6 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
-
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -105,6 +105,7 @@ export const EnrichedTextInput = ({
         EnrichedUnderline,
         EnrichedStrike,
         EnrichedCode,
+        EnrichedLink,
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
@@ -160,7 +161,6 @@ export const EnrichedTextInput = ({
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
-
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
 
   useImperativeHandle(
@@ -197,7 +197,8 @@ export const EnrichedTextInput = ({
       toggleUnorderedList: () =>
         runFocused(editor, (c) => c.toggleUnorderedList()),
       toggleCheckboxList: () => {},
-      setLink: () => {},
+      setLink: (start: number, end: number, text: string, url: string) =>
+        setLink(editor, start, end, text, url),
       removeLink: () => {},
       setImage: () => {},
       startMention: () => {},
@@ -206,7 +207,8 @@ export const EnrichedTextInput = ({
       measureInWindow: () => {},
       measureLayout: () => {},
       setNativeProps: () => {},
-    })
+    }),
+    [editor]
   );
 
   const editorStyle: CSSProperties = useMemo(

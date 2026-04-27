@@ -9,6 +9,7 @@ import { useDragScroll } from '../hooks/useDragScroll';
 interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
+  onOpenLinkModal: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -51,7 +52,7 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ editorRef, state }: ToolbarProps) {
+export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
   const s = state;
   const dragScroll = useDragScroll();
 
@@ -149,6 +150,11 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
       onPress: (editor) => {
         editor?.toggleCodeBlock();
       },
+    },
+    {
+      key: 'link',
+      label: '🔗',
+      onPress: onOpenLinkModal,
     },
     {
       key: 'unorderedList',
