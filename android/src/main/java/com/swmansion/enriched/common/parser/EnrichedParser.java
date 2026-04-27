@@ -506,6 +506,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     } else if (tag.equalsIgnoreCase("h6")) {
       startHeading(mSpannableStringBuilder, 6);
     } else if (tag.equalsIgnoreCase("img")) {
+      // Image content means the current tag is not empty (e.g. <li><img .../></li>).
+      isEmptyTag = false;
       startImg(mSpannableStringBuilder, attributes, mSpanFactory);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());

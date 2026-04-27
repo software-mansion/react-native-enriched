@@ -10,4 +10,5 @@ object EnrichedConstants {
   const val ORC_STRING = "\uFFFC"
 
   const val TEXT_DEFAULT_FONT_SIZE = 16f
+  const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
 }
