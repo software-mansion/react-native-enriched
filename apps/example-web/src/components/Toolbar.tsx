@@ -156,6 +156,20 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
       label: '🔗',
       onPress: onOpenLinkModal,
     },
+    {
+      key: 'unorderedList',
+      label: '•',
+      onPress: (editor) => {
+        editor?.toggleUnorderedList();
+      },
+    },
+    {
+      key: 'orderedList',
+      label: '1.',
+      onPress: (editor) => {
+        editor?.toggleOrderedList();
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;

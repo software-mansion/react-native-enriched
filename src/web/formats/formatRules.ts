@@ -8,7 +8,9 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
   return (
     editor.isActive('blockquote') ||
     editor.isActive('codeBlock') ||
-    HEADING_LEVELS.some((level) => editor.isActive('heading', { level }))
+    HEADING_LEVELS.some((level) => editor.isActive('heading', { level })) ||
+    editor.isActive('orderedList') ||
+    editor.isActive('unorderedList')
   );
 }
 
@@ -40,11 +42,11 @@ export function isFormatBlocked(
 }
 
 export function toggleParagraphFormat(
-  editor: Editor,
   isActive: () => boolean,
   deactivate: () => boolean,
-  activate: (c: ChainedCommands) => ChainedCommands
+  activate: (c: ChainedCommands) => ChainedCommands,
+  chain: () => ChainedCommands
 ): boolean {
   if (isActive()) return deactivate();
-  return activate(editor.chain().focus().clearNodes()).run();
+  return activate(chain().clearNodes()).run();
 }
