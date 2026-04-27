@@ -124,7 +124,7 @@
   margin: 0;
 }
 
-.eti-editor ul[data-type="taskList"] {
+.eti-editor ul[data-type="checkboxList"] {
   margin: 0;
   list-style: none;
   padding: 0;
@@ -133,12 +133,12 @@
   );
 }
 
-.eti-editor ul[data-type="taskList"] > li {
+.eti-editor ul[data-type="checkboxList"] > li {
   position: relative;
   list-style: none;
 }
 
-.eti-editor ul[data-type="taskList"] > li > label {
+.eti-editor ul[data-type="checkboxList"] > li > label {
   position: absolute;
   left: calc(
     -1 * var(--eti-checkbox-gap-width, 16px) - var(--eti-checkbox-box-size, 24px)
@@ -156,7 +156,7 @@
   };
 }
 
-.eti-editor ul[data-type="taskList"] > li > label input[type='checkbox'] {
+.eti-editor ul[data-type="checkboxList"] > li > label input[type='checkbox'] {
   width: var(--eti-checkbox-box-size, 24px);
   height: var(--eti-checkbox-box-size, 24px);
   margin: 0;

@@ -11,7 +11,7 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
     HEADING_LEVELS.some((level) => editor.isActive('heading', { level })) ||
     editor.isActive('orderedList') ||
     editor.isActive('unorderedList') ||
-    editor.isActive('taskList')
+    editor.isActive('checkboxList')
   );
 }
 

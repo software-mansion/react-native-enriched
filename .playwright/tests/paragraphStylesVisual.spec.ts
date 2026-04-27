@@ -76,4 +76,18 @@ test.describe('paragraph styles visual', () => {
       'paragraph-styles-visual-ordered-list.png'
     );
   });
+
+  test('checkbox list displays correctly', async ({ page }) => {
+    const html =
+      '<html><ul data-type="checkbox"><li>a</li><li checked>b</li></ul></html>';
+    await setEditorHtml(page, html);
+
+    const editor = editorLocator(page);
+    await expect(editor).toContainText('a');
+    await expect(editor).toContainText('b');
+
+    await expect(editor).toHaveScreenshot(
+      'paragraph-styles-visual-checkbox-list.png'
+    );
+  });
 });

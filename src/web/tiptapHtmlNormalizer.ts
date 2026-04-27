@@ -1,6 +1,6 @@
 import {
   nativeCheckboxHtmlToTiptapHtml,
-  tiptapTaskListHtmlToNative,
+  tiptapCheckboxListHtmlToNative,
 } from './checkboxListHtml';
 
 export function prepareHtmlForTiptap(html: string): string {
@@ -9,13 +9,13 @@ export function prepareHtmlForTiptap(html: string): string {
 }
 
 export function normalizeHtmlFromTiptap(html: string): string {
-  const nativeTaskHtml = tiptapTaskListHtmlToNative(html);
+  const nativeCheckboxHtml = tiptapCheckboxListHtmlToNative(html);
 
   // Strip <p> wrappers inside <li> elements.
   // TipTap renders <li><p>text</p></li> but native expects <li>text</li>.
   // This regex is safe because EnrichedListItem.content is 'paragraph', which
   // prevents TipTap from ever emitting nested lists
-  let content = nativeTaskHtml.replace(
+  let content = nativeCheckboxHtml.replace(
     /<li([^>]*)><p>(.*?)<\/p><\/li>/gs,
     '<li$1>$2</li>'
   );
