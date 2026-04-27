@@ -1,7 +1,10 @@
 /*
- * TipTap format for checkboxes:
+ * TipTap format for checkboxes (TaskItem / Checkbox extension output):
  *   <ul data-type="checkboxList">
- *     <li data-type="checkboxItem" data-checked="false|true"><div><p>…</p></div></li>
+ *     <li data-checked="true|false" data-type="checkboxItem">
+ *       <label><input type="checkbox" checked="checked"><span></span></label>
+ *       <div><p>…</p></div>
+ *     </li>
  *   </ul>
  *
  * Native format for checkboxes:
@@ -10,7 +13,7 @@
  *     <li checked>…</li>
  *   </ul>
  */
-export function nativeCheckboxHtmlToTiptapHtml(html: string): string {
+export function checkboxHtmlForTiptap(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
@@ -35,7 +38,7 @@ export function nativeCheckboxHtmlToTiptapHtml(html: string): string {
   return doc.body.innerHTML;
 }
 
-export function tiptapCheckboxListHtmlToNative(html: string): string {
+export function checkboxHtmlFromTiptap(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
