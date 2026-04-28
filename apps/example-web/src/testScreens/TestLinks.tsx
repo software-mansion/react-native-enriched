@@ -20,6 +20,8 @@ export function TestLinks() {
   const [endInput, setEndInput] = useState('11');
   const [linkTextInput, setLinkTextInput] = useState('world');
   const [linkUrlInput, setLinkUrlInput] = useState('https://example.com');
+  const [removeStartInput, setRemoveStartInput] = useState('6');
+  const [removeEndInput, setRemoveEndInput] = useState('11');
   const [selStartInput, setSelStartInput] = useState('0');
   const [selEndInput, setSelEndInput] = useState('0');
   const [lastOnLinkDetected, setLastOnLinkDetected] =
@@ -104,6 +106,37 @@ export function TestLinks() {
           }
         >
           setLink
+        </button>
+      </div>
+
+      <div>
+        <input
+          data-testid="test-links-removelink-start"
+          type="number"
+          value={removeStartInput}
+          onChange={(e) => {
+            setRemoveStartInput(e.target.value);
+          }}
+        />
+        <input
+          data-testid="test-links-removelink-end"
+          type="number"
+          value={removeEndInput}
+          onChange={(e) => {
+            setRemoveEndInput(e.target.value);
+          }}
+        />
+        <button
+          type="button"
+          data-testid="test-links-apply-removelink-button"
+          onClick={() =>
+            ref.current?.removeLink(
+              toInteger(removeStartInput),
+              toInteger(removeEndInput)
+            )
+          }
+        >
+          removeLink
         </button>
       </div>
 
