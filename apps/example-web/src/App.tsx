@@ -42,13 +42,16 @@ function App() {
     useState<OnLinkDetected>(DEFAULT_LINK_STATE);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
-  const insideCurrentLink =
-    !!editorState?.link.isActive &&
-    currentLink.url.length > 0 &&
-    !!(currentLink.start || currentLink.end) &&
+  const isLinkActive = !!editorState?.link.isActive;
+  const hasLinkUrl = currentLink.url.length > 0;
+  const hasLinkSpan = currentLink.start !== 0 || currentLink.end !== 0;
+  const selectionInsideLink =
     selection !== null &&
     selection.start >= currentLink.start &&
     selection.end <= currentLink.end;
+
+  const insideCurrentLink =
+    isLinkActive && hasLinkUrl && hasLinkSpan && selectionInsideLink;
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
