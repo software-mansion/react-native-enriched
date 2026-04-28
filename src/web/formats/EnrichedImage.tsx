@@ -21,6 +21,7 @@ function BrokenImageGlyph() {
       viewBox="0 0 960 960"
       width="100%"
       height="100%"
+      preserveAspectRatio="none"
       aria-hidden
       focusable="false"
       className="eti-inline-image-broken-glyph"
