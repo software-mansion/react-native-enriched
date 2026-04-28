@@ -15,7 +15,15 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
 }
 
 export function isLinkBlocked(editor: Editor): boolean {
-  return editor.isActive('code') || editor.isActive('codeBlock');
+  return (
+    editor.isActive('code') ||
+    editor.isActive('codeBlock') ||
+    editor.isActive('image')
+  );
+}
+
+export function isImageBlocked(editor: Editor): boolean {
+  return editor.isActive('code');
 }
 
 export function isFormatBlocked(
@@ -23,6 +31,10 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
+  if (tiptapName === 'image') {
+    return isImageBlocked(editor);
+  }
+
   if (tiptapName === 'link') {
     return isLinkBlocked(editor);
   }

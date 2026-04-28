@@ -89,7 +89,11 @@ function buildState(
         editor.isActive('enrichedCodeBlock')
     ),
     mention: { isActive: false, isConflicting: false, isBlocking: false },
-    image: { isActive: false, isConflicting: false, isBlocking: false },
+    image: {
+      isActive: editor.isActive('image'),
+      isConflicting: editor.isActive('link'),
+      isBlocking: isFormatBlocked('image', editor, htmlStyle),
+    },
   };
 }
 

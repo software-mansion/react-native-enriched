@@ -44,6 +44,7 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import { EnrichedImage } from './formats/EnrichedImage';
 import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
@@ -52,6 +53,7 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -108,6 +110,7 @@ export const EnrichedTextInput = ({
         EnrichedStrike,
         EnrichedCode,
         EnrichedLink,
+        EnrichedImage,
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
@@ -115,6 +118,7 @@ export const EnrichedTextInput = ({
         EnrichedUnorderedList,
         EnrichedOrderedList,
         StripMarksInCodeBlockPlugin,
+        StripMarksOnImagePlugin,
         stripBoldInStyledHeadingsPlugin,
         MergeAdjacentSameKindBlocksPlugin,
         StrictMarksPlugin,
@@ -204,7 +208,8 @@ export const EnrichedTextInput = ({
         setLink(editor, start, end, text, url),
       removeLink: (start: number, end: number) =>
         removeLink(editor, start, end),
-      setImage: () => {},
+      setImage: (src: string, width: number, height: number) =>
+        runFocused(editor, (c) => c.setImage({ src, width, height })),
       startMention: () => {},
       setMention: () => {},
       measure: () => {},

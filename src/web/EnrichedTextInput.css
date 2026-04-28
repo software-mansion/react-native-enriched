@@ -123,3 +123,32 @@
 .eti-editor li p {
   margin: 0;
 }
+
+.eti-editor .eti-inline-image {
+  vertical-align: text-bottom;
+  line-height: 0;
+}
+
+.eti-editor .eti-inline-image-img {
+  vertical-align: text-bottom;
+  max-width: 100%;
+}
+
+.eti-editor .eti-inline-image--placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: inherit;
+}
+
+.eti-editor .eti-inline-image-broken-glyph {
+  display: block;
+  flex-shrink: 0;
+}
+
+.eti-editor
+  .react-renderer.node-image.ProseMirror-selectednode
+  .eti-inline-image {
+  box-shadow: inset 0 0 0 999px Highlight;
+}
