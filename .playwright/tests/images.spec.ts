@@ -139,7 +139,7 @@ test.describe('images', () => {
     page,
   }) => {
     const expectedHtml =
-      '<html><p><code><b><i><u><s>Alpha </s></u></i></b></code><img width="48" height="48" src=""><code><b><i><u><s> Beta</s></u></i></b></code></p></html>';
+      '<html><p><code><b><i><u><s>Alpha </s></u></i></b></code><img src="" width="48" height="48"/><code><b><i><u><s> Beta</s></u></i></b></code></p></html>';
     const toolbarOrder = [
       'bold',
       'italic',
@@ -150,7 +150,7 @@ test.describe('images', () => {
 
     await setEditorHtml(
       page,
-      '<html><p>Alpha <img src="" width="48" height="48" /> Beta</p></html>'
+      '<html><p>Alpha <img src="" width="48" height="48"/> Beta</p></html>'
     );
 
     const editor = editorLocator(page);
@@ -158,6 +158,13 @@ test.describe('images', () => {
       await editor.click();
       await editor.press('Meta+A');
       await toolbarButton(page, key).click();
+      await expect
+        .poll(async () => {
+          const cls =
+            (await toolbarButton(page, key).getAttribute('class')) ?? '';
+          return cls.includes('toolbar-btn--active');
+        })
+        .toBe(true);
     }
 
     await expect.poll(async () => getSerializedHtml(page)).toBe(expectedHtml);

@@ -17,14 +17,21 @@ import type { Node } from '@tiptap/pm/model';
  *   Native:  0  1  2  3  4  4  5  6  7   8  9  9 10 11 12 13 14
  *
  * PM 5 and PM 6 both map to native 4, PM 11 and PM 12 both map to native 9.
+ *
+ * Inline images occupy one index in the native plain string as a '\ufffc' character,
+ * we do the same for the web implementation.
  */
+
+function nativeTextLength(doc: Node, from: number, to: number): number {
+  return doc.textBetween(from, to, '\n', () => '\ufffc').length;
+}
 
 /**
  * Returns the native position for a given TipTap document position.
  */
 export function tiptapPosToNativePos(doc: Node, tiptapPos: number): number {
   if (tiptapPos <= 1) return 0;
-  return doc.textBetween(0, tiptapPos, '\n').length;
+  return nativeTextLength(doc, 0, tiptapPos);
 }
 
 /**
@@ -44,7 +51,7 @@ export function nativePosToTiptapPos(doc: Node, nativePos: number): number {
   if (nativePos <= 0) return 1;
 
   const maxPos = doc.content.size;
-  const totalNativeLen = doc.textBetween(0, maxPos, '\n').length;
+  const totalNativeLen = nativeTextLength(doc, 0, maxPos);
 
   if (nativePos >= totalNativeLen) {
     return maxPos - 1; // clamp to end of last block's content

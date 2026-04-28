@@ -21,9 +21,9 @@ export const EnrichedImage = Image.extend({
     return [
       'img',
       {
+        src: node.attrs.src,
         width: node.attrs.width,
         height: node.attrs.height,
-        src: node.attrs.src,
       },
     ];
   },

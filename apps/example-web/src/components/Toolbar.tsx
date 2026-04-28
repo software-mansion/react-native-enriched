@@ -164,7 +164,7 @@ export function Toolbar({
     },
     {
       key: 'image',
-      label: '🖼',
+      label: '🏞️',
       onPress: onOpenImageModal,
     },
     {
