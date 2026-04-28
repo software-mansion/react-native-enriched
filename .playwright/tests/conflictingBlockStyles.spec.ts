@@ -147,7 +147,7 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
     },
     {
       name: 'unordered list → h2',
-      html: '<html><ul><li>Item></li></ul></html>',
+      html: '<html><ul><li>Item</li></ul></html>',
       focusSelector: '.eti-editor ul li p',
       click: 'h2',
       expectTag: 'h2',

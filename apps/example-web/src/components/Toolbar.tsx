@@ -172,7 +172,7 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
     },
     {
       key: 'checkboxList',
-      label: '☐',
+      label: '☑',
       onPress: (editor) => {
         editor?.toggleCheckboxList(true);
       },
