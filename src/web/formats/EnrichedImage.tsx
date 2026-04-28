@@ -45,18 +45,8 @@ function EnrichedImageNodeView({ node }: ReactNodeViewProps) {
   const showPlaceholder = src.length === 0 || errored;
 
   const sizeStyle: CSSProperties = {
-    verticalAlign: 'text-bottom',
     width: w,
     height: h,
-    maxWidth: '100%',
-    boxSizing: 'border-box',
-    ...(showPlaceholder
-      ? {
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }
-      : { display: 'inline-block' }),
   };
 
   if (showPlaceholder) {
@@ -101,17 +91,14 @@ export const EnrichedImage = Image.extend({
   },
 
   renderHTML({ node }) {
-    const src = node.attrs.src as string | null | undefined;
-    if (src == null || src === '') {
-      return [
-        'img',
-        {
-          src: '',
-        },
-      ];
-    }
-
-    return ['img', { src, width: node.attrs.width, height: node.attrs.height }];
+    return [
+      'img',
+      {
+        width: node.attrs.width,
+        height: node.attrs.height,
+        src: node.attrs.src,
+      },
+    ];
   },
 
   addNodeView() {

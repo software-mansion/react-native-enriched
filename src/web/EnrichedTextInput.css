@@ -127,11 +127,7 @@
 .eti-editor .eti-inline-image {
   vertical-align: text-bottom;
   line-height: 0;
-}
-
-.eti-editor .eti-inline-image-img {
-  vertical-align: text-bottom;
-  max-width: 100%;
+  display: inline-block;
 }
 
 .eti-editor .eti-inline-image--placeholder {
