@@ -147,7 +147,6 @@ test.describe('images', () => {
       'underline',
       'inlineCode',
     ] as const;
-    const selectAllMod = process.platform === 'darwin' ? 'Meta' : 'Control';
 
     await setEditorHtml(
       page,
@@ -157,7 +156,7 @@ test.describe('images', () => {
     const editor = editorLocator(page);
     for (const key of toolbarOrder) {
       await editor.click();
-      await page.keyboard.press(`${selectAllMod}+A`);
+      await editor.press('Meta+A');
       await toolbarButton(page, key).click();
     }
 

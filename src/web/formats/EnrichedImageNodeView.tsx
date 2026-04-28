@@ -1,14 +1,6 @@
-import type { CommandProps } from '@tiptap/core';
-import Image from '@tiptap/extension-image';
-import {
-  NodeViewWrapper,
-  ReactNodeViewRenderer,
-  type ReactNodeViewProps,
-} from '@tiptap/react';
+import { NodeViewWrapper, type ReactNodeViewProps } from '@tiptap/react';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
-
-import { isImageBlocked } from './formatRules';
 
 const INLINE_IMAGE_FALLBACK_SIZE = 80;
 
@@ -38,7 +30,7 @@ function dim(value: unknown): number | undefined {
   return Number.isNaN(n) ? undefined : n;
 }
 
-function EnrichedImageNodeView({ node }: ReactNodeViewProps) {
+export function EnrichedImageNodeView({ node }: ReactNodeViewProps) {
   const src = ((node.attrs.src as string | null | undefined) ?? '').trim();
   const w = dim(node.attrs.width) ?? INLINE_IMAGE_FALLBACK_SIZE;
   const h = dim(node.attrs.height) ?? INLINE_IMAGE_FALLBACK_SIZE;
@@ -78,56 +70,3 @@ function EnrichedImageNodeView({ node }: ReactNodeViewProps) {
     </NodeViewWrapper>
   );
 }
-
-export const EnrichedImage = Image.extend({
-  addOptions() {
-    const parent = this.parent?.();
-    return {
-      ...parent,
-      inline: true,
-      allowBase64: false,
-      resize: false,
-      HTMLAttributes: parent?.HTMLAttributes ?? {},
-    };
-  },
-
-  renderHTML({ node }) {
-    return [
-      'img',
-      {
-        width: node.attrs.width,
-        height: node.attrs.height,
-        src: node.attrs.src,
-      },
-    ];
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(EnrichedImageNodeView, { as: 'span' });
-  },
-
-  addInputRules() {
-    return [];
-  },
-
-  addCommands() {
-    return {
-      ...this.parent?.(),
-      setImage:
-        (options: { src: string; width?: number; height?: number }) =>
-        ({ editor, commands }: CommandProps) => {
-          if (isImageBlocked(editor)) {
-            return false;
-          }
-          return commands.insertContent({
-            type: this.name,
-            attrs: {
-              src: options.src,
-              width: options.width ?? null,
-              height: options.height ?? null,
-            },
-          });
-        },
-    };
-  },
-});
