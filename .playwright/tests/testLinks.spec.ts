@@ -21,6 +21,10 @@ const sel = {
   removeLinkStart: '[data-testid="test-links-removelink-start"]',
   removeLinkEnd: '[data-testid="test-links-removelink-end"]',
   applyRemoveLink: '[data-testid="test-links-apply-removelink-button"]',
+  selectionStart: '[data-testid="test-links-selection-start"]',
+  selectionEnd: '[data-testid="test-links-selection-end"]',
+  applySelection: '[data-testid="test-links-apply-selection-button"]',
+  onLinkDetectedPayload: '[data-testid="on-link-detected-payload"]',
   editorInner: '[data-testid="test-links-editor"] .eti-editor',
   editorScreenshot: '[data-testid="test-links-editor"]',
 } as const;
@@ -43,6 +47,10 @@ async function setTestLinksEditorHtml(page: Page, html: string): Promise<void> {
       return t.startsWith('<html>');
     })
     .toBe(true);
+}
+
+async function getOnLinkDetectedPayload(page: Page): Promise<string> {
+  return (await page.locator(sel.onLinkDetectedPayload).textContent()) ?? '';
 }
 
 test('links display visual regression', async ({ page }) => {
@@ -235,4 +243,51 @@ test.describe('test-links removeLink table', () => {
         .toContain(c.expectContains);
     });
   }
+});
+
+test.describe('test-links onLinkDetected', () => {
+  test('emits payload when selection is inside existing link', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await setTestLinksEditorHtml(
+      page,
+      `<html><p><a href="https://example.com">Example</a></p></html>`
+    );
+
+    await page.fill(sel.selectionStart, '0');
+    await page.fill(sel.selectionEnd, '7');
+    await page.click(sel.applySelection);
+
+    await expect
+      .poll(async () => getOnLinkDetectedPayload(page))
+      .toContain('https://example.com');
+    await expect
+      .poll(async () => getOnLinkDetectedPayload(page))
+      .toContain('"text":"Example"');
+  });
+
+  test('emits empty text and url with when selection leaves a link', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await setTestLinksEditorHtml(
+      page,
+      `<html><p><a href="https://example.com">Example</a></p></html>`
+    );
+
+    const editor = page.locator(sel.editorInner);
+    await editor.click();
+    await editor.press('End');
+    await editor.press('Enter');
+
+    await expect
+      .poll(async () => JSON.parse(await getOnLinkDetectedPayload(page)) as any)
+      .toEqual({
+        text: '',
+        url: '',
+        start: 8,
+        end: 8,
+      });
+  });
 });
