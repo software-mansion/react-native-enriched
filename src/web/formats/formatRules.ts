@@ -34,9 +34,11 @@ export function isFormatBlocked(
   if (tiptapName === 'image') {
     return isImageBlocked(editor);
   }
-
   if (tiptapName === 'link') {
     return isLinkBlocked(editor);
+  }
+  if (tiptapName === 'code' && editor.isActive('image')) {
+    return true;
   }
 
   if (editor.isActive('codeBlock')) {
