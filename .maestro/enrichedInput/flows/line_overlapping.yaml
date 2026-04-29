@@ -1,0 +1,40 @@
+appId: swmansion.enriched.example
+---
+# Validates that inserting newlines after bold element does not break the layout
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'editor-input'
+
+- pressKey: Enter
+- inputText: 'Line one'
+- pressKey: Enter
+- inputText: 'Line two'
+- pressKey: Enter
+- inputText: 'Line three'
+- pressKey: Enter
+- inputText: 'Line four'
+- pressKey: Enter
+- inputText: 'Line five'
+
+# Tap on the first line to position cursor there
+- tapOn:
+    id: 'editor-input'
+    point: '10%,10%'
+
+- tapOn:
+    id: 'toolbar-bold'
+
+- inputText: 'bold'
+- pressKey: Enter
+- pressKey: Enter
+- pressKey: Enter
+- inputText: 'bold2'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'line_overlapping'
