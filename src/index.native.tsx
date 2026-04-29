@@ -1,7 +1,7 @@
-export { EnrichedTextInput } from './web/EnrichedTextInput';
+export { EnrichedTextInput } from './native/EnrichedTextInput';
+export * from './EnrichedText';
 export type {
-  EnrichedInputStyle,
-  EnrichedTextInputWebProps as EnrichedTextInputProps,
+  EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
@@ -18,4 +18,7 @@ export type {
   EnrichedTextInputInstance,
   ContextMenuItem,
   OnChangeMentionEvent,
+  EnrichedTextHtmlStyle,
+  OnMentionPressEvent,
+  OnLinkPressEvent,
 } from './types';
