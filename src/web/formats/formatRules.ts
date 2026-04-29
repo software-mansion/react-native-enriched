@@ -10,7 +10,8 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
     editor.isActive('codeBlock') ||
     HEADING_LEVELS.some((level) => editor.isActive('heading', { level })) ||
     editor.isActive('orderedList') ||
-    editor.isActive('unorderedList')
+    editor.isActive('unorderedList') ||
+    editor.isActive('checkboxList')
   );
 }
 

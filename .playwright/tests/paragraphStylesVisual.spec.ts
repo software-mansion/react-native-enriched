@@ -51,8 +51,7 @@ test.describe('paragraph styles visual', () => {
   });
 
   test('unordered list displays correctly', async ({ page }) => {
-    const html =
-      '<html><ul><li><p>Alpha</p></li><li><p>Beta</p></li></ul></html>';
+    const html = '<html><ul><li>Alpha</li><li>Beta</li></ul></html>';
     await setEditorHtml(page, html);
 
     const editor = editorLocator(page);
@@ -65,7 +64,7 @@ test.describe('paragraph styles visual', () => {
   });
 
   test('ordered list displays correctly', async ({ page }) => {
-    const html = '<html><ol><li><p>One</p></li><li><p>Two</p></li></ol></html>';
+    const html = '<html><ol><li>One</li><li>Two</li></ol></html>';
     await setEditorHtml(page, html);
 
     const editor = editorLocator(page);
@@ -74,6 +73,20 @@ test.describe('paragraph styles visual', () => {
 
     await expect(editor).toHaveScreenshot(
       'paragraph-styles-visual-ordered-list.png'
+    );
+  });
+
+  test('checkbox list displays correctly', async ({ page }) => {
+    const html =
+      '<html><ul data-type="checkbox"><li>a</li><li checked>b</li></ul></html>';
+    await setEditorHtml(page, html);
+
+    const editor = editorLocator(page);
+    await expect(editor).toContainText('a');
+    await expect(editor).toContainText('b');
+
+    await expect(editor).toHaveScreenshot(
+      'paragraph-styles-visual-checkbox-list.png'
     );
   });
 });
