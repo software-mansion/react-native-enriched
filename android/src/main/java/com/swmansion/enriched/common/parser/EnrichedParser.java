@@ -80,11 +80,16 @@ public class EnrichedParser {
     StringBuilder out = new StringBuilder();
     withinHtml(out, text);
     String outString = out.toString();
+
     // Codeblocks and blockquotes appends a newline character by default, so we have to remove it
     String normalizedCodeBlock = outString.replaceAll("</codeblock>\\n<br>", "</codeblock>");
     String normalizedBlockQuote =
         normalizedCodeBlock.replaceAll("</blockquote>\\n<br>", "</blockquote>");
-    return "<html>\n" + normalizedBlockQuote + "</html>";
+
+    // replace empty <p></p> into <br> in the very end
+    String normalizedHtml = normalizedBlockQuote.replaceAll("<p></p>", "<br>");
+
+    return "<html>\n" + normalizedHtml + "</html>";
   }
 
   public static String toHtmlWithDefault(CharSequence text) {
@@ -506,6 +511,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
     } else if (tag.equalsIgnoreCase("h6")) {
       startHeading(mSpannableStringBuilder, 6);
     } else if (tag.equalsIgnoreCase("img")) {
+      // Image content means the current tag is not empty (e.g. <li><img .../></li>).
+      isEmptyTag = false;
       startImg(mSpannableStringBuilder, attributes, mSpanFactory);
     } else if (tag.equalsIgnoreCase("code")) {
       start(mSpannableStringBuilder, new Code());

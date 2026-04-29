@@ -18,7 +18,18 @@ function resolveStrictMarks(
 
   // Character to the left: strictly inherit from it
   if ($from.nodeBefore) {
-    return $from.nodeBefore.marks;
+    let marks = $from.nodeBefore.marks;
+    // Link is non-inclusive: do not carry the link onto text typed after the last
+    // linked character (e.g. Space must "exit" the link, matching native).
+    const linkType = newState.schema.marks.link;
+    if (linkType?.isInSet(marks)) {
+      const afterHasLink =
+        $from.nodeAfter != null && linkType.isInSet($from.nodeAfter.marks);
+      if (!afterHasLink) {
+        marks = marks.filter((m) => m.type !== linkType);
+      }
+    }
+    return marks;
   }
 
   // Start of line with text to the right

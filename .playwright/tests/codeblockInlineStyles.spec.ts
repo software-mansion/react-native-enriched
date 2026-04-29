@@ -37,6 +37,7 @@ test.describe('codeblock inline styles', () => {
       'underline',
       'strikeThrough',
       'inlineCode',
+      'link',
     ] as const) {
       await expect(toolbarButton(page, key)).toBeDisabled();
     }

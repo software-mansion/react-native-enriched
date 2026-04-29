@@ -1800,7 +1800,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
 
-  if (text.length == 0 && range.length > 0) {
+  if (text.length == 0) {
     key = @"Backspace";
   } else if ([text isEqualToString:@"\n"]) {
     key = @"Enter";

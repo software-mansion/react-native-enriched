@@ -24,12 +24,12 @@ export const EnrichedBlockquote = Blockquote.extend({
       ...this.parent?.(),
       toggleBlockquote:
         () =>
-        ({ editor, commands }) =>
+        ({ editor, commands, chain }) =>
           toggleParagraphFormat(
-            editor,
             () => editor.isActive('blockquote'),
             () => commands.lift('blockquote'),
-            (c) => c.toggleWrap('blockquote')
+            (c) => c.toggleWrap('blockquote'),
+            chain
           ),
     };
   },

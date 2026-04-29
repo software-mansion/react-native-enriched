@@ -1,5 +1,5 @@
 #pragma once
-#import <UIkit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 @interface EnrichedInputTextView : UITextView
 @property(nonatomic, weak) id input;
