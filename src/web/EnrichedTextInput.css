@@ -130,6 +130,10 @@
   display: inline-block;
 }
 
+.eti-editor .eti-inline-image-img {
+  object-fit: contain;
+}
+
 .eti-editor .eti-inline-image--placeholder {
   display: inline-block;
   overflow: hidden;
@@ -149,11 +153,6 @@
     box-shadow: inset 0 0 0 999px Highlight;
 }
 
-.eti-editor
-  .react-renderer.node-image.ProseMirror-selectednode
-  img.eti-inline-image-img {
-  outline: 2px solid currentColor;
-}
 
 
 .eti-editor ul[data-type="checkboxList"] {
