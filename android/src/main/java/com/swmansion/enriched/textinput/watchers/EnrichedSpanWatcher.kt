@@ -10,6 +10,7 @@ import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
+import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineMetricSpan
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 
@@ -61,7 +62,7 @@ class EnrichedSpanWatcher(
     }
   }
 
-  // After adding/removing heading span, we have to manually set empty paragraph span to the following text
+  // After adding/removing EnrichedHeadingSpan/EnrichedInlineMetricSpan spans, we have to manually set empty paragraph span to the following text
   // This allows us to update the layout (as it's not updated automatically - looks like an Android issue)
   private fun updateNextLineLayout(
     what: Any,
@@ -70,7 +71,7 @@ class EnrichedSpanWatcher(
   ) {
     class EmptySpan : ParagraphStyle
 
-    if (what is EnrichedHeadingSpan) {
+    if (what is EnrichedHeadingSpan || what is EnrichedInlineMetricSpan) {
       val finalStart = (end + 1)
       val finalEnd = text.length
       val (safeStart, safeEnd) = text.getSafeSpanBoundaries(finalStart, finalEnd)
