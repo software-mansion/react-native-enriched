@@ -11,7 +11,11 @@ import type {
   EnrichedTextInputWebProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
-import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
+import {
+  tiptapPosToNativePos,
+  nativePosToTiptapPos,
+  nativeLeafText,
+} from './positionMapping';
 import {
   useEditor,
   EditorContent,
@@ -145,7 +149,7 @@ export const EnrichedTextInput = ({
 
         const start = tiptapPosToNativePos(state.doc, from);
         const end = tiptapPosToNativePos(state.doc, to);
-        const text = state.doc.textBetween(from, to, '\n');
+        const text = nativeLeafText(state.doc, from, to);
         onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {

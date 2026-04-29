@@ -22,8 +22,15 @@ import type { Node } from '@tiptap/pm/model';
  * we do the same for the web implementation.
  */
 
+/**
+ * Plain text in the native coordinate model for [from, to), including '\ufffc' per inline image.
+ */
+export function nativeLeafText(doc: Node, from: number, to: number): string {
+  return doc.textBetween(from, to, '\n', () => '\ufffc');
+}
+
 function nativeTextLength(doc: Node, from: number, to: number): number {
-  return doc.textBetween(from, to, '\n', () => '\ufffc').length;
+  return nativeLeafText(doc, from, to).length;
 }
 
 /**
