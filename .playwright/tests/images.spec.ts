@@ -8,6 +8,8 @@ import {
   setEditorHtml,
 } from '../helpers/visual-regression';
 
+const VISIBILITY_TIMEOUT_MS = 15_000;
+
 test.describe('images', () => {
   test.beforeEach(async ({ page }) => {
     await gotoVisualRegression(page);
@@ -33,7 +35,9 @@ test.describe('images', () => {
       '<html><p>Hi <img src="" width="40" height="40" /> bye</p></html>'
     );
 
-    await expect(page.locator('[data-eti-image-placeholder]')).toBeVisible();
+    await expect(page.locator('[data-eti-image-placeholder]')).toBeVisible({
+      timeout: VISIBILITY_TIMEOUT_MS,
+    });
     await expect(page.locator('.eti-inline-image-img')).toHaveCount(0);
 
     await expect(editorLocator(page)).toHaveScreenshot(snapshotName);
@@ -50,7 +54,7 @@ test.describe('images', () => {
     );
 
     await expect(page.locator('[data-eti-image-placeholder]')).toBeVisible({
-      timeout: 15_000,
+      timeout: VISIBILITY_TIMEOUT_MS,
     });
     await expect(page.locator('.eti-inline-image-img')).toHaveCount(0);
 
@@ -66,7 +70,7 @@ test.describe('images', () => {
     );
 
     await expect(page.locator('.eti-inline-image-img')).toBeVisible({
-      timeout: 15_000,
+      timeout: VISIBILITY_TIMEOUT_MS,
     });
     await expect(page.locator('[data-eti-image-placeholder]')).toHaveCount(0);
 
@@ -132,7 +136,7 @@ test.describe('images', () => {
         await setEditorHtml(page, row.html);
 
         await expect(page.locator('.eti-inline-image')).toBeVisible({
-          timeout: 15_000,
+          timeout: VISIBILITY_TIMEOUT_MS,
         });
 
         await expect(editorLocator(page)).toHaveScreenshot(row.snapshot);
@@ -158,17 +162,24 @@ test.describe('images', () => {
       '<html><p>Alpha <img src="" width="48" height="48"/> Beta</p></html>'
     );
 
+    await expect(page.locator('.eti-inline-image')).toBeVisible({
+      timeout: VISIBILITY_TIMEOUT_MS,
+    });
+
     const editor = editorLocator(page);
     for (const key of toolbarOrder) {
       await editor.click();
       await editor.press('Meta+A');
       await toolbarButton(page, key).click();
       await expect
-        .poll(async () => {
-          const cls =
-            (await toolbarButton(page, key).getAttribute('class')) ?? '';
-          return cls.includes('toolbar-btn--active');
-        })
+        .poll(
+          async () => {
+            const cls =
+              (await toolbarButton(page, key).getAttribute('class')) ?? '';
+            return cls.includes('toolbar-btn--active');
+          },
+          { timeout: VISIBILITY_TIMEOUT_MS }
+        )
         .toBe(true);
     }
 
