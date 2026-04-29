@@ -120,6 +120,11 @@ test.describe('images', () => {
         snapshot: 'images-loaded-in-list.png',
         html: '<html><ul><li><p>See <img src="/pw-e2e-ok.png" width="28" height="28" /> tiny</p></li></ul></html>',
       },
+      {
+        name: 'placeholder image inside checkbox list',
+        snapshot: 'images-checkbox-list-placeholder.png',
+        html: '<html><ul data-type="checkbox"><li checked>Before <img src="" width="40" height="40" /> after</li></ul></html>',
+      },
     ] as const;
 
     for (const row of visualBlockListCases) {

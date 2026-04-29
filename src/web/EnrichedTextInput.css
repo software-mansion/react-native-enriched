@@ -109,7 +109,7 @@
   content: counter(eti-ol) '.';
   position: absolute;
   left: calc(-1 * var(--eti-ol-gap-width, 16px));
-  top: 0;
+  bottom: 0;
   transform: translateX(-50%);
   color: var(--eti-ol-marker-color, currentColor);
   font-weight: var(--eti-ol-marker-font-weight, inherit);
