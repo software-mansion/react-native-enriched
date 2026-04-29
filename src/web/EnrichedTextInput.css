@@ -78,11 +78,12 @@
   left: calc(
     -1 * var(--eti-ul-gap-width, 16px) - var(--eti-ul-bullet-size, 8px)
   );
-  top: 0.6em; 
-  @supports (top: 0.5lh) {
-    top: 0.5lh;
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
   }
-  transform: translateY(-50%);
+
+  transform: translateY(50%);
   width: var(--eti-ul-bullet-size, 8px);
   height: var(--eti-ul-bullet-size, 8px);
   border-radius: 50%;
@@ -174,16 +175,16 @@
   left: calc(
     -1 * var(--eti-checkbox-gap-width, 16px) - var(--eti-checkbox-box-size, 24px)
   );
-  transform: translateY(-50%);
+  transform: translateY(50%);
   display: inline-flex;
   align-items: center;
   gap: 0;
   margin: 0;
   padding: 0;
   user-select: none;
-  top: 0.6em;
-  @supports (top: 0.5lh) {
-    top: 0.5lh;
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
   }
 }
 
