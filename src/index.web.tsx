@@ -1,7 +1,7 @@
 export { EnrichedTextInput } from './web/EnrichedTextInput';
 export type {
   EnrichedInputStyle,
-  EnrichedTextInputWebProps as EnrichedTextInputProps,
+  EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
