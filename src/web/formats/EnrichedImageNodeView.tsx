@@ -59,24 +59,16 @@ export function EnrichedImageNodeView({ node }: ReactNodeViewProps) {
   }
 
   let imgDims: { width?: number; height?: number };
+  let imgStyle: CSSProperties | undefined;
+
   if (rawW != null && rawH != null) {
     imgDims = { width: rawW, height: rawH };
-  } else if (rawW != null) {
-    imgDims = { width: rawW };
+    imgStyle = undefined;
   } else if (rawH != null) {
     imgDims = { height: rawH };
-  } else {
-    imgDims = { width: IMAGE_FALLBACK_SIZE };
-  }
-
-  let imgStyle: CSSProperties | undefined;
-  if (rawW != null && rawH != null) {
-    imgStyle = undefined;
-  } else if (rawW != null) {
-    imgStyle = { height: 'auto' };
-  } else if (rawH != null) {
     imgStyle = { width: 'auto' };
   } else {
+    imgDims = { width: rawW ?? IMAGE_FALLBACK_SIZE };
     imgStyle = { height: 'auto' };
   }
 
