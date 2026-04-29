@@ -2,15 +2,16 @@ package com.swmansion.enriched.textinput.watchers
 
 import android.text.SpanWatcher
 import android.text.Spannable
+import android.text.style.MetricAffectingSpan
 import android.text.style.ParagraphStyle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeHtmlEvent
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
-import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInlineMetricSpan
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
 
@@ -62,7 +63,7 @@ class EnrichedSpanWatcher(
     }
   }
 
-  // After adding/removing EnrichedHeadingSpan/EnrichedInlineMetricSpan spans, we have to manually set empty paragraph span to the following text
+  // After adding/removing heading or inline MetricAffectingSpan spans, we have to manually set empty paragraph span to the following text
   // This allows us to update the layout (as it's not updated automatically - looks like an Android issue)
   private fun updateNextLineLayout(
     what: Any,
@@ -71,7 +72,7 @@ class EnrichedSpanWatcher(
   ) {
     class EmptySpan : ParagraphStyle
 
-    if (what is EnrichedHeadingSpan || what is EnrichedInlineMetricSpan) {
+    if (what is EnrichedHeadingSpan || (what is EnrichedInlineSpan && what is MetricAffectingSpan)) {
       val finalStart = (end + 1)
       val finalEnd = text.length
       val (safeStart, safeEnd) = text.getSafeSpanBoundaries(finalStart, finalEnd)
