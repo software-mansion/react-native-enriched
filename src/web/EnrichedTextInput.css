@@ -142,11 +142,19 @@
   height: 100%;
 }
 
+
 .eti-editor
   .react-renderer.node-image.ProseMirror-selectednode
   .eti-inline-image {
-  box-shadow: inset 0 0 0 999px Highlight;
+    box-shadow: inset 0 0 0 999px Highlight;
 }
+
+.eti-editor
+  .react-renderer.node-image.ProseMirror-selectednode
+  img.eti-inline-image-img {
+  outline: 2px solid currentColor;
+}
+
 
 .eti-editor ul[data-type="checkboxList"] {
   margin: 0;
