@@ -1,11 +1,11 @@
-#import "InputTextView.h"
+#import "EnrichedInputTextView.h"
 #import "EnrichedTextInputView.h"
 #import "HtmlParser.h"
 #import "StringExtension.h"
 #import "TextInsertionUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-@implementation InputTextView
+@implementation EnrichedInputTextView
 
 - (void)layoutSubviews {
   [super layoutSubviews];

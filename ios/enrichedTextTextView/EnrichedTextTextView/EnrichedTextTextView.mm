@@ -1,10 +1,10 @@
-#import "EnrichedTouchableTextView.h"
+#import "EnrichedTextTextView.h"
 #import "EnrichedTextTouchHandler.h"
 #import "EnrichedTextView.h"
 #import "HtmlParser.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-@implementation EnrichedTouchableTextView
+@implementation EnrichedTextTextView
 
 - (void)copy:(id)sender {
   EnrichedTextView *host = self.host;
