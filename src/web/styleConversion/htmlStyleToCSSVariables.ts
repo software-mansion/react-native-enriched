@@ -40,6 +40,10 @@ const ETI_CSS_VARS = {
   olGapWidth: '--eti-ol-gap-width',
   olMarkerColor: '--eti-ol-marker-color',
   olMarkerFontWeight: '--eti-ol-marker-font-weight',
+  checkboxBoxSize: '--eti-checkbox-box-size',
+  checkboxGapWidth: '--eti-checkbox-gap-width',
+  checkboxMarginLeft: '--eti-checkbox-margin-left',
+  checkboxBoxColor: '--eti-checkbox-box-color',
 } as const;
 
 function setColorVar(
@@ -131,6 +135,16 @@ function applyOrderedListVars(
   }
 }
 
+function applyCheckboxListVars(
+  vars: Record<string, string>,
+  ulCheckbox?: HtmlStyle['ulCheckbox']
+): void {
+  setPxVar(vars, ETI_CSS_VARS.checkboxBoxSize, ulCheckbox?.boxSize);
+  setPxVar(vars, ETI_CSS_VARS.checkboxGapWidth, ulCheckbox?.gapWidth);
+  setPxVar(vars, ETI_CSS_VARS.checkboxMarginLeft, ulCheckbox?.marginLeft);
+  setColorVar(vars, ETI_CSS_VARS.checkboxBoxColor, ulCheckbox?.boxColor);
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
@@ -140,5 +154,6 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyLinkVars(vars, htmlStyle?.a);
   applyUnorderedListVars(vars, htmlStyle?.ul);
   applyOrderedListVars(vars, htmlStyle?.ol);
+  applyCheckboxListVars(vars, htmlStyle?.ulCheckbox);
   return vars as CSSProperties;
 }

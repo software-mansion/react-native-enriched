@@ -181,6 +181,13 @@ export function Toolbar({
         editor?.toggleOrderedList();
       },
     },
+    {
+      key: 'checkboxList',
+      label: '☑',
+      onPress: (editor) => {
+        editor?.toggleCheckboxList(true);
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;

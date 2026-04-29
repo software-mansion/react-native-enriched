@@ -147,3 +147,43 @@
   .eti-inline-image {
   box-shadow: inset 0 0 0 999px Highlight;
 }
+
+.eti-editor ul[data-type="checkboxList"] {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  padding-left: calc(
+    var(--eti-checkbox-margin-left, 16px) + var(--eti-checkbox-gap-width, 16px)
+  );
+}
+
+.eti-editor ul[data-type="checkboxList"] > li {
+  position: relative;
+  list-style: none;
+}
+
+.eti-editor ul[data-type="checkboxList"] > li > label {
+  position: absolute;
+  left: calc(
+    -1 * var(--eti-checkbox-gap-width, 16px) - var(--eti-checkbox-box-size, 24px)
+  );
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  top: 0.6em;
+  @supports (top: 0.5lh) {
+    top: 0.5lh;
+  }
+}
+
+.eti-editor ul[data-type="checkboxList"] > li > label input[type='checkbox'] {
+  width: var(--eti-checkbox-box-size, 24px);
+  height: var(--eti-checkbox-box-size, 24px);
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--eti-checkbox-box-color, #0000ff);
+}

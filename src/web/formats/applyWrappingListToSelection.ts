@@ -24,7 +24,8 @@ export function applyWrappingListToSelection(
   editor: Editor,
   chain: () => ChainedCommands,
   listTypeName: string,
-  itemTypeName: string
+  itemTypeName: string,
+  itemAttrs: Record<string, unknown> | null = null
 ): boolean {
   const { doc: docBefore, selection: selBefore } = editor.state;
   const nativeAnchor = tiptapPosToNativePos(docBefore, selBefore.anchor);
@@ -49,7 +50,7 @@ export function applyWrappingListToSelection(
       for (let i = range.startIndex; i < range.endIndex; i++) {
         const block = range.parent.child(i);
         listItems.push(
-          itemType.create(null, Fragment.from(block.copy(block.content)))
+          itemType.create(itemAttrs, Fragment.from(block.copy(block.content)))
         );
       }
 

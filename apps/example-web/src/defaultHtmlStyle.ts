@@ -56,4 +56,10 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
     marginLeft: 24,
     gapWidth: 16,
   },
+  ulCheckbox: {
+    boxSize: 18,
+    gapWidth: 16,
+    marginLeft: 24,
+    boxColor: 'rgb(0, 26, 114)',
+  },
 };
