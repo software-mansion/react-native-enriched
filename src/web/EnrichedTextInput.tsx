@@ -8,7 +8,7 @@ import {
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
-  EnrichedTextInputWebProps,
+  EnrichedTextInputProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import {
@@ -85,7 +85,7 @@ export const EnrichedTextInput = ({
   onChangeState,
   onLinkDetected,
   htmlStyle,
-}: EnrichedTextInputWebProps) => {
+}: EnrichedTextInputProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 

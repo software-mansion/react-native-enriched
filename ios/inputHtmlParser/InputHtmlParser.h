@@ -3,7 +3,6 @@
 
 @interface InputHtmlParser : NSObject
 - (instancetype _Nonnull)initWithInput:(id _Nonnull)input;
-- (NSString *_Nonnull)parseToHtmlFromRange:(NSRange)range;
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html;
 - (void)replaceFromHtml:(NSString *_Nonnull)html range:(NSRange)range;
 - (void)insertFromHtml:(NSString *_Nonnull)html location:(NSInteger)location;

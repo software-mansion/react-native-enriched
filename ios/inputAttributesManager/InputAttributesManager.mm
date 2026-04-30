@@ -121,7 +121,7 @@
 }
 
 - (void)manageTypingAttributesWithOnlySelection:(BOOL)onlySelectionChanged {
-  InputTextView *textView = _input->textView;
+  EnrichedInputTextView *textView = _input->textView;
   NSRange selectedRange = textView.selectedRange;
 
   // Typing attributes get reset when only selection changed to an empty line
