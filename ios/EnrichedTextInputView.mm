@@ -8,7 +8,6 @@
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
-#import "ParagraphsUtils.h"
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"

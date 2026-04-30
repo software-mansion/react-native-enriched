@@ -1,4 +1,6 @@
 #import "HtmlParser.h"
+#import "AlignmentEntry.h"
+#import "AlignmentUtils.h"
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -493,6 +495,13 @@
           checkboxStates[@(plainText.length)] = @(isChecked);
         }
       } else if (!closingTag) {
+        BOOL isPlainParagraph =
+            [currentTagName isEqualToString:@"p"] &&
+            (!currentTagParams || [currentTagParams length] == 0);
+
+        if (isPlainParagraph) {
+          continue;
+        }
         // we finish opening tag - get its location, the current
         // precedingImageCount and optionally params and put them under tag name
         // key in ongoingTags. Storing the open-time image count lets
@@ -552,7 +561,8 @@
 
         [self checkForAlignments:ongoingTags[currentTagName]
                        plainText:plainText
-                 foundAlignments:foundAlignments];
+                 foundAlignments:foundAlignments
+             precedingImageCount:precedingImageCount];
         [self finalizeTagEntry:currentTagName
                        ongoingTags:ongoingTags
             initiallyProcessedTags:initiallyProcessedTags
@@ -983,19 +993,26 @@
           [result appendString:@"\n</ul>"];
         }
 
+        NSString *cssStyleString =
+            [self prepareCssStyleString:currentRange.location
+                           isOpeningTag:YES
+                                   host:host];
+
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
                 containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = YES;
-          [result appendString:@"\n<ul>"];
+          [result appendString:[NSString stringWithFormat:@"\n<ul%@>",
+                                                          cssStyleString]];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = YES;
-          [result appendString:@"\n<ol>"];
+          [result appendString:[NSString stringWithFormat:@"\n<ol%@>",
+                                                          cssStyleString]];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
@@ -1014,7 +1031,9 @@
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getType])]) {
           inCheckboxList = YES;
-          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+          [result appendString:[NSString stringWithFormat:
+                                             @"\n<ul data-type=\"checkbox\"%@>",
+                                             cssStyleString]];
         }
 
         // don't add the <p> tag if some paragraph styles are present
@@ -1034,7 +1053,8 @@
                 containsObject:@([CheckboxListStyle getType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:@"\n<p>"];
+          [result appendString:[NSString
+                                   stringWithFormat:@"<p%@>", cssStyleString]];
         }
       }
 
@@ -1243,6 +1263,9 @@
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location
                             host:(id<EnrichedViewHost>)host {
+  NSString *cssStyleString = [self prepareCssStyleString:location
+                                            isOpeningTag:openingTag
+                                                    host:host];
   if ([style isEqualToNumber:@([BoldStyle getType])]) {
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
@@ -1322,17 +1345,17 @@
       return @"mention";
     }
   } else if ([style isEqualToNumber:@([H1Style getType])]) {
-    return @"h1";
+    return [NSString stringWithFormat:@"h1%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H2Style getType])]) {
-    return @"h2";
+    return [NSString stringWithFormat:@"h2%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H3Style getType])]) {
-    return @"h3";
+    return [NSString stringWithFormat:@"h3%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H4Style getType])]) {
-    return @"h4";
+    return [NSString stringWithFormat:@"h4%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H5Style getType])]) {
-    return @"h5";
+    return [NSString stringWithFormat:@"h5%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H6Style getType])]) {
-    return @"h6";
+    return [NSString stringWithFormat:@"h6%@", cssStyleString];
   } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
              [style isEqualToNumber:@([OrderedListStyle getType])]) {
     return @"li";
@@ -1352,12 +1375,12 @@
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
-    return @"p";
+    return [NSString stringWithFormat:@"p%@", cssStyleString];
   }
   return @"";
 }
 
-- (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
++ (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
   switch (alignment) {
   case NSTextAlignmentCenter:
     return @"center";
@@ -1370,16 +1393,17 @@
   }
 }
 
-- (NSString *)prepareCssStyleString:(NSInteger)location
-                       isOpeningTag:(BOOL)isOpeningTag {
++ (NSString *)prepareCssStyleString:(NSInteger)location
+                       isOpeningTag:(BOOL)isOpeningTag
+                               host:(id<EnrichedViewHost>)host {
   if (!isOpeningTag) {
     return @"";
   }
 
   NSParagraphStyle *pStyle =
-      [_input->textView.textStorage attribute:NSParagraphStyleAttributeName
-                                      atIndex:location
-                               effectiveRange:nil];
+      [host.textView.textStorage attribute:NSParagraphStyleAttributeName
+                                   atIndex:location
+                            effectiveRange:nil];
   NSString *alignStr = [self cssValueForAlignment:pStyle.alignment];
 
   if (alignStr) {
@@ -1389,7 +1413,7 @@
   return @"";
 }
 
-- (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
++ (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
   if (!params)
     return NSTextAlignmentNatural;
 
@@ -1416,23 +1440,10 @@
   return NSTextAlignmentNatural;
 }
 
-- (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
-                 offset:(NSInteger)offset {
-  for (AlignmentEntry *entry in alignments) {
-    // Offset the range (e.g. if inserting into the middle of text)
-    NSRange finalRange =
-        NSMakeRange(offset + entry.range.location, entry.range.length);
-
-    [AlignmentUtils setAlignment:entry.alignment
-                        forRange:finalRange
-                         inInput:_input
-                  withTypingAttr:NO];
-  }
-}
-
-- (void)checkForAlignments:(NSArray *)tagData
++ (void)checkForAlignments:(NSArray *)tagData
                  plainText:(NSString *)plainText
-           foundAlignments:(NSMutableArray<AlignmentEntry *> *)foundAlignments {
+           foundAlignments:(NSMutableArray<AlignmentEntry *> *)foundAlignments
+       precedingImageCount:(NSInteger)precedingImageCount {
   if (tagData == nil) {
     return;
   }
@@ -1444,7 +1455,7 @@
   if (align != NSTextAlignmentNatural) {
     NSInteger startLoc = [tagData[0] integerValue];
     // Calculate range relative to plainText
-    NSInteger actualStart = startLoc + _precedingImageCount;
+    NSInteger actualStart = startLoc + precedingImageCount;
     NSInteger length = plainText.length - startLoc;
 
     if (length > 0) {

@@ -1,4 +1,5 @@
 #import "InputHtmlParser.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "HtmlParser.h"
 #import "StringExtension.h"
@@ -18,8 +19,6 @@
 }
 
 - (void)replaceWholeFromHtml:(NSString *_Nonnull)html {
-  NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
-
   // reset the text first and reset typing attributes
   _input->textView.text = @"";
   _input->textView.typingAttributes = _input->defaultTypingAttributes;
@@ -28,6 +27,7 @@
     NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
     NSString *plainText = (NSString *)processingResult[0];
     NSArray *stylesInfo = (NSArray *)processingResult[1];
+    NSArray *alignments = (NSArray *)processingResult[2];
 
     // set new text
     _input->textView.text = plainText;
@@ -36,6 +36,7 @@
     [self applyProcessedStyles:stylesInfo
            offsetFromBeginning:0
                plainTextLength:plainText.length];
+    [AlignmentUtils applyAlignments:alignments offset:0 toInput:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -51,6 +52,7 @@
     NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
     NSString *plainText = (NSString *)processingResult[0];
     NSArray *stylesInfo = (NSArray *)processingResult[1];
+    NSArray *alignments = (NSArray *)processingResult[2];
 
     // we can use ready replace util
     [TextInsertionUtils replaceText:plainText
@@ -62,6 +64,9 @@
     [self applyProcessedStyles:stylesInfo
            offsetFromBeginning:range.location
                plainTextLength:plainText.length];
+    [AlignmentUtils applyAlignments:alignments
+                             offset:range.location
+                            toInput:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -79,6 +84,7 @@
     NSArray *processingResult = [HtmlParser getTextAndStylesFromHtml:html];
     NSString *plainText = (NSString *)processingResult[0];
     NSArray *stylesInfo = (NSArray *)processingResult[1];
+    NSArray *alignments = (NSArray *)processingResult[2];
 
     // same here, insertion utils got our back
     [TextInsertionUtils insertText:plainText
@@ -90,6 +96,7 @@
     [self applyProcessedStyles:stylesInfo
            offsetFromBeginning:location
                plainTextLength:plainText.length];
+    [AlignmentUtils applyAlignments:alignments offset:location toInput:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",

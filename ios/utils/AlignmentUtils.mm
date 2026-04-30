@@ -1,8 +1,23 @@
 #import "AlignmentUtils.h"
-#import "ParagraphsUtils.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
 
 @implementation AlignmentUtils
+
++ (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
+                 offset:(NSInteger)offset
+                toInput:(EnrichedTextInputView *)input {
+  for (AlignmentEntry *entry in alignments) {
+    // Offset the range (e.g. if inserting into the middle of text)
+    NSRange finalRange =
+        NSMakeRange(offset + entry.range.location, entry.range.length);
+
+    [AlignmentUtils setAlignment:entry.alignment
+                        forRange:finalRange
+                         inInput:input
+                  withTypingAttr:NO];
+  }
+}
 
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input {
@@ -22,9 +37,8 @@
   // Expand the range if we are inside a List
   NSRange targetRange = [AlignmentUtils expandRangeToContiguousList:forRange
                                                             inInput:input];
-  NSArray *paragraphs =
-      [ParagraphsUtils getSeparateParagraphsRangesIn:textView
-                                               range:targetRange];
+  NSArray *paragraphs = [RangeUtils getSeparateParagraphsRangesIn:textView
+                                                            range:targetRange];
 
   [textView.textStorage beginEditing];
   for (NSValue *val in paragraphs) {
@@ -110,10 +124,10 @@
   if (text.length == 0)
     return range;
 
-  NSArray *listStyles = @[
-    input->stylesDict[@([UnorderedListStyle getStyleType])],
-    input->stylesDict[@([OrderedListStyle getStyleType])],
-    input->stylesDict[@([CheckboxListStyle getStyleType])]
+  NSArray<StyleBase *> *listStyles = @[
+    input->stylesDict[@([UnorderedListStyle getType])],
+    input->stylesDict[@([OrderedListStyle getType])],
+    input->stylesDict[@([CheckboxListStyle getType])]
   ];
 
   NSRange expandedRange = range;
@@ -123,9 +137,9 @@
       [text paragraphRangeForRange:NSMakeRange(range.location, 0)];
 
   // Find which list style is active at the start
-  id<BaseStyleProtocol> activeStartStyle = nil;
-  for (id<BaseStyleProtocol> style in listStyles) {
-    if ([style detectStyle:startParagraph]) {
+  StyleBase *activeStartStyle = nil;
+  for (StyleBase *style in listStyles) {
+    if ([style detect:startParagraph]) {
       activeStartStyle = style;
       break;
     }
@@ -139,7 +153,7 @@
       NSRange prevPara = [text
           paragraphRangeForRange:NSMakeRange(currentPara.location - 1, 0)];
 
-      if ([activeStartStyle detectStyle:prevPara]) {
+      if ([activeStartStyle detect:prevPara]) {
         // It's still the same list -> Expand our range.
         expandedRange = NSUnionRange(expandedRange, prevPara);
         currentPara = prevPara;
@@ -156,9 +170,9 @@
   NSRange endParagraph = [text paragraphRangeForRange:NSMakeRange(endLoc, 0)];
 
   // Find which list style is active at the end
-  id<BaseStyleProtocol> activeEndStyle = nil;
-  for (id<BaseStyleProtocol> style in listStyles) {
-    if ([style detectStyle:endParagraph]) {
+  StyleBase *activeEndStyle = nil;
+  for (StyleBase *style in listStyles) {
+    if ([style detect:endParagraph]) {
       activeEndStyle = style;
       break;
     }
@@ -172,7 +186,7 @@
       NSRange nextPara =
           [text paragraphRangeForRange:NSMakeRange(NSMaxRange(currentPara), 0)];
 
-      if ([activeEndStyle detectStyle:nextPara]) {
+      if ([activeEndStyle detect:nextPara]) {
         // It's still the same list -> expand our range.
         expandedRange = NSUnionRange(expandedRange, nextPara);
         currentPara = nextPara;

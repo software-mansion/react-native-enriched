@@ -1,7 +1,12 @@
+#import "AlignmentEntry.h"
 #import "EnrichedTextInputView.h"
 #import <UIKit/UIKit.h>
 
 @interface AlignmentUtils : NSObject
+
++ (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
+                 offset:(NSInteger)offset
+                toInput:(EnrichedTextInputView *)input;
 
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input;
