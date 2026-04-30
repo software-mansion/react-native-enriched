@@ -12,9 +12,11 @@
   "exports": {
     ".": {
       "react-native": {
+        "source": "./src/index.native.tsx",
         "types": "./lib/typescript/src/index.native.d.ts",
         "default": "./lib/module/index.native.js"
       },
+      "source": "./src/index.tsx",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
