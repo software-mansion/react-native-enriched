@@ -8,9 +8,16 @@ import type {
   TargetedEvent,
   TextStyle,
   ViewProps,
-  ViewStyle,
 } from 'react-native';
 
+/**
+ * Allowed container styles for `<EnrichedTextInput />`'s `style` prop.
+ *
+ * Represents the supported subset of React Native
+ * [`TextStyle`](https://reactnative.dev/docs/text-style-props).
+ * Some properties are not supported on all platforms. In such cases a property
+ * is annotated with a `@platform` directive.
+ */
 export interface EnrichedInputStyle {
   // Layout / FlexStyle
   alignSelf?: TextStyle['alignSelf'];
@@ -450,7 +457,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
-  style?: ViewStyle | TextStyle;
+  style?: EnrichedInputStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   returnKeyType?: ReturnKeyTypeOptions;
@@ -487,14 +494,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
-}
-
-// Web-only for now. Native will eventually migrate to EnrichedInputStyle too,
-// at which point this interface will be removed and EnrichedTextInputProps
-// will use EnrichedInputStyle directly.
-export interface EnrichedTextInputWebProps
-  extends Omit<EnrichedTextInputProps, 'style'> {
-  style?: EnrichedInputStyle;
 }
 
 interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
