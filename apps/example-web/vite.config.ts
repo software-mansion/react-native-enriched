@@ -11,6 +11,8 @@ export default defineConfig({
         __dirname,
         '../../src/index.web.tsx'
       ),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
     },
   },
 });

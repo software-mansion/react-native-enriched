@@ -1,0 +1,210 @@
+import type { CSSProperties } from 'react';
+import type { HtmlStyle } from '../../../types';
+import { DEFAULT_HTML_STYLE } from '../../../utils/defaultHtmlStyle';
+import {
+  htmlStyleToCSSVariables,
+  mergeWithDefaultHtmlStyle,
+} from '../htmlStyleToCSSVariables';
+
+type CodeStyle = HtmlStyle['code'];
+
+describe('mergeWithDefaultHtmlStyle', () => {
+  const cases: Array<[HtmlStyle | undefined, Partial<Required<HtmlStyle>>]> = [
+    [undefined, DEFAULT_HTML_STYLE],
+    [{}, DEFAULT_HTML_STYLE],
+    [
+      { code: { color: 'purple' } },
+      {
+        code: {
+          color: 'purple',
+          backgroundColor: DEFAULT_HTML_STYLE.code.backgroundColor,
+        },
+      },
+    ],
+    [
+      { code: { color: 'purple', backgroundColor: 'white' } },
+      { code: { color: 'purple', backgroundColor: 'white' } },
+    ],
+    [
+      { h1: { fontSize: 48 } },
+      { h1: { fontSize: 48, bold: DEFAULT_HTML_STYLE.h1.bold } },
+    ],
+    [
+      { ul: { bulletColor: 'red' } },
+      {
+        ul: {
+          bulletColor: 'red',
+          bulletSize: DEFAULT_HTML_STYLE.ul.bulletSize,
+          marginLeft: DEFAULT_HTML_STYLE.ul.marginLeft,
+          gapWidth: DEFAULT_HTML_STYLE.ul.gapWidth,
+        },
+      },
+    ],
+  ];
+
+  it.each(cases)('%j → contains %j', (input, expected) => {
+    expect(mergeWithDefaultHtmlStyle(input)).toMatchObject(expected);
+  });
+});
+
+describe('htmlStyleToCSSVariables', () => {
+  it('returns empty object for undefined input', () => {
+    expect(htmlStyleToCSSVariables(undefined)).toEqual({});
+  });
+
+  it('returns empty object for empty style', () => {
+    expect(htmlStyleToCSSVariables({})).toEqual({});
+  });
+
+  it('integer color → rgba string', () => {
+    const input = { code: { color: 0xff0000ff as unknown as string } };
+    expect(htmlStyleToCSSVariables(input)).toEqual({
+      '--eti-code-color': 'rgba(255, 0, 0, 1)',
+    } as CSSProperties);
+  });
+
+  describe('code styles', () => {
+    const cases = [
+      [{ color: '#ff0000' }, { '--eti-code-color': '#ff0000' }],
+      [
+        { color: 'rgba(0,128,255,1)' },
+        { '--eti-code-color': 'rgba(0,128,255,1)' },
+      ],
+      [{ backgroundColor: '#f5f5f5' }, { '--eti-code-bg-color': '#f5f5f5' }],
+      [
+        { color: '#333', backgroundColor: '#f5f5f5' },
+        { '--eti-code-color': '#333', '--eti-code-bg-color': '#f5f5f5' },
+      ],
+      [{}, {}],
+      [undefined, {}],
+    ] as Array<[CodeStyle, CSSProperties]>;
+
+    it.each(cases)('%j → %j', (code, expected) => {
+      expect(htmlStyleToCSSVariables({ code })).toEqual(expected);
+    });
+  });
+
+  describe('heading styles', () => {
+    const cases = [
+      [
+        { h1: { fontSize: 24, bold: true } },
+        {
+          '--eti-h1-font-size': '24px',
+          '--eti-h1-font-weight': 'bold',
+        },
+      ],
+      [
+        { h2: { fontSize: 20, bold: false } },
+        {
+          '--eti-h2-font-size': '20px',
+          '--eti-h2-font-weight': 'normal',
+        },
+      ],
+      [{ h3: { fontSize: 18 } }, { '--eti-h3-font-size': '18px' }],
+      [{}, {}],
+    ] as Array<[HtmlStyle, CSSProperties]>;
+
+    it.each(cases)('%j → %j', (input, expected) => {
+      expect(htmlStyleToCSSVariables(input)).toEqual(expected);
+    });
+  });
+
+  it('maps blockquote styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        blockquote: {
+          borderColor: '#ccc',
+          borderWidth: 3,
+          gapWidth: 12,
+          color: '#444',
+        },
+      })
+    ).toEqual({
+      '--eti-blockquote-border-color': '#ccc',
+      '--eti-blockquote-border-width': '3px',
+      '--eti-blockquote-gap-width': '12px',
+      '--eti-blockquote-color': '#444',
+    } as CSSProperties);
+  });
+
+  it('maps codeblock styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        codeblock: {
+          backgroundColor: '#1e1e1e',
+          color: '#d4d4d4',
+          borderRadius: 8,
+        },
+      })
+    ).toEqual({
+      '--eti-codeblock-bg-color': '#1e1e1e',
+      '--eti-codeblock-color': '#d4d4d4',
+      '--eti-codeblock-border-radius': '8px',
+    } as CSSProperties);
+  });
+
+  it('maps anchor link styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        a: { color: 'blue', textDecorationLine: 'underline' },
+      })
+    ).toEqual({
+      '--eti-link-color': 'blue',
+      '--eti-link-text-decoration-line': 'underline',
+    } as CSSProperties);
+  });
+
+  it('maps ul styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ul: {
+          bulletColor: '#ff0000',
+          bulletSize: 12,
+          marginLeft: 8,
+          gapWidth: 4,
+        },
+      })
+    ).toEqual({
+      '--eti-ul-bullet-color': '#ff0000',
+      '--eti-ul-bullet-size': '12px',
+      '--eti-ul-margin-left': '8px',
+      '--eti-ul-gap-width': '4px',
+    } as CSSProperties);
+  });
+
+  it('maps ol styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ol: {
+          gapWidth: 6,
+          marginLeft: 10,
+          markerFontWeight: '700',
+          markerColor: '#00ff00',
+        },
+      })
+    ).toEqual({
+      '--eti-ol-gap-width': '6px',
+      '--eti-ol-margin-left': '10px',
+      '--eti-ol-marker-font-weight': '700',
+      '--eti-ol-marker-color': '#00ff00',
+    } as CSSProperties);
+  });
+
+  it('maps ulCheckbox styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ulCheckbox: {
+          boxSize: 20,
+          gapWidth: 8,
+          marginLeft: 12,
+          boxColor: '#336699',
+        },
+      })
+    ).toEqual({
+      '--eti-checkbox-box-size': '20px',
+      '--eti-checkbox-gap-width': '8px',
+      '--eti-checkbox-margin-left': '12px',
+      '--eti-checkbox-box-color': '#336699',
+    } as CSSProperties);
+  });
+});

@@ -10,11 +10,11 @@
 #   --rebuild             Force a rebuild and install, even if the app is
 #                         already installed on the device.
 #   flow ...              One or more Maestro flow files or directories to run.
-#                         Defaults to .maestro/flows if omitted.
+#                         Defaults to all component suites if omitted.
 #
 # Examples:
 #   ./run-tests.sh --platform ios
-#   ./run-tests.sh --platform android --update-screenshots .maestro/flows/core_controls_smoke.yaml
+#   ./run-tests.sh --platform android --update-screenshots .maestro/enrichedInput/flows/core_controls_smoke.yaml
 #   ./run-tests.sh --platform ios --rebuild
 
 set -euo pipefail
@@ -34,6 +34,9 @@ if [ "$(printf '%s\n' "$MIN_MAESTRO_VERSION" "$MAESTRO_VERSION" | sort -V | head
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+MAESTRO_ROOT="$REPO_ROOT/.maestro"
+SCREENSHOT_ROOT="$MAESTRO_ROOT"
 BUNDLE_ID="swmansion.enriched.example"
 
 PLATFORM=""
@@ -50,7 +53,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -z "$FLOWS" ] && FLOWS=".maestro/flows"
+[ -z "$FLOWS" ] && FLOWS=".maestro/enrichedInput/flows .maestro/enrichedText/flows"
 
 case "$PLATFORM" in
   ios)     SETUP="$SCRIPT_DIR/setup-ios-simulator.sh" ;;
@@ -80,8 +83,8 @@ else
   echo "=== App ($BUNDLE_ID) already installed, skipping build ==="
 fi
 
-EXTRA=""
-[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="--env UPDATE_SCREENSHOTS=true"
+EXTRA="--env SCREENSHOT_ROOT=$SCREENSHOT_ROOT"
+[ -n "$UPDATE_SCREENSHOTS" ] && EXTRA="$EXTRA --env UPDATE_SCREENSHOTS=true"
 
 # Exclude tests tagged for the other platform.
 case "$PLATFORM" in
@@ -91,7 +94,7 @@ esac
 
 # Maestro resolves addMedia paths by walking the workspace inputs. Since assets
 # live outside the flows directory, always include it so media files are found.
-ASSETS_DIR=".maestro/assets"
+ASSETS_DIR="$MAESTRO_ROOT/assets"
 [ -d "$ASSETS_DIR" ] && FLOWS="$ASSETS_DIR $FLOWS"
 
 echo "=== Running maestro tests ==="

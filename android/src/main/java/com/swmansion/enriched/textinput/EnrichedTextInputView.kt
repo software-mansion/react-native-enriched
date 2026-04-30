@@ -9,9 +9,9 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
+import android.text.SpannableString
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Patterns
@@ -54,7 +54,6 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
@@ -332,34 +331,43 @@ class EnrichedTextInputView :
       val selectedHtml = EnrichedParser.toHtml(selectedText)
 
       val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      val clip = ClipData.newHtmlText(EnrichedConstants.CLIPBOARD_TAG, selectedText, selectedHtml)
       clipboard.setPrimaryClip(clip)
     }
   }
 
   fun handleTextPaste(item: ClipData.Item) {
-    val htmlText = item.htmlText
     val currentText = text as Spannable
     val start = selectionStart.coerceAtLeast(0)
     val end = selectionEnd.coerceAtLeast(0)
-
-    if (htmlText != null) {
-      val parsedText = parseText(htmlText)
-      if (parsedText is Spannable) {
-        val finalText = currentText.mergeSpannables(start, end, parsedText)
-        setValue(finalText, false)
-        return
-      }
-    }
-
-    if (item.text == null) return
     val lengthBefore = currentText.length
-    val finalText = currentText.mergeSpannables(start, end, item.text.toString())
-    setValue(finalText)
+
+    val pastedSpannable: Spannable =
+      when {
+        item.htmlText != null -> {
+          val parsed = parseText(item.htmlText)
+          (parsed as? Spannable) ?: return
+        }
+
+        item.text != null -> {
+          SpannableString(item.text.toString())
+        }
+
+        else -> {
+          return
+        }
+      }
+
+    val finalText = currentText.mergeSpannables(start, end, pastedSpannable)
+    setValue(finalText, false)
+
+    // replacement-safe: oldLength - removed + inserted
+    val insertedLength = finalText.length - (lengthBefore - (end - start))
+    val pasteEnd = (start + insertedLength).coerceIn(0, finalText.length)
+    setSelection(pasteEnd)
 
     // Detect links in the newly pasted range
-    val finalEndIndex = start + finalText.length - lengthBefore
-    parametrizedStyles?.detectLinksInRange(finalText, start, finalEndIndex)
+    parametrizedStyles?.detectLinksInRange(finalText, start.coerceAtMost(pasteEnd), pasteEnd)
   }
 
   fun requestFocusProgrammatically() {
@@ -1081,7 +1089,6 @@ class EnrichedTextInputView :
 
   companion object {
     const val TAG = "EnrichedTextInputView"
-    const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
     private const val CONTEXT_MENU_ITEM_ID = 10000
     const val DEFAULT_IME_ACTION_LABEL = "DONE"
   }

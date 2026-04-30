@@ -12,8 +12,9 @@ import {
   LINK_REGEX,
   htmlStyle,
   ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS,
-  DEBUG_SCROLLABLE,
 } from '../constants/editorConfig';
+import { useState } from 'react';
+import { TextRenderer } from '../components/TextRenderer';
 
 interface DevScreenProps {
   onSwitch: () => void;
@@ -21,6 +22,16 @@ interface DevScreenProps {
 
 export function DevScreen({ onSwitch }: DevScreenProps) {
   const editor = useEditorState();
+  const [textNodes, setTextNodes] = useState<Array<string>>([]);
+
+  const handlePushTextNode = async () => {
+    const currentText = await editor.ref.current?.getHTML();
+    if (currentText) {
+      setTextNodes((prevTextNodes) => [...prevTextNodes, currentText]);
+    }
+
+    editor.ref.current?.setValue('');
+  };
 
   return (
     <>
@@ -73,34 +84,26 @@ export function DevScreen({ onSwitch }: DevScreenProps) {
             layout="horizontal"
           />
         </View>
+        <HtmlSection currentHtml={editor.currentHtml} />
         <View style={styles.buttonStack}>
           <Button
-            title="Focus"
-            onPress={editor.handleFocus}
+            title="Set input's value"
+            onPress={editor.openValueModal}
             style={styles.button}
-            testID="focus-button"
           />
           <Button
-            title="Blur"
-            onPress={editor.handleBlur}
+            title="Push text"
+            onPress={handlePushTextNode}
             style={styles.button}
-            testID="blur-button"
           />
         </View>
-        <Button
-          title="Set input's value"
-          onPress={editor.openValueModal}
-          style={styles.valueButton}
-          testID="set-value-button"
-        />
         <Button
           title="Test Screen"
           onPress={onSwitch}
           style={styles.valueButton}
           testID="toggle-screen-button"
         />
-        <HtmlSection currentHtml={editor.currentHtml} />
-        {DEBUG_SCROLLABLE && <View style={styles.scrollPlaceholder} />}
+        <TextRenderer nodes={textNodes} />
       </ScrollView>
       <LinkModal
         isOpen={editor.isLinkModalOpen}

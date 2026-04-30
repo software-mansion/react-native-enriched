@@ -1,0 +1,20 @@
+appId: swmansion.enriched.example
+---
+# Validates that external HTML is parsed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: 'Hello<pre>code</pre><span>span paragraph</span><blockquote>blockquote</blockquote>'
+ 
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'external_html_parsing'

@@ -1,0 +1,18 @@
+#pragma once
+#import <UIKit/UIKit.h>
+
+@class EnrichedTextInputView;
+
+@interface InputAttributesManager : NSObject
+@property(nonatomic, weak) EnrichedTextInputView *input;
+- (instancetype)initWithInput:(EnrichedTextInputView *)input;
+- (void)addDirtyRange:(NSRange)range;
+- (NSArray *)getDirtyRanges;
+- (void)shiftDirtyRangesWithEditedRange:(NSRange)editedRange
+                         changeInLength:(NSInteger)delta;
+- (void)didRemoveTypingAttribute:(NSString *)key;
+- (void)clearRemovedTypingAttributes;
+- (void)manageTypingAttributesWithOnlySelection:(BOOL)onlySelectionChanged;
+- (void)handleDirtyRangesStyling;
+- (NSSet<NSString *> *)customAttributesKeys;
+@end

@@ -38,7 +38,7 @@ class EnrichedTextInputSpannableFactory : EnrichedSpanFactory<HtmlStyle> {
   override fun createLinkSpan(
     url: String,
     style: HtmlStyle,
-  ) = EnrichedInputLinkSpan(url, style)
+  ) = EnrichedInputLinkSpan(url, style, true)
 
   override fun createMentionSpan(
     text: String,

@@ -1,0 +1,26 @@
+appId: swmansion.enriched.example
+---
+# Regression test: a link loaded from HTML must not be destroyed when the user types immediately after it.
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- runFlow:
+    file: "../subflows/set_editor_value.yaml"
+    env:
+      VALUE: "<a href=\"https://swmansion.com\">link</a>"
+
+- tapOn:
+    id: "editor-input"
+    point: "5%, 50%"
+- tapOn:
+    id: "editor-input"
+    point: "95%, 50%"
+
+- inputText: " extra"
+
+- runFlow:
+    file: "../subflows/capture_or_assert_screenshot.yaml"
+    env:
+      SCREENSHOT_NAME: "html_link_not_extended"

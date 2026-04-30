@@ -76,7 +76,7 @@ yarn test
 
 ### E2E tests
 
-We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/flows/` and shared subflows in `.maestro/subflows/`.
+We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/enrichedInput/flows/` and `.maestro/enrichedText/flows/`. Shared subflows live in `.maestro/subflows/`, with component-specific subflows in `.maestro/enrichedInput/subflows/` and `.maestro/enrichedText/subflows/`.
 
 #### Prerequisites
 
@@ -106,7 +106,7 @@ Each command sets up the device and runs all Maestro flows. The script automatic
 
 ```sh
 # Both platforms sequentially
-yarn test:e2e
+yarn test:e2e:mobile
 
 # Single platform
 yarn test:e2e:ios
@@ -117,7 +117,7 @@ You can target specific flows or force a rebuild:
 
 ```sh
 # Run a single flow
-yarn test:e2e:ios .maestro/flows/core_controls_smoke.yaml
+yarn test:e2e:ios .maestro/enrichedInput/flows/core_controls_smoke.yaml
 
 # Force a fresh build even if the app is already installed
 yarn test:e2e:android --rebuild
@@ -125,18 +125,18 @@ yarn test:e2e:android --rebuild
 
 #### Visual regression tests
 
-Some flows compare a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
+Some flows compare a screenshot of the editor against a saved baseline in `.maestro/enrichedInput/screenshots/` or `.maestro/enrichedText/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
 
 ```sh
 # Update baselines on both platforms
-yarn test:e2e --update-screenshots
+yarn test:e2e:mobile --update-screenshots
 
 # Single platform
 yarn test:e2e:ios --update-screenshots
-yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.yaml
+yarn test:e2e:android --update-screenshots .maestro/enrichedInput/flows/inline_styles_visual.yaml
 ```
 
-Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
+Always review newly saved screenshots in `.maestro/enrichedInput/screenshots/` and `.maestro/enrichedText/screenshots/` before committing them.
 
 #### Troubleshooting: flaky Android tests on macOS
 
@@ -144,6 +144,28 @@ macOS may throttle the Android emulator via **App Nap** when its window is not v
 
 1. **Keep the emulator window visible** while tests are running.
 2. **Disable App Nap** for the emulator: `defaults write com.google.android.emulator NSAppSleepDisabled -bool YES` (requires an emulator restart). Note this may drain your battery, so you may want to re-enable it afterwards with `-bool NO`.
+
+### Web E2E tests
+
+We use [Playwright](https://playwright.dev/) for end-to-end testing of the web example. Tests live in `.playwright/tests/`.
+
+#### Prerequisites
+
+- Install Playwright browser binaries once before running web E2E tests:
+
+```sh
+yarn playwright install
+```
+
+#### Running Web E2E tests
+
+Run the web E2E suite from the root directory:
+
+```sh
+yarn test:e2e:web
+```
+
+The Playwright config starts the Vite dev server automatically, so you do not need to run `yarn example-web dev` separately.
 
 ### Commit message convention
 
@@ -166,16 +188,6 @@ We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint]
 
 Our pre-commit hooks verify that the linter and tests pass when committing.
 
-### Publishing to npm
-
-We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
-
-To publish new versions, run the following:
-
-```sh
-yarn release
-```
-
 ### Scripts
 
 The `package.json` file contains various scripts for common tasks:
@@ -187,9 +199,11 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
-- `yarn test:e2e`: run E2E tests on iOS and Android sequentially.
+- `yarn test:e2e`: run all E2E tests (mobile + web) sequentially.
+- `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
+- `yarn test:e2e:web`: run E2E tests on the web example with Playwright.
 
 ### Sending a pull request
 

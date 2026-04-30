@@ -1,0 +1,38 @@
+.modal-input {
+  width: 100%;
+  height: 240px;
+  font-size: 15px;
+  border: 1px solid grey;
+  border-radius: 10px;
+  padding: 10px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.modal-input:focus {
+  border-color: var(--primary);
+}
+
+.modal-number-input {
+  width: 100%;
+  height: 42px;
+  font-size: 15px;
+  border: 1px solid grey;
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
+  font-family: inherit;
+}
+
+.modal-number-input:focus {
+  border-color: var(--primary);
+}
+
+.btn.modal-submit-btn {
+  width: auto;
+  flex: none;
+  padding: 10px 28px;
+  font-size: 15px;
+  line-height: 1.2;
+}

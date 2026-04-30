@@ -1,8 +1,11 @@
 #pragma once
 #import "BaseStyleProtocol.h"
-#import "InputConfig.h"
-#import "InputParser.h"
-#import "InputTextView.h"
+#import "EnrichedConfig.h"
+#import "EnrichedInputTextView.h"
+#import "EnrichedViewHost.h"
+#import "InputAttributesManager.h"
+#import "InputHtmlParser.h"
+#import "LinkData.h"
 #import "MediaAttachment.h"
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
@@ -13,37 +16,35 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EnrichedTextInputView
-    : RCTViewComponentView <MediaAttachmentDelegate> {
+    : RCTViewComponentView <EnrichedViewHost, MediaAttachmentDelegate> {
 @public
-  InputTextView *textView;
+  EnrichedInputTextView *textView;
 @public
-  NSRange recentlyChangedRange;
+  EnrichedConfig *config;
 @public
-  InputConfig *config;
+  InputHtmlParser *parser;
 @public
-  InputParser *parser;
+  InputAttributesManager *attributesManager;
 @public
   NSMutableDictionary<NSAttributedStringKey, id> *defaultTypingAttributes;
 @public
-  NSDictionary<NSNumber *, id<BaseStyleProtocol>> *stylesDict;
-  NSDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
+  NSDictionary<NSNumber *, id> *stylesDict;
+  NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *conflictingStyles;
   NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *blockingStyles;
 @public
   BOOL blockEmitting;
 @public
   BOOL useHtmlNormalizer;
+@public
+  NSValue *dotReplacementRange;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
-- (void)emitOnLinkDetectedEvent:(NSString *)text
-                            url:(NSString *)url
-                          range:(NSRange)range;
+- (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range;
 - (void)emitOnMentionEvent:(NSString *)indicator text:(nullable NSString *)text;
 - (void)emitOnPasteImagesEvent:(NSArray<NSDictionary *> *)images;
 - (void)anyTextMayHaveBeenModified;
 - (void)scheduleRelayoutIfNeeded;
-- (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range;
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range;
+
 @end
 
 NS_ASSUME_NONNULL_END

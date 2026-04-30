@@ -1,0 +1,24 @@
+appId: swmansion.enriched.example
+---
+# Validates that link press events are triggered correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: '<html><p><a href="https://www.google.com">Link</a></p></html>'
+
+- tapOn:
+    id: 'enriched-text'
+    point: '5%,50%'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'link_press'
