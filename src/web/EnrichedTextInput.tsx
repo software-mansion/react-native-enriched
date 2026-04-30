@@ -59,6 +59,7 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import { handleClipboardPasteImages } from './pasteImages';
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 function runFocused(
   editor: Editor,
@@ -84,6 +85,7 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onPasteImages,
   htmlStyle,
 }: EnrichedTextInputWebProps) => {
   const tiptapContent =
@@ -103,6 +105,12 @@ export const EnrichedTextInput = ({
     () => createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
     []
   );
+
+  const editorRef = useRef<Editor | null>(null);
+  const onPasteImagesRef = useRef(onPasteImages);
+  useEffect(() => {
+    onPasteImagesRef.current = onPasteImages;
+  }, [onPasteImages]);
 
   const editor = useEditor(
     {
@@ -161,6 +169,12 @@ export const EnrichedTextInput = ({
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
+        handlePaste: (_view, event) =>
+          handleClipboardPasteImages(
+            event,
+            () => editorRef.current,
+            () => onPasteImagesRef.current
+          ),
         attributes: {
           autoCapitalize,
         },
@@ -168,6 +182,10 @@ export const EnrichedTextInput = ({
     },
     [tiptapContent]
   );
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   useEffect(() => {
     editor?.commands.normalizeBoldInStyledHeadings();

@@ -10,6 +10,7 @@ import {
   type BlurEvent,
   type EnrichedInputStyle,
   type OnLinkDetected,
+  type OnPasteImagesEvent,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -127,6 +128,16 @@ function App() {
     setCurrentLink(e);
   };
 
+  const handlePasteImages = (e: NativeSyntheticEvent<OnPasteImagesEvent>) => {
+    const DEFAULT_W = 80;
+    const DEFAULT_H = 80;
+    for (const image of e.nativeEvent.images) {
+      const w = image.width > 0 ? image.width : DEFAULT_W;
+      const h = image.height > 0 ? image.height : DEFAULT_H;
+      ref.current?.setImage(image.uri, w, h);
+    }
+  };
+
   return (
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
@@ -147,6 +158,7 @@ function App() {
         onChangeHtml={handleOnChangeHtml}
         onChangeState={handleChangeState}
         onLinkDetected={handleOnLinkDetected}
+        onPasteImages={handlePasteImages}
         htmlStyle={WEB_DEFAULT_HTML_STYLE}
       />
 
