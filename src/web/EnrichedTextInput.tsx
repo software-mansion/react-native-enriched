@@ -149,7 +149,7 @@ export const EnrichedTextInput = ({
         onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {
-        handleKeyPress: (_, event) => {
+        handleKeyDown: (_, event) => {
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
