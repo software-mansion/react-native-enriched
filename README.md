@@ -322,7 +322,7 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 ## Future Plans
 
 - Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
-- Web library implementation via `react-native-web`.
+- Web support: currently in the experimental stage. Details in [docs/WEB.md](docs/WEB.md).
 
 ## Contributing
 
