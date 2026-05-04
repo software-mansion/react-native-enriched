@@ -72,6 +72,33 @@ for (const {
       await expect(editor).toHaveScreenshot(`list-keyboard-enter-${label}.png`);
     });
 
+    test('Enter at end scrolls editor when list overflows maxHeight', async ({
+      page,
+    }) => {
+      const editor = editorLocator(page);
+      const wrapper = page.locator(wrapperSelector);
+
+      const rows = Array.from(
+        { length: 18 },
+        (_, i) => `<li><p>Row ${i}</p></li>`
+      ).join('');
+      await setEditorHtml(page, wrap(rows));
+
+      await editor.evaluate((el) => {
+        el.style.maxHeight = '120px';
+      });
+
+      await editor.click();
+      await wrapper.locator('li').last().click();
+      await editor.press('End');
+
+      const scrollBefore = await editor.evaluate((el) => el.scrollTop);
+      await editor.press('Enter', { delay: KEY_ACTION_DELAY });
+      await expect
+        .poll(async () => editor.evaluate((el) => el.scrollTop))
+        .toBeGreaterThan(scrollBefore);
+    });
+
     test('Backspace at line start lifts item then merges backward', async ({
       page,
     }) => {
