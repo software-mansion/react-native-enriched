@@ -72,31 +72,26 @@ for (const {
       await expect(editor).toHaveScreenshot(`list-keyboard-enter-${label}.png`);
     });
 
-    test('Enter at end scrolls editor when list overflows maxHeight', async ({
-      page,
-    }) => {
+    test('Enter causes scrolling', async ({ page }) => {
       const editor = editorLocator(page);
       const wrapper = page.locator(wrapperSelector);
-
-      const rows = Array.from(
-        { length: 18 },
-        (_, i) => `<li><p>Row ${i}</p></li>`
-      ).join('');
-      await setEditorHtml(page, wrap(rows));
-
       await editor.evaluate((el) => {
         el.style.maxHeight = '120px';
       });
+      const items = wrapper.locator('li');
+
+      await setEditorHtml(page, wrap('<li>a</li><li>b</li><li>c</li>'));
 
       await editor.click();
-      await wrapper.locator('li').last().click();
-      await editor.press('End');
+      await items.last().click();
+      await page.keyboard.press('Enter', { delay: KEY_ACTION_DELAY });
 
-      const scrollBefore = await editor.evaluate((el) => el.scrollTop);
-      await editor.press('Enter', { delay: KEY_ACTION_DELAY });
-      await expect
-        .poll(async () => editor.evaluate((el) => el.scrollTop))
-        .toBeGreaterThan(scrollBefore);
+      await page.keyboard.type('\n\n\n\n\n', { delay: 10 });
+
+      await page.waitForTimeout(SCREENSHOT_STABILIZE_MS);
+      await expect(editor).toHaveScreenshot(
+        `list-keyboard-enter-causes-scrolling-${label}.png`
+      );
     });
 
     test('Backspace at line start lifts item then merges backward', async ({

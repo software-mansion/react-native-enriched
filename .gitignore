@@ -5,9 +5,6 @@
 # XDE
 .expo/
 
-# Local git worktrees
-.worktrees/
-
 # VSCode
 .vscode/
 jsconfig.json
