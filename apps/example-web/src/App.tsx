@@ -177,6 +177,7 @@ function App() {
           onChangeMention={handleChangeMention}
           onEndMention={handleEndMention}
           onMentionDetected={handleOnMentionDetected}
+          mentionIndicators={['@', '#']}
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
         />
         <UserMentionSuggestions

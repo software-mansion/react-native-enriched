@@ -116,28 +116,88 @@ function applyLinkVars(
   }
 }
 
-function mentionStyleForAt(
-  mention?: HtmlStyle['mention']
-): MentionStyleProperties | undefined {
-  if (!mention || typeof mention !== 'object') return undefined;
-  if (!Array.isArray(mention) && '@' in mention) {
-    const byIndicator = mention as Record<string, MentionStyleProperties>;
-    return byIndicator['@'] ?? byIndicator.default;
+function isByIndicatorMap(
+  mention: HtmlStyle['mention']
+): mention is Record<string, MentionStyleProperties> {
+  if (!mention || typeof mention !== 'object' || Array.isArray(mention)) {
+    return false;
   }
-  return mention as MentionStyleProperties;
+  // Distinguish Record<indicator, MentionStyleProperties> from MentionStyleProperties:
+  // MentionStyleProperties keys are color, backgroundColor, textDecorationLine.
+  const flatKeys: Array<keyof MentionStyleProperties> = [
+    'color',
+    'backgroundColor',
+    'textDecorationLine',
+  ];
+  const keys = Object.keys(mention);
+  return keys.some(
+    (k) => !flatKeys.includes(k as keyof MentionStyleProperties)
+  );
+}
+
+function mentionPropsToVarBlock(m: MentionStyleProperties): string {
+  const parts: string[] = [];
+  const color = toColor(m.color);
+  if (color) parts.push(`  color: ${color};`);
+  const bg = toColor(m.backgroundColor);
+  if (bg) parts.push(`  background-color: ${bg};`);
+  if (m.textDecorationLine != null) {
+    parts.push(`  text-decoration-line: ${m.textDecorationLine};`);
+  }
+  return parts.join('\n');
 }
 
 function applyMentionVars(
   vars: Record<string, string>,
   mention?: HtmlStyle['mention']
 ): void {
-  const m = mentionStyleForAt(mention);
-  if (!m) return;
-  setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
-  setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
-  if (m.textDecorationLine != null) {
-    vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
+  if (!mention) return;
+
+  if (isByIndicatorMap(mention)) {
+    // Per-indicator map — apply default/fallback vars for indicators without specific rules
+    const byIndicator = mention as Record<string, MentionStyleProperties>;
+    const fallback = byIndicator.default;
+    const m = fallback ?? byIndicator[Object.keys(byIndicator)[0]!];
+    if (m) {
+      setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
+      setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
+      if (m.textDecorationLine != null) {
+        vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
+      }
+    }
+  } else {
+    // Flat MentionStyleProperties
+    const m = mention as MentionStyleProperties;
+    setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
+    setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
+    if (m.textDecorationLine != null) {
+      vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
+    }
   }
+}
+
+/**
+ * Generates per-indicator CSS rules for `<mention indicator="X">` elements.
+ * Returns an empty string when the mention style is flat (single-indicator).
+ */
+export function mentionIndicatorCssRules(
+  mention?: HtmlStyle['mention']
+): string {
+  if (!mention || !isByIndicatorMap(mention)) return '';
+
+  const byIndicator = mention as Record<string, MentionStyleProperties>;
+  const blocks: string[] = [];
+
+  for (const [indicator, props] of Object.entries(byIndicator)) {
+    if (indicator === 'default') continue;
+    const body = mentionPropsToVarBlock(props);
+    if (!body) continue;
+    // Escape the indicator for use in an attribute selector value
+    const escaped = indicator.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    blocks.push(`.eti-editor mention[indicator="${escaped}"] {\n${body}\n}`);
+  }
+
+  return blocks.join('\n');
 }
 
 function applyUnorderedListVars(

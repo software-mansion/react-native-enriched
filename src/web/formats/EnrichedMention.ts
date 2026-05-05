@@ -1,15 +1,4 @@
-import {
-  Mark,
-  mergeAttributes,
-  getMarkRange,
-  getMarksBetween,
-} from '@tiptap/core';
-import { Fragment } from '@tiptap/pm/model';
-import type { EditorState } from '@tiptap/pm/state';
-import type { Editor } from '@tiptap/react';
-import type { OnMentionDetected } from '../../types';
-import { findEnrichedAtSuggestionMatch } from '../pmPlugins/enrichedAtSuggestionMatch';
-import { isLinkBlocked } from './formatRules';
+import { Mark, mergeAttributes } from '@tiptap/core';
 
 export const ENRICHED_MENTION_MARK_NAME = 'enrichedMention';
 
@@ -20,155 +9,46 @@ export const EnrichedMention = Mark.create({
 
   addAttributes() {
     return {
-      canonicalText: {
-        default: '',
-      },
       indicator: {
         default: '@',
       },
-      payload: {
-        default: '{}',
+      text: {
+        default: '',
+      },
+      attributes: {
+        default: {},
+        parseHTML(el: HTMLElement): Record<string, string> {
+          const out: Record<string, string> = {};
+          for (let i = 0; i < el.attributes.length; i++) {
+            const attr = el.attributes.item(i);
+            if (!attr) continue;
+            if (attr.name === 'text' || attr.name === 'indicator') continue;
+            out[attr.name] = attr.value;
+          }
+          return out;
+        },
+        renderHTML(attrs: Record<string, unknown>): Record<string, string> {
+          return (attrs.attributes ?? {}) as Record<string, string>;
+        },
       },
     };
   },
 
   parseHTML() {
-    return [
-      {
-        tag: 'mention',
-        getAttrs: (element) => {
-          if (typeof element === 'string') {
-            return false;
-          }
-          const el = element as HTMLElement;
-          const canonicalText = el.getAttribute('text') ?? '';
-          const indicator = el.getAttribute('indicator') ?? '@';
-          const payload: Record<string, string> = {};
-          const { attributes } = el;
-          for (let i = 0; i < attributes.length; i++) {
-            const attr = attributes.item(i);
-            if (!attr) continue;
-            if (attr.name === 'text' || attr.name === 'indicator') continue;
-            payload[attr.name] = attr.value;
-          }
-          return {
-            canonicalText,
-            indicator,
-            payload: JSON.stringify(payload),
-          };
-        },
-      },
-    ];
+    return [{ tag: 'mention' }];
   },
 
   renderHTML({ mark }) {
-    const attrs: Record<string, string> = {
-      text: mark.attrs.canonicalText as string,
-      indicator: mark.attrs.indicator as string,
-    };
-    try {
-      const extra = JSON.parse(mark.attrs.payload as string) as Record<
-        string,
-        string
-      >;
-      Object.assign(attrs, extra);
-    } catch {
-      // ignore invalid payload JSON
-    }
-    return ['mention', mergeAttributes(attrs), 0];
-  },
-
-  addKeyboardShortcuts() {
-    return {};
+    return [
+      'mention',
+      mergeAttributes(
+        {
+          text: mark.attrs.text as string,
+          indicator: mark.attrs.indicator as string,
+        },
+        (mark.attrs.attributes ?? {}) as Record<string, string>
+      ),
+      0,
+    ];
   },
 });
-
-/** Document range + payload when `pos` falls inside a finalized enriched mention. */
-export type EnrichedMentionResolution = {
-  from: number;
-  to: number;
-  mention: OnMentionDetected;
-};
-
-export function resolveEnrichedMentionAtPos(
-  state: EditorState,
-  pos: number
-): EnrichedMentionResolution | null {
-  const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
-  if (!mentionType) return null;
-
-  const $pos = state.doc.resolve(pos);
-  const range = getMarkRange($pos, mentionType);
-  if (!range) return null;
-
-  const entry = getMarksBetween(range.from, range.to, state.doc).find(
-    (e) => e.mark.type === mentionType
-  );
-  if (!entry) return null;
-
-  const mark = entry.mark;
-  let attributes: Record<string, string> = {};
-  try {
-    attributes = JSON.parse(mark.attrs.payload as string) as Record<
-      string,
-      string
-    >;
-  } catch {
-    attributes = {};
-  }
-
-  return {
-    from: range.from,
-    to: range.to,
-    mention: {
-      text: mark.attrs.canonicalText as string,
-      indicator: mark.attrs.indicator as string,
-      attributes,
-    },
-  };
-}
-
-export function insertEnrichedMentionAtSelection(
-  editor: Editor,
-  indicator: string,
-  canonicalText: string,
-  attributes?: Record<string, string>
-): boolean {
-  if (canonicalText.length === 0 || indicator !== '@') {
-    return false;
-  }
-  if (isLinkBlocked(editor)) {
-    return false;
-  }
-
-  const { state } = editor;
-  const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
-  if (!mentionType) return false;
-
-  const payload = JSON.stringify(attributes ?? {});
-  const mentionMark = mentionType.create({
-    indicator,
-    canonicalText,
-    payload,
-  });
-
-  const atMatch = findEnrichedAtSuggestionMatch(state.selection.$from);
-  const { from, to } =
-    atMatch != null
-      ? { from: atMatch.range.from, to: atMatch.range.to }
-      : state.selection;
-
-  const fragment = Fragment.fromArray([
-    state.schema.text(canonicalText, [mentionMark]),
-    state.schema.text(' '),
-  ]);
-
-  return editor
-    .chain()
-    .focus()
-    .command(({ tr }) => {
-      tr.replaceWith(from, to, fragment);
-      return true;
-    })
-    .run();
-}

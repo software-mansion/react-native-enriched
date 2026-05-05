@@ -4293,16 +4293,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/suggestion@npm:3.20.4":
-  version: 3.20.4
-  resolution: "@tiptap/suggestion@npm:3.20.4"
-  peerDependencies:
-    "@tiptap/core": ^3.20.4
-    "@tiptap/pm": ^3.20.4
-  checksum: 10c0/f785dcd8764fa30c0aac1ca33ca6b5fd7fa464c8cbff20df275b5026f1e907f382356df636a748aa4b810a713072baa45eda6433aa7e6d486bd5b721dde47c0d
-  languageName: node
-  linkType: hard
-
 "@tootallnate/quickjs-emscripten@npm:^0.23.0":
   version: 0.23.0
   resolution: "@tootallnate/quickjs-emscripten@npm:0.23.0"
@@ -12694,7 +12684,6 @@ __metadata:
     "@tiptap/extensions": "npm:3.20.4"
     "@tiptap/pm": "npm:3.20.4"
     "@tiptap/react": "npm:3.20.4"
-    "@tiptap/suggestion": "npm:3.20.4"
     "@types/jest": "npm:^29.5.5"
     "@types/react": "npm:^19.1.0"
     "@types/react-dom": "npm:^19.1.0"

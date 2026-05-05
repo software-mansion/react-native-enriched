@@ -26,7 +26,6 @@ import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import { useOnChangeState } from './useOnChangeState';
 import { useOnLinkDetected } from './useOnLinkDetected';
-import { useOnMentionDetected } from './useOnMentionDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
@@ -36,6 +35,7 @@ import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInp
 import {
   htmlStyleToCSSVariables,
   mergeWithDefaultHtmlStyle,
+  mentionIndicatorCssRules,
 } from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
@@ -46,10 +46,7 @@ import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
-import {
-  EnrichedMention,
-  insertEnrichedMentionAtSelection,
-} from './formats/EnrichedMention';
+import { EnrichedMention } from './formats/EnrichedMention';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
@@ -59,8 +56,14 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
-import { MentionMarkIntegrityPlugin } from './pmPlugins/mentionMarkIntegrityPlugin';
-import { createAtSuggestionExtension } from './pmPlugins/atSuggestionExtension';
+import {
+  createMentionPlugin,
+  mentionPluginKey,
+  setMention,
+  startMention,
+  subscribeMentionEvents,
+} from './pmPlugins/mentionPlugin';
+
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -76,6 +79,7 @@ export const EnrichedTextInput = ({
   placeholder = '',
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
+  mentionIndicators = ['@'],
   onFocus,
   style,
   onBlur,
@@ -109,23 +113,33 @@ export const EnrichedTextInput = ({
     []
   );
 
-  const mentionSuggestionCallbacksRef = useRef({
+  // Mention indicators ref
+  const mentionIndicatorsRef = useRef(mentionIndicators);
+  useEffect(() => {
+    mentionIndicatorsRef.current = mentionIndicators;
+  }, [mentionIndicators]);
+
+  // Mention callbacks ref
+  const mentionCallbacksRef = useRef({
     onStartMention,
     onChangeMention,
     onEndMention,
+    onMentionDetected,
   });
   useEffect(() => {
-    mentionSuggestionCallbacksRef.current = {
+    mentionCallbacksRef.current = {
       onStartMention,
       onChangeMention,
       onEndMention,
+      onMentionDetected,
     };
-  }, [onStartMention, onChangeMention, onEndMention]);
+  }, [onStartMention, onChangeMention, onEndMention, onMentionDetected]);
 
-  const atSuggestionExtension = useMemo(
+  const mentionPlugin = useMemo(
     () =>
-      createAtSuggestionExtension({
-        callbacksRef: mentionSuggestionCallbacksRef,
+      createMentionPlugin({
+        indicatorsRef: mentionIndicatorsRef,
+        callbacksRef: mentionCallbacksRef,
       }),
     []
   );
@@ -151,17 +165,16 @@ export const EnrichedTextInput = ({
       EnrichedOrderedList,
       EnrichedCheckboxList,
       StripMarksInCodeBlockPlugin,
-      MentionMarkIntegrityPlugin,
       stripBoldInStyledHeadingsPlugin,
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
-      atSuggestionExtension,
+      mentionPlugin,
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [stripBoldInStyledHeadingsPlugin, atSuggestionExtension, placeholder]
+    [stripBoldInStyledHeadingsPlugin, mentionPlugin, placeholder]
   );
 
   const editor = useEditor(
@@ -205,11 +218,29 @@ export const EnrichedTextInput = ({
     editor?.commands.normalizeBoldInStyledHeadings();
   }, [editor, resolvedHtmlStyle]);
 
+  // Subscribe to mention lifecycle and detection events
+  useEffect(() => {
+    if (!editor) return;
+    return subscribeMentionEvents(editor, mentionCallbacksRef);
+  }, [editor]);
+
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
   useOnLinkDetected(editor, onLinkDetected);
-  useOnMentionDetected(editor, onMentionDetected);
+
+  // Inject per-indicator mention CSS rules (for multi-indicator htmlStyle)
+  useEffect(() => {
+    const css = mentionIndicatorCssRules(resolvedHtmlStyle.mention);
+    if (!css) return;
+    const styleEl = document.createElement('style');
+    styleEl.setAttribute('data-eti-mention-indicator', '');
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, [resolvedHtmlStyle.mention]);
 
   useImperativeHandle(
     ref,
@@ -252,15 +283,21 @@ export const EnrichedTextInput = ({
         removeLink(editor, start, end),
       setImage: () => {},
       startMention: (indicator: string) => {
-        if (indicator !== '@') return;
-        runFocused(editor, (c) => c.insertContent('@'));
+        startMention(editor, indicator, mentionIndicatorsRef.current);
       },
       setMention: (
         indicator: string,
         text: string,
         attributes?: Record<string, string>
       ) => {
-        insertEnrichedMentionAtSelection(editor, indicator, text, attributes);
+        // Dev ergonomics: warn if indicator doesn't match the active trigger indicator
+        const triggerState = mentionPluginKey.getState(editor.state);
+        if (triggerState?.active && triggerState.indicator !== indicator) {
+          console.warn(
+            `[EnrichedMention] setMention called with indicator "${indicator}" but active trigger indicator is "${triggerState.indicator}"`
+          );
+        }
+        setMention(editor, text, attributes);
       },
       measure: () => {},
       measureInWindow: () => {},
