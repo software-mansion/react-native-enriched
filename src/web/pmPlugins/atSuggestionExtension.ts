@@ -42,6 +42,11 @@ export function createAtSuggestionExtension(options: {
           allowSpaces: enrichedAtSuggestionMatchOpts.allowSpaces,
           allowToIncludeChar: enrichedAtSuggestionMatchOpts.allowToIncludeChar,
           startOfLine: enrichedAtSuggestionMatchOpts.startOfLine,
+          allow: ({ state, range }) => {
+            const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
+            if (!mentionType) return true;
+            return !state.doc.rangeHasMark(range.from, range.to, mentionType);
+          },
           items: () => [],
           command: ({ editor, range, props }) => {
             const { state } = editor;
