@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { ColorValue } from 'react-native';
-import type { HtmlStyle } from '../../types';
+import type { HtmlStyle, MentionStyleProperties } from '../../types';
 import { DEFAULT_HTML_STYLE } from '../../utils/defaultHtmlStyle';
 import { HEADING_TAGS } from '../formats/EnrichedHeading';
 import { toColor } from './toColor';
@@ -32,6 +32,9 @@ const ETI_CSS_VARS = {
   codeblockBorderRadius: '--eti-codeblock-border-radius',
   linkColor: '--eti-link-color',
   linkTextDecorationLine: '--eti-link-text-decoration-line',
+  mentionColor: '--eti-mention-color',
+  mentionBgColor: '--eti-mention-bg-color',
+  mentionTextDecorationLine: '--eti-mention-text-decoration-line',
   ulBulletColor: '--eti-ul-bullet-color',
   ulBulletSize: '--eti-ul-bullet-size',
   ulMarginLeft: '--eti-ul-margin-left',
@@ -113,6 +116,30 @@ function applyLinkVars(
   }
 }
 
+function mentionStyleForAt(
+  mention?: HtmlStyle['mention']
+): MentionStyleProperties | undefined {
+  if (!mention || typeof mention !== 'object') return undefined;
+  if (!Array.isArray(mention) && '@' in mention) {
+    const byIndicator = mention as Record<string, MentionStyleProperties>;
+    return byIndicator['@'] ?? byIndicator.default;
+  }
+  return mention as MentionStyleProperties;
+}
+
+function applyMentionVars(
+  vars: Record<string, string>,
+  mention?: HtmlStyle['mention']
+): void {
+  const m = mentionStyleForAt(mention);
+  if (!m) return;
+  setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
+  setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
+  if (m.textDecorationLine != null) {
+    vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
+  }
+}
+
 function applyUnorderedListVars(
   vars: Record<string, string>,
   ul?: HtmlStyle['ul']
@@ -152,6 +179,7 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
   applyLinkVars(vars, htmlStyle?.a);
+  applyMentionVars(vars, htmlStyle?.mention);
   applyUnorderedListVars(vars, htmlStyle?.ul);
   applyOrderedListVars(vars, htmlStyle?.ol);
   applyCheckboxListVars(vars, htmlStyle?.ulCheckbox);

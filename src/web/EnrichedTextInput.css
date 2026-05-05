@@ -60,6 +60,12 @@
   text-decoration-line: var(--eti-link-text-decoration-line);
 }
 
+.eti-editor mention {
+  color: var(--eti-mention-color);
+  background-color: var(--eti-mention-bg-color);
+  text-decoration-line: var(--eti-mention-text-decoration-line);
+}
+
 .eti-editor ul:not([data-type]) {
   margin: 0;
   list-style: none;

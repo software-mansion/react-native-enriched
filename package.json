@@ -103,7 +103,8 @@
     "@tiptap/extension-underline": "3.20.4",
     "@tiptap/extensions": "3.20.4",
     "@tiptap/pm": "3.20.4",
-    "@tiptap/react": "3.20.4"
+    "@tiptap/react": "3.20.4",
+    "@tiptap/suggestion": "3.20.4"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",

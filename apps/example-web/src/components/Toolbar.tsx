@@ -157,6 +157,13 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
       onPress: onOpenLinkModal,
     },
     {
+      key: 'mention',
+      label: '@',
+      onPress: (editor) => {
+        editor?.startMention('@');
+      },
+    },
+    {
       key: 'unorderedList',
       label: '•',
       onPress: (editor) => {

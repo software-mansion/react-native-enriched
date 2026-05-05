@@ -45,6 +45,11 @@ import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
+import {
+  EnrichedMention,
+  handleEnrichedMentionClick,
+  insertEnrichedMentionAtSelection,
+} from './formats/EnrichedMention';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
@@ -54,6 +59,8 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import { MentionMarkIntegrityPlugin } from './pmPlugins/mentionMarkIntegrityPlugin';
+import { createAtSuggestionExtension } from './pmPlugins/atSuggestionExtension';
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -78,6 +85,10 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onMentionDetected,
+  onStartMention,
+  onChangeMention,
+  onEndMention,
   htmlStyle,
 }: EnrichedTextInputProps) => {
   const tiptapContent =
@@ -98,35 +109,69 @@ export const EnrichedTextInput = ({
     []
   );
 
+  const mentionSuggestionCallbacksRef = useRef({
+    onStartMention,
+    onChangeMention,
+    onEndMention,
+  });
+  useEffect(() => {
+    mentionSuggestionCallbacksRef.current = {
+      onStartMention,
+      onChangeMention,
+      onEndMention,
+    };
+  }, [onStartMention, onChangeMention, onEndMention]);
+
+  const onMentionDetectedRef = useRef(onMentionDetected);
+  useEffect(() => {
+    onMentionDetectedRef.current = onMentionDetected;
+  }, [onMentionDetected]);
+
+  const atSuggestionExtension = useMemo(
+    () =>
+      createAtSuggestionExtension({
+        callbacksRef: mentionSuggestionCallbacksRef,
+      }),
+    []
+  );
+
+  const extensions = useMemo(
+    () => [
+      Document,
+      Paragraph,
+      Text,
+      EnrichedBold,
+      EnrichedItalic,
+      EnrichedUnderline,
+      EnrichedStrike,
+      EnrichedCode,
+      EnrichedLink,
+      EnrichedMention,
+      EnrichedHeading,
+      EnrichedBlockquote,
+      EnrichedCodeBlock,
+      EnrichedListItem,
+      EnrichedCheckboxItem,
+      EnrichedUnorderedList,
+      EnrichedOrderedList,
+      EnrichedCheckboxList,
+      StripMarksInCodeBlockPlugin,
+      MentionMarkIntegrityPlugin,
+      stripBoldInStyledHeadingsPlugin,
+      MergeAdjacentSameKindBlocksPlugin,
+      StrictMarksPlugin,
+      atSuggestionExtension,
+      Placeholder.configure({
+        placeholder,
+        showOnlyWhenEditable: true,
+      }),
+    ],
+    [stripBoldInStyledHeadingsPlugin, atSuggestionExtension, placeholder]
+  );
+
   const editor = useEditor(
     {
-      extensions: [
-        Document,
-        Paragraph,
-        Text,
-        EnrichedBold,
-        EnrichedItalic,
-        EnrichedUnderline,
-        EnrichedStrike,
-        EnrichedCode,
-        EnrichedLink,
-        EnrichedHeading,
-        EnrichedBlockquote,
-        EnrichedCodeBlock,
-        EnrichedListItem,
-        EnrichedCheckboxItem,
-        EnrichedUnorderedList,
-        EnrichedOrderedList,
-        EnrichedCheckboxList,
-        StripMarksInCodeBlockPlugin,
-        stripBoldInStyledHeadingsPlugin,
-        MergeAdjacentSameKindBlocksPlugin,
-        StrictMarksPlugin,
-        Placeholder.configure({
-          placeholder,
-          showOnlyWhenEditable: true,
-        }),
-      ],
+      extensions,
       editable,
       autofocus: autoFocus,
       onCreate: ({ editor: _editor }) => {
@@ -153,12 +198,19 @@ export const EnrichedTextInput = ({
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
+        handleClick: (view, pos, event) =>
+          handleEnrichedMentionClick(
+            view,
+            pos,
+            event as MouseEvent,
+            onMentionDetectedRef.current
+          ),
         attributes: {
           autoCapitalize,
         },
       },
     },
-    [tiptapContent]
+    [tiptapContent, extensions]
   );
 
   useEffect(() => {
@@ -210,8 +262,17 @@ export const EnrichedTextInput = ({
       removeLink: (start: number, end: number) =>
         removeLink(editor, start, end),
       setImage: () => {},
-      startMention: () => {},
-      setMention: () => {},
+      startMention: (indicator: string) => {
+        if (indicator !== '@') return;
+        runFocused(editor, (c) => c.insertContent('@'));
+      },
+      setMention: (
+        indicator: string,
+        text: string,
+        attributes?: Record<string, string>
+      ) => {
+        insertEnrichedMentionAtSelection(editor, indicator, text, attributes);
+      },
       measure: () => {},
       measureInWindow: () => {},
       measureLayout: () => {},

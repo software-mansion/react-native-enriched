@@ -37,6 +37,11 @@ body {
   margin: 0 0 24px;
 }
 
+.editor-mention-host {
+  width: 100%;
+  align-self: stretch;
+}
+
 .btn {
   flex: 1;
   padding: 16px;

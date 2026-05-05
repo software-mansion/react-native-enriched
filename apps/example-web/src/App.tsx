@@ -10,6 +10,8 @@ import {
   type BlurEvent,
   type EnrichedInputStyle,
   type OnLinkDetected,
+  type OnChangeMentionEvent,
+  type OnMentionDetected,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -19,6 +21,8 @@ import { LinkModal } from './components/LinkModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
 import { Toolbar } from './components/Toolbar';
+import { UserMentionSuggestions } from './components/UserMentionSuggestions';
+import { useUserMentionWeb } from './hooks/useUserMentionWeb';
 
 const DEFAULT_LINK_STATE: OnLinkDetected = {
   text: '',
@@ -32,6 +36,7 @@ function App() {
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
   const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
+  const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
     null
   );
@@ -52,6 +57,40 @@ function App() {
 
   const insideCurrentLink =
     isLinkActive && hasLinkUrl && hasLinkSpan && selectionInsideLink;
+
+  const userMention = useUserMentionWeb();
+
+  const closeUserMentionPopup = () => {
+    setIsUserPopupOpen(false);
+    userMention.onMentionChange('');
+  };
+
+  const handleStartMention = (indicator: string) => {
+    console.log('[EnrichedTextInput] Start mention:', indicator);
+    if (indicator === '@') {
+      userMention.onMentionChange('');
+      setIsUserPopupOpen(true);
+    }
+  };
+
+  const handleChangeMention = (e: OnChangeMentionEvent) => {
+    console.log('[EnrichedTextInput] Change mention:', e.indicator, e.text);
+    if (e.indicator === '@') {
+      userMention.onMentionChange(e.text);
+      setIsUserPopupOpen(true);
+    }
+  };
+
+  const handleEndMention = (indicator: string) => {
+    console.log('[EnrichedTextInput] End mention:', indicator);
+    if (indicator === '@') {
+      closeUserMentionPopup();
+    }
+  };
+
+  const handleOnMentionDetected = (e: OnMentionDetected) => {
+    console.log('[EnrichedTextInput] onMentionDetected event', e);
+  };
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -117,24 +156,36 @@ function App() {
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
 
-      <EnrichedTextInput
-        ref={ref}
-        placeholder="Type something here..."
-        autoFocus
-        editable
-        scrollEnabled
-        autoCapitalize="sentences"
-        style={enrichedInputStyle}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyPress={handleKeyPress}
-        onChangeText={handleOnChangeText}
-        onChangeSelection={handleChangeSelection}
-        onChangeHtml={handleOnChangeHtml}
-        onChangeState={handleChangeState}
-        onLinkDetected={handleOnLinkDetected}
-        htmlStyle={WEB_DEFAULT_HTML_STYLE}
-      />
+      <div className="editor-mention-host">
+        <EnrichedTextInput
+          ref={ref}
+          placeholder="Type something here..."
+          autoFocus
+          editable
+          scrollEnabled
+          autoCapitalize="sentences"
+          style={enrichedInputStyle}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyPress={handleKeyPress}
+          onChangeText={handleOnChangeText}
+          onChangeSelection={handleChangeSelection}
+          onChangeHtml={handleOnChangeHtml}
+          onChangeState={handleChangeState}
+          onLinkDetected={handleOnLinkDetected}
+          onStartMention={handleStartMention}
+          onChangeMention={handleChangeMention}
+          onEndMention={handleEndMention}
+          onMentionDetected={handleOnMentionDetected}
+          htmlStyle={WEB_DEFAULT_HTML_STYLE}
+        />
+        <UserMentionSuggestions
+          editorRef={ref}
+          items={userMention.data}
+          visible={isUserPopupOpen}
+          onPicked={closeUserMentionPopup}
+        />
+      </div>
 
       <Toolbar
         editorRef={ref}

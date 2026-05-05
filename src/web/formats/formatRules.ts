@@ -24,7 +24,7 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
-  if (tiptapName === 'link') {
+  if (tiptapName === 'link' || tiptapName === 'enrichedMention') {
     return isLinkBlocked(editor);
   }
 
