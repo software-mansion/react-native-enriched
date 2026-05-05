@@ -366,7 +366,7 @@ See the [EnrichedText API Reference](docs/TEXT_API_REFERENCE.md) for the `Enrich
 
 ## Future Plans
 
-- Web library implementation via `react-native-web`.
+- Web support: currently in the experimental stage. Details in [docs/WEB.md](docs/WEB.md).
 
 ## Contributing
 
