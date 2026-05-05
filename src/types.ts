@@ -496,6 +496,22 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   useHtmlNormalizer?: boolean;
 }
 
+export interface EnrichedTextInstance extends NativeMethods {}
+
+export interface EnrichedTextProps extends ViewProps {
+  ref?: RefObject<EnrichedTextInstance | null>;
+  children: string;
+  style?: TextStyle;
+  htmlStyle?: EnrichedTextHtmlStyle;
+  useHtmlNormalizer?: boolean;
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+  numberOfLines?: number;
+  selectable?: boolean;
+  selectionColor?: ColorValue;
+  onLinkPress?: (event: OnLinkPressEvent) => void;
+  onMentionPress?: (event: OnMentionPressEvent) => void;
+}
+
 interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
   pressColor?: ColorValue;
   pressBackgroundColor?: ColorValue;
