@@ -353,7 +353,6 @@ const styles = StyleSheet.create({
 });
 ```
 
-See the [EnrichedText API Reference](docs/TEXT_API_REFERENCE.md) for a full list of props and ref methods.
 
 ## API Reference
 
