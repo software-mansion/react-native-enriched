@@ -33,6 +33,7 @@ We can help you build your next dream product –
 - [Other Events](#other-events)
 - [Context Menu Items](#context-menu-items)
 - [Customizing \<EnrichedTextInput /> styles](#customizing-enrichedtextinput--styles)
+- [EnrichedText component](#enrichedtext-component)
 - [API Reference](#api-reference)
 - [Known limitations](#known-limitations)
 - [Future Plans](#future-plans)
@@ -150,7 +151,7 @@ Not all styles can be combined freely. There are two kinds of restrictions:
 - **Conflicting** - toggling a style that conflicts with an already active style will automatically remove the active one. For example: toggling `<h2>` on a `<blockquote>` paragraph will remove the blockquote and apply the heading.
 - **Blocking** - a style that is blocked cannot be toggled at all while the blocking style is active. For example: `<b>` is blocked inside `<codeblock>`, so the bold cannot be applied where codeblock is active.
 
-These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchangestate) event (`isConflicting` and `isBlocking` properties).
+These states are reported via the [onChangeState](docs/INPUT_API_REFERENCE.md#onchangestate) event (`isConflicting` and `isBlocking` properties).
 
 ### Inline tags
 
@@ -166,7 +167,7 @@ These states are reported via the [onChangeState](docs/API_REFERENCE.md#onchange
 | Image         | `<img>`     | `<a>`, `<mention>`           | `<code>`               |
 
 > [!NOTE]
-> Headings also block bold when `bold: true` is set on the heading style in the [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop. In that case, the heading itself renders as bold, so toggling bold on top of it is redundant and therefore blocked.
+> Headings also block bold when `bold: true` is set on the heading style in the [htmlStyle](docs/INPUT_API_REFERENCE.md#htmlstyle) prop. In that case, the heading itself renders as bold, so toggling bold on top of it is redundant and therefore blocked.
 
 ### Paragraph tags
 
@@ -222,13 +223,13 @@ The links are here, just like in any other editor, a piece of text with a URL at
 ### Automatic links detection
 
 `react-native-enriched` automatically detects words that appear to be some URLs and makes them links.
-You can customize this behavior by providing your own regular expression via [linkRegex](docs/API_REFERENCE.md#linkregex) prop.
+You can customize this behavior by providing your own regular expression via [linkRegex](docs/INPUT_API_REFERENCE.md#linkregex) prop.
 
 ### Applying links manually
 
-Links can also be added by calling [`setLink`](docs/API_REFERENCE.md#setlink) method on the input ref:
+Links can also be added by calling [`setLink`](docs/INPUT_API_REFERENCE.md#setlink) method on the input ref:
 
-The `start`, `end` and `text` arguments for the method can be easily taken from [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) event payload as it returns exact `start` and `end` of the selection and the `text` it spans. This way, you just set the underlying URL to whatever is selected in there.
+The `start`, `end` and `text` arguments for the method can be easily taken from [onChangeSelection](docs/INPUT_API_REFERENCE.md#onchangeselection) event payload as it returns exact `start` and `end` of the selection and the `text` it spans. This way, you just set the underlying URL to whatever is selected in there.
 
 Passing a different `text` than the one in the selection will properly replace it before applying the link.
 
@@ -240,33 +241,33 @@ Mentions are meant to be a customisable style that lets you put mentioning phras
 
 ### Mention Indicators
 
-There is a [mentionIndicators](docs/API_REFERENCE.md#mentionindicators) prop that lets you define what characters can start a mention. By default, it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
+There is a [mentionIndicators](docs/INPUT_API_REFERENCE.md#mentionindicators) prop that lets you define what characters can start a mention. By default, it is set to `[ @ ]`, meaning that typing a `@` character in the input will start the creation of a mention.
 
 ### Starting a mention
 
-There are two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](docs/API_REFERENCE.md#startmention) method on the input ref.
+There are two ways in which a mention can be started; either by typing one of the `mentionIndicators` set or by calling a [startMention](docs/INPUT_API_REFERENCE.md#startmention) method on the input ref.
 
 ### Mention related events
 
 `react-native-enriched` emits 3 different events that help handling mentions' editing:
 
-- [onStartMention](docs/API_REFERENCE.md#onstartmention) is emitted whenever mention is started in one of the ways from the [previous section](#starting-a-mention) or the user has come back (moved selection) to some unfinished mention they have started. It can be used for opening proper tools you use in the app to edit a mention (e.g. a list for choosing from users or channels that the mention will affect).
-- [onChangeMention](docs/API_REFERENCE.md#onchangemention) is emitted whenever user put or removed some characters after a mention indicator. This way you can react to active mention editing by, for example, filtering users in your displayed list based on the typed text.
-- [onEndMention](docs/API_REFERENCE.md#onendmention) is emitted whenever user is no longer editing a mention: they might have put a space or changed the cursor position to be no longer near the indicator. You can use it to hide appropriate tools that were used for mention editing.
+- [onStartMention](docs/INPUT_API_REFERENCE.md#onstartmention) is emitted whenever mention is started in one of the ways from the [previous section](#starting-a-mention) or the user has come back (moved selection) to some unfinished mention they have started. It can be used for opening proper tools you use in the app to edit a mention (e.g. a list for choosing from users or channels that the mention will affect).
+- [onChangeMention](docs/INPUT_API_REFERENCE.md#onchangemention) is emitted whenever user put or removed some characters after a mention indicator. This way you can react to active mention editing by, for example, filtering users in your displayed list based on the typed text.
+- [onEndMention](docs/INPUT_API_REFERENCE.md#onendmention) is emitted whenever user is no longer editing a mention: they might have put a space or changed the cursor position to be no longer near the indicator. You can use it to hide appropriate tools that were used for mention editing.
 
 ### Setting a mention
 
-Whenever you feel ready with the currently edited mention (so most likely user chooses something from your additional mention editor), you can complete it by calling [setMention](docs/API_REFERENCE.md#setmention) ref method.
+Whenever you feel ready with the currently edited mention (so most likely user chooses something from your additional mention editor), you can complete it by calling [setMention](docs/INPUT_API_REFERENCE.md#setmention) ref method.
 
 ## Inline images
 
-You can insert an image into the input using [setImage](docs/API_REFERENCE.md#setimage) ref method.
+You can insert an image into the input using [setImage](docs/INPUT_API_REFERENCE.md#setimage) ref method.
 
 The image will be put into a single line in the input and will affect the line's height as well as input's height. Keep in mind, that image will replace currently selected text or insert into the cursor position if there is no text selection.
 
 ## Style Detection
 
-All of the above styles can be detected with the use of [onChangeState](docs/API_REFERENCE.md#onchangestate) event payload.
+All of the above styles can be detected with the use of [onChangeState](docs/INPUT_API_REFERENCE.md#onchangestate) event payload.
 
 You can find some examples in the [usage section](#usage) or in the example app.
 
@@ -274,21 +275,21 @@ You can find some examples in the [usage section](#usage) or in the example app.
 
 `react-native-enriched` emits a few more events that may be of use:
 
-- [onFocus](docs/API_REFERENCE.md#onfocus) - emits whenever input focuses.
-- [onBlur](docs/API_REFERENCE.md) - emits whenever input blurs.
-- [onChangeText](docs/API_REFERENCE.md#onchangetext) - returns the input's text anytime it changes.
-- [onChangeHtml](docs/API_REFERENCE.md#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
-- [onChangeSelection](docs/API_REFERENCE.md#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
-- [onLinkDetected](docs/API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
-- [onMentionDetected](docs/API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
-- [onKeyPress](docs/API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
-- [onPasteImages](docs/API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
+- [onFocus](docs/INPUT_API_REFERENCE.md#onfocus) - emits whenever input focuses.
+- [onBlur](docs/INPUT_API_REFERENCE.md) - emits whenever input blurs.
+- [onChangeText](docs/INPUT_API_REFERENCE.md#onchangetext) - returns the input's text anytime it changes.
+- [onChangeHtml](docs/INPUT_API_REFERENCE.md#onchangehtml) - returns HTML string parsed from current input text and styles anytime it would change. As parsing the HTML on each input change is a pretty expensive operation, not assigning the event's callback will speed up iOS input a bit. We are considering adding some API to improve it, see [future plans](#future-plans).
+- [onChangeSelection](docs/INPUT_API_REFERENCE.md#onchangeselection) - returns all the data needed for working with selections (as of now it's mainly useful for [links](#links)).
+- [onLinkDetected](docs/INPUT_API_REFERENCE.md#onlinkdetected) - returns link's detailed info whenever user selection is near one.
+- [onMentionDetected](docs/INPUT_API_REFERENCE.md#onmentiondetected) - returns mention's detailed info whenever user selection is near one.
+- [onKeyPress](docs/INPUT_API_REFERENCE.md#onkeypress) - emits whenever a key is pressed. Follows react-native TextInput's onKeyPress event [spec](https://reactnative.dev/docs/textinput#onkeypress).
+- [onPasteImages](docs/INPUT_API_REFERENCE.md#onpasteimages) - returns an array of images details whenever an image/GIF is pasted into the input.
 
 ## Context Menu Items
 
 > **Note:** This feature is currently supported on Android and iOS 16+.
 
-You can extend the native text editing menu with custom items using the [contextMenuItems](docs/API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
+You can extend the native text editing menu with custom items using the [contextMenuItems](docs/INPUT_API_REFERENCE.md#contextmenuitems) prop. Each item has a `text` (title), `visible` flag and an `onPress` callback. Items appear in the specified order, before the system actions.
 
 ```tsx
 <EnrichedTextInput
@@ -309,11 +310,55 @@ You can extend the native text editing menu with custom items using the [context
 
 ## Customizing \<EnrichedTextInput /> styles
 
-`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component. See [htmlStyle](docs/API_REFERENCE.md#htmlstyle) prop.
+`react-native-enriched` allows customizing styles of the `<EnrichedTextInput />` component. See [htmlStyle](docs/INPUT_API_REFERENCE.md#htmlstyle) prop.
+
+## EnrichedText component
+
+`react-native-enriched` provides an `EnrichedText` component that renders the HTML output of `EnrichedTextInput` with all supported styles, interactive links, and mentions.
+
+```tsx
+import { EnrichedText } from 'react-native-enriched';
+import type { OnLinkPressEvent, OnMentionPressEvent } from 'react-native-enriched';
+import { StyleSheet } from 'react-native';
+
+export default function App() {
+  const html = '<html><p>Hello, <b>world</b>! Visit <a href="https://swmansion.com">Software Mansion</a>.</p></html>';
+
+  const handleLinkPress = (e: OnLinkPressEvent) => {
+    console.log('Link pressed:', e.url);
+  };
+
+  const handleMentionPress = (e: OnMentionPressEvent) => {
+    console.log('Mention pressed:', e.text, e.indicator, e.attributes);
+  };
+
+  return (
+    <EnrichedText
+      style={styles.text}
+      numberOfLines={3}
+      ellipsizeMode="tail"
+      onLinkPress={handleLinkPress}
+      onMentionPress={handleMentionPress}
+    >
+      {html}
+    </EnrichedText>
+  );
+}
+
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 16,
+    color: 'black',
+  },
+});
+```
+
 
 ## API Reference
 
-See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all the props, methods, and events available.
+See the [EnrichedTextInput API Reference](docs/INPUT_API_REFERENCE.md) for a detailed overview of all the props, methods, and events available for `EnrichedTextInput`.
+
+See the [EnrichedText API Reference](docs/TEXT_API_REFERENCE.md) for the `EnrichedText` component.
 
 ## Known limitations
 
@@ -321,7 +366,6 @@ See the [API Reference](docs/API_REFERENCE.md) for a detailed overview of all th
 
 ## Future Plans
 
-- Creating `EnrichedText` text component that supports our HTML output format with all additional interactions like pressing links or mentions.
 - Web library implementation via `react-native-web`.
 
 ## Contributing
