@@ -467,11 +467,11 @@ Color of the selection rectangle that gets drawn over the selected text. On iOS,
 
 ### `style`
 
-The `style` prop controls the layout, dimensions, typography, borders, shadows, opacity, and similar container-level appearance of the editable content container. The exact supported properties are listed under [EnrichedInputStyle](enriched-input-style.md).
+The `style` prop controls the layout, dimensions, typography, borders, shadows, opacity, and similar container-level appearance of the editable content container. The exact supported properties are listed under [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md).
 
 | Type                                                | Default Value | Platform |
 | --------------------------------------------------- | ------------- | -------- |
-| [EnrichedInputStyle](enriched-input-style.md)       | -             | Both     |
+| [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md)       | -             | Both     |
 
 ### `ViewProps`
 
