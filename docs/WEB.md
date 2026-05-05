@@ -1,6 +1,6 @@
 # Web Support (Experimental)
 
-Web support is experimental. APIs, behavior, and HTML output can change in any release without a major version bump. Expect breaking changes until the web path is stabilized. Do not rely on it for production use.
+Web support is still experimental. APIs and behavior can change in future releases without a major version bump. Expect breaking changes until the web path is stabilized.
 
 ## What works
 
@@ -22,12 +22,9 @@ Web support is experimental. APIs, behavior, and HTML output can change in any r
 - **Theming props**: `placeholderTextColor`, `cursorColor`, and `selectionColor` are not applied.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
-- **Android-only**: `androidExperimentalSynchronousEvents` has no effect.
 - **`EnrichedText`**: The read-only component is not exported on web.
 - **`ViewProps`**: Props inherited from `View` beyond the implemented subset are not forwarded.
 
 ## HTML sanitization
 
 You are responsible for sanitizing HTML on both input and output. The library does not guarantee safe or clean HTML output. This applies to any HTML you persist, render elsewhere, or accept from untrusted sources (XSS, paste attacks, etc.).
-
-This may change in a future release, but currently there are no sanitization guarantees.
