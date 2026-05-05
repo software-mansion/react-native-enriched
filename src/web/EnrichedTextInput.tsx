@@ -26,6 +26,7 @@ import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import { useOnChangeState } from './useOnChangeState';
 import { useOnLinkDetected } from './useOnLinkDetected';
+import { useOnMentionDetected } from './useOnMentionDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
@@ -47,7 +48,6 @@ import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
 import {
   EnrichedMention,
-  handleEnrichedMentionClick,
   insertEnrichedMentionAtSelection,
 } from './formats/EnrichedMention';
 import { EnrichedListItem } from './formats/EnrichedListItem';
@@ -122,11 +122,6 @@ export const EnrichedTextInput = ({
     };
   }, [onStartMention, onChangeMention, onEndMention]);
 
-  const onMentionDetectedRef = useRef(onMentionDetected);
-  useEffect(() => {
-    onMentionDetectedRef.current = onMentionDetected;
-  }, [onMentionDetected]);
-
   const atSuggestionExtension = useMemo(
     () =>
       createAtSuggestionExtension({
@@ -198,13 +193,6 @@ export const EnrichedTextInput = ({
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
-        handleClick: (view, pos, event) =>
-          handleEnrichedMentionClick(
-            view,
-            pos,
-            event as MouseEvent,
-            onMentionDetectedRef.current
-          ),
         attributes: {
           autoCapitalize,
         },
@@ -221,6 +209,7 @@ export const EnrichedTextInput = ({
   useOnChangeText(editor, onChangeText);
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
   useOnLinkDetected(editor, onLinkDetected);
+  useOnMentionDetected(editor, onMentionDetected);
 
   useImperativeHandle(
     ref,

@@ -5,7 +5,7 @@ import {
   getMarksBetween,
 } from '@tiptap/core';
 import { Fragment } from '@tiptap/pm/model';
-import type { EditorView } from '@tiptap/pm/view';
+import type { EditorState } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
 import type { OnMentionDetected } from '../../types';
 import { findEnrichedAtSuggestionMatch } from '../pmPlugins/enrichedAtSuggestionMatch';
@@ -83,25 +83,28 @@ export const EnrichedMention = Mark.create({
   },
 });
 
-export function handleEnrichedMentionClick(
-  view: EditorView,
-  pos: number,
-  event: MouseEvent,
-  onMentionDetected?: (payload: OnMentionDetected) => void
-): boolean {
-  if (!onMentionDetected) return false;
+/** Document range + payload when `pos` falls inside a finalized enriched mention. */
+export type EnrichedMentionResolution = {
+  from: number;
+  to: number;
+  mention: OnMentionDetected;
+};
 
-  const mentionType = view.state.schema.marks[ENRICHED_MENTION_MARK_NAME];
-  if (!mentionType) return false;
+export function resolveEnrichedMentionAtPos(
+  state: EditorState,
+  pos: number
+): EnrichedMentionResolution | null {
+  const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
+  if (!mentionType) return null;
 
-  const $pos = view.state.doc.resolve(pos);
+  const $pos = state.doc.resolve(pos);
   const range = getMarkRange($pos, mentionType);
-  if (!range) return false;
+  if (!range) return null;
 
-  const entry = getMarksBetween(range.from, range.to, view.state.doc).find(
+  const entry = getMarksBetween(range.from, range.to, state.doc).find(
     (e) => e.mark.type === mentionType
   );
-  if (!entry) return false;
+  if (!entry) return null;
 
   const mark = entry.mark;
   let attributes: Record<string, string> = {};
@@ -114,13 +117,15 @@ export function handleEnrichedMentionClick(
     attributes = {};
   }
 
-  onMentionDetected({
-    text: mark.attrs.canonicalText as string,
-    indicator: mark.attrs.indicator as string,
-    attributes,
-  });
-  event.preventDefault();
-  return true;
+  return {
+    from: range.from,
+    to: range.to,
+    mention: {
+      text: mark.attrs.canonicalText as string,
+      indicator: mark.attrs.indicator as string,
+      attributes,
+    },
+  };
 }
 
 export function insertEnrichedMentionAtSelection(
