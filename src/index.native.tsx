@@ -1,7 +1,8 @@
-export { EnrichedTextInput } from './web/EnrichedTextInput';
+// EnrichedTextInput
+export { EnrichedTextInput } from './native/EnrichedTextInput';
 export type {
   EnrichedInputStyle,
-  EnrichedTextInputWebProps as EnrichedTextInputProps,
+  EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,
   OnChangeStateEvent,
@@ -18,4 +19,14 @@ export type {
   EnrichedTextInputInstance,
   ContextMenuItem,
   OnChangeMentionEvent,
+} from './types';
+
+// EnrichedText
+export { EnrichedText } from './native/EnrichedText';
+export type {
+  EnrichedTextProps,
+  EnrichedTextInstance,
+  EnrichedTextHtmlStyle,
+  OnMentionPressEvent,
+  OnLinkPressEvent,
 } from './types';

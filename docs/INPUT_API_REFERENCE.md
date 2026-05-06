@@ -469,20 +469,11 @@ Color of the selection rectangle that gets drawn over the selected text. On iOS,
 
 ### `style`
 
-Accepts most [ViewStyle](https://reactnative.dev/docs/view#style) props, but keep in mind that some of them might not be supported.
+The `style` prop controls the layout, dimensions, typography, borders, shadows, opacity, and similar container-level appearance of the editable content container. The exact supported properties are listed under [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md).
 
-Additionally following [TextStyle](https://reactnative.dev/docs/text#style) props are supported
-
-- color
-- fontFamily
-- fontSize
-- fontWeight
-- lineHeight
-- fontStyle only on Android
-
-| Type                                                                                                               | Default Value | Platform |
-| ------------------------------------------------------------------------------------------------------------------ | ------------- | -------- |
-| [`View Style`](https://reactnative.dev/docs/view#style) \| [`Text Style`](https://reactnative.dev/docs/text#style) | -             | Both     |
+| Type                                                | Default Value | Platform |
+| --------------------------------------------------- | ------------- | -------- |
+| [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md)       | -             | Both     |
 
 ### `ViewProps`
 
