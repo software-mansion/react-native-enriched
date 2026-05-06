@@ -1,8 +1,17 @@
-import { Extension, getMarkRange } from '@tiptap/core';
+import {
+  Extension,
+  findParentNodeClosestToPos,
+  getMarkRange,
+} from '@tiptap/core';
 import { Fragment, Slice } from '@tiptap/pm/model';
-import type { Mark as PMark, Node as PNode } from '@tiptap/pm/model';
+import type {
+  Mark as PMark,
+  Node as PNode,
+  ResolvedPos,
+  Schema,
+} from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import type { Transaction } from '@tiptap/pm/state';
+import type { EditorState, StateField, Transaction } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
 import type { OnChangeMentionEvent, OnMentionDetected } from '../../types';
 import { ENRICHED_MENTION_MARK_NAME } from '../formats/EnrichedMention';
@@ -37,7 +46,17 @@ function stripPartialMentionMarks(fragment: Fragment): Fragment {
   return Fragment.from(nodes);
 }
 
-interface MentionPluginOptions {
+function isCaretInBlockedContext($from: ResolvedPos, schema: Schema): boolean {
+  if (schema.marks[ENRICHED_MENTION_MARK_NAME]?.isInSet($from.marks()))
+    return true;
+  if (schema.marks.code?.isInSet($from.marks())) return true;
+  if (schema.marks.link?.isInSet($from.marks())) return true;
+  if (findParentNodeClosestToPos($from, (n) => n.type.name === 'codeBlock'))
+    return true;
+  return false;
+}
+
+export interface MentionPluginOptions {
   indicatorsRef: { current: string[] };
   callbacksRef: {
     current: {
@@ -49,189 +68,147 @@ interface MentionPluginOptions {
   };
 }
 
+const mentionPluginProps = {
+  transformPasted(slice: Slice): Slice {
+    return new Slice(
+      stripPartialMentionMarks(slice.content),
+      slice.openStart,
+      slice.openEnd
+    );
+  },
+};
+
+function appendMentionTransaction(
+  transactions: readonly Transaction[],
+  oldState: EditorState,
+  newState: EditorState
+): Transaction | null {
+  if (!transactions.some((tr) => tr.docChanged)) return null;
+
+  const mentionType = newState.schema.marks[ENRICHED_MENTION_MARK_NAME];
+  if (!mentionType) return null;
+
+  type MarkRange = { from: number; to: number; mark: PMark };
+  const oldRanges: MarkRange[] = [];
+
+  oldState.doc.descendants((node, pos) => {
+    if (!node.isText) return;
+    const m = mentionType.isInSet(node.marks);
+    if (m) oldRanges.push({ from: pos, to: pos + node.nodeSize, mark: m });
+  });
+
+  const merged: MarkRange[] = [];
+  for (const range of oldRanges) {
+    const prev = merged[merged.length - 1];
+    if (prev && prev.mark === range.mark && prev.to === range.from) {
+      prev.to = range.to;
+    } else {
+      merged.push({ ...range });
+    }
+  }
+
+  const tr = newState.tr;
+  let changed = false;
+
+  for (const { from, to, mark } of merged) {
+    const origLen = to - from;
+    let newFrom = from;
+    let newTo = to;
+
+    for (const t of transactions) {
+      newFrom = t.mapping.map(newFrom, -1);
+      // bias -1 so a split exactly at mention's end keeps newTo in the same paragraph
+      newTo = t.mapping.map(newTo, -1);
+    }
+
+    if (newTo - newFrom !== origLen) {
+      tr.removeMark(newFrom, newTo, mark.type);
+      changed = true;
+    }
+  }
+
+  return changed ? tr : null;
+}
+
+function makeMentionPluginState(
+  options: MentionPluginOptions
+): StateField<TriggerState> {
+  return {
+    init(): TriggerState {
+      return { active: false };
+    },
+
+    apply(_tr, _prev, _old, newEditorState): TriggerState {
+      const { selection } = newEditorState;
+      if (!selection.empty) return { active: false };
+
+      const $from = selection.$from;
+      if (isCaretInBlockedContext($from, newEditorState.schema))
+        return { active: false };
+
+      const blockStart = $from.start();
+      const text = newEditorState.doc.textBetween(
+        blockStart,
+        $from.pos,
+        '\n',
+        '\n'
+      );
+
+      const indicators = options.indicatorsRef.current;
+      const mentionType =
+        newEditorState.schema.marks[ENRICHED_MENTION_MARK_NAME];
+
+      let bestIdx = -1;
+      let bestIndicator = '';
+
+      for (let idx = text.length - 1; idx >= 0; idx--) {
+        const ch = text[idx];
+        if (!ch || !indicators.includes(ch)) continue;
+
+        const isAtStart = idx === 0;
+        const isAfterSpace = idx > 0 && text[idx - 1] === ' ';
+        if (!isAtStart && !isAfterSpace) continue;
+
+        // Skip indicators inside an already-finalized mention to avoid re-activating
+        // the trigger immediately after setMention.
+        if (mentionType) {
+          const $at = newEditorState.doc.resolve(blockStart + idx + 1);
+          if (mentionType.isInSet($at.marks())) continue;
+        }
+
+        bestIdx = idx;
+        bestIndicator = ch;
+        break;
+      }
+
+      if (bestIdx === -1) return { active: false };
+
+      const query = text.slice(bestIdx + 1);
+
+      // Native platforms end the trigger after two spaces in the query.
+      if ((query.match(/ /g) ?? []).length >= 2) return { active: false };
+
+      return {
+        active: true,
+        indicator: bestIndicator,
+        from: blockStart + bestIdx,
+        to: $from.pos,
+        query,
+      };
+    },
+  };
+}
+
 export function createMentionPlugin(options: MentionPluginOptions): Extension {
   return Extension.create({
     name: 'mentionTrigger',
-
     addProseMirrorPlugins() {
       return [
         new Plugin<TriggerState>({
           key: mentionPluginKey,
-
-          props: {
-            transformPasted(slice: Slice): Slice {
-              return new Slice(
-                stripPartialMentionMarks(slice.content),
-                slice.openStart,
-                slice.openEnd
-              );
-            },
-          },
-
-          state: {
-            init(): TriggerState {
-              return { active: false };
-            },
-
-            apply(
-              _tr: Transaction,
-              _prevState: TriggerState,
-              _oldEditorState,
-              newEditorState
-            ): TriggerState {
-              const { selection } = newEditorState;
-
-              // Non-empty selection → no trigger
-              if (!selection.empty) {
-                return { active: false };
-              }
-
-              const $from = selection.$from;
-
-              // Blocker marks: inside mention, code, or link
-              const mentionType =
-                newEditorState.schema.marks[ENRICHED_MENTION_MARK_NAME];
-              if (mentionType && mentionType.isInSet($from.marks())) {
-                return { active: false };
-              }
-
-              const codeType = newEditorState.schema.marks.code;
-              if (codeType && codeType.isInSet($from.marks())) {
-                return { active: false };
-              }
-
-              const linkType = newEditorState.schema.marks.link;
-              if (linkType && linkType.isInSet($from.marks())) {
-                return { active: false };
-              }
-
-              // Blocker node: inside code block
-              if ($from.parent.type.name === 'codeBlock') {
-                return { active: false };
-              }
-
-              // Get text from start of block to caret
-              const blockStart = $from.start();
-              const text = newEditorState.doc.textBetween(
-                blockStart,
-                $from.pos,
-                '\n',
-                '\n'
-              );
-
-              const indicators = options.indicatorsRef.current;
-
-              // Scan backwards for rightmost valid indicator
-              let bestIdx = -1;
-              let bestIndicator = '';
-
-              for (let idx = text.length - 1; idx >= 0; idx--) {
-                const ch = text[idx];
-                if (!ch || !indicators.includes(ch)) continue;
-                // Valid position: at start of text OR preceded by a space
-                const isAtStart = idx === 0;
-                const isAfterSpace = idx > 0 && text[idx - 1] === ' ';
-                if (!isAtStart && !isAfterSpace) continue;
-
-                // Skip indicators that are part of an already-finalized mention — otherwise the
-                // just-inserted mention's '@' would re-activate the trigger immediately after setMention.
-                if (mentionType) {
-                  const $at = newEditorState.doc.resolve(blockStart + idx + 1);
-                  if (mentionType.isInSet($at.marks())) continue;
-                }
-
-                bestIdx = idx;
-                bestIndicator = ch;
-                break;
-              }
-
-              if (bestIdx === -1) {
-                return { active: false };
-              }
-
-              const query = text.slice(bestIdx + 1);
-
-              // Native platforms end the trigger after two spaces in the query
-              // (e.g. "@john doe " → 2 spaces → end; "@john doe" → 1 → still active).
-              const spaceCount = (query.match(/ /g) ?? []).length;
-              if (spaceCount >= 2) {
-                return { active: false };
-              }
-
-              const from = blockStart + bestIdx;
-              const to = $from.pos;
-
-              return {
-                active: true,
-                indicator: bestIndicator,
-                from,
-                to,
-                query,
-              };
-            },
-          },
-
-          appendTransaction(transactions, oldState, newState) {
-            if (!transactions.some((tr) => tr.docChanged)) {
-              return null;
-            }
-
-            const mentionType =
-              newState.schema.marks[ENRICHED_MENTION_MARK_NAME];
-            if (!mentionType) return null;
-
-            // Collect all mention mark ranges in the OLD doc
-            type MarkRange = { from: number; to: number; mark: PMark };
-            const oldRanges: MarkRange[] = [];
-
-            oldState.doc.descendants((node, pos) => {
-              if (!node.isText) return;
-              const m = mentionType.isInSet(node.marks);
-              if (m) {
-                oldRanges.push({
-                  from: pos,
-                  to: pos + node.nodeSize,
-                  mark: m,
-                });
-              }
-            });
-
-            // Merge adjacent ranges with same mark instance
-            const merged: MarkRange[] = [];
-            for (const range of oldRanges) {
-              const prev = merged[merged.length - 1];
-              if (prev && prev.mark === range.mark && prev.to === range.from) {
-                prev.to = range.to;
-              } else {
-                merged.push({ ...range });
-              }
-            }
-
-            // For each old range, map through all transactions and check length
-            const tr = newState.tr;
-            let changed = false;
-
-            for (const { from, to, mark } of merged) {
-              const origLen = to - from;
-              let newFrom = from;
-              let newTo = to;
-
-              for (const t of transactions) {
-                newFrom = t.mapping.map(newFrom, -1);
-                // Use bias -1 so a split exactly at the mention's end keeps newTo
-                // in the same paragraph instead of jumping into the new one (+2).
-                newTo = t.mapping.map(newTo, -1);
-              }
-
-              const newLen = newTo - newFrom;
-              if (newLen !== origLen) {
-                tr.removeMark(newFrom, newTo, mark.type);
-                changed = true;
-              }
-            }
-
-            return changed ? tr : null;
-          },
+          props: mentionPluginProps,
+          state: makeMentionPluginState(options),
+          appendTransaction: appendMentionTransaction,
         }),
       ];
     },
@@ -260,34 +237,18 @@ export function setMention(
   const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
   if (!mentionType) return;
 
-  // Check blockers
   const $from = state.selection.$from;
-  const codeType = state.schema.marks.code;
-  if (codeType && codeType.isInSet($from.marks())) {
+  if (isCaretInBlockedContext($from, state.schema)) {
     console.warn(
-      '[EnrichedMention] setMention called but caret is inside code mark'
-    );
-    return;
-  }
-  const linkType = state.schema.marks.link;
-  if (linkType && linkType.isInSet($from.marks())) {
-    console.warn(
-      '[EnrichedMention] setMention called but caret is inside link mark'
-    );
-    return;
-  }
-  if ($from.parent.type.name === 'codeBlock') {
-    console.warn(
-      '[EnrichedMention] setMention called but caret is inside codeBlock'
+      '[EnrichedMention] setMention called but caret is inside a blocked context'
     );
     return;
   }
 
   const { from, to, indicator } = triggerState;
 
-  // If the user moved the caret back into a partial match (e.g. caret between
-  // "@John " and "Doe" with canonical text "@John Doe"), extending `to` over the
-  // matching tail prevents leftover characters after the inserted mention.
+  // If the user moved the caret back into a partial match, extend `to` over the
+  // matching tail to avoid leftover characters after the inserted mention.
   const parentEnd = state.doc.resolve(from).end();
   let extendedTo = to;
   let scanPos = from;
@@ -310,7 +271,6 @@ export function setMention(
     text,
     attributes: attributes ?? {},
   });
-
   const fragment = Fragment.fromArray([
     state.schema.text(text, [mentionMark]),
     state.schema.text(' '),
@@ -358,7 +318,6 @@ export function subscribeMentionEvents(
     const curr = mentionPluginKey.getState(editor.state);
     if (!curr) return;
 
-    // Trigger lifecycle
     if (!prevTriggerState.active && curr.active) {
       cb.onStartMention?.(curr.indicator);
       if (curr.query !== '') {
@@ -373,7 +332,6 @@ export function subscribeMentionEvents(
     }
     prevTriggerState = curr;
 
-    // onMentionDetected
     if (!cb.onMentionDetected) {
       prevMentionSnapshot = null;
       return;
