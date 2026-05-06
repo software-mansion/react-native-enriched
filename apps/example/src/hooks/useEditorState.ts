@@ -105,7 +105,6 @@ export function useEditorState() {
   };
 
   const handleStartMention = (indicator: string) => {
-    console.log('Start mention:', indicator);
     if (indicator === '@') {
       userMention.onMentionChange('');
       openUserMentionPopup();
@@ -116,7 +115,6 @@ export function useEditorState() {
   };
 
   const handleEndMention = (indicator: string) => {
-    console.log('End mention:', indicator);
     if (indicator === '@') {
       closeUserMentionPopup();
       userMention.onMentionChange('');
@@ -127,7 +125,6 @@ export function useEditorState() {
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
-    console.log('Change mention:', indicator, text);
     indicator === '@'
       ? userMention.onMentionChange(text)
       : channelMention.onMentionChange(text);
@@ -137,7 +134,6 @@ export function useEditorState() {
   };
 
   const handleUserMentionSelected = (item: MentionItem) => {
-    console.log('User mention selected:', item);
     ref.current?.setMention('@', `@${item.name}`, {
       id: item.id,
       type: 'user',
@@ -145,7 +141,6 @@ export function useEditorState() {
   };
 
   const handleChannelMentionSelected = (item: MentionItem) => {
-    console.log('Channel mention selected:', item);
     ref.current?.setMention('#', `#${item.name}`, {
       id: item.id,
       type: 'channel',

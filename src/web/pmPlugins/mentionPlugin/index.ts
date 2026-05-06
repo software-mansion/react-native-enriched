@@ -3,7 +3,7 @@ import { Slice } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
 import { makeMentionPluginState } from './makeMentionPluginState';
 import { mentionPluginKey } from './mentionPluginKey';
-import { removeMentionMarksIfSpanLengthChanged } from './removeMentionMarksIfSpansResized';
+import { removeMentionMarksIfSpansResized } from './removeMentionMarksIfSpansResized';
 import { stripPartialMentionMarks } from './stripPartialMentionMarks';
 import type { MentionPluginOptions, TriggerState } from './types';
 
@@ -30,7 +30,7 @@ export function createMentionPlugin(options: MentionPluginOptions): Extension {
             },
           },
           state: makeMentionPluginState(options),
-          appendTransaction: removeMentionMarksIfSpanLengthChanged,
+          appendTransaction: removeMentionMarksIfSpansResized,
         }),
       ];
     },

@@ -3,7 +3,7 @@ import type { EditorState, Transaction } from '@tiptap/pm/state';
 
 export type MentionMarkRange = { from: number; to: number; mark: Mark };
 
-export function removeMentionMarksIfSpanLengthChanged(
+export function removeMentionMarksIfSpansResized(
   transactions: readonly Transaction[],
   oldState: EditorState,
   newState: EditorState
@@ -17,7 +17,26 @@ export function removeMentionMarksIfSpanLengthChanged(
     collectMentionMarkRanges(oldState.doc, mentionType)
   );
 
-  return removeMentionMarksIfSpansResized(newState, merged, transactions);
+  const tr = newState.tr;
+  let changed = false;
+
+  for (const { from, to, mark } of merged) {
+    const origLen = to - from;
+    let newFrom = from;
+    let newTo = to;
+
+    for (const t of transactions) {
+      newFrom = t.mapping.map(newFrom, 1);
+      newTo = t.mapping.map(newTo, -1);
+    }
+
+    if (newTo - newFrom !== origLen) {
+      tr.removeMark(newFrom, newTo, mark.type);
+      changed = true;
+    }
+  }
+
+  return changed ? tr : null;
 }
 
 function collectMentionMarkRanges(
@@ -46,32 +65,4 @@ function mergeContiguousSameMarkRanges(
     }
   }
   return merged;
-}
-
-function removeMentionMarksIfSpansResized(
-  newState: EditorState,
-  merged: MentionMarkRange[],
-  transactions: readonly Transaction[]
-): Transaction | null {
-  const tr = newState.tr;
-  let changed = false;
-
-  for (const { from, to, mark } of merged) {
-    const origLen = to - from;
-    let newFrom = from;
-    let newTo = to;
-
-    for (const t of transactions) {
-      newFrom = t.mapping.map(newFrom, -1);
-      // bias -1 so a split exactly at mention's end keeps newTo in the same paragraph
-      newTo = t.mapping.map(newTo, -1);
-    }
-
-    if (newTo - newFrom !== origLen) {
-      tr.removeMark(newFrom, newTo, mark.type);
-      changed = true;
-    }
-  }
-
-  return changed ? tr : null;
 }

@@ -5,7 +5,6 @@ const MOCKED_DATA = [
     id: '1',
     name: 'John Doe',
   },
-
   {
     id: '2',
     name: 'Jane Smith',
@@ -17,10 +16,6 @@ const MOCKED_DATA = [
   {
     id: '4',
     name: 'Bob Brown',
-  },
-  {
-    id: '5',
-    name: 'John Doe Smith',
   },
 ];
 
