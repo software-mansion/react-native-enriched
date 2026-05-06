@@ -1,6 +1,29 @@
 import { Extension } from '@tiptap/core';
-import { Mark, type ResolvedPos } from '@tiptap/pm/model';
+import { Mark, type ResolvedPos, type Schema } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
+
+const NONINCLUSIVE_MARKS = ['link', 'mention'] as const;
+
+function stripNonInclusiveMarksIfAfterIsOut(
+  schema: Schema,
+  $from: ResolvedPos
+): readonly Mark[] {
+  const nodeBefore = $from.nodeBefore;
+  if (!nodeBefore) {
+    return [];
+  }
+  let out = nodeBefore.marks;
+  for (const name of NONINCLUSIVE_MARKS) {
+    const markType = schema.marks[name];
+    if (!markType?.isInSet(out)) continue;
+    const afterHasMark =
+      $from.nodeAfter != null && markType.isInSet($from.nodeAfter.marks);
+    if (!afterHasMark) {
+      out = out.filter((m) => m.type !== markType);
+    }
+  }
+  return out;
+}
 
 function resolveStrictMarks(
   $from: ResolvedPos,
@@ -18,26 +41,9 @@ function resolveStrictMarks(
 
   // Character to the left: strictly inherit from it
   if ($from.nodeBefore) {
-    let marks = $from.nodeBefore.marks;
-    // Link is non-inclusive: do not carry the link onto text typed after the last
-    // linked character (e.g. Space must "exit" the link, matching native).
-    const linkType = newState.schema.marks.link;
-    if (linkType?.isInSet(marks)) {
-      const afterHasLink =
-        $from.nodeAfter != null && linkType.isInSet($from.nodeAfter.marks);
-      if (!afterHasLink) {
-        marks = marks.filter((m) => m.type !== linkType);
-      }
-    }
-    const mentionType = newState.schema.marks.mention;
-    if (mentionType?.isInSet(marks)) {
-      const afterHasMention =
-        $from.nodeAfter != null && mentionType.isInSet($from.nodeAfter.marks);
-      if (!afterHasMention) {
-        marks = marks.filter((m) => m.type !== mentionType);
-      }
-    }
-    return marks;
+    // Non-inclusive marks: do not carry onto text typed after the last marked
+    // character (e.g. space exits link/mention, matching native).
+    return stripNonInclusiveMarksIfAfterIsOut(newState.schema, $from);
   }
 
   // Start of line with text to the right
