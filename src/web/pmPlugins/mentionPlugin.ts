@@ -1,6 +1,6 @@
 import { Extension, getMarkRange } from '@tiptap/core';
-import { Fragment } from '@tiptap/pm/model';
-import type { Mark as PMark } from '@tiptap/pm/model';
+import { Fragment, Slice } from '@tiptap/pm/model';
+import type { Mark as PMark, Node as PNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { Transaction } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
@@ -18,6 +18,24 @@ export type TriggerState =
     };
 
 export const mentionPluginKey = new PluginKey<TriggerState>('mention');
+
+function stripPartialMentionMarks(fragment: Fragment): Fragment {
+  const nodes: PNode[] = [];
+  fragment.forEach((node) =>
+    nodes.push(
+      node.isText
+        ? node.mark(
+            node.marks.filter(
+              (m) =>
+                m.type.name !== ENRICHED_MENTION_MARK_NAME ||
+                node.text === (m.attrs.text as string)
+            )
+          )
+        : node.copy(stripPartialMentionMarks(node.content))
+    )
+  );
+  return Fragment.from(nodes);
+}
 
 interface MentionPluginOptions {
   indicatorsRef: { current: string[] };
@@ -39,6 +57,16 @@ export function createMentionPlugin(options: MentionPluginOptions): Extension {
       return [
         new Plugin<TriggerState>({
           key: mentionPluginKey,
+
+          props: {
+            transformPasted(slice: Slice): Slice {
+              return new Slice(
+                stripPartialMentionMarks(slice.content),
+                slice.openStart,
+                slice.openEnd
+              );
+            },
+          },
 
           state: {
             init(): TriggerState {
