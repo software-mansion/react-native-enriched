@@ -1,9 +1,7 @@
 import { Mark, mergeAttributes } from '@tiptap/core';
 
-export const ENRICHED_MENTION_MARK_NAME = 'enrichedMention';
-
 export const EnrichedMention = Mark.create({
-  name: ENRICHED_MENTION_MARK_NAME,
+  name: 'mention',
   inclusive: false,
   excludes: 'link code',
   priority: 1000,

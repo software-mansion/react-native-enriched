@@ -19,7 +19,7 @@ export function isLinkBlocked(editor: Editor): boolean {
   return (
     editor.isActive('code') ||
     editor.isActive('codeBlock') ||
-    editor.isActive('enrichedMention')
+    editor.isActive('mention')
   );
 }
 function isMentionBlocked(editor: Editor): boolean {
@@ -39,7 +39,7 @@ export function isFormatBlocked(
     return isLinkBlocked(editor);
   }
 
-  if (tiptapName === 'enrichedMention') {
+  if (tiptapName === 'mention') {
     return isMentionBlocked(editor);
   }
 

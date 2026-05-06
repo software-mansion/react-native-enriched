@@ -14,7 +14,6 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { EditorState, StateField, Transaction } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
 import type { OnChangeMentionEvent, OnMentionDetected } from '../../types';
-import { ENRICHED_MENTION_MARK_NAME } from '../formats/EnrichedMention';
 
 export type TriggerState =
   | { active: false }
@@ -36,7 +35,7 @@ function stripPartialMentionMarks(fragment: Fragment): Fragment {
         ? node.mark(
             node.marks.filter(
               (m) =>
-                m.type.name !== ENRICHED_MENTION_MARK_NAME ||
+                m.type.name !== 'mention' ||
                 node.text === (m.attrs.text as string)
             )
           )
@@ -47,8 +46,7 @@ function stripPartialMentionMarks(fragment: Fragment): Fragment {
 }
 
 function isCaretInBlockedContext($from: ResolvedPos, schema: Schema): boolean {
-  if (schema.marks[ENRICHED_MENTION_MARK_NAME]?.isInSet($from.marks()))
-    return true;
+  if (schema.marks.mention?.isInSet($from.marks())) return true;
   if (schema.marks.code?.isInSet($from.marks())) return true;
   if (schema.marks.link?.isInSet($from.marks())) return true;
   if (findParentNodeClosestToPos($from, (n) => n.type.name === 'codeBlock'))
@@ -85,7 +83,7 @@ function appendMentionTransaction(
 ): Transaction | null {
   if (!transactions.some((tr) => tr.docChanged)) return null;
 
-  const mentionType = newState.schema.marks[ENRICHED_MENTION_MARK_NAME];
+  const mentionType = newState.schema.marks.mention;
   if (!mentionType) return null;
 
   type MarkRange = { from: number; to: number; mark: PMark };
@@ -155,8 +153,7 @@ function makeMentionPluginState(
       );
 
       const indicators = options.indicatorsRef.current;
-      const mentionType =
-        newEditorState.schema.marks[ENRICHED_MENTION_MARK_NAME];
+      const mentionType = newEditorState.schema.marks.mention;
 
       let bestIdx = -1;
       let bestIndicator = '';
@@ -234,7 +231,7 @@ export function setMention(
     return;
   }
 
-  const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
+  const mentionType = state.schema.marks.mention;
   if (!mentionType) return;
 
   const $from = state.selection.$from;
@@ -275,7 +272,7 @@ export function setMention(
   const baseMarks = state.doc
     .resolve(refPos)
     .marks()
-    .filter((m) => m.type.name !== ENRICHED_MENTION_MARK_NAME);
+    .filter((m) => m.type.name !== 'mention');
   const marksForMention = mentionMark.addToSet(baseMarks);
   const fragment = Fragment.fromArray([
     state.schema.text(text, marksForMention),
@@ -349,7 +346,7 @@ export function subscribeMentionEvents(
       return;
     }
 
-    const mentionType = state.schema.marks[ENRICHED_MENTION_MARK_NAME];
+    const mentionType = state.schema.marks.mention;
     if (!mentionType) {
       prevMentionSnapshot = null;
       return;

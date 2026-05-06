@@ -1,7 +1,6 @@
 import { Extension } from '@tiptap/core';
 import { Mark, type ResolvedPos } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
-import { ENRICHED_MENTION_MARK_NAME } from '../formats/EnrichedMention';
 
 function resolveStrictMarks(
   $from: ResolvedPos,
@@ -30,7 +29,7 @@ function resolveStrictMarks(
         marks = marks.filter((m) => m.type !== linkType);
       }
     }
-    const mentionType = newState.schema.marks[ENRICHED_MENTION_MARK_NAME];
+    const mentionType = newState.schema.marks.mention;
     if (mentionType?.isInSet(marks)) {
       const afterHasMention =
         $from.nodeAfter != null && mentionType.isInSet($from.nodeAfter.marks);

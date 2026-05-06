@@ -86,13 +86,11 @@ function buildState(
       'link',
       editor.isActive('code') ||
         editor.isActive('link') ||
-        editor.isActive('enrichedCodeBlock')
+        editor.isActive('codeBlock')
     ),
     mention: inlineFormat(
-      'enrichedMention',
-      editor.isActive('code') ||
-        editor.isActive('link') ||
-        editor.isActive('enrichedCodeBlock')
+      'mention',
+      editor.isActive('code') || editor.isActive('codeBlock')
     ),
     image: { isActive: false, isConflicting: false, isBlocking: false },
   };
