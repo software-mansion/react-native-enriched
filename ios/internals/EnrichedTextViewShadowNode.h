@@ -1,0 +1,34 @@
+#pragma once
+#include <ReactNativeEnriched/EnrichedTextViewState.h>
+#include <ReactNativeEnriched/EventEmitters.h>
+#include <ReactNativeEnriched/Props.h>
+#include <jsi/jsi.h>
+#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <react/renderer/core/LayoutConstraints.h>
+
+namespace facebook::react {
+
+JSI_EXPORT extern const char EnrichedTextViewComponentName[];
+
+class EnrichedTextViewShadowNode
+    : public ConcreteViewShadowNode<
+          EnrichedTextViewComponentName, EnrichedTextViewProps,
+          EnrichedTextViewEventEmitter, EnrichedTextViewState> {
+public:
+  using ConcreteViewShadowNode::ConcreteViewShadowNode;
+  Size
+  measureContent(const LayoutContext &layoutContext,
+                 const LayoutConstraints &layoutConstraints) const override;
+
+  static ShadowNodeTraits BaseTraits() {
+    auto traits = ConcreteViewShadowNode::BaseTraits();
+    traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
+    traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
+    return traits;
+  }
+
+private:
+  id setupMockTextView_() const;
+};
+
+} // namespace facebook::react

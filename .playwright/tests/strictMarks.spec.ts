@@ -1,12 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const EDITOR_INNER = '[data-testid="visual-regression-editor"] .eti-editor';
-const BOLD_TOOLBAR_BUTTON = '[data-testid="toolbar-button-bold"]';
-const INLINE_CODE_TOOLBAR_BUTTON = '[data-testid="toolbar-button-inlineCode"]';
+import {
+  editorLocator,
+  getSerializedHtml,
+  gotoVisualRegression,
+  setEditorHtml,
+} from '../helpers/visual-regression';
+import { toolbarButton } from '../helpers/toolbar';
 
-async function typeBoldText(page: Page, text: string) {
-  const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
-  const editor = page.locator(EDITOR_INNER);
+async function typeBoldText(page: Page, text: string): Promise<void> {
+  const boldBtn = toolbarButton(page, 'bold');
+  const editor = editorLocator(page);
 
   await editor.click();
   await boldBtn.click();
@@ -23,10 +27,10 @@ async function typeBoldThenPlainText(
 ) {
   await typeBoldText(page, boldText);
 
-  const editor = page.locator(EDITOR_INNER);
+  const editor = editorLocator(page);
 
   await editor.click();
-  await expect(page.locator(BOLD_TOOLBAR_BUTTON)).not.toHaveClass(
+  await expect(toolbarButton(page, 'bold')).not.toHaveClass(
     /toolbar-btn--active/
   );
   await editor.pressSequentially(plainText, { delay: 80 });
@@ -37,8 +41,8 @@ async function typeInlineCodeThenPlainText(
   codeText: string,
   plainText: string
 ) {
-  const inlineCodeBtn = page.locator(INLINE_CODE_TOOLBAR_BUTTON);
-  const editor = page.locator(EDITOR_INNER);
+  const inlineCodeBtn = toolbarButton(page, 'inlineCode');
+  const editor = editorLocator(page);
 
   await editor.click();
   await inlineCodeBtn.click();
@@ -51,14 +55,13 @@ async function typeInlineCodeThenPlainText(
 
 test.describe('strict marks', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/visual-regression');
-    await page.waitForSelector(EDITOR_INNER);
+    await gotoVisualRegression(page);
   });
 
   test('inline style deactivates after deleting inline-styled text char by char', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
+    const editor = editorLocator(page);
 
     await typeBoldText(page, 'hello world');
 
@@ -68,20 +71,20 @@ test.describe('strict marks', () => {
     }
 
     await expect(editor).toHaveText('');
-    await expect(page.locator(BOLD_TOOLBAR_BUTTON)).not.toHaveClass(
+    await expect(toolbarButton(page, 'bold')).not.toHaveClass(
       /toolbar-btn--active/
     );
   });
 
   test('inline style deactivates after cmd+a and delete', async ({ page }) => {
-    const editor = page.locator(EDITOR_INNER);
+    const editor = editorLocator(page);
 
     await typeBoldText(page, 'hello world');
 
     await editor.press('Meta+A');
     await editor.press('Backspace');
 
-    await expect(page.locator(BOLD_TOOLBAR_BUTTON)).not.toHaveClass(
+    await expect(toolbarButton(page, 'bold')).not.toHaveClass(
       /toolbar-btn--active/
     );
   });
@@ -89,8 +92,8 @@ test.describe('strict marks', () => {
   test('inline style is inactive at document start and typed text is plain', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await typeBoldText(page, 'hello');
 
@@ -104,8 +107,8 @@ test.describe('strict marks', () => {
   test('pressing Enter after the last inline code character keeps code when the rest of the line is plain', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const inlineCodeBtn = page.locator(INLINE_CODE_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const inlineCodeBtn = toolbarButton(page, 'inlineCode');
 
     await typeInlineCodeThenPlainText(page, 'code', ' plain');
 
@@ -122,8 +125,8 @@ test.describe('strict marks', () => {
   test('pressing Enter in the middle of a styled segment carries style to the new line', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await editor.click();
     await boldBtn.click();
@@ -143,8 +146,8 @@ test.describe('strict marks', () => {
   test('pressing Enter after the last bold character keeps bold when the rest of the line is plain', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await typeBoldThenPlainText(page, 'hello', ' something');
 
@@ -163,7 +166,7 @@ test.describe('strict marks', () => {
   test('inline style stays active at boundary between styled and plain text after deletion', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
+    const editor = editorLocator(page);
 
     await typeBoldThenPlainText(page, 'hello', ' world');
 
@@ -175,7 +178,7 @@ test.describe('strict marks', () => {
 
     await editor.press('Backspace');
 
-    await expect(page.locator(BOLD_TOOLBAR_BUTTON)).toHaveClass(
+    await expect(toolbarButton(page, 'bold')).toHaveClass(
       /toolbar-btn--active/
     );
   });
@@ -183,8 +186,8 @@ test.describe('strict marks', () => {
   test('inline code stays active at boundary between code and plain text after deletion', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const inlineCodeBtn = page.locator(INLINE_CODE_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const inlineCodeBtn = toolbarButton(page, 'inlineCode');
 
     await typeInlineCodeThenPlainText(page, 'hello', ' world');
 
@@ -202,8 +205,8 @@ test.describe('strict marks', () => {
   test('explicit style survives multiple Enter and Backspace keystrokes on empty lines', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await editor.click();
     await boldBtn.click();
@@ -224,8 +227,8 @@ test.describe('strict marks', () => {
   test('style clears when deleting the last character of a specific line', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await editor.click();
     await editor.pressSequentially('Line 1');
@@ -247,8 +250,8 @@ test.describe('strict marks', () => {
   test('can toggle inline style off when cursor is inside styled text', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await typeBoldText(page, 'hello');
 
@@ -267,8 +270,8 @@ test.describe('strict marks', () => {
   test('style inherits from previous block when clearing a newly created line', async ({
     page,
   }) => {
-    const editor = page.locator(EDITOR_INNER);
-    const boldBtn = page.locator(BOLD_TOOLBAR_BUTTON);
+    const editor = editorLocator(page);
+    const boldBtn = toolbarButton(page, 'bold');
 
     await editor.click();
     await boldBtn.click();
@@ -285,5 +288,29 @@ test.describe('strict marks', () => {
     }
 
     await expect(boldBtn).toHaveClass(/toolbar-btn--active/);
+  });
+
+  test('typing after the last linked character does not extend the link', async ({
+    page,
+  }) => {
+    await setEditorHtml(
+      page,
+      '<html><p><a href="https://example.com">Hello</a></p></html>'
+    );
+
+    const editor = editorLocator(page);
+    await editor.click();
+    await editor.press('End');
+    await editor.pressSequentially(' more', { delay: 80 });
+
+    await expect
+      .poll(async () => {
+        const html = await getSerializedHtml(page);
+        return (
+          html.includes('<a href="https://example.com">Hello</a>') &&
+          !html.includes('<a href="https://example.com">Hello more</a>')
+        );
+      })
+      .toBe(true);
   });
 });

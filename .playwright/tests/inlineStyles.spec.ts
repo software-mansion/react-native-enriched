@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-const EDITOR = '[data-testid="visual-regression-editor"]';
-const EDITOR_INNER = `${EDITOR} .eti-editor`;
-const HTML_INPUT = '[data-testid="visual-regression-html-input"]';
-const SET_VALUE_BTN = '[data-testid="visual-regression-set-value-button"]';
+import {
+  editorLocator,
+  gotoVisualRegression,
+  setEditorHtml,
+} from '../helpers/visual-regression';
+import { toolbarButton } from '../helpers/toolbar';
 
 const ALL_INLINE_STYLES = [
   '<html>',
@@ -17,14 +19,22 @@ const ALL_INLINE_STYLES = [
 ].join('');
 
 test('inline styles visual regression', async ({ page }) => {
-  await page.goto('/visual-regression');
-  await page.waitForSelector(EDITOR_INNER);
+  await gotoVisualRegression(page);
+  await setEditorHtml(page, ALL_INLINE_STYLES);
 
-  await page.fill(HTML_INPUT, ALL_INLINE_STYLES);
-  await page.click(SET_VALUE_BTN);
-  await page.waitForTimeout(300);
+  await expect(editorLocator(page)).toHaveScreenshot('inline-styles.png');
+});
 
-  await expect(page.locator(EDITOR_INNER)).toHaveScreenshot(
-    'inline-styles.png'
+test('link style is disabled when selection is in inline code', async ({
+  page,
+}) => {
+  await gotoVisualRegression(page);
+  await setEditorHtml(
+    page,
+    '<html><p>before <code>inside</code> after</p></html>'
   );
+
+  await editorLocator(page).locator('p code').click();
+
+  await expect(toolbarButton(page, 'link')).toBeDisabled();
 });

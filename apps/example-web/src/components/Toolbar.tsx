@@ -4,10 +4,12 @@ import type {
   OnChangeStateEvent,
 } from 'react-native-enriched';
 import type { RefObject } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
+  onOpenLinkModal: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -29,11 +31,17 @@ function ToolbarButton({
 }: ToolbarButtonProps) {
   return (
     <button
+      type="button"
       data-testid={testId}
       disabled={isDisabled}
       className={`toolbar-btn toolbar-btn--${variant} ${isActive ? 'toolbar-btn--active' : ''} ${isDisabled ? 'toolbar-btn--disabled' : ''}`}
       onPointerDown={(e) => {
-        e.preventDefault();
+        // Mouse only: keep focus in the editor. Skip touch so the strip can scroll.
+        if (e.pointerType === 'mouse') {
+          e.preventDefault();
+        }
+      }}
+      onClick={() => {
         if (!isDisabled) {
           onPress();
         }
@@ -44,8 +52,9 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ editorRef, state }: ToolbarProps) {
+export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
   const s = state;
+  const dragScroll = useDragScroll();
 
   const toolbarItems = [
     {
@@ -86,6 +95,88 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
         editor?.toggleInlineCode();
       },
     },
+    {
+      key: 'h1',
+      label: 'H1',
+      onPress: (editor) => {
+        editor?.toggleH1();
+      },
+    },
+    {
+      key: 'h2',
+      label: 'H2',
+      onPress: (editor) => {
+        editor?.toggleH2();
+      },
+    },
+    {
+      key: 'h3',
+      label: 'H3',
+      onPress: (editor) => {
+        editor?.toggleH3();
+      },
+    },
+    {
+      key: 'h4',
+      label: 'H4',
+      onPress: (editor) => {
+        editor?.toggleH4();
+      },
+    },
+    {
+      key: 'h5',
+      label: 'H5',
+      onPress: (editor) => {
+        editor?.toggleH5();
+      },
+    },
+    {
+      key: 'h6',
+      label: 'H6',
+      onPress: (editor) => {
+        editor?.toggleH6();
+      },
+    },
+    {
+      key: 'blockQuote',
+      label: '❝',
+      onPress: (editor) => {
+        editor?.toggleBlockQuote();
+      },
+    },
+    {
+      key: 'codeBlock',
+      label: '{ }',
+      onPress: (editor) => {
+        editor?.toggleCodeBlock();
+      },
+    },
+    {
+      key: 'link',
+      label: '🔗',
+      onPress: onOpenLinkModal,
+    },
+    {
+      key: 'unorderedList',
+      label: '•',
+      onPress: (editor) => {
+        editor?.toggleUnorderedList();
+      },
+    },
+    {
+      key: 'orderedList',
+      label: '1.',
+      onPress: (editor) => {
+        editor?.toggleOrderedList();
+      },
+    },
+    {
+      key: 'checkboxList',
+      label: '☑',
+      onPress: (editor) => {
+        editor?.toggleCheckboxList(true);
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
@@ -95,7 +186,7 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
 
   return (
     <div className="toolbar">
-      <div className="toolbar-controls">
+      <div className="toolbar-controls" {...dragScroll}>
         {toolbarItems.map((item) => (
           <ToolbarButton
             key={item.key}

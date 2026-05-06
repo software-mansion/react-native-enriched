@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import {
   EnrichedTextInput,
   type EnrichedInputStyle,
@@ -7,6 +7,25 @@ import {
   type OnChangeStateEvent,
 } from 'react-native-enriched';
 import { Toolbar } from '../components/Toolbar';
+import { WEB_DEFAULT_HTML_STYLE } from '../defaultHtmlStyle';
+
+function mergeHtmlStyle(
+  base: HtmlStyle,
+  override: Partial<HtmlStyle>
+): HtmlStyle {
+  const isPlainObject = (val: unknown): val is Record<string, unknown> =>
+    typeof val === 'object' && val !== null && !Array.isArray(val);
+
+  const result = { ...base } as Record<string, unknown>;
+
+  for (const [key, val] of Object.entries(override)) {
+    const prev = result[key];
+    result[key] =
+      isPlainObject(prev) && isPlainObject(val) ? { ...prev, ...val } : val;
+  }
+
+  return result as HtmlStyle;
+}
 
 export function VisualRegression() {
   const ref = useRef<EnrichedTextInputInstance>(null);
@@ -14,6 +33,21 @@ export function VisualRegression() {
   const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
     null
   );
+  const [editorHtml, setEditorHtml] = useState('');
+  const [htmlStyleOverrideJson, setHtmlStyleOverrideJson] = useState('');
+
+  const htmlStyle = useMemo<HtmlStyle>(() => {
+    const raw = htmlStyleOverrideJson.trim();
+    if (!raw) {
+      return WEB_DEFAULT_HTML_STYLE;
+    }
+    try {
+      const parsed = JSON.parse(raw) as Partial<HtmlStyle>;
+      return mergeHtmlStyle(WEB_DEFAULT_HTML_STYLE, parsed);
+    } catch {
+      return WEB_DEFAULT_HTML_STYLE;
+    }
+  }, [htmlStyleOverrideJson]);
 
   const handleSetValue = () => {
     ref.current?.setValue(htmlInput);
@@ -22,6 +56,7 @@ export function VisualRegression() {
   const handleClear = () => {
     ref.current?.setValue('');
     setHtmlInput('');
+    setEditorHtml('');
   };
 
   return (
@@ -36,15 +71,35 @@ export function VisualRegression() {
           scrollEnabled
           style={enrichedInputStyle}
           htmlStyle={htmlStyle}
+          onChangeHtml={(e) => {
+            setEditorHtml(e.nativeEvent.value);
+          }}
           onChangeState={(e) => {
             setEditorState(e.nativeEvent);
           }}
         />
       </div>
 
-      <Toolbar editorRef={ref} state={editorState} />
+      <Toolbar editorRef={ref} state={editorState} onOpenLinkModal={() => {}} />
 
       <div style={styles.controlsContainer}>
+        <label
+          style={styles.fieldLabel}
+          htmlFor="visual-regression-html-style-override"
+        >
+          htmlStyle override (JSON merged into defaults)
+        </label>
+        <textarea
+          id="visual-regression-html-style-override"
+          data-testid="visual-regression-html-style-override"
+          value={htmlStyleOverrideJson}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+            setHtmlStyleOverrideJson(e.target.value);
+          }}
+          placeholder={'e.g. { "h1": { "bold": false } }'}
+          rows={3}
+          style={styles.htmlStyleOverrideInput}
+        />
         <textarea
           data-testid="visual-regression-html-input"
           value={htmlInput}
@@ -69,6 +124,12 @@ export function VisualRegression() {
             Clear
           </button>
         </div>
+        <pre
+          data-testid="visual-regression-editor-html-output"
+          style={styles.editorHtmlOutput}
+        >
+          {editorHtml}
+        </pre>
       </div>
     </div>
   );
@@ -81,12 +142,27 @@ const styles = {
   controlsContainer: {
     marginTop: '12px',
   },
+  fieldLabel: {
+    display: 'block',
+    marginBottom: '4px',
+    fontSize: 14,
+  },
+  htmlStyleOverrideInput: {
+    width: '100%',
+    marginBottom: '10px',
+    fontFamily: 'ui-monospace, monospace',
+    fontSize: 12,
+  },
   htmlInput: {
     width: '100%',
   },
   actionButtons: {
     display: 'flex',
     gap: '8px',
+  },
+  editorHtmlOutput: {
+    marginTop: 8,
+    whiteSpace: 'pre-wrap',
   },
 } as const;
 
@@ -100,11 +176,4 @@ const enrichedInputStyle: EnrichedInputStyle = {
   fontSize: 16,
   lineHeight: 22,
   fontFamily: 'Helvetica Neue',
-};
-
-const htmlStyle: HtmlStyle = {
-  code: {
-    color: 'purple',
-    backgroundColor: 'yellow',
-  },
 };

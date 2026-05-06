@@ -26,4 +26,18 @@
   return equalText && equalUrl && equalIsManual;
 }
 
+- (BOOL)isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[LinkData class]]) {
+    return NO;
+  }
+  return [self isEqualToLinkData:(LinkData *)other];
+}
+
+- (NSUInteger)hash {
+  return [self.text hash] ^ [self.url hash] ^ (self.isManual ? 1u : 0u);
+}
+
 @end

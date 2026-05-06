@@ -76,7 +76,7 @@ yarn test
 
 ### E2E tests
 
-We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/flows/` and shared subflows in `.maestro/subflows/`.
+We use [Maestro](https://maestro.mobile.dev/) for end-to-end testing. Flows live in `.maestro/enrichedInput/flows/` and `.maestro/enrichedText/flows/`. Shared subflows live in `.maestro/subflows/`, with component-specific subflows in `.maestro/enrichedInput/subflows/` and `.maestro/enrichedText/subflows/`.
 
 #### Prerequisites
 
@@ -117,7 +117,7 @@ You can target specific flows or force a rebuild:
 
 ```sh
 # Run a single flow
-yarn test:e2e:ios .maestro/flows/core_controls_smoke.yaml
+yarn test:e2e:ios .maestro/enrichedInput/flows/core_controls_smoke.yaml
 
 # Force a fresh build even if the app is already installed
 yarn test:e2e:android --rebuild
@@ -125,7 +125,7 @@ yarn test:e2e:android --rebuild
 
 #### Visual regression tests
 
-Some flows compare a screenshot of the editor against a saved baseline in `.maestro/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
+Some flows compare a screenshot of the editor against a saved baseline in `.maestro/enrichedInput/screenshots/` or `.maestro/enrichedText/screenshots/`. By default the baseline is asserted. Pass `--update-screenshots` to capture new baselines instead:
 
 ```sh
 # Update baselines on both platforms
@@ -133,10 +133,10 @@ yarn test:e2e:mobile --update-screenshots
 
 # Single platform
 yarn test:e2e:ios --update-screenshots
-yarn test:e2e:android --update-screenshots .maestro/flows/inline_styles_visual.yaml
+yarn test:e2e:android --update-screenshots .maestro/enrichedInput/flows/inline_styles_visual.yaml
 ```
 
-Always review newly saved screenshots in `.maestro/screenshots/` before committing them.
+Always review newly saved screenshots in `.maestro/enrichedInput/screenshots/` and `.maestro/enrichedText/screenshots/` before committing them.
 
 #### Troubleshooting: flaky Android tests on macOS
 
@@ -164,6 +164,8 @@ Run the web E2E suite from the root directory:
 ```sh
 yarn test:e2e:web
 ```
+
+Append `--ui` for Playwright’s [UI mode](https://playwright.dev/docs/test-ui-mode) (pick tests, watch runs, inspect traces). Example: `yarn test:e2e:web --ui`.
 
 The Playwright config starts the Vite dev server automatically, so you do not need to run `yarn example-web dev` separately.
 
@@ -203,7 +205,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
-- `yarn test:e2e:web`: run E2E tests on the web example with Playwright.
+- `yarn test:e2e:web`: run E2E tests on the web example with Playwright (add `--ui` for the interactive runner).
 
 ### Sending a pull request
 
