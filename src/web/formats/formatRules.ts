@@ -16,7 +16,18 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
 }
 
 export function isLinkBlocked(editor: Editor): boolean {
-  return editor.isActive('code') || editor.isActive('codeBlock');
+  return (
+    editor.isActive('code') ||
+    editor.isActive('codeBlock') ||
+    editor.isActive('enrichedMention')
+  );
+}
+function isMentionBlocked(editor: Editor): boolean {
+  return (
+    editor.isActive('code') ||
+    editor.isActive('codeBlock') ||
+    editor.isActive('link')
+  );
 }
 
 export function isFormatBlocked(
@@ -24,8 +35,12 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
-  if (tiptapName === 'link' || tiptapName === 'enrichedMention') {
+  if (tiptapName === 'link') {
     return isLinkBlocked(editor);
+  }
+
+  if (tiptapName === 'enrichedMention') {
+    return isMentionBlocked(editor);
   }
 
   if (editor.isActive('codeBlock')) {
