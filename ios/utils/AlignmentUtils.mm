@@ -19,6 +19,53 @@
   }
 }
 
++ (NSArray<AlignmentEntry *> *)
+    captureAlignmentsInRange:(NSRange)range
+                     inInput:(EnrichedTextInputView *)input {
+  NSMutableArray<AlignmentEntry *> *alignments = [[NSMutableArray alloc] init];
+
+  [input->textView.textStorage
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:range
+                 options:0
+              usingBlock:^(NSParagraphStyle *paragraphStyle, NSRange subRange,
+                           BOOL *stop) {
+                if (paragraphStyle == nil) {
+                  return;
+                }
+
+                AlignmentEntry *entry = [[AlignmentEntry alloc] init];
+                entry.range = subRange;
+                entry.alignment = paragraphStyle.alignment;
+                [alignments addObject:entry];
+              }];
+
+  return alignments;
+}
+
++ (void)restoreAlignments:(NSArray<AlignmentEntry *> *)alignments
+                  inInput:(EnrichedTextInputView *)input {
+  for (AlignmentEntry *entry in alignments) {
+    NSRange range = entry.range;
+    if (range.location + range.length > input->textView.textStorage.length) {
+      continue;
+    }
+
+    NSParagraphStyle *paragraphStyle =
+        [input->textView.textStorage attribute:NSParagraphStyleAttributeName
+                                       atIndex:range.location
+                                effectiveRange:NULL];
+    NSMutableParagraphStyle *mutableParagraphStyle =
+        paragraphStyle ? [paragraphStyle mutableCopy]
+                       : [[NSMutableParagraphStyle alloc] init];
+    mutableParagraphStyle.alignment = entry.alignment;
+
+    [input->textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                        value:mutableParagraphStyle
+                                        range:range];
+  }
+}
+
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input {
   NSTextAlignment alignment = [AlignmentUtils stringToAlignment:alignStr];

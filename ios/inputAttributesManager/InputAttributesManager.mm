@@ -1,8 +1,10 @@
 #import "InputAttributesManager.h"
+#import "AlignmentUtils.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "ZeroWidthSpaceUtils.h"
 
 @implementation InputAttributesManager {
   NSMutableArray<NSValue *> *_dirtyRanges;
@@ -83,9 +85,18 @@
       presentStyles[@([[style class] getType])] = [style all:dirtyRange];
     }
 
+    NSArray<AlignmentEntry *> *savedAlignments =
+        [AlignmentUtils captureAlignmentsInRange:dirtyRange inInput:_input];
+
     // now reset the attributes to default ones
     [_input->textView.textStorage setAttributes:_input->defaultTypingAttributes
                                           range:dirtyRange];
+
+    // Restore values that are stored in regular attributes and were overwritten
+    // by the default-attributes reset above.
+    [AlignmentUtils restoreAlignments:savedAlignments inInput:_input];
+    [ZeroWidthSpaceUtils applyKernForZeroWidthSpacesInRange:dirtyRange
+                                                       host:_input];
 
     // Sort style types so paragraph styles come first. Their broad visual
     // attributes (e.g. foreground color, font) are laid down before inline
@@ -151,14 +162,22 @@
     if ([_customAttributesKeys containsObject:key]) {
       if ([key isEqualToString:NSParagraphStyleAttributeName]) {
         // NSParagraphStyle for paragraph styles -> only keep the textLists
-        // property
+        // and alignment properties
         NSParagraphStyle *pStyle =
             (NSParagraphStyle *)_input->textView
                 .typingAttributes[NSParagraphStyleAttributeName];
-        if (pStyle != nullptr && pStyle.textLists.count == 1) {
+        if (pStyle != nullptr) {
           NSMutableParagraphStyle *newPStyle =
               [[NSMutableParagraphStyle alloc] init];
-          newPStyle.textLists = pStyle.textLists;
+
+          // Preserve alignment
+          newPStyle.alignment = pStyle.alignment;
+
+          // Preserve text lists if they exist
+          if (pStyle.textLists.count == 1) {
+            newPStyle.textLists = pStyle.textLists;
+          }
+
           newAttrs[NSParagraphStyleAttributeName] = newPStyle;
         }
       } else {

@@ -20,12 +20,6 @@
     [copiedAttrs addEntriesFromDictionary:additionalAttrs];
   }
 
-  // Give \u200B a tiny kern so the layout engine recognizes ZWS-only lines
-  // under right/center alignment (zero advance width causes height collapse).
-  if ([text rangeOfString:@"\u200B"].location != NSNotFound) {
-    copiedAttrs[NSKernAttributeName] = @(__FLT_EPSILON__);
-  }
-
   NSAttributedString *newAttrStr =
       [[NSAttributedString alloc] initWithString:text attributes:copiedAttrs];
   [textView.textStorage insertAttributedString:newAttrStr atIndex:index];
@@ -54,16 +48,6 @@
     [textView.textStorage
         addAttributes:additionalAttrs
                 range:NSMakeRange(range.location, [text length])];
-  }
-
-  // Give \u200B a tiny kern so the layout engine recognizes ZWS-only lines
-  // under right/center alignment (zero advance width causes height collapse).
-  if ([text length] > 0 &&
-      [text rangeOfString:@"\u200B"].location != NSNotFound) {
-    [textView.textStorage
-        addAttribute:NSKernAttributeName
-               value:@(__FLT_EPSILON__)
-               range:NSMakeRange(range.location, [text length])];
   }
 
   if (withSelection) {

@@ -1449,7 +1449,7 @@
   }
 
   // We look at the params stored in ongoingTags
-  NSString *storedParams = (tagData.count > 1) ? tagData[1] : nil;
+  NSString *storedParams = (tagData.count > 2) ? tagData[2] : nil;
   NSTextAlignment align = [self alignmentFromStyleParams:storedParams];
 
   if (align != NSTextAlignmentNatural) {
