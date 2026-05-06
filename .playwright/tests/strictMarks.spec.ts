@@ -313,4 +313,29 @@ test.describe('strict marks', () => {
       })
       .toBe(true);
   });
+
+  test('typing after the last mention character does not extend the mention', async ({
+    page,
+  }) => {
+    await setEditorHtml(
+      page,
+      '<html><p><mention text="@Jane" indicator="@" id="1" type="user">@Jane</mention></p></html>'
+    );
+
+    const editor = editorLocator(page);
+    await editor.click();
+    await editor.press('End');
+    await editor.pressSequentially(' after', { delay: 80 });
+
+    await expect
+      .poll(async () => {
+        const html = await getSerializedHtml(page);
+        return (
+          html.includes(
+            '<mention text="@Jane" indicator="@" id="1" type="user">@Jane</mention>'
+          ) && !html.includes('@Jane after</mention>')
+        );
+      })
+      .toBe(true);
+  });
 });
