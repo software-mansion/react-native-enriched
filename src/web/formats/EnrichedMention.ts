@@ -6,6 +6,7 @@ export const EnrichedMention = Mark.create({
   name: ENRICHED_MENTION_MARK_NAME,
   inclusive: false,
   excludes: 'link code',
+  priority: 1000,
 
   addAttributes() {
     return {

@@ -271,9 +271,15 @@ export function setMention(
     text,
     attributes: attributes ?? {},
   });
+  const refPos = extendedTo > from ? extendedTo - 1 : from;
+  const baseMarks = state.doc
+    .resolve(refPos)
+    .marks()
+    .filter((m) => m.type.name !== ENRICHED_MENTION_MARK_NAME);
+  const marksForMention = mentionMark.addToSet(baseMarks);
   const fragment = Fragment.fromArray([
-    state.schema.text(text, [mentionMark]),
-    state.schema.text(' '),
+    state.schema.text(text, marksForMention),
+    state.schema.text(' ', baseMarks),
   ]);
 
   editor
