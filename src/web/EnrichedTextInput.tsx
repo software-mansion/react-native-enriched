@@ -57,7 +57,6 @@ import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSame
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
 import {
   createMentionPlugin,
-  mentionPluginKey,
   setMention,
   startMention,
   subscribeMentionEvents,
@@ -78,7 +77,7 @@ export const EnrichedTextInput = ({
   placeholder = '',
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
-  mentionIndicators = ['@'],
+  mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.mentionIndicators.slice(),
   onFocus,
   style,
   onBlur,
@@ -112,13 +111,11 @@ export const EnrichedTextInput = ({
     []
   );
 
-  // Mention indicators ref
   const mentionIndicatorsRef = useRef(mentionIndicators);
   useEffect(() => {
     mentionIndicatorsRef.current = mentionIndicators;
   }, [mentionIndicators]);
 
-  // Mention callbacks ref
   const mentionCallbacksRef = useRef({
     onStartMention,
     onChangeMention,
@@ -217,7 +214,6 @@ export const EnrichedTextInput = ({
     editor?.commands.normalizeBoldInStyledHeadings();
   }, [editor, resolvedHtmlStyle]);
 
-  // Subscribe to mention lifecycle and detection events
   useEffect(() => {
     if (!editor) return;
     return subscribeMentionEvents(editor, mentionCallbacksRef);
@@ -275,16 +271,7 @@ export const EnrichedTextInput = ({
         indicator: string,
         text: string,
         attributes?: Record<string, string>
-      ) => {
-        // Dev ergonomics: warn if indicator doesn't match the active trigger indicator
-        const triggerState = mentionPluginKey.getState(editor.state);
-        if (triggerState?.active && triggerState.indicator !== indicator) {
-          console.warn(
-            `[EnrichedMention] setMention called with indicator "${indicator}" but active trigger indicator is "${triggerState.indicator}"`
-          );
-        }
-        setMention(editor, text, attributes);
-      },
+      ) => setMention(editor, indicator, text, attributes),
       measure: () => {},
       measureInWindow: () => {},
       measureLayout: () => {},

@@ -21,11 +21,9 @@ import { LinkModal } from './components/LinkModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
 import { Toolbar } from './components/Toolbar';
-import { MentionSuggestions } from './components/MentionSuggestions';
+import { MentionPopup, type MentionItem } from './components/MentionPopup';
 import { useUserMention } from './hooks/useUserMention';
 import { useChannelMention } from './hooks/useChannelMention';
-import type { MockUserMention } from './constants/mockUserMentions';
-import type { MockChannel } from './constants/mockChannels';
 
 const DEFAULT_LINK_STATE: OnLinkDetected = {
   text: '',
@@ -82,7 +80,7 @@ function App() {
   };
 
   const handleStartMention = (indicator: string) => {
-    console.log('Start mention:', indicator);
+    console.log('[EnrichedTextInput] Start mention', indicator);
     if (indicator === '@') {
       userMention.onMentionChange('');
       openUserMentionPopup();
@@ -93,7 +91,7 @@ function App() {
   };
 
   const handleEndMention = (indicator: string) => {
-    console.log('End mention:', indicator);
+    console.log('[EnrichedTextInput] End mention', indicator);
     if (indicator === '@') {
       closeUserMentionPopup();
       userMention.onMentionChange('');
@@ -104,7 +102,7 @@ function App() {
   };
 
   const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
-    console.log('Change mention:', indicator, text);
+    console.log('[EnrichedTextInput] Change mention', indicator, text);
     if (indicator === '@') {
       userMention.onMentionChange(text);
       if (!isUserPopupOpen) setIsUserPopupOpen(true);
@@ -112,6 +110,22 @@ function App() {
       channelMention.onMentionChange(text);
       if (!isChannelPopupOpen) setIsChannelPopupOpen(true);
     }
+  };
+
+  const handleUserMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('@', `@${item.name}`, {
+      id: item.id,
+      type: 'user',
+    });
+    closeUserMentionPopup();
+  };
+
+  const handleChannelMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('#', `#${item.name}`, {
+      id: item.id,
+      type: 'channel',
+    });
+    closeChannelMentionPopup();
   };
 
   const mentionPopoverOpen =
@@ -216,33 +230,17 @@ function App() {
           mentionIndicators={['@', '#']}
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
         />
-        <MentionSuggestions<MockUserMention>
-          editorRef={ref}
-          items={userMention.data}
-          visible={isUserPopupOpen}
-          onPicked={closeUserMentionPopup}
-          indicator="@"
-          getItemKey={(u) => u.id}
-          getInsertText={(u) => `@${u.name}`}
-          getAttributes={(u) => ({
-            id: u.id,
-            type: 'user',
-          })}
-          getLabel={(u) => u.name}
+        <MentionPopup
+          variant="user"
+          data={userMention.data}
+          isOpen={isUserPopupOpen}
+          onItemPress={handleUserMentionSelected}
         />
-        <MentionSuggestions<MockChannel>
-          editorRef={ref}
-          items={channelMention.data}
-          visible={isChannelPopupOpen}
-          onPicked={closeChannelMentionPopup}
-          indicator="#"
-          getItemKey={(c) => c.id}
-          getInsertText={(c) => `#${c.name}`}
-          getAttributes={(c) => ({
-            id: c.id,
-            type: 'channel',
-          })}
-          getLabel={(c) => c.name}
+        <MentionPopup
+          variant="channel"
+          data={channelMention.data}
+          isOpen={isChannelPopupOpen}
+          onItemPress={handleChannelMentionSelected}
         />
       </div>
 

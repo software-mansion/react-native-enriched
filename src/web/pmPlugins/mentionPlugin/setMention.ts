@@ -7,6 +7,7 @@ import { mentionPluginKey } from './mentionPluginKey';
 // Insert a mention mark at the current active trigger range.
 export function setMention(
   editor: Editor,
+  indicator: string,
   text: string,
   attributes?: Record<string, string>
 ): void {
@@ -31,7 +32,7 @@ export function setMention(
     return;
   }
 
-  const { from, to, indicator } = triggerState;
+  const { from, to } = triggerState;
 
   const extendedTo = Math.max(
     to,

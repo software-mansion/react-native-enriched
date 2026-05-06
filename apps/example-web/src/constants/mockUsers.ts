@@ -1,10 +1,9 @@
-/** Web demo only — duplicated from mobile example mock list intentionally. */
-export type MockUserMention = {
+export interface MockUser {
   id: string;
   name: string;
-};
+}
 
-export const MOCK_USER_MENTIONS: MockUserMention[] = [
+export const MOCK_USERS: MockUser[] = [
   {
     id: '1',
     name: 'John Doe',

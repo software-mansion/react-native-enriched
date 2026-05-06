@@ -60,6 +60,7 @@
   text-decoration-line: var(--eti-link-text-decoration-line);
 }
 
+/* TODO: Remove this once we handle htmlStyle for mentions  */
 .eti-editor mention {
   color: #14532d;
   background-color: #dcfce7;

@@ -56,7 +56,7 @@ export function DevScreen({ onSwitch }: DevScreenProps) {
             onChangeHtml={(e) => editor.handleChangeHtml(e.nativeEvent)}
             onChangeState={(e) => editor.handleChangeState(e.nativeEvent)}
             onLinkDetected={editor.handleLinkDetected}
-            onMentionDetected={(v) => console.log('mention detected', v)}
+            onMentionDetected={console.log}
             onStartMention={editor.handleStartMention}
             onChangeMention={editor.handleChangeMention}
             onEndMention={editor.handleEndMention}
