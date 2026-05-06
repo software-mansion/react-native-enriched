@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MOCK_USER_MENTIONS } from '../constants/mockUserMentions';
 
-export function useUserMentionWeb() {
+export function useUserMention() {
   const [mention, setMention] = useState('');
 
   const data = useMemo(

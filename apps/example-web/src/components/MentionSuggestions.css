@@ -1,4 +1,4 @@
-.user-mention-suggestions {
+.mention-suggestions {
   position: absolute;
   left: 0;
   right: 0;
@@ -11,18 +11,18 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.user-mention-suggestions__list {
+.mention-suggestions__list {
   list-style: none;
   margin: 0;
   padding: 8px 0;
 }
 
-.user-mention-suggestions__item {
+.mention-suggestions__item {
   margin: 0;
   padding: 0;
 }
 
-.user-mention-suggestions__button {
+.mention-suggestions__button {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -36,12 +36,12 @@
   text-align: left;
 }
 
-.user-mention-suggestions__button:hover,
-.user-mention-suggestions__button:focus-visible {
+.mention-suggestions__button:hover,
+.mention-suggestions__button:focus-visible {
   background: rgba(0, 26, 114, 0.08);
 }
 
-.user-mention-suggestions__avatar {
+.mention-suggestions__badge {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,6 +53,6 @@
   flex-shrink: 0;
 }
 
-.user-mention-suggestions__label {
+.mention-suggestions__label {
   flex: 1;
 }

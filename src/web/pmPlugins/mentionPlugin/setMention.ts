@@ -5,7 +5,6 @@ import { isCaretInBlockedContext } from './isCaretInBlockedContext';
 import { mentionPluginKey } from './mentionPluginKey';
 
 // Insert a mention mark at the current active trigger range.
-// `text` should include the indicator (e.g. "@John Doe").
 export function setMention(
   editor: Editor,
   text: string,
