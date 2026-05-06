@@ -1,9 +1,11 @@
 import { Mark, mergeAttributes } from '@tiptap/core';
 
+export const EXCLUDED_MARKS = ['link', 'code', 'mention'];
+
 export const EnrichedMention = Mark.create({
   name: 'mention',
   inclusive: false,
-  excludes: 'link code',
+  excludes: EXCLUDED_MARKS.join(' '),
   priority: 1000,
 
   addAttributes() {
