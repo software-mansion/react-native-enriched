@@ -57,3 +57,6 @@
 
 @interface EnrichedTextCheckboxListStyle : CheckboxListStyle
 @end
+
+@interface EnrichedTextAlignmentStyle : AlignmentStyle
+@end

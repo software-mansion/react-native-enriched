@@ -19,53 +19,6 @@
   }
 }
 
-+ (NSArray<AlignmentEntry *> *)
-    captureAlignmentsInRange:(NSRange)range
-                     inInput:(EnrichedTextInputView *)input {
-  NSMutableArray<AlignmentEntry *> *alignments = [[NSMutableArray alloc] init];
-
-  [input->textView.textStorage
-      enumerateAttribute:NSParagraphStyleAttributeName
-                 inRange:range
-                 options:0
-              usingBlock:^(NSParagraphStyle *paragraphStyle, NSRange subRange,
-                           BOOL *stop) {
-                if (paragraphStyle == nil) {
-                  return;
-                }
-
-                AlignmentEntry *entry = [[AlignmentEntry alloc] init];
-                entry.range = subRange;
-                entry.alignment = paragraphStyle.alignment;
-                [alignments addObject:entry];
-              }];
-
-  return alignments;
-}
-
-+ (void)restoreAlignments:(NSArray<AlignmentEntry *> *)alignments
-                  inInput:(EnrichedTextInputView *)input {
-  for (AlignmentEntry *entry in alignments) {
-    NSRange range = entry.range;
-    if (range.location + range.length > input->textView.textStorage.length) {
-      continue;
-    }
-
-    NSParagraphStyle *paragraphStyle =
-        [input->textView.textStorage attribute:NSParagraphStyleAttributeName
-                                       atIndex:range.location
-                                effectiveRange:NULL];
-    NSMutableParagraphStyle *mutableParagraphStyle =
-        paragraphStyle ? [paragraphStyle mutableCopy]
-                       : [[NSMutableParagraphStyle alloc] init];
-    mutableParagraphStyle.alignment = entry.alignment;
-
-    [input->textView.textStorage addAttribute:NSParagraphStyleAttributeName
-                                        value:mutableParagraphStyle
-                                        range:range];
-  }
-}
-
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input {
   NSTextAlignment alignment = [AlignmentUtils stringToAlignment:alignStr];
@@ -80,44 +33,19 @@
             forRange:(NSRange)forRange
              inInput:(EnrichedTextInputView *)input
       withTypingAttr:(BOOL)withTypingAttr {
-  UITextView *textView = input->textView;
   // Expand the range if we are inside a List
   NSRange targetRange = [AlignmentUtils expandRangeToContiguousList:forRange
                                                             inInput:input];
-  NSArray *paragraphs = [RangeUtils getSeparateParagraphsRangesIn:textView
-                                                            range:targetRange];
-
-  [textView.textStorage beginEditing];
-  for (NSValue *val in paragraphs) {
-    NSRange pRange = [val rangeValue];
-    [textView.textStorage
-        enumerateAttribute:NSParagraphStyleAttributeName
-                   inRange:pRange
-                   options:0
-                usingBlock:^(id value, NSRange range, BOOL *stop) {
-                  NSMutableParagraphStyle *style =
-                      value ? [value mutableCopy]
-                            : [[NSParagraphStyle defaultParagraphStyle]
-                                  mutableCopy];
-                  style.alignment = alignment;
-
-                  [textView.textStorage
-                      addAttribute:NSParagraphStyleAttributeName
-                             value:style
-                             range:range];
-                }];
+  AlignmentStyle *alignmentStyle =
+      (AlignmentStyle *)input->stylesDict[@([AlignmentStyle getType])];
+  if (alignmentStyle == nullptr) {
+    return;
   }
-  [textView.textStorage endEditing];
 
-  // Update Typing Attributes
-  if (withTypingAttr) {
-    NSMutableDictionary *typingAttrs = [textView.typingAttributes mutableCopy];
-    NSMutableParagraphStyle *typingStyle =
-        [typingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    typingStyle.alignment = alignment;
-    typingAttrs[NSParagraphStyleAttributeName] = typingStyle;
-    textView.typingAttributes = typingAttrs;
-  }
+  [alignmentStyle setAlignment:alignment
+                         range:targetRange
+                    withTyping:withTypingAttr
+                withDirtyRange:YES];
 
   [input anyTextMayHaveBeenModified];
 }
@@ -158,8 +86,21 @@
 }
 
 + (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input {
-  NSParagraphStyle *paraStyle =
-      input->textView.typingAttributes[NSParagraphStyleAttributeName];
+  UITextView *textView = input->textView;
+  NSParagraphStyle *paraStyle = nil;
+
+  if (textView.textStorage.length > 0) {
+    NSUInteger location =
+        MIN(textView.selectedRange.location, textView.textStorage.length - 1);
+    paraStyle = [textView.textStorage attribute:NSParagraphStyleAttributeName
+                                        atIndex:location
+                                 effectiveRange:nil];
+  }
+
+  if (paraStyle == nil) {
+    paraStyle = textView.typingAttributes[NSParagraphStyleAttributeName];
+  }
+
   NSTextAlignment alignment =
       paraStyle ? paraStyle.alignment : NSTextAlignmentNatural;
   return [AlignmentUtils alignmentToString:alignment];

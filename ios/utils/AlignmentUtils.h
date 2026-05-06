@@ -8,13 +8,6 @@
                  offset:(NSInteger)offset
                 toInput:(EnrichedTextInputView *)input;
 
-+ (NSArray<AlignmentEntry *> *)
-    captureAlignmentsInRange:(NSRange)range
-                     inInput:(EnrichedTextInputView *)input;
-
-+ (void)restoreAlignments:(NSArray<AlignmentEntry *> *)alignments
-                  inInput:(EnrichedTextInputView *)input;
-
 + (void)applyAlignmentFromString:(NSString *)alignStr
                          toInput:(EnrichedTextInputView *)input;
 

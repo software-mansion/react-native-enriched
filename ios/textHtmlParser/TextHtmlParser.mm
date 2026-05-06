@@ -1,4 +1,5 @@
 #import "TextHtmlParser.h"
+#import "AlignmentEntry.h"
 #import "EnrichedTextView.h"
 #import "HtmlParser.h"
 #import "LinkData.h"
@@ -33,12 +34,14 @@
     NSArray *result = [HtmlParser getTextAndStylesFromHtml:normalized];
     NSString *plainText = result[0];
     NSArray *processedStyles = result[1];
+    NSArray<AlignmentEntry *> *alignments = result[2];
 
     NSMutableAttributedString *body = [[NSMutableAttributedString alloc]
         initWithString:plainText
             attributes:_view->defaultTypingAttributes];
     [_view->textView.textStorage setAttributedString:body];
     [self applyProcessedStyles:processedStyles];
+    [self applyAlignments:alignments];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextView]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -47,6 +50,21 @@
         setAttributedString:[[NSAttributedString alloc]
                                 initWithString:html
                                     attributes:_view->defaultTypingAttributes]];
+  }
+}
+
+- (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments {
+  AlignmentStyle *alignmentStyle =
+      (AlignmentStyle *)_view->stylesDict[@([AlignmentStyle getType])];
+  if (alignmentStyle == nullptr) {
+    return;
+  }
+
+  for (AlignmentEntry *entry in alignments) {
+    [alignmentStyle setAlignment:entry.alignment
+                           range:entry.range
+                      withTyping:NO
+                  withDirtyRange:NO];
   }
 }
 

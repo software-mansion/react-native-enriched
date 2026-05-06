@@ -76,6 +76,7 @@
       @([UnorderedListStyle getType]), @([OrderedListStyle getType]),
       @([BlockQuoteStyle getType]), @([CodeBlockStyle getType])
     ],
+    @([AlignmentStyle getType]) : @[],
     @([BlockQuoteStyle getType]) : @[
       @([H1Style getType]), @([H2Style getType]), @([H3Style getType]),
       @([H4Style getType]), @([H5Style getType]), @([H6Style getType]),
@@ -118,6 +119,7 @@
     @([UnorderedListStyle getType]) : @[],
     @([OrderedListStyle getType]) : @[],
     @([CheckboxListStyle getType]) : @[],
+    @([AlignmentStyle getType]) : @[],
     @([BlockQuoteStyle getType]) : @[],
     @([CodeBlockStyle getType]) : @[],
     @([ImageStyle getType]) : @[ @([InlineCodeStyle getType]) ]
@@ -127,25 +129,38 @@
 + (NSDictionary *)stylesDictForHost:(id<EnrichedViewHost>)host
                             isInput:(BOOL)isInput {
   NSArray<Class> *baseClasses = @[
-    [BoldStyle class], [ItalicStyle class], [UnderlineStyle class],
-    [StrikethroughStyle class], [InlineCodeStyle class], [LinkStyle class],
-    [MentionStyle class], [H1Style class], [H2Style class], [H3Style class],
-    [H4Style class], [H5Style class], [H6Style class],
-    [UnorderedListStyle class], [OrderedListStyle class],
-    [CheckboxListStyle class], [BlockQuoteStyle class], [CodeBlockStyle class],
-    [ImageStyle class]
+    [BoldStyle class],        [ItalicStyle class],
+    [UnderlineStyle class],   [StrikethroughStyle class],
+    [InlineCodeStyle class],  [LinkStyle class],
+    [MentionStyle class],     [H1Style class],
+    [H2Style class],          [H3Style class],
+    [H4Style class],          [H5Style class],
+    [H6Style class],          [UnorderedListStyle class],
+    [OrderedListStyle class], [CheckboxListStyle class],
+    [AlignmentStyle class],   [BlockQuoteStyle class],
+    [CodeBlockStyle class],   [ImageStyle class]
   ];
 
   NSArray<Class> *viewerClasses = @[
-    [EnrichedTextBoldStyle class], [EnrichedTextItalicStyle class],
-    [EnrichedTextUnderlineStyle class], [EnrichedTextStrikethroughStyle class],
-    [EnrichedTextInlineCodeStyle class], [EnrichedTextLinkStyle class],
-    [EnrichedTextMentionStyle class], [EnrichedTextH1Style class],
-    [EnrichedTextH2Style class], [EnrichedTextH3Style class],
-    [EnrichedTextH4Style class], [EnrichedTextH5Style class],
-    [EnrichedTextH6Style class], [EnrichedTextUnorderedListStyle class],
-    [EnrichedTextOrderedListStyle class], [EnrichedTextCheckboxListStyle class],
-    [EnrichedTextBlockQuoteStyle class], [EnrichedTextCodeBlockStyle class],
+    [EnrichedTextBoldStyle class],
+    [EnrichedTextItalicStyle class],
+    [EnrichedTextUnderlineStyle class],
+    [EnrichedTextStrikethroughStyle class],
+    [EnrichedTextInlineCodeStyle class],
+    [EnrichedTextLinkStyle class],
+    [EnrichedTextMentionStyle class],
+    [EnrichedTextH1Style class],
+    [EnrichedTextH2Style class],
+    [EnrichedTextH3Style class],
+    [EnrichedTextH4Style class],
+    [EnrichedTextH5Style class],
+    [EnrichedTextH6Style class],
+    [EnrichedTextUnorderedListStyle class],
+    [EnrichedTextOrderedListStyle class],
+    [EnrichedTextCheckboxListStyle class],
+    [EnrichedTextAlignmentStyle class],
+    [EnrichedTextBlockQuoteStyle class],
+    [EnrichedTextCodeBlockStyle class],
     [EnrichedTextImageStyle class]
   ];
 
