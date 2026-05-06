@@ -4,6 +4,19 @@ import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
 
 const NONINCLUSIVE_MARKS = ['link', 'mention'] as const;
 
+function stripNonInclusiveMarksFromSet(
+  schema: Schema,
+  marks: readonly Mark[]
+): readonly Mark[] {
+  let out = marks.slice();
+  for (const name of NONINCLUSIVE_MARKS) {
+    const markType = schema.marks[name];
+    if (!markType?.isInSet(out)) continue;
+    out = out.filter((m) => m.type !== markType);
+  }
+  return out;
+}
+
 function stripNonInclusiveMarksIfAfterIsOut(
   schema: Schema,
   $from: ResolvedPos
@@ -60,9 +73,12 @@ function resolveStrictMarks(
       oldAfter &&
       !Mark.sameSet(oldBefore.marks, oldAfter.marks)
     ) {
-      return oldBefore.marks;
+      return stripNonInclusiveMarksFromSet(newState.schema, oldBefore.marks);
     }
-    return $from.nodeAfter.marks;
+    return stripNonInclusiveMarksFromSet(
+      newState.schema,
+      $from.nodeAfter.marks
+    );
   }
 
   // Completely empty line
