@@ -156,7 +156,13 @@ function App() {
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
 
-      <div className="editor-mention-host">
+      <div
+        className={
+          isUserPopupOpen && userMention.data.length > 0
+            ? 'editor-mention-host editor-mention-host--mention-open'
+            : 'editor-mention-host'
+        }
+      >
         <EnrichedTextInput
           ref={ref}
           placeholder="Type something here..."

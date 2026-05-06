@@ -38,8 +38,13 @@ body {
 }
 
 .editor-mention-host {
+  position: relative;
   width: 100%;
   align-self: stretch;
+}
+
+.editor-mention-host--mention-open {
+  z-index: 100;
 }
 
 .btn {

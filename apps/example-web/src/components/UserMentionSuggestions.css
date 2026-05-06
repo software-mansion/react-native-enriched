@@ -1,11 +1,14 @@
 .user-mention-suggestions {
-  margin-top: 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 1;
   border: 1px solid grey;
-  border-radius: 8px;
   background: white;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .user-mention-suggestions__list {
