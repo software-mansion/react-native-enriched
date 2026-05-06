@@ -35,7 +35,6 @@ import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInp
 import {
   htmlStyleToCSSVariables,
   mergeWithDefaultHtmlStyle,
-  mentionIndicatorCssRules,
 } from './styleConversion/htmlStyleToCSSVariables';
 import { EnrichedBold } from './formats/EnrichedBold';
 import { EnrichedItalic } from './formats/EnrichedItalic';
@@ -228,19 +227,6 @@ export const EnrichedTextInput = ({
   useOnChangeText(editor, onChangeText);
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
   useOnLinkDetected(editor, onLinkDetected);
-
-  // Inject per-indicator mention CSS rules (for multi-indicator htmlStyle)
-  useEffect(() => {
-    const css = mentionIndicatorCssRules(resolvedHtmlStyle.mention);
-    if (!css) return;
-    const styleEl = document.createElement('style');
-    styleEl.setAttribute('data-eti-mention-indicator', '');
-    styleEl.textContent = css;
-    document.head.appendChild(styleEl);
-    return () => {
-      document.head.removeChild(styleEl);
-    };
-  }, [resolvedHtmlStyle.mention]);
 
   useImperativeHandle(
     ref,

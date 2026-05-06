@@ -61,9 +61,9 @@
 }
 
 .eti-editor mention {
-  color: var(--eti-mention-color);
-  background-color: var(--eti-mention-bg-color);
-  text-decoration-line: var(--eti-mention-text-decoration-line);
+  color: #14532d;
+  background-color: #dcfce7;
+  text-decoration-line: none;
 }
 
 .eti-editor ul:not([data-type]) {

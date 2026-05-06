@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { ColorValue } from 'react-native';
-import type { HtmlStyle, MentionStyleProperties } from '../../types';
+import type { HtmlStyle } from '../../types';
 import { DEFAULT_HTML_STYLE } from '../../utils/defaultHtmlStyle';
 import { HEADING_TAGS } from '../formats/EnrichedHeading';
 import { toColor } from './toColor';
@@ -32,9 +32,6 @@ const ETI_CSS_VARS = {
   codeblockBorderRadius: '--eti-codeblock-border-radius',
   linkColor: '--eti-link-color',
   linkTextDecorationLine: '--eti-link-text-decoration-line',
-  mentionColor: '--eti-mention-color',
-  mentionBgColor: '--eti-mention-bg-color',
-  mentionTextDecorationLine: '--eti-mention-text-decoration-line',
   ulBulletColor: '--eti-ul-bullet-color',
   ulBulletSize: '--eti-ul-bullet-size',
   ulMarginLeft: '--eti-ul-margin-left',
@@ -116,90 +113,6 @@ function applyLinkVars(
   }
 }
 
-function isByIndicatorMap(
-  mention: HtmlStyle['mention']
-): mention is Record<string, MentionStyleProperties> {
-  if (!mention || typeof mention !== 'object' || Array.isArray(mention)) {
-    return false;
-  }
-  // Distinguish Record<indicator, MentionStyleProperties> from MentionStyleProperties:
-  // MentionStyleProperties keys are color, backgroundColor, textDecorationLine.
-  const flatKeys: Array<keyof MentionStyleProperties> = [
-    'color',
-    'backgroundColor',
-    'textDecorationLine',
-  ];
-  const keys = Object.keys(mention);
-  return keys.some(
-    (k) => !flatKeys.includes(k as keyof MentionStyleProperties)
-  );
-}
-
-function mentionPropsToVarBlock(m: MentionStyleProperties): string {
-  const parts: string[] = [];
-  const color = toColor(m.color);
-  if (color) parts.push(`  color: ${color};`);
-  const bg = toColor(m.backgroundColor);
-  if (bg) parts.push(`  background-color: ${bg};`);
-  if (m.textDecorationLine != null) {
-    parts.push(`  text-decoration-line: ${m.textDecorationLine};`);
-  }
-  return parts.join('\n');
-}
-
-function applyMentionVars(
-  vars: Record<string, string>,
-  mention?: HtmlStyle['mention']
-): void {
-  if (!mention) return;
-
-  if (isByIndicatorMap(mention)) {
-    // Per-indicator map — apply default/fallback vars for indicators without specific rules
-    const byIndicator = mention as Record<string, MentionStyleProperties>;
-    const fallback = byIndicator.default;
-    const m = fallback ?? byIndicator[Object.keys(byIndicator)[0]!];
-    if (m) {
-      setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
-      setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
-      if (m.textDecorationLine != null) {
-        vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
-      }
-    }
-  } else {
-    // Flat MentionStyleProperties
-    const m = mention as MentionStyleProperties;
-    setColorVar(vars, ETI_CSS_VARS.mentionColor, m.color);
-    setColorVar(vars, ETI_CSS_VARS.mentionBgColor, m.backgroundColor);
-    if (m.textDecorationLine != null) {
-      vars[ETI_CSS_VARS.mentionTextDecorationLine] = m.textDecorationLine;
-    }
-  }
-}
-
-/**
- * Generates per-indicator CSS rules for `<mention indicator="X">` elements.
- * Returns an empty string when the mention style is flat (single-indicator).
- */
-export function mentionIndicatorCssRules(
-  mention?: HtmlStyle['mention']
-): string {
-  if (!mention || !isByIndicatorMap(mention)) return '';
-
-  const byIndicator = mention as Record<string, MentionStyleProperties>;
-  const blocks: string[] = [];
-
-  for (const [indicator, props] of Object.entries(byIndicator)) {
-    if (indicator === 'default') continue;
-    const body = mentionPropsToVarBlock(props);
-    if (!body) continue;
-    // Escape the indicator for use in an attribute selector value
-    const escaped = indicator.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    blocks.push(`.eti-editor mention[indicator="${escaped}"] {\n${body}\n}`);
-  }
-
-  return blocks.join('\n');
-}
-
 function applyUnorderedListVars(
   vars: Record<string, string>,
   ul?: HtmlStyle['ul']
@@ -239,7 +152,6 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
   applyLinkVars(vars, htmlStyle?.a);
-  applyMentionVars(vars, htmlStyle?.mention);
   applyUnorderedListVars(vars, htmlStyle?.ul);
   applyOrderedListVars(vars, htmlStyle?.ol);
   applyCheckboxListVars(vars, htmlStyle?.ulCheckbox);
