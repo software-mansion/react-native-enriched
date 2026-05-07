@@ -40,7 +40,7 @@ export function makeMentionPluginState(
       const query = text.slice(found.indexInText + 1);
 
       // Native platforms end the trigger after two spaces in the query.
-      if ((query.match(/ /g) ?? []).length >= 3) return { active: false };
+      if ((query.match(/ /g) ?? []).length >= 2) return { active: false };
 
       return {
         active: true,
