@@ -10,6 +10,7 @@
 + (StyleType)getType;
 - (NSString *)getKey;
 - (NSString *)getValue;
+- (NSString *)getMarkerPrefix;
 - (BOOL)isParagraph;
 - (BOOL)needsZWS;
 - (instancetype)initWithHost:(id<EnrichedViewHost>)host;

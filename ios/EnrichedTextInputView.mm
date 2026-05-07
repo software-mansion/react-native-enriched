@@ -1217,7 +1217,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self requestHTML:requestId];
   } else if ([commandName isEqualToString:@"setTextAlignment"]) {
     NSString *alignmentString = (NSString *)args[0];
-    [AlignmentUtils applyAlignmentFromString:alignmentString toInput:self];
+
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    [alignmentStyle
+          addAlignment:[AlignmentUtils stringToAlignment:alignmentString]
+                 range:textView.selectedRange
+            withTyping:YES
+        withDirtyRange:YES];
+    [self anyTextMayHaveBeenModified];
   }
 }
 

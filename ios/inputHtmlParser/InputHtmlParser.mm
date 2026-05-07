@@ -36,7 +36,7 @@
     [self applyProcessedStyles:stylesInfo
            offsetFromBeginning:0
                plainTextLength:plainText.length];
-    [AlignmentUtils applyAlignments:alignments offset:0 toInput:_input];
+    [AlignmentUtils applyAlignments:alignments offset:0 toHost:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -66,7 +66,7 @@
                plainTextLength:plainText.length];
     [AlignmentUtils applyAlignments:alignments
                              offset:range.location
-                            toInput:_input];
+                             toHost:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -96,7 +96,7 @@
     [self applyProcessedStyles:stylesInfo
            offsetFromBeginning:location
                plainTextLength:plainText.length];
-    [AlignmentUtils applyAlignments:alignments offset:location toInput:_input];
+    [AlignmentUtils applyAlignments:alignments offset:location toHost:_input];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",

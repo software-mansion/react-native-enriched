@@ -91,7 +91,7 @@
 @end
 
 @interface AlignmentStyle : StyleBase
-- (void)setAlignment:(NSTextAlignment)alignment
+- (void)addAlignment:(NSTextAlignment)alignment
                range:(NSRange)range
           withTyping:(BOOL)withTyping
       withDirtyRange:(BOOL)withDirtyRange;

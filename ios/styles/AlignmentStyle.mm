@@ -1,5 +1,6 @@
 #import "AlignmentUtils.h"
 #import "StyleHeaders.h"
+#import "TextListUtils.h"
 
 @implementation AlignmentStyle
 
@@ -7,122 +8,173 @@
   return Alignment;
 }
 
+- (NSString *)getValue {
+  return @"EnrichedAlignmentNatural";
+}
+
+- (NSString *)getMarkerPrefix {
+  return @"EnrichedAlignment";
+}
+
 - (BOOL)isParagraph {
   return YES;
 }
 
-- (BOOL)isStoredAlignment:(NSTextAlignment)alignment {
-  return alignment != NSTextAlignmentLeft &&
-         alignment != NSTextAlignmentNatural;
+- (void)toggle:(NSRange)range {
+  // no-op for alignments
 }
 
-- (void)setAlignment:(NSTextAlignment)alignment
-               range:(NSRange)range
-          withTyping:(BOOL)withTyping
-      withDirtyRange:(BOOL)withDirtyRange {
-  [self add:range
-           withValue:[AlignmentUtils alignmentToString:alignment]
-          withTyping:withTyping
-      withDirtyRange:withDirtyRange];
-}
-
-- (void)add:(NSRange)range
-         withValue:(NSString *)value
-        withTyping:(BOOL)withTyping
-    withDirtyRange:(BOOL)withDirtyRange {
-  NSRange actualRange = [self actualUsedRange:range];
-  NSTextAlignment alignment = [AlignmentUtils stringToAlignment:value];
-
-  [self.host.textView.textStorage
-      enumerateAttribute:NSParagraphStyleAttributeName
-                 inRange:actualRange
-                 options:0
-              usingBlock:^(NSParagraphStyle *existingValue, NSRange subRange,
-                           BOOL *stop) {
-                NSMutableParagraphStyle *paragraphStyle =
-                    existingValue ? [existingValue mutableCopy]
-                                  : [[NSMutableParagraphStyle alloc] init];
-                paragraphStyle.alignment = alignment;
-                [self.host.textView.textStorage
-                    addAttribute:NSParagraphStyleAttributeName
-                           value:paragraphStyle
-                           range:subRange];
-              }];
-
-  if (withTyping) {
-    [self addTypingWithValue:value];
-  }
-
-  if (withDirtyRange) {
-    [self.host.attributesManager addDirtyRange:actualRange];
-  }
-}
-
-- (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
-  [self setAlignment:NSTextAlignmentLeft
-               range:range
-          withTyping:YES
-      withDirtyRange:withDirtyRange];
-}
-
-- (void)addTypingWithValue:(NSString *)value {
-  NSMutableDictionary *newTypingAttrs =
-      [self.host.textView.typingAttributes mutableCopy];
-  NSMutableParagraphStyle *paragraphStyle =
-      [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy]
-          ?: [[NSMutableParagraphStyle alloc] init];
-  paragraphStyle.alignment = [AlignmentUtils stringToAlignment:value];
-  newTypingAttrs[NSParagraphStyleAttributeName] = paragraphStyle;
-  self.host.textView.typingAttributes = newTypingAttrs;
-}
-
-- (void)removeTyping {
-  [self addTypingWithValue:@"left"];
-}
-
-- (BOOL)styleCondition:(id)value range:(NSRange)range {
-  NSParagraphStyle *paragraphStyle = (NSParagraphStyle *)value;
-  return paragraphStyle != nil &&
-         [self isStoredAlignment:paragraphStyle.alignment];
-}
-
-- (BOOL)detect:(NSRange)range {
-  return NO;
-}
-
-- (BOOL)any:(NSRange)range {
-  return NO;
-}
-
-- (NSArray<StylePair *> *)all:(NSRange)range {
-  NSMutableArray<StylePair *> *alignments = [[NSMutableArray alloc] init];
-
+- (void)applyStyling:(NSRange)range {
   [self.host.textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
                  inRange:range
                  options:0
-              usingBlock:^(NSParagraphStyle *paragraphStyle, NSRange subRange,
-                           BOOL *stop) {
-                if (paragraphStyle == nil ||
-                    ![self isStoredAlignment:paragraphStyle.alignment]) {
-                  return;
-                }
+              usingBlock:^(id _Nullable value, NSRange subRange,
+                           BOOL *_Nonnull stop) {
+                NSMutableParagraphStyle *pStyle =
+                    [(NSParagraphStyle *)value mutableCopy];
 
-                StylePair *pair = [[StylePair alloc] init];
-                pair.rangeValue = [NSValue valueWithRange:subRange];
-                pair.styleValue =
-                    [AlignmentUtils alignmentToString:paragraphStyle.alignment];
-                [alignments addObject:pair];
+                NSString *marker =
+                    [TextListUtils firstTextListWithPrefix:@"EnrichedAlignment"
+                                                   inArray:pStyle.textLists]
+                        .markerFormat;
+                NSTextAlignment alignment =
+                    [AlignmentUtils alignmentFromMarker:marker];
+                pStyle.alignment = alignment;
+                [self.host.textView.textStorage
+                    addAttribute:NSParagraphStyleAttributeName
+                           value:pStyle
+                           range:subRange];
               }];
+}
 
-  return alignments;
+- (NSRange)actualUsedRange:(NSRange)range {
+  NSRange paragraphRange =
+      [self.host.textView.textStorage.string paragraphRangeForRange:range];
+  return [self expandRangeToContiguousList:paragraphRange];
+}
+
+- (void)addAlignment:(NSTextAlignment)alignment
+               range:(NSRange)range
+          withTyping:(BOOL)withTyping
+      withDirtyRange:(BOOL)withDirtyRange {
+  NSString *value = @"EnrichedAlignmentNatural";
+
+  if (alignment == NSTextAlignmentLeft) {
+    value = @"EnrichedAlignmentLeft";
+  } else if (alignment == NSTextAlignmentCenter) {
+    value = @"EnrichedAlignmentCenter";
+  } else if (alignment == NSTextAlignmentRight) {
+    value = @"EnrichedAlignmentRight";
+  } else if (alignment == NSTextAlignmentJustified) {
+    value = @"EnrichedAlignmentJustified";
+  }
+
+  [self add:range
+           withValue:value
+          withTyping:withTyping
+      withDirtyRange:withDirtyRange];
+}
+
+- (BOOL)styleCondition:(id)value range:(NSRange)range {
+  NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
+  if (pStyle == nil)
+    return NO;
+  return [TextListUtils textLists:pStyle.textLists
+                   containsPrefix:@"EnrichedAlignment"];
 }
 
 - (void)reapplyFromStylePair:(StylePair *)pair {
-  [self add:[pair.rangeValue rangeValue]
-           withValue:(NSString *)pair.styleValue
-          withTyping:NO
-      withDirtyRange:NO];
+  NSRange range = [pair.rangeValue rangeValue];
+  NSParagraphStyle *savedPStyle = pair.styleValue;
+  NSString *markerFormat =
+      [TextListUtils firstTextListWithPrefix:@"EnrichedAlignment"
+                                     inArray:savedPStyle.textLists]
+          .markerFormat;
+  if (markerFormat == nil)
+    return;
+
+  [self add:range withValue:markerFormat withTyping:NO withDirtyRange:NO];
+}
+
+- (NSRange)expandRangeToContiguousList:(NSRange)range {
+  NSString *text = self.host.textView.textStorage.string;
+  if (text.length == 0)
+    return range;
+
+  NSArray<StyleBase *> *listStyles = @[
+    self.host.stylesDict[@([UnorderedListStyle getType])],
+    self.host.stylesDict[@([OrderedListStyle getType])],
+    self.host.stylesDict[@([CheckboxListStyle getType])]
+  ];
+
+  NSRange expandedRange = range;
+
+  // Expand Backward
+  NSRange startParagraph =
+      [text paragraphRangeForRange:NSMakeRange(range.location, 0)];
+
+  // Find which list style is active at the start
+  StyleBase *activeStartStyle = nil;
+  for (StyleBase *style in listStyles) {
+    if ([style detect:startParagraph]) {
+      activeStartStyle = style;
+      break;
+    }
+  }
+
+  // If we found a list style, walk backwards until it stops
+  if (activeStartStyle) {
+    NSRange currentPara = startParagraph;
+    while (currentPara.location > 0) {
+      // Check the paragraph before the current one
+      NSRange prevPara = [text
+          paragraphRangeForRange:NSMakeRange(currentPara.location - 1, 0)];
+
+      if ([activeStartStyle detect:prevPara]) {
+        // It's still the same list -> Expand our range.
+        expandedRange = NSUnionRange(expandedRange, prevPara);
+        currentPara = prevPara;
+      } else {
+        // The list ended here.
+        break;
+      }
+    }
+  }
+
+  // Expand forward, we check the paragraph at the end of the current selection
+  NSUInteger endLoc =
+      (range.length > 0) ? (NSMaxRange(range) - 1) : range.location;
+  NSRange endParagraph = [text paragraphRangeForRange:NSMakeRange(endLoc, 0)];
+
+  // Find which list style is active at the end
+  StyleBase *activeEndStyle = nil;
+  for (StyleBase *style in listStyles) {
+    if ([style detect:endParagraph]) {
+      activeEndStyle = style;
+      break;
+    }
+  }
+
+  // If we found a list style, walk forwards until it stops
+  if (activeEndStyle) {
+    NSRange currentPara = endParagraph;
+    while (NSMaxRange(currentPara) < text.length) {
+      // Check the paragraph after the current one
+      NSRange nextPara =
+          [text paragraphRangeForRange:NSMakeRange(NSMaxRange(currentPara), 0)];
+
+      if ([activeEndStyle detect:nextPara]) {
+        // It's still the same list -> expand our range.
+        expandedRange = NSUnionRange(expandedRange, nextPara);
+        currentPara = nextPara;
+      } else {
+        break;
+      }
+    }
+  }
+
+  return expandedRange;
 }
 
 @end

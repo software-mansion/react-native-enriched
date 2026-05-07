@@ -169,7 +169,7 @@
           newPStyle.alignment = pStyle.alignment;
 
           // Preserve text lists if they exist
-          if (pStyle.textLists.count == 1) {
+          if (pStyle.textLists.count >= 1) {
             newPStyle.textLists = pStyle.textLists;
           }
 
