@@ -173,6 +173,56 @@ test.describe('test-links setLink table', () => {
       expectContains:
         '<p><a href="https://example.com">abc</a><img src="" width="80" height="80"/></p>',
     },
+    {
+      name: 'wraps bold italic list item text with link',
+      html: '<html><ul><li><b><i>styled</i></b></li><li>hello</li></ul></html>',
+      start: '0',
+      end: '6',
+      text: 'styled',
+      url: 'https://list-styled.example',
+      expectContains:
+        '<ul><li><a href="https://list-styled.example"><b><i>styled</i></b></a></li><li>hello</li></ul>',
+    },
+    {
+      name: 'inserts linked text at cursor at very start of first list item',
+      html: '<html><ul><li>first</li><li>second</li></ul></html>',
+      start: '0',
+      end: '0',
+      text: 'Link',
+      url: 'https://cursor-list.example',
+      expectContains:
+        '<ul><li><a href="https://cursor-list.example">Link</a>first</li><li>second</li></ul>',
+    },
+    {
+      name: 'inserts linked text at cursor inside empty list item',
+      html: '<html><ul><li></li></ul></html>',
+      start: '0',
+      end: '0',
+      text: 'Link',
+      url: 'https://empty-list.example',
+      expectContains:
+        '<ul><li><a href="https://empty-list.example">Link</a></li></ul>',
+    },
+    {
+      name: 'wraps mixed bold and bold-italic text in list item with link as outermost mark',
+      html: '<html><ul><li><b>ab<i>cd</i></b></li></ul></html>',
+      start: '0',
+      end: '4',
+      text: 'abcd',
+      url: 'https://mixed-marks.example',
+      expectContains:
+        '<ul><li><a href="https://mixed-marks.example"><b>ab<i>cd</i></b></a></li></ul>',
+    },
+    {
+      name: 'setLink replacement longer than selection applies marks from range start only',
+      html: '<html><ul><li><b>ab<i>cd</i></b></li></ul></html>',
+      start: '0',
+      end: '4',
+      text: 'abcdef',
+      url: 'https://mixed-marks-longer.example',
+      expectContains:
+        '<ul><li><a href="https://mixed-marks-longer.example"><b>abcdef</b></a></li></ul>',
+    },
   ];
 
   for (const c of cases) {

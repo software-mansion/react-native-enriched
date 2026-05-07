@@ -14,7 +14,7 @@ export function listEnter(editor: Editor, itemName: string): boolean {
   if (!editor.isActive(itemName)) {
     return false;
   }
-  if (editor.commands.splitListItem(itemName)) {
+  if (editor.chain().focus().splitListItem(itemName).scrollIntoView().run()) {
     return true;
   }
 
@@ -39,6 +39,7 @@ export function listEnter(editor: Editor, itemName: string): boolean {
     .chain()
     .focus()
     .insertContentAt(insertPos, emptyListItemContent(itemName))
+    .scrollIntoView()
     .run();
 }
 
