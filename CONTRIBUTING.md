@@ -165,6 +165,8 @@ Run the web E2E suite from the root directory:
 yarn test:e2e:web
 ```
 
+Append `--ui` for Playwright’s [UI mode](https://playwright.dev/docs/test-ui-mode) (pick tests, watch runs, inspect traces). Example: `yarn test:e2e:web --ui`.
+
 The Playwright config starts the Vite dev server automatically, so you do not need to run `yarn example-web dev` separately.
 
 ### Commit message convention
@@ -203,7 +205,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn test:e2e:mobile`: run E2E tests on iOS and Android sequentially.
 - `yarn test:e2e:android`: run E2E tests on Android.
 - `yarn test:e2e:ios`: run E2E tests on iOS.
-- `yarn test:e2e:web`: run E2E tests on the web example with Playwright.
+- `yarn test:e2e:web`: run E2E tests on the web example with Playwright (add `--ui` for the interactive runner).
 
 ### Sending a pull request
 

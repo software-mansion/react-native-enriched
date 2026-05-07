@@ -1,47 +1,26 @@
 import {
   type Component,
-  type RefObject,
   useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
 } from 'react';
 import type {
-  ColorValue,
   HostInstance,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
   NativeMethods,
-  TextStyle,
-  ViewProps,
 } from 'react-native';
 import EnrichedTextNativeComponent, {
   type NativeProps,
   type OnLinkPressEvent,
-  type OnMentionPressEvent,
   type OnMentionPressEventInternal,
-} from './spec/EnrichedTextNativeComponent';
-import { nullthrows } from './utils/nullthrows';
-import { normalizeEnrichedTextHtmlStyle } from './utils/normalizeHtmlStyle';
-import type { EnrichedTextHtmlStyle } from './types';
+} from '../spec/EnrichedTextNativeComponent';
+import { nullthrows } from '../utils/nullthrows';
+import { normalizeEnrichedTextHtmlStyle } from '../utils/normalizeHtmlStyle';
+import type { EnrichedTextProps } from '../types';
 import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
-
-export interface EnrichedTextInstance extends NativeMethods {}
-
-export interface EnrichedTextProps extends ViewProps {
-  ref?: RefObject<EnrichedTextInstance | null>;
-  children: string;
-  style?: TextStyle;
-  htmlStyle?: EnrichedTextHtmlStyle;
-  useHtmlNormalizer?: boolean;
-  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
-  numberOfLines?: number;
-  selectable?: boolean;
-  selectionColor?: ColorValue;
-  onLinkPress?: (event: OnLinkPressEvent) => void;
-  onMentionPress?: (event: OnMentionPressEvent) => void;
-}
 
 type ComponentType = (Component<NativeProps, {}, any> & NativeMethods) | null;
 

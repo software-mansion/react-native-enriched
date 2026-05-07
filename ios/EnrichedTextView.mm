@@ -1,8 +1,8 @@
 #import "EnrichedTextView.h"
 #import "AttachmentLayoutUtils.h"
 #import "EnrichedTextStyleHeaders.h"
+#import "EnrichedTextTextView.h"
 #import "EnrichedTextTouchHandler.h"
-#import "EnrichedTouchableTextView.h"
 #import "LayoutManagerExtension.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -65,9 +65,10 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 }
 
 - (void)setupTextView {
-  EnrichedTouchableTextView *tv = [[EnrichedTouchableTextView alloc] init];
+  EnrichedTextTextView *tv = [[EnrichedTextTextView alloc] init];
   _touchHandler = [[EnrichedTextTouchHandler alloc] initWithView:self];
   tv.touchHandler = _touchHandler;
+  tv.host = self;
   textView = tv;
 
   textView.backgroundColor = UIColor.clearColor;

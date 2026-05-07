@@ -102,10 +102,21 @@ export function setLink(
     .chain()
     .focus()
     .command(({ tr, state: s }) => {
-      const marksAtRangeStart = doc.resolve(from).marks();
-      const marksWithLink = linkMark.addToSet(marksAtRangeStart);
-      tr.delete(from, to);
-      tr.insert(from, s.schema.text(text, marksWithLink));
+      if (from === to) {
+        const marksAtRangeStart = doc.resolve(from).marks();
+        const marksWithLink = linkMark.addToSet(marksAtRangeStart);
+        tr.insert(from, s.schema.text(text, marksWithLink));
+      } else {
+        const currentText = doc.textBetween(from, to);
+
+        if (text !== currentText) {
+          const marksAtRangeStart = doc.resolve(from).marks();
+          const marksWithLink = linkMark.addToSet(marksAtRangeStart);
+          tr.replaceWith(from, to, s.schema.text(text, marksWithLink));
+        } else {
+          tr.addMark(from, to, linkMark);
+        }
+      }
       return true;
     })
     .run();

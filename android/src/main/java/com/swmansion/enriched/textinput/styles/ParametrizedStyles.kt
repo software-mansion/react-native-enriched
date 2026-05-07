@@ -94,6 +94,19 @@ class ParametrizedStyles(
     afterTextChangedMentions(s, startCursorPosition)
   }
 
+  fun onStyleToggled(
+    name: String,
+    start: Int,
+    end: Int,
+  ) {
+    // Run afterTextChangedLinks on the range affected by the style toggle to re-detect links.
+    // For example, toggling a code block on and off will restore automatically detected links.
+    val linkConfig = EnrichedSpans.getMergingConfigForStyle(EnrichedSpans.LINK, view.htmlStyle) ?: return
+    if (name in linkConfig.blockingStyles || name in linkConfig.conflictingStyles) {
+      afterTextChangedLinks(start, end)
+    }
+  }
+
   fun detectLinksInRange(
     spannable: Spannable,
     start: Int,
@@ -220,8 +233,8 @@ class ParametrizedStyles(
   ) {
     // Do not detect link if it's applied manually
     if (isSettingLinkSpan || !canLinkBeApplied()) return
-
     val spannable = view.text as? Spannable ?: return
+
     val affectedRange = getLinksAffectedRange(spannable, editStart, editEnd)
     detectLinksInRange(spannable, affectedRange.first, affectedRange.last)
   }

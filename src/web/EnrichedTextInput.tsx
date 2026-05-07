@@ -8,7 +8,7 @@ import {
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
-  EnrichedTextInputWebProps,
+  EnrichedTextInputProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
 import {
@@ -87,7 +87,7 @@ export const EnrichedTextInput = ({
   onLinkDetected,
   onPasteImages,
   htmlStyle,
-}: EnrichedTextInputWebProps) => {
+}: EnrichedTextInputProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
@@ -165,7 +165,7 @@ export const EnrichedTextInput = ({
         onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {
-        handleKeyPress: (_, event) => {
+        handleKeyDown: (_, event) => {
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
