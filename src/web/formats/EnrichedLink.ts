@@ -134,15 +134,16 @@ function isRangeLinkBlocked(editor: Editor, from: number, to: number): boolean {
     return true;
   }
 
-  let hasCodeBlock = false;
+  let hasBlockedNode = false;
+  const blockedNodes = ['codeBlock', 'image'];
   doc.nodesBetween(from, to, (node) => {
-    if (hasCodeBlock) return false;
-    if (node.type.name === 'codeBlock') {
-      hasCodeBlock = true;
+    if (hasBlockedNode) return false;
+    if (blockedNodes.includes(node.type.name)) {
+      hasBlockedNode = true;
       return false;
     }
     return true;
   });
 
-  return hasCodeBlock;
+  return hasBlockedNode;
 }

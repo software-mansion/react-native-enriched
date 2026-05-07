@@ -78,11 +78,12 @@
   left: calc(
     -1 * var(--eti-ul-gap-width, 16px) - var(--eti-ul-bullet-size, 8px)
   );
-  top: 0.6em; 
-  @supports (top: 0.5lh) {
-    top: 0.5lh;
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
   }
-  transform: translateY(-50%);
+
+  transform: translateY(50%);
   width: var(--eti-ul-bullet-size, 8px);
   height: var(--eti-ul-bullet-size, 8px);
   border-radius: 50%;
@@ -108,7 +109,7 @@
   content: counter(eti-ol) '.';
   position: absolute;
   left: calc(-1 * var(--eti-ol-gap-width, 16px));
-  top: 0;
+  bottom: 0;
   transform: translateX(-50%);
   color: var(--eti-ol-marker-color, currentColor);
   font-weight: var(--eti-ol-marker-font-weight, inherit);
@@ -124,12 +125,43 @@
   margin: 0;
 }
 
+.eti-editor .eti-inline-image {
+  vertical-align: text-bottom;
+  line-height: 0;
+  display: inline-block;
+}
+
+.eti-editor .eti-inline-image-img {
+  object-fit: contain;
+}
+
+.eti-editor .eti-inline-image--placeholder {
+  display: inline-block;
+  overflow: hidden;
+  color: inherit;
+}
+
+.eti-editor .eti-inline-image-broken-glyph {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.eti-editor
+  .react-renderer.node-image.ProseMirror-selectednode
+  .eti-inline-image {
+    box-shadow: inset 0 0 0 999px Highlight;
+}
+
+
+
 .eti-editor ul[data-type="checkboxList"] {
   margin: 0;
   list-style: none;
   padding: 0;
   padding-left: calc(
-    var(--eti-checkbox-margin-left, 16px) + var(--eti-checkbox-gap-width, 16px) 
+    var(--eti-checkbox-margin-left, 16px) + var(--eti-checkbox-gap-width, 16px)
   );
 }
 
@@ -143,16 +175,16 @@
   left: calc(
     -1 * var(--eti-checkbox-gap-width, 16px) - var(--eti-checkbox-box-size, 24px)
   );
-  transform: translateY(-50%);
+  transform: translateY(50%);
   display: inline-flex;
   align-items: center;
   gap: 0;
   margin: 0;
   padding: 0;
   user-select: none;
-  top: 0.6em;
-  @supports (top: 0.5lh) {
-    top: 0.5lh;
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
   }
 }
 
@@ -163,4 +195,3 @@
   flex-shrink: 0;
   accent-color: var(--eti-checkbox-box-color, #0000ff);
 }
-

@@ -164,6 +164,16 @@ test.describe('test-links setLink table', () => {
       expectContains: '<p><a href="https://clamp.setlink">Z</a></p>',
     },
     {
+      name: 'setLink wraps link text before inline image - keeps the image',
+      html: '<html><p>abc<img width="80" height="80" src=""></p></html>',
+      start: '0',
+      end: '3',
+      text: 'abc',
+      url: 'https://example.com',
+      expectContains:
+        '<p><a href="https://example.com">abc</a><img src="" width="80" height="80"/></p>',
+    },
+    {
       name: 'wraps bold italic list item text with link',
       html: '<html><ul><li><b><i>styled</i></b></li><li>hello</li></ul></html>',
       start: '0',

@@ -21,5 +21,13 @@ export function normalizeHtmlFromTiptap(html: string): string {
   // Convert remaining empty <p></p> to <br> (outside of lists)
   html = html.replace(/<p><\/p>/g, '<br>');
 
+  // Convert <img> tags to self-closing tags
+  html = html.replace(/<img\b([^>]*)>/gi, (_, attrs: string) => {
+    if (attrs.trimEnd().endsWith('/')) {
+      return `<img${attrs}>`;
+    }
+    return `<img${attrs}/>`;
+  });
+
   return `<html>${html}</html>`;
 }
