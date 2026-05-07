@@ -8,6 +8,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Headings (h1-h6)
 - Blockquote, code block
 - Ordered lists, unordered lists, checkbox lists
+- Images(via `setImage` ref method)
 - Manual links (via `setLink` ref method)
 - Mentions
 - `getHTML`, `setValue`, selection mapping
@@ -15,7 +16,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 
 ## Unsupported
 
-- **Images**: `setImage` is a no-op. `onPasteImages` is never called. `onChangeState.image` is always inactive.
+- **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.

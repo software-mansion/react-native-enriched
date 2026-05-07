@@ -17,6 +17,7 @@ import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
 import { EditorActions } from './components/EditorActions';
 import { SetValueModal } from './components/SetValueModal';
+import { ImageModal } from './components/ImageModal';
 import { LinkModal } from './components/LinkModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
@@ -48,6 +49,7 @@ function App() {
   const [currentLink, setCurrentLink] =
     useState<OnLinkDetected>(DEFAULT_LINK_STATE);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const isLinkActive = !!editorState?.link.isActive;
   const hasLinkUrl = currentLink.url.length > 0;
@@ -172,6 +174,18 @@ function App() {
     setIsLinkModalOpen(false);
   };
 
+  const openImageModal = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+  };
+
+  const submitImage = (url: string, width: number, height: number) => {
+    ref.current?.setImage(url, width, height);
+  };
+
   const submitLink = (text: string, url: string) => {
     if (!selection || url.length === 0) {
       closeLinkModal();
@@ -248,6 +262,7 @@ function App() {
         editorRef={ref}
         state={editorState}
         onOpenLinkModal={openLinkModal}
+        onOpenImageModal={openImageModal}
       />
 
       <EditorActions
@@ -291,6 +306,10 @@ function App() {
           onSubmit={submitLink}
           onClose={closeLinkModal}
         />
+      )}
+
+      {isImageModalOpen && (
+        <ImageModal onSubmit={submitImage} onClose={closeImageModal} />
       )}
     </div>
   );

@@ -19,14 +19,24 @@ export function isLinkBlocked(editor: Editor): boolean {
   return (
     editor.isActive('code') ||
     editor.isActive('codeBlock') ||
-    editor.isActive('mention')
+    editor.isActive('mention') ||
+    editor.isActive('image')
   );
 }
 function isMentionBlocked(editor: Editor): boolean {
   return (
     editor.isActive('code') ||
     editor.isActive('codeBlock') ||
-    editor.isActive('link')
+    editor.isActive('link') ||
+    editor.isActive('image')
+  );
+}
+
+export function isImageBlocked(editor: Editor): boolean {
+  return (
+    editor.isActive('code') ||
+    editor.isActive('link') ||
+    editor.isActive('mention')
   );
 }
 
@@ -35,8 +45,14 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
+  if (tiptapName === 'image') {
+    return isImageBlocked(editor);
+  }
   if (tiptapName === 'link') {
     return isLinkBlocked(editor);
+  }
+  if (tiptapName === 'code' && editor.isActive('image')) {
+    return true;
   }
 
   if (tiptapName === 'mention') {

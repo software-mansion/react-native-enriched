@@ -10,6 +10,7 @@ interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
   onOpenLinkModal: () => void;
+  onOpenImageModal: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -52,7 +53,12 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
+export function Toolbar({
+  editorRef,
+  state,
+  onOpenLinkModal,
+  onOpenImageModal,
+}: ToolbarProps) {
   const s = state;
   const dragScroll = useDragScroll();
 
@@ -162,6 +168,11 @@ export function Toolbar({ editorRef, state, onOpenLinkModal }: ToolbarProps) {
       onPress: (editor) => {
         editor?.startMention('@');
       },
+    },
+    {
+      key: 'image',
+      label: '🏞️',
+      onPress: onOpenImageModal,
     },
     {
       key: 'unorderedList',

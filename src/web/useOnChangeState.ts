@@ -92,7 +92,11 @@ function buildState(
       'mention',
       editor.isActive('code') || editor.isActive('codeBlock')
     ),
-    image: { isActive: false, isConflicting: false, isBlocking: false },
+    image: {
+      isActive: editor.isActive('image'),
+      isConflicting: editor.isActive('link'),
+      isBlocking: isFormatBlocked('image', editor, htmlStyle),
+    },
   };
 }
 
