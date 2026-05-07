@@ -827,6 +827,10 @@
     // check each existing style existence
     for (NSNumber *type in host.stylesDict) {
       StyleBase *style = host.stylesDict[type];
+      // we do not want to add <></> tags for alignment
+      if ([style isKindOfClass:[AlignmentStyle class]]) {
+        continue;
+      }
       if ([style detect:currentRange]) {
         [currentActiveStyles addObject:type];
 
