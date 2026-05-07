@@ -275,60 +275,69 @@ static void const *kInputKey = &kInputKey;
           [self glyphRangeForCharacterRange:[paragraph rangeValue]
                        actualCharacterRange:nullptr];
 
-      [self
-          enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
-                                   usingBlock:^(CGRect rect, CGRect usedRect,
-                                                NSTextContainer *container,
-                                                NSRange lineGlyphRange,
-                                                BOOL *stop) {
-                                     NSUInteger charIdx =
-                                         [self characterIndexForGlyphAtIndex:
-                                                   lineGlyphRange.location];
-                                     UIFont *font = [host.textView.textStorage
-                                              attribute:NSFontAttributeName
-                                                atIndex:charIdx
-                                         effectiveRange:nil];
-                                     CGRect textUsedRect =
-                                         [self getTextAlignedUsedRect:usedRect
-                                                                 font:font];
+      [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
+                                     usingBlock:^(CGRect rect, CGRect usedRect,
+                                                  NSTextContainer *container,
+                                                  NSRange lineGlyphRange,
+                                                  BOOL *stop) {
+                                       NSUInteger charIdx =
+                                           [self characterIndexForGlyphAtIndex:
+                                                     lineGlyphRange.location];
+                                       UIFont *font = [host.textView.textStorage
+                                                attribute:NSFontAttributeName
+                                                  atIndex:charIdx
+                                           effectiveRange:nil];
+                                       CGRect textUsedRect =
+                                           [self getTextAlignedUsedRect:usedRect
+                                                                   font:font];
 
-                                     NSString *markerFormat =
-                                         pStyle.textLists.firstObject
-                                             .markerFormat;
+                                       for (NSTextList *list in pStyle
+                                                .textLists) {
+                                         NSString *markerFormat =
+                                             list.markerFormat;
 
-                                     if ([markerFormat
-                                             isEqualToString:
-                                                 @"EnrichedOrderedList"]) {
-                                       NSString *marker = [self
-                                           getDecimalMarkerForList:host
-                                                         charIndex:charIdx];
-                                       [self drawDecimal:host
-                                                     marker:marker
-                                           markerAttributes:markerAttributes
+                                         if ([markerFormat
+                                                 hasPrefix:
+                                                     @"EnrichedAlignment"]) {
+                                           continue;
+                                         }
+
+                                         if ([markerFormat
+                                                 isEqualToString:
+                                                     @"EnrichedOrderedList"]) {
+                                           NSString *marker = [self
+                                               getDecimalMarkerForList:host
+                                                             charIndex:charIdx];
+                                           [self drawDecimal:host
+                                                         marker:marker
+                                               markerAttributes:markerAttributes
+                                                         origin:origin
+                                                       usedRect:usedRect
+                                                         indent:indent];
+                                         } else if ([markerFormat
+                                                        isEqualToString:
+                                                            @"EnrichedUnordered"
+                                                            @"Lis"
+                                                            @"t"]) {
+                                           [self drawBullet:host
                                                      origin:origin
-                                                   usedRect:usedRect
+                                                   usedRect:textUsedRect
                                                      indent:indent];
-                                     } else if ([markerFormat
-                                                    isEqualToString:
-                                                        @"EnrichedUnorderedLis"
-                                                        @"t"]) {
-                                       [self drawBullet:host
-                                                 origin:origin
-                                               usedRect:textUsedRect
-                                                 indent:indent];
-                                     } else if ([markerFormat
-                                                    hasPrefix:
-                                                        @"EnrichedCheckbox"]) {
-                                       [self drawCheckbox:host
-                                             markerFormat:markerFormat
-                                                   origin:origin
-                                                 usedRect:textUsedRect
-                                                   indent:indent];
-                                     }
-                                     // only first line of a list gets its
-                                     // marker drawn
-                                     *stop = YES;
-                                   }];
+
+                                         } else if ([markerFormat
+                                                        hasPrefix:@"EnrichedChe"
+                                                                  @"ckbox"]) {
+                                           [self drawCheckbox:host
+                                                 markerFormat:markerFormat
+                                                       origin:origin
+                                                     usedRect:textUsedRect
+                                                       indent:indent];
+                                         }
+                                       }
+                                       // only first line of a list gets its
+                                       // marker drawn
+                                       *stop = YES;
+                                     }];
     }
   }
 }

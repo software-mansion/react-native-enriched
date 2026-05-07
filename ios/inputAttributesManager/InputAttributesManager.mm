@@ -1,5 +1,4 @@
 #import "InputAttributesManager.h"
-#import "AlignmentUtils.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
@@ -85,16 +84,12 @@
       presentStyles[@([[style class] getType])] = [style all:dirtyRange];
     }
 
-    NSArray<AlignmentEntry *> *savedAlignments =
-        [AlignmentUtils captureAlignmentsInRange:dirtyRange inInput:_input];
-
     // now reset the attributes to default ones
     [_input->textView.textStorage setAttributes:_input->defaultTypingAttributes
                                           range:dirtyRange];
 
-    // Restore values that are stored in regular attributes and were overwritten
-    // by the default-attributes reset above.
-    [AlignmentUtils restoreAlignments:savedAlignments inInput:_input];
+    // Restore ZWS layout metadata that is stored in regular attributes and was
+    // overwritten by the default-attributes reset above.
     [ZeroWidthSpaceUtils applyKernForZeroWidthSpacesInRange:dirtyRange
                                                        host:_input];
 
@@ -174,7 +169,7 @@
           newPStyle.alignment = pStyle.alignment;
 
           // Preserve text lists if they exist
-          if (pStyle.textLists.count == 1) {
+          if (pStyle.textLists.count >= 1) {
             newPStyle.textLists = pStyle.textLists;
           }
 

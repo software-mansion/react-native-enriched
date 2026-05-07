@@ -90,6 +90,13 @@
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text;
 @end
 
+@interface AlignmentStyle : StyleBase
+- (void)addAlignment:(NSTextAlignment)alignment
+               range:(NSRange)range
+          withTyping:(BOOL)withTyping
+      withDirtyRange:(BOOL)withDirtyRange;
+@end
+
 @interface BlockQuoteStyle : StyleBase
 @end
 
