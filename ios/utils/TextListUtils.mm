@@ -2,10 +2,10 @@
 
 @implementation TextListUtils
 
-+ (NSArray<NSTextList *> *)textListsByAdding:(NSString *)value
-                         withExclusivePrefix:(nullable NSString *)prefix
-                                     toArray:(nullable NSArray<NSTextList *> *)
-                                                 existing {
++ (NSArray<NSTextList *> *_Nonnull)
+      textListsByAdding:(NSString *_Nonnull)value
+    withExclusivePrefix:(NSString *_Nullable)prefix
+                toArray:(NSArray<NSTextList *> *_Nullable)existing {
   NSMutableArray<NSTextList *> *updated =
       existing ? [existing mutableCopy] : [NSMutableArray array];
 
@@ -33,20 +33,34 @@
   return updated;
 }
 
-+ (NSArray<NSTextList *> *)
-    textListsByRemoving:(NSString *)value
-              fromArray:(nullable NSArray<NSTextList *> *)existing {
++ (NSArray<NSTextList *> *_Nonnull)
+    textListsByRemoving:(NSString *_Nonnull)value
+             withPrefix:(NSString *_Nullable)prefix
+              fromArray:(NSArray<NSTextList *> *_Nullable)existing {
   NSMutableArray<NSTextList *> *updated = [NSMutableArray array];
   for (NSTextList *list in existing) {
-    if (![list.markerFormat isEqualToString:value]) {
+    if ((prefix == nullptr && ![list.markerFormat isEqualToString:value]) ||
+        (prefix != nullptr && ![list.markerFormat hasPrefix:prefix])) {
       [updated addObject:list];
     }
   }
   return updated;
 }
 
-+ (BOOL)textLists:(nullable NSArray<NSTextList *> *)textLists
-    containsValue:(NSString *)value {
++ (NSArray<NSTextList *> *_Nonnull)
+    textListsByRemovingPrefix:(NSString *_Nullable)prefix
+                    fromArray:(NSArray<NSTextList *> *_Nullable)existing {
+  NSMutableArray<NSTextList *> *updated = [NSMutableArray array];
+  for (NSTextList *list in existing) {
+    if (![list.markerFormat hasPrefix:prefix]) {
+      [updated addObject:list];
+    }
+  }
+  return updated;
+}
+
++ (BOOL)textLists:(NSArray<NSTextList *> *_Nullable)textLists
+    containsValue:(NSString *_Nonnull)value {
   for (NSTextList *list in textLists) {
     if ([list.markerFormat isEqualToString:value]) {
       return YES;
@@ -55,8 +69,8 @@
   return NO;
 }
 
-+ (BOOL)textLists:(nullable NSArray<NSTextList *> *)textLists
-    containsPrefix:(NSString *)prefix {
++ (BOOL)textLists:(NSArray<NSTextList *> *_Nullable)textLists
+    containsPrefix:(NSString *_Nullable)prefix {
   for (NSTextList *list in textLists) {
     if ([list.markerFormat hasPrefix:prefix]) {
       return YES;
@@ -65,9 +79,9 @@
   return NO;
 }
 
-+ (nullable NSTextList *)
-    firstTextListWithPrefix:(NSString *)prefix
-                    inArray:(nullable NSArray<NSTextList *> *)textLists {
++ (NSTextList *_Nullable)
+    firstTextListWithPrefix:(NSString *_Nullable)prefix
+                    inArray:(NSArray<NSTextList *> *_Nullable)textLists {
   for (NSTextList *list in textLists) {
     if ([list.markerFormat hasPrefix:prefix]) {
       return list;

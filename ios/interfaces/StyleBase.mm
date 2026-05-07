@@ -136,6 +136,7 @@
                     return;
                   pStyle.textLists =
                       [TextListUtils textListsByRemoving:[self getValue]
+                                              withPrefix:[self getMarkerPrefix]
                                                fromArray:pStyle.textLists];
                   [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
@@ -181,8 +182,10 @@
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = [TextListUtils textListsByRemoving:[self getValue]
-                                                fromArray:pStyle.textLists];
+    pStyle.textLists = pStyle.textLists =
+        [TextListUtils textListsByRemoving:[self getValue]
+                                withPrefix:[self getMarkerPrefix]
+                                 fromArray:pStyle.textLists];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
