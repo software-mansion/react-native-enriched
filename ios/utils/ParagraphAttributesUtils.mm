@@ -1,4 +1,5 @@
 #import "ParagraphAttributesUtils.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
@@ -263,13 +264,14 @@
   NSMutableDictionary *resetAttrs =
       [input->defaultTypingAttributes mutableCopy];
 
-  if (alignment != NSTextAlignmentNatural) {
-    NSMutableParagraphStyle *paraStyle =
-        [resetAttrs[NSParagraphStyleAttributeName] mutableCopy]
-            ?: [[NSMutableParagraphStyle alloc] init];
-    paraStyle.alignment = alignment;
-    resetAttrs[NSParagraphStyleAttributeName] = paraStyle;
-  }
+  NSMutableParagraphStyle *paraStyle =
+      [resetAttrs[NSParagraphStyleAttributeName] mutableCopy]
+          ?: [[NSMutableParagraphStyle alloc] init];
+  paraStyle.textLists = @[ [[NSTextList alloc]
+      initWithMarkerFormat:[AlignmentUtils alignmentToMarker:alignment]
+                   options:0] ];
+  paraStyle.alignment = alignment;
+  resetAttrs[NSParagraphStyleAttributeName] = paraStyle;
 
   input->textView.typingAttributes = resetAttrs;
 }

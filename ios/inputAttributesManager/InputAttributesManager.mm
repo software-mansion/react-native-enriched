@@ -1,4 +1,5 @@
 #import "InputAttributesManager.h"
+#import "AlignmentUtils.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
@@ -130,8 +131,8 @@
   EnrichedInputTextView *textView = _input->textView;
   NSRange selectedRange = textView.selectedRange;
 
-  // Typing attributes get reset when only selection changed to an empty line
-  // (or empty line with newline).
+  // Typing attributes get reset (except alignment) when only selection changed
+  // to an empty line (or empty line with newline).
   if (onlySelectionChanged) {
     NSRange paragraphRange =
         [textView.textStorage.string paragraphRangeForRange:selectedRange];
@@ -142,7 +143,29 @@
              characterIsMember:[textView.textStorage.string
                                    characterAtIndex:paragraphRange
                                                         .location]])) {
-      textView.typingAttributes = _input->defaultTypingAttributes;
+      NSParagraphStyle *currentTypingStyle =
+          textView.typingAttributes[NSParagraphStyleAttributeName];
+      NSTextAlignment savedAlignment = currentTypingStyle
+                                           ? currentTypingStyle.alignment
+                                           : NSTextAlignmentNatural;
+
+      NSMutableDictionary *newAttrs =
+          [_input->defaultTypingAttributes mutableCopy];
+
+      NSParagraphStyle *defaultPStyle = newAttrs[NSParagraphStyleAttributeName];
+      NSMutableParagraphStyle *paraStyle =
+          defaultPStyle ? [defaultPStyle mutableCopy]
+                        : [[NSMutableParagraphStyle alloc] init];
+
+      // preserve alignment
+      paraStyle.alignment = savedAlignment;
+      NSString *markerFormat =
+          [AlignmentUtils alignmentToMarker:savedAlignment];
+      paraStyle.textLists =
+          @[ [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0] ];
+
+      newAttrs[NSParagraphStyleAttributeName] = paraStyle;
+      textView.typingAttributes = newAttrs;
       return;
     }
   }
