@@ -16,7 +16,6 @@ Web support is still experimental. APIs and behavior can change in future releas
 ## Unsupported
 
 - **Mentions**: `startMention` and `setMention` are no-ops. Props `mentionIndicators`, `onMentionDetected`, `onStartMention`, `onChangeMention`, and `onEndMention` are ignored. `onChangeState.mention` is always inactive.
-- **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
