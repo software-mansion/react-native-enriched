@@ -39,7 +39,7 @@
                                                    inArray:pStyle.textLists]
                         .markerFormat;
                 NSTextAlignment alignment =
-                    [AlignmentUtils alignmentFromMarker:marker];
+                    [AlignmentUtils markerToAlignment:marker];
                 pStyle.alignment = alignment;
                 [self.host.textView.textStorage
                     addAttribute:NSParagraphStyleAttributeName
@@ -58,17 +58,7 @@
                range:(NSRange)range
           withTyping:(BOOL)withTyping
       withDirtyRange:(BOOL)withDirtyRange {
-  NSString *value = @"EnrichedAlignmentNatural";
-
-  if (alignment == NSTextAlignmentLeft) {
-    value = @"EnrichedAlignmentLeft";
-  } else if (alignment == NSTextAlignmentCenter) {
-    value = @"EnrichedAlignmentCenter";
-  } else if (alignment == NSTextAlignmentRight) {
-    value = @"EnrichedAlignmentRight";
-  } else if (alignment == NSTextAlignmentJustified) {
-    value = @"EnrichedAlignmentJustified";
-  }
+  NSString *value = [AlignmentUtils alignmentToMarker:alignment];
 
   [self add:range
            withValue:value

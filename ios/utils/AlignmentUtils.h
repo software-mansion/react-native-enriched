@@ -5,16 +5,14 @@
 
 @interface AlignmentUtils : NSObject
 
-+ (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
-                 offset:(NSInteger)offset
-                 toHost:(id<EnrichedViewHost>)host;
-
-+ (NSString *)alignmentToString:(NSTextAlignment)alignment;
++ (NSString *)alignmentToString:(NSTextAlignment)alignmentl;
 
 + (NSTextAlignment)stringToAlignment:(NSString *)alignmentString;
 
-+ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input;
++ (NSString *)alignmentToMarker:(NSTextAlignment)alignment;
 
-+ (NSTextAlignment)alignmentFromMarker:(NSString *)marker;
++ (NSTextAlignment)markerToAlignment:(NSString *)marker;
+
++ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input;
 
 @end

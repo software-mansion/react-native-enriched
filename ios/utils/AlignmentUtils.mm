@@ -4,28 +4,6 @@
 
 @implementation AlignmentUtils
 
-+ (void)applyAlignments:(NSArray<AlignmentEntry *> *)alignments
-                 offset:(NSInteger)offset
-                 toHost:(id<EnrichedViewHost>)host;
-{
-  AlignmentStyle *alignmentStyle = host.stylesDict[@([AlignmentStyle getType])];
-
-  if (alignmentStyle == nil) {
-    return;
-  }
-
-  for (AlignmentEntry *entry in alignments) {
-    // Offset the range (e.g. if inserting into the middle of text)
-    NSRange finalRange =
-        NSMakeRange(offset + entry.range.location, entry.range.length);
-
-    [alignmentStyle addAlignment:entry.alignment
-                           range:finalRange
-                      withTyping:NO
-                  withDirtyRange:NO];
-  }
-}
-
 + (NSString *)alignmentToString:(NSTextAlignment)alignment {
   switch (alignment) {
   case NSTextAlignmentLeft:
@@ -61,6 +39,33 @@
   return NSTextAlignmentNatural;
 }
 
++ (NSTextAlignment)markerToAlignment:(NSString *)marker {
+  if ([marker isEqualToString:@"EnrichedAlignmentLeft"]) {
+    return NSTextAlignmentLeft;
+  } else if ([marker isEqualToString:@"EnrichedAlignmentCenter"]) {
+    return NSTextAlignmentCenter;
+  } else if ([marker isEqualToString:@"EnrichedAlignmentRight"]) {
+    return NSTextAlignmentRight;
+  } else if ([marker isEqualToString:@"EnrichedAlignmentJustified"]) {
+    return NSTextAlignmentJustified;
+  }
+  return NSTextAlignmentNatural;
+}
+
++ (NSString *)alignmentToMarker:(NSTextAlignment)alignment {
+  if (alignment == NSTextAlignmentLeft) {
+    return @"EnrichedAlignmentLeft";
+  } else if (alignment == NSTextAlignmentCenter) {
+    return @"EnrichedAlignmentCenter";
+  } else if (alignment == NSTextAlignmentRight) {
+    return @"EnrichedAlignmentRight";
+  } else if (alignment == NSTextAlignmentJustified) {
+    return @"EnrichedAlignmentJustified";
+  }
+
+  return @"EnrichedAlignmentNatural";
+}
+
 + (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input {
   UITextView *textView = input->textView;
   NSParagraphStyle *paraStyle = nil;
@@ -80,19 +85,6 @@
   NSTextAlignment alignment =
       paraStyle ? paraStyle.alignment : NSTextAlignmentNatural;
   return [AlignmentUtils alignmentToString:alignment];
-}
-
-+ (NSTextAlignment)alignmentFromMarker:(NSString *)marker {
-  if ([marker isEqualToString:@"EnrichedAlignmentLeft"]) {
-    return NSTextAlignmentLeft;
-  } else if ([marker isEqualToString:@"EnrichedAlignmentCenter"]) {
-    return NSTextAlignmentCenter;
-  } else if ([marker isEqualToString:@"EnrichedAlignmentRight"]) {
-    return NSTextAlignmentRight;
-  } else if ([marker isEqualToString:@"EnrichedAlignmentJustified"]) {
-    return NSTextAlignmentJustified;
-  }
-  return NSTextAlignmentNatural;
 }
 
 @end
