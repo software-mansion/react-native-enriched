@@ -3,7 +3,7 @@ import type { ResolvedPos } from '@tiptap/pm/model';
 
 // Same as prosemirror-commands `findCutBefore` (not exported from that package)
 // Resolves to the gap between this block and the block above it.
-function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
+export function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
   if (!$pos.parent.type.spec.isolating) {
     for (let i = $pos.depth - 1; i >= 0; i--) {
       if ($pos.index(i) > 0) {
@@ -15,6 +15,38 @@ function findCutBefore($pos: ResolvedPos): ResolvedPos | null {
     }
   }
   return null;
+}
+
+/** Line start → lift current block or join with the block above (wrapped blocks + lists). */
+export function lineStartBackspace(
+  editor: Editor,
+  options: {
+    isActive: () => boolean;
+    lift: () => boolean;
+    shouldJoinBefore: (nodeNameBefore: string | undefined) => boolean;
+  }
+): boolean {
+  const { selection } = editor.state;
+
+  if (
+    !isTextSelection(selection) ||
+    !selection.$cursor ||
+    selection.$cursor.parentOffset !== 0
+  ) {
+    return false;
+  }
+
+  if (options.isActive()) {
+    return options.lift();
+  }
+
+  const $cut = findCutBefore(selection.$cursor);
+  const beforeName = $cut?.nodeBefore?.type.name;
+  if (options.shouldJoinBefore(beforeName)) {
+    return editor.chain().focus().joinTextblockBackward().run();
+  }
+
+  return false;
 }
 
 // Enter only splits inside the wrapper so the default handler does not exit the block.
@@ -36,24 +68,9 @@ export function wrappedBlockBackspace(
   editor: Editor,
   wrapperNodeName: string
 ): boolean {
-  const { selection } = editor.state;
-
-  if (
-    !isTextSelection(selection) ||
-    !selection.$cursor ||
-    selection.$cursor.parentOffset !== 0
-  ) {
-    return false;
-  }
-
-  if (editor.isActive(wrapperNodeName)) {
-    return editor.chain().focus().lift(wrapperNodeName).run();
-  }
-
-  const $cut = findCutBefore(selection.$cursor);
-  if ($cut?.nodeBefore?.type.name === wrapperNodeName) {
-    return editor.chain().focus().joinTextblockBackward().run();
-  }
-
-  return false;
+  return lineStartBackspace(editor, {
+    isActive: () => editor.isActive(wrapperNodeName),
+    lift: () => editor.chain().focus().lift(wrapperNodeName).run(),
+    shouldJoinBefore: (beforeName) => beforeName === wrapperNodeName,
+  });
 }

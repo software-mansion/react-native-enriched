@@ -2,6 +2,7 @@
 #import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
+#import "HtmlParser.h"
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
@@ -148,7 +149,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 }
 
 - (void)setupTextView {
-  textView = [[InputTextView alloc] init];
+  textView = [[EnrichedInputTextView alloc] init];
   textView.backgroundColor = UIColor.clearColor;
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
@@ -629,9 +630,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // being used!
 
     // the html needs to be generated using the old config
-    NSString *currentHtml = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *currentHtml = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     // we want to preserve the selection between props changes
     NSRange prevSelectedRange = textView.selectedRange;
 
@@ -1358,9 +1359,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
-    NSString *htmlOutput = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *htmlOutput = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     // make sure html really changed
     if (![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
       _recentlyEmittedHtml = htmlOutput;
@@ -1373,9 +1374,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     @try {
-      NSString *htmlOutput = [parser
+      NSString *htmlOutput = [HtmlParser
           parseToHtmlFromRange:NSMakeRange(0,
-                                           textView.textStorage.string.length)];
+                                           textView.textStorage.string.length)
+                          host:self];
       emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
                                     .html = [htmlOutput toCppString]});
     } @catch (NSException *exception) {
@@ -1798,7 +1800,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
 
-  if (text.length == 0 && range.length > 0) {
+  if (text.length == 0) {
     key = @"Backspace";
   } else if ([text isEqualToString:@"\n"]) {
     key = @"Enter";
@@ -1953,9 +1955,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     NSRange prevSelectedRange = textView.selectedRange;
 
-    NSString *currentHtml = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *currentHtml = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     NSString *initiallyProcessedHtml =
         [parser initiallyProcessHtml:currentHtml];
     [parser replaceWholeFromHtml:initiallyProcessedHtml];

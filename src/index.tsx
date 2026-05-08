@@ -1,6 +1,6 @@
-export { EnrichedTextInput } from './native/EnrichedTextInput';
-export * from './EnrichedText';
+export { EnrichedTextInput } from './web/EnrichedTextInput';
 export type {
+  EnrichedInputStyle,
   EnrichedTextInputProps,
   OnChangeTextEvent,
   OnChangeHtmlEvent,

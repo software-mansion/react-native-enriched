@@ -17,50 +17,65 @@ import type { Node } from '@tiptap/pm/model';
  *   Native:  0  1  2  3  4  4  5  6  7   8  9  9 10 11 12 13 14
  *
  * PM 5 and PM 6 both map to native 4, PM 11 and PM 12 both map to native 9.
+ *
+ * Inline images occupy one index in the native plain string as a '\ufffc' character,
+ * we do the same for the web implementation.
  */
+
+/**
+ * Plain text in the native coordinate model for [from, to), including '\ufffc' per inline image.
+ */
+export function nativeLeafText(doc: Node, from: number, to: number): string {
+  return doc.textBetween(from, to, '\n', () => '\ufffc');
+}
+
+function nativeTextLength(doc: Node, from: number, to: number): number {
+  return nativeLeafText(doc, from, to).length;
+}
 
 /**
  * Returns the native position for a given TipTap document position.
  */
 export function tiptapPosToNativePos(doc: Node, tiptapPos: number): number {
   if (tiptapPos <= 1) return 0;
-  return doc.textBetween(0, tiptapPos, '\n').length;
+  return nativeTextLength(doc, 0, tiptapPos);
 }
 
 /**
  * Returns the TipTap document position for a given native position.
  *
- * Equivalent mental model: build an array `nativeByTiptapPos` where
- * `nativeByTiptapPos[tiptapPos] = tiptapPosToNativePos(doc, tiptapPos)`.
- * This function finds the first index where
- * `nativeByTiptapPos[index] >= nativePos`, but does it with binary search
- * instead of creating the whole array.
- *
- * We want the leftmost TipTap position T where tiptapPosToNativePos(T) >= nativePos.
- * Leftmost matters because gap positions (for example TipTap 5 and 6 for native 4)
- * share the same native value. We choose the earlier position.
+ * Traverses only text-bearing block nodes (paragraphs, headings, etc.),
+ * skipping wrapper nodes like block quotes and lists. This ensures the result
+ * is always a valid cursor position drilled down to the innermost content node.
  */
 export function nativePosToTiptapPos(doc: Node, nativePos: number): number {
-  if (nativePos <= 0) return 1;
+  let currentNativePos = 0;
+  let targetTiptapPos = -1;
+  let lastValidTiptapPos = -1;
 
-  const maxPos = doc.content.size;
-  const totalNativeLen = doc.textBetween(0, maxPos, '\n').length;
+  doc.descendants((node, pos) => {
+    if (targetTiptapPos !== -1) return false;
 
-  if (nativePos >= totalNativeLen) {
-    return maxPos - 1; // clamp to end of last block's content
-  }
+    // Only consider text-bearing leaf blocks (paragraphs, headings, code blocks).
+    // Wrapper nodes (lists, list items, block quotes) are skipped
+    if (node.isTextblock) {
+      const textLen = node.textContent.length;
 
-  let low = 0;
-  let high = maxPos;
-  let result = maxPos - 1;
-  while (low <= high) {
-    const mid = low + Math.floor((high - low) / 2);
-    if (tiptapPosToNativePos(doc, mid) >= nativePos) {
-      result = mid; // mid is a valid candidate; try to find an earlier one
-      high = mid - 1;
-    } else {
-      low = mid + 1; // mid is too small, search right
+      if (currentNativePos + textLen >= nativePos) {
+        // pos is before the opening tag; pos+1 is the first position inside.
+        const offset = Math.max(0, nativePos - currentNativePos);
+        targetTiptapPos = pos + 1 + offset;
+        return false;
+      }
+
+      currentNativePos += textLen + 1; // +1 for the '\n' block separator
+      lastValidTiptapPos = pos + 1 + textLen;
     }
-  }
-  return result;
+
+    return true;
+  });
+
+  if (targetTiptapPos !== -1) return targetTiptapPos;
+  if (lastValidTiptapPos !== -1) return lastValidTiptapPos;
+  return 1;
 }

@@ -40,4 +40,26 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
     color: 'purple',
     backgroundColor: 'yellow',
   },
+  a: {
+    color: 'green',
+    textDecorationLine: 'underline',
+  },
+  ol: {
+    gapWidth: 16,
+    marginLeft: 24,
+    markerColor: 'navy',
+    markerFontWeight: 'bold',
+  },
+  ul: {
+    bulletColor: 'aquamarine',
+    bulletSize: 8,
+    marginLeft: 24,
+    gapWidth: 16,
+  },
+  ulCheckbox: {
+    boxSize: 18,
+    gapWidth: 16,
+    marginLeft: 24,
+    boxColor: 'rgb(0, 26, 114)',
+  },
 };

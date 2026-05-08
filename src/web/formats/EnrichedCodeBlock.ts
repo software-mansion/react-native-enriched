@@ -30,12 +30,12 @@ export const EnrichedCodeBlock = Blockquote.extend({
     return {
       toggleCodeBlock:
         () =>
-        ({ editor, commands }) =>
+        ({ editor, commands, chain }) =>
           toggleParagraphFormat(
-            editor,
             () => editor.isActive('codeBlock'),
             () => commands.lift('codeBlock'),
-            (c) => c.toggleWrap('codeBlock')
+            (c) => c.toggleWrap('codeBlock'),
+            chain
           ),
     };
   },

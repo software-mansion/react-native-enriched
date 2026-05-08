@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.text.LineBreaker
 import android.os.Build
-import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
@@ -55,7 +54,6 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputH4Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH5Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputH6Span
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
@@ -333,7 +331,7 @@ class EnrichedTextInputView :
       val selectedHtml = EnrichedParser.toHtml(selectedText)
 
       val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-      val clip = ClipData.newHtmlText(CLIPBOARD_TAG, selectedText, selectedHtml)
+      val clip = ClipData.newHtmlText(EnrichedConstants.CLIPBOARD_TAG, selectedText, selectedHtml)
       clipboard.setPrimaryClip(clip)
     }
   }
@@ -899,7 +897,13 @@ class EnrichedTextInputView :
     val isValid = verifyStyle(name)
     if (!isValid) return
 
-    toggleStyle(name)
+    val (rangeStart, rangeEnd) = getTargetRange(name)
+
+    runAsATransaction {
+      toggleStyle(name)
+    }
+
+    parametrizedStyles?.onStyleToggled(name, rangeStart, rangeEnd)
   }
 
   fun toggleCheckboxListItem(checked: Boolean) {
@@ -1091,7 +1095,6 @@ class EnrichedTextInputView :
 
   companion object {
     const val TAG = "EnrichedTextInputView"
-    const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
     private const val CONTEXT_MENU_ITEM_ID = 10000
     const val DEFAULT_IME_ACTION_LABEL = "DONE"
   }

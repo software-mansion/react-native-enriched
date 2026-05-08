@@ -142,4 +142,69 @@ describe('htmlStyleToCSSVariables', () => {
       '--eti-codeblock-border-radius': '8px',
     } as CSSProperties);
   });
+
+  it('maps anchor link styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        a: { color: 'blue', textDecorationLine: 'underline' },
+      })
+    ).toEqual({
+      '--eti-link-color': 'blue',
+      '--eti-link-text-decoration-line': 'underline',
+    } as CSSProperties);
+  });
+
+  it('maps ul styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ul: {
+          bulletColor: '#ff0000',
+          bulletSize: 12,
+          marginLeft: 8,
+          gapWidth: 4,
+        },
+      })
+    ).toEqual({
+      '--eti-ul-bullet-color': '#ff0000',
+      '--eti-ul-bullet-size': '12px',
+      '--eti-ul-margin-left': '8px',
+      '--eti-ul-gap-width': '4px',
+    } as CSSProperties);
+  });
+
+  it('maps ol styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ol: {
+          gapWidth: 6,
+          marginLeft: 10,
+          markerFontWeight: '700',
+          markerColor: '#00ff00',
+        },
+      })
+    ).toEqual({
+      '--eti-ol-gap-width': '6px',
+      '--eti-ol-margin-left': '10px',
+      '--eti-ol-marker-font-weight': '700',
+      '--eti-ol-marker-color': '#00ff00',
+    } as CSSProperties);
+  });
+
+  it('maps ulCheckbox styles to CSS variables', () => {
+    expect(
+      htmlStyleToCSSVariables({
+        ulCheckbox: {
+          boxSize: 20,
+          gapWidth: 8,
+          marginLeft: 12,
+          boxColor: '#336699',
+        },
+      })
+    ).toEqual({
+      '--eti-checkbox-box-size': '20px',
+      '--eti-checkbox-gap-width': '8px',
+      '--eti-checkbox-margin-left': '12px',
+      '--eti-checkbox-box-color': '#336699',
+    } as CSSProperties);
+  });
 });

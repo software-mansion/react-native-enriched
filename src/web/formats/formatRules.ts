@@ -8,8 +8,23 @@ export function isAnyParagraphFormatActive(editor: Editor): boolean {
   return (
     editor.isActive('blockquote') ||
     editor.isActive('codeBlock') ||
-    HEADING_LEVELS.some((level) => editor.isActive('heading', { level }))
+    HEADING_LEVELS.some((level) => editor.isActive('heading', { level })) ||
+    editor.isActive('orderedList') ||
+    editor.isActive('unorderedList') ||
+    editor.isActive('checkboxList')
   );
+}
+
+export function isLinkBlocked(editor: Editor): boolean {
+  return (
+    editor.isActive('code') ||
+    editor.isActive('codeBlock') ||
+    editor.isActive('image')
+  );
+}
+
+export function isImageBlocked(editor: Editor): boolean {
+  return editor.isActive('code');
 }
 
 export function isFormatBlocked(
@@ -17,6 +32,16 @@ export function isFormatBlocked(
   editor: Editor,
   htmlStyle: Required<HtmlStyle>
 ): boolean {
+  if (tiptapName === 'image') {
+    return isImageBlocked(editor);
+  }
+  if (tiptapName === 'link') {
+    return isLinkBlocked(editor);
+  }
+  if (tiptapName === 'code' && editor.isActive('image')) {
+    return true;
+  }
+
   if (editor.isActive('codeBlock')) {
     return ['bold', 'italic', 'underline', 'strike', 'code'].includes(
       tiptapName
@@ -32,11 +57,11 @@ export function isFormatBlocked(
 }
 
 export function toggleParagraphFormat(
-  editor: Editor,
   isActive: () => boolean,
   deactivate: () => boolean,
-  activate: (c: ChainedCommands) => ChainedCommands
+  activate: (c: ChainedCommands) => ChainedCommands,
+  chain: () => ChainedCommands
 ): boolean {
   if (isActive()) return deactivate();
-  return activate(editor.chain().focus().clearNodes()).run();
+  return activate(chain().clearNodes()).run();
 }

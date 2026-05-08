@@ -4165,12 +4165,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-image@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-image@npm:3.20.4"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+  checksum: 10c0/5aa7941f525b0242918a6b06084a51a9753fd178b2f34b299fe03442cd081961eadd6d73c1a28ec9097b863378cfffecac44979c41df0f61ca950fc9368acc71
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-italic@npm:3.20.4":
   version: 3.20.4
   resolution: "@tiptap/extension-italic@npm:3.20.4"
   peerDependencies:
     "@tiptap/core": ^3.20.4
   checksum: 10c0/1211d721f77ae3ebae734adc7105d99b61b43a99bc2316d356002bf636ace2a7d2e0e8b758d8799a006bfc1dca80215de87052cdb18d782c04fa6c28470c8878
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-link@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-link@npm:3.20.4"
+  dependencies:
+    linkifyjs: "npm:^4.3.2"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+    "@tiptap/pm": ^3.20.4
+  checksum: 10c0/f7dca7cdca476f2f401b71030dee13357354e094be9283e87782717281451830fca4968bff325dd795705c40d79d78764207b70f8f37426a00409166f5365324
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-list@npm:3.20.4":
+  version: 3.20.4
+  resolution: "@tiptap/extension-list@npm:3.20.4"
+  peerDependencies:
+    "@tiptap/core": ^3.20.4
+    "@tiptap/pm": ^3.20.4
+  checksum: 10c0/4aa10df8d4c5f62f83fdd54c9605cf159e03e06121395c431efbe2a5b9eb64f3e2bf170a39d9911fc689b9cf901124b32158cfab030163d514e528c8b145a41d
   languageName: node
   linkType: hard
 
@@ -10213,6 +10244,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"linkifyjs@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "linkifyjs@npm:4.3.2"
+  checksum: 10c0/1a85e6b368304a4417567fe5e38651681e3e82465590836942d1b4f3c834cc35532898eb1e2479f6337d9144b297d418eb708b6be8ed0b3dc3954a3588e07971
+  languageName: node
+  linkType: hard
+
 "locate-path@npm:^5.0.0":
   version: 5.0.0
   resolution: "locate-path@npm:5.0.0"
@@ -12645,7 +12683,10 @@ __metadata:
     "@tiptap/extension-code": "npm:3.20.4"
     "@tiptap/extension-document": "npm:3.20.4"
     "@tiptap/extension-heading": "npm:3.20.4"
+    "@tiptap/extension-image": "npm:3.20.4"
     "@tiptap/extension-italic": "npm:3.20.4"
+    "@tiptap/extension-link": "npm:3.20.4"
+    "@tiptap/extension-list": "npm:3.20.4"
     "@tiptap/extension-paragraph": "npm:3.20.4"
     "@tiptap/extension-strike": "npm:3.20.4"
     "@tiptap/extension-text": "npm:3.20.4"

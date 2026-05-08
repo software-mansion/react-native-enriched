@@ -30,6 +30,20 @@ const ETI_CSS_VARS = {
   codeblockBgColor: '--eti-codeblock-bg-color',
   codeblockColor: '--eti-codeblock-color',
   codeblockBorderRadius: '--eti-codeblock-border-radius',
+  linkColor: '--eti-link-color',
+  linkTextDecorationLine: '--eti-link-text-decoration-line',
+  ulBulletColor: '--eti-ul-bullet-color',
+  ulBulletSize: '--eti-ul-bullet-size',
+  ulMarginLeft: '--eti-ul-margin-left',
+  ulGapWidth: '--eti-ul-gap-width',
+  olMarginLeft: '--eti-ol-margin-left',
+  olGapWidth: '--eti-ol-gap-width',
+  olMarkerColor: '--eti-ol-marker-color',
+  olMarkerFontWeight: '--eti-ol-marker-font-weight',
+  checkboxBoxSize: '--eti-checkbox-box-size',
+  checkboxGapWidth: '--eti-checkbox-gap-width',
+  checkboxMarginLeft: '--eti-checkbox-margin-left',
+  checkboxBoxColor: '--eti-checkbox-box-color',
 } as const;
 
 function setColorVar(
@@ -89,11 +103,57 @@ function applyCodeblockVars(
   setPxVar(vars, ETI_CSS_VARS.codeblockBorderRadius, cb?.borderRadius);
 }
 
+function applyLinkVars(
+  vars: Record<string, string>,
+  anchor?: HtmlStyle['a']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.linkColor, anchor?.color);
+  if (anchor?.textDecorationLine != null) {
+    vars[ETI_CSS_VARS.linkTextDecorationLine] = anchor.textDecorationLine;
+  }
+}
+
+function applyUnorderedListVars(
+  vars: Record<string, string>,
+  ul?: HtmlStyle['ul']
+): void {
+  setColorVar(vars, ETI_CSS_VARS.ulBulletColor, ul?.bulletColor);
+  setPxVar(vars, ETI_CSS_VARS.ulBulletSize, ul?.bulletSize);
+  setPxVar(vars, ETI_CSS_VARS.ulMarginLeft, ul?.marginLeft);
+  setPxVar(vars, ETI_CSS_VARS.ulGapWidth, ul?.gapWidth);
+}
+
+function applyOrderedListVars(
+  vars: Record<string, string>,
+  ol?: HtmlStyle['ol']
+): void {
+  setPxVar(vars, ETI_CSS_VARS.olMarginLeft, ol?.marginLeft);
+  setPxVar(vars, ETI_CSS_VARS.olGapWidth, ol?.gapWidth);
+  setColorVar(vars, ETI_CSS_VARS.olMarkerColor, ol?.markerColor);
+  if (ol?.markerFontWeight != null) {
+    vars[ETI_CSS_VARS.olMarkerFontWeight] = String(ol.markerFontWeight);
+  }
+}
+
+function applyCheckboxListVars(
+  vars: Record<string, string>,
+  ulCheckbox?: HtmlStyle['ulCheckbox']
+): void {
+  setPxVar(vars, ETI_CSS_VARS.checkboxBoxSize, ulCheckbox?.boxSize);
+  setPxVar(vars, ETI_CSS_VARS.checkboxGapWidth, ulCheckbox?.gapWidth);
+  setPxVar(vars, ETI_CSS_VARS.checkboxMarginLeft, ulCheckbox?.marginLeft);
+  setColorVar(vars, ETI_CSS_VARS.checkboxBoxColor, ulCheckbox?.boxColor);
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
   applyHeadingVars(vars, htmlStyle);
   applyBlockquoteVars(vars, htmlStyle?.blockquote);
   applyCodeblockVars(vars, htmlStyle?.codeblock);
+  applyLinkVars(vars, htmlStyle?.a);
+  applyUnorderedListVars(vars, htmlStyle?.ul);
+  applyOrderedListVars(vars, htmlStyle?.ol);
+  applyCheckboxListVars(vars, htmlStyle?.ulCheckbox);
   return vars as CSSProperties;
 }

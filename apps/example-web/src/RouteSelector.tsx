@@ -1,4 +1,5 @@
 import App from './App';
+import { TestLinks } from './testScreens/TestLinks';
 import { TestSetSelection } from './testScreens/TestSetSelection';
 import { VisualRegression } from './testScreens/VisualRegression';
 import { useEffect, useState } from 'react';
@@ -19,6 +20,10 @@ export default function RouteSelector() {
 
   if (path === '/test-set-selection') {
     return <TestSetSelection />;
+  }
+
+  if (path === '/test-links') {
+    return <TestLinks />;
   }
 
   if (path === '/visual-regression') {

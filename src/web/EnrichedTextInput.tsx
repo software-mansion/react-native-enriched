@@ -8,10 +8,14 @@ import {
 import './EnrichedTextInput.css';
 import type {
   EnrichedTextInputInstance,
-  EnrichedTextInputWebProps,
+  EnrichedTextInputProps,
 } from '../types';
 import { adaptWebToNativeEvent } from './adaptWebToNativeEvent';
-import { tiptapPosToNativePos, nativePosToTiptapPos } from './positionMapping';
+import {
+  tiptapPosToNativePos,
+  nativePosToTiptapPos,
+  nativeLeafText,
+} from './positionMapping';
 import {
   useEditor,
   EditorContent,
@@ -25,6 +29,7 @@ import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import { useOnChangeState } from './useOnChangeState';
+import { useOnLinkDetected } from './useOnLinkDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
@@ -43,11 +48,18 @@ import { EnrichedCode } from './formats/EnrichedCode';
 import { EnrichedHeading } from './formats/EnrichedHeading';
 import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
+import { EnrichedImage } from './formats/EnrichedImage';
+import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
+import { EnrichedListItem } from './formats/EnrichedListItem';
+import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
+import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
+import { EnrichedCheckboxItem } from './formats/EnrichedCheckboxItem';
+import { EnrichedCheckboxList } from './formats/EnrichedCheckboxList';
 import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
-
+import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -71,8 +83,9 @@ export const EnrichedTextInput = ({
   onChangeText,
   onChangeHtml,
   onChangeState,
+  onLinkDetected,
   htmlStyle,
-}: EnrichedTextInputWebProps) => {
+}: EnrichedTextInputProps) => {
   const tiptapContent =
     defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
 
@@ -102,10 +115,18 @@ export const EnrichedTextInput = ({
         EnrichedUnderline,
         EnrichedStrike,
         EnrichedCode,
+        EnrichedLink,
+        EnrichedImage,
         EnrichedHeading,
         EnrichedBlockquote,
         EnrichedCodeBlock,
+        EnrichedListItem,
+        EnrichedCheckboxItem,
+        EnrichedUnorderedList,
+        EnrichedOrderedList,
+        EnrichedCheckboxList,
         StripMarksInCodeBlockPlugin,
+        StripMarksOnImagePlugin,
         stripBoldInStyledHeadingsPlugin,
         MergeAdjacentSameKindBlocksPlugin,
         StrictMarksPlugin,
@@ -132,11 +153,11 @@ export const EnrichedTextInput = ({
 
         const start = tiptapPosToNativePos(state.doc, from);
         const end = tiptapPosToNativePos(state.doc, to);
-        const text = state.doc.textBetween(from, to, '\n');
+        const text = nativeLeafText(state.doc, from, to);
         onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {
-        handleKeyPress: (_, event) => {
+        handleKeyDown: (_, event) => {
           onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
           return false;
         },
@@ -154,8 +175,8 @@ export const EnrichedTextInput = ({
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
-
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
+  useOnLinkDetected(editor, onLinkDetected);
 
   useImperativeHandle(
     ref,
@@ -187,19 +208,25 @@ export const EnrichedTextInput = ({
       toggleH6: () => runFocused(editor, (c) => c.toggleHeading({ level: 6 })),
       toggleCodeBlock: () => runFocused(editor, (c) => c.toggleCodeBlock()),
       toggleBlockQuote: () => runFocused(editor, (c) => c.toggleBlockquote()),
-      toggleOrderedList: () => {},
-      toggleUnorderedList: () => {},
-      toggleCheckboxList: () => {},
-      setLink: () => {},
-      removeLink: () => {},
-      setImage: () => {},
+      toggleOrderedList: () => runFocused(editor, (c) => c.toggleOrderedList()),
+      toggleUnorderedList: () =>
+        runFocused(editor, (c) => c.toggleUnorderedList()),
+      toggleCheckboxList: (checked: boolean) =>
+        runFocused(editor, (c) => c.toggleCheckboxList(checked)),
+      setLink: (start: number, end: number, text: string, url: string) =>
+        setLink(editor, start, end, text, url),
+      removeLink: (start: number, end: number) =>
+        removeLink(editor, start, end),
+      setImage: (src: string, width: number, height: number) =>
+        runFocused(editor, (c) => c.setImage({ src, width, height })),
       startMention: () => {},
       setMention: () => {},
       measure: () => {},
       measureInWindow: () => {},
       measureLayout: () => {},
       setNativeProps: () => {},
-    })
+    }),
+    [editor]
   );
 
   const editorStyle: CSSProperties = useMemo(

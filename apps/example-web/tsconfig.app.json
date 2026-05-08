@@ -5,7 +5,7 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "react-native-enriched": ["../../src/index.web.tsx"]
+      "react-native-enriched": ["../../src/index.tsx"]
     }
   },
   "include": ["src"]

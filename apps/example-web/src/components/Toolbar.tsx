@@ -4,10 +4,13 @@ import type {
   OnChangeStateEvent,
 } from 'react-native-enriched';
 import type { RefObject } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 interface ToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   state: OnChangeStateEvent | null;
+  onOpenLinkModal: () => void;
+  onOpenImageModal: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -50,8 +53,14 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ editorRef, state }: ToolbarProps) {
+export function Toolbar({
+  editorRef,
+  state,
+  onOpenLinkModal,
+  onOpenImageModal,
+}: ToolbarProps) {
   const s = state;
+  const dragScroll = useDragScroll();
 
   const toolbarItems = [
     {
@@ -148,6 +157,37 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
         editor?.toggleCodeBlock();
       },
     },
+    {
+      key: 'link',
+      label: '🔗',
+      onPress: onOpenLinkModal,
+    },
+    {
+      key: 'image',
+      label: '🏞️',
+      onPress: onOpenImageModal,
+    },
+    {
+      key: 'unorderedList',
+      label: '•',
+      onPress: (editor) => {
+        editor?.toggleUnorderedList();
+      },
+    },
+    {
+      key: 'orderedList',
+      label: '1.',
+      onPress: (editor) => {
+        editor?.toggleOrderedList();
+      },
+    },
+    {
+      key: 'checkboxList',
+      label: '☑',
+      onPress: (editor) => {
+        editor?.toggleCheckboxList(true);
+      },
+    },
   ] satisfies {
     key: keyof OnChangeStateEvent;
     label: string;
@@ -157,7 +197,7 @@ export function Toolbar({ editorRef, state }: ToolbarProps) {
 
   return (
     <div className="toolbar">
-      <div className="toolbar-controls">
+      <div className="toolbar-controls" {...dragScroll}>
         {toolbarItems.map((item) => (
           <ToolbarButton
             key={item.key}

@@ -1,10 +1,10 @@
 #pragma once
 #import "BaseStyleProtocol.h"
 #import "EnrichedConfig.h"
+#import "EnrichedInputTextView.h"
 #import "EnrichedViewHost.h"
 #import "InputAttributesManager.h"
 #import "InputHtmlParser.h"
-#import "InputTextView.h"
 #import "LinkData.h"
 #import "MediaAttachment.h"
 #import <React/RCTViewComponentView.h>
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface EnrichedTextInputView
     : RCTViewComponentView <EnrichedViewHost, MediaAttachmentDelegate> {
 @public
-  InputTextView *textView;
+  EnrichedInputTextView *textView;
 @public
   EnrichedConfig *config;
 @public

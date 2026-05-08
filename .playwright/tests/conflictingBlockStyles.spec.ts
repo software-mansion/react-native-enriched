@@ -26,7 +26,15 @@ async function waitForOpeningTagInSerializedHtml(
     .toBe(true);
 }
 
-type ToolbarKey = 'h1' | 'h2' | 'h3' | 'blockQuote' | 'codeBlock';
+type ToolbarKey =
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'blockQuote'
+  | 'codeBlock'
+  | 'unorderedList'
+  | 'orderedList'
+  | 'checkboxList';
 
 test.describe('conflicting block styles (toolbar replaces active block)', () => {
   test.beforeEach(async ({ page }) => {
@@ -104,6 +112,70 @@ test.describe('conflicting block styles (toolbar replaces active block)', () => 
       click: 'blockQuote',
       expectTag: 'blockquote',
       expectText: 'Heading',
+    },
+    {
+      name: 'h1 → unordered list',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Heading',
+    },
+    {
+      name: 'h1 → ordered list',
+      html: '<html><h1>Heading</h1></html>',
+      focusSelector: '.eti-editor h1',
+      click: 'orderedList',
+      expectTag: 'ol',
+      expectText: 'Heading',
+    },
+    {
+      name: 'blockquote → unordered list',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Quote',
+    },
+    {
+      name: 'codeblock → unordered list',
+      html: '<html><codeblock><p>Code</p></codeblock></html>',
+      focusSelector: '.eti-editor codeblock p',
+      click: 'unorderedList',
+      expectTag: 'ul',
+      expectText: 'Code',
+    },
+    {
+      name: 'unordered list → h2',
+      html: '<html><ul><li>Item</li></ul></html>',
+      focusSelector: '.eti-editor ul li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+    {
+      name: 'ordered list → h2',
+      html: '<html><ol><li>Item</li></ol></html>',
+      focusSelector: '.eti-editor ol li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+    {
+      name: 'checkbox list -> h2',
+      html: '<html><ul data-type="checkbox"><li>Item</li></ul></html>',
+      focusSelector: '.eti-editor ul[data-type="checkboxList"] li p',
+      click: 'h2',
+      expectTag: 'h2',
+      expectText: 'Item',
+    },
+    {
+      name: 'blockquote -> checkbox list',
+      html: '<html><blockquote><p>Quote</p></blockquote></html>',
+      focusSelector: '.eti-editor blockquote p',
+      click: 'checkboxList',
+      expectTag: 'ul data-type="checkbox"',
+      expectText: 'Quote',
     },
   ];
 
