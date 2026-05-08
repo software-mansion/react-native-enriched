@@ -12,6 +12,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Manual links (via `setLink` ref method)
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
+- Input theming via `placeholderTextColor`, `cursorColor` (CSS `caret-color`), and `selectionColor` (selection highlight). Behavior may differ slightly from native.
 
 ## Unsupported
 
@@ -20,7 +21,6 @@ Web support is still experimental. APIs and behavior can change in future releas
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
-- **Theming props**: `placeholderTextColor`, `cursorColor`, and `selectionColor` are not applied.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
 - **`EnrichedText`**: The read-only component is not exported on web.
