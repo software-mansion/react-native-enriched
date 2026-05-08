@@ -194,6 +194,8 @@ object EnrichedSpans {
               CHECKBOX_LIST,
               BLOCK_QUOTE,
               INLINE_CODE,
+              LINK,
+              MENTION,
             ),
         )
       }
