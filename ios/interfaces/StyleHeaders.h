@@ -95,6 +95,7 @@
                range:(NSRange)range
           withTyping:(BOOL)withTyping
       withDirtyRange:(BOOL)withDirtyRange;
+- (NSString *)getStyleState;
 @end
 
 @interface BlockQuoteStyle : StyleBase

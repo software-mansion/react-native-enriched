@@ -53,7 +53,7 @@
   if (pStyle == nil)
     return NO;
   return [TextListUtils textLists:pStyle.textLists
-                   containsPrefix:@"EnrichedCheckbox"];
+                   containsPrefix:[self getMarkerPrefix]];
 }
 
 - (void)toggleWithChecked:(BOOL)checked range:(NSRange)range {
@@ -102,8 +102,9 @@
       [self.host.textView.textStorage attribute:NSParagraphStyleAttributeName
                                         atIndex:location
                                  effectiveRange:NULL];
-  NSTextList *list = [TextListUtils firstTextListWithPrefix:@"EnrichedCheckbox"
-                                                    inArray:pStyle.textLists];
+  NSTextList *list =
+      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                     inArray:pStyle.textLists];
   BOOL isCurrentlyChecked =
       [list.markerFormat isEqualToString:@"EnrichedCheckbox1"];
 

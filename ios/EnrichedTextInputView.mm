@@ -1056,8 +1056,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // detect alignment change
-  NSString *currentAlignment =
-      [AlignmentUtils currentAlignmentStringForInput:self];
+  AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+  NSString *currentAlignment = [alignmentStyle getStyleState];
   if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
     updateNeeded = YES;
   }
@@ -1790,6 +1790,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           [textView.textStorage.string substringWithRange:selectedRange];
     }
 
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    NSString *currentAlignment = [alignmentStyle getStyleState];
+
     emitter->onContextMenuItemPress(
         {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
@@ -1815,7 +1818,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
              .link = GET_STYLE_STATE([LinkStyle getType]),
              .image = GET_STYLE_STATE([ImageStyle getType]),
              .mention = GET_STYLE_STATE([MentionStyle getType]),
-             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])}});
+             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+             .alignment = [currentAlignment UTF8String]}});
   }
 }
 

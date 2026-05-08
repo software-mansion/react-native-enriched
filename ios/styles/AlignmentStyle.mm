@@ -35,8 +35,9 @@
                     [(NSParagraphStyle *)value mutableCopy];
 
                 NSString *marker =
-                    [TextListUtils firstTextListWithPrefix:@"EnrichedAlignment"
-                                                   inArray:pStyle.textLists]
+                    [TextListUtils
+                        firstTextListWithPrefix:[self getMarkerPrefix]
+                                        inArray:pStyle.textLists]
                         .markerFormat;
                 NSTextAlignment alignment =
                     [AlignmentUtils markerToAlignment:marker];
@@ -71,20 +72,45 @@
   if (pStyle == nil)
     return NO;
   return [TextListUtils textLists:pStyle.textLists
-                   containsPrefix:@"EnrichedAlignment"];
+                   containsPrefix:[self getMarkerPrefix]];
 }
 
 - (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSParagraphStyle *savedPStyle = pair.styleValue;
   NSString *markerFormat =
-      [TextListUtils firstTextListWithPrefix:@"EnrichedAlignment"
+      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
                                      inArray:savedPStyle.textLists]
           .markerFormat;
   if (markerFormat == nil)
     return;
 
   [self add:range withValue:markerFormat withTyping:NO withDirtyRange:NO];
+}
+
+- (NSString *)getStyleState {
+  UITextView *textView = self.host.textView;
+  NSParagraphStyle *paraStyle = nil;
+
+  if (textView.textStorage.length > 0) {
+    NSUInteger location =
+        MIN(textView.selectedRange.location, textView.textStorage.length - 1);
+    paraStyle = [textView.textStorage attribute:NSParagraphStyleAttributeName
+                                        atIndex:location
+                                 effectiveRange:nil];
+  }
+
+  if (paraStyle == nil) {
+    paraStyle = textView.typingAttributes[NSParagraphStyleAttributeName];
+  }
+
+  NSString *marker =
+      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                     inArray:paraStyle.textLists]
+          .markerFormat;
+
+  NSTextAlignment currentAlignment = [AlignmentUtils markerToAlignment:marker];
+  return [AlignmentUtils alignmentToString:currentAlignment];
 }
 
 - (NSRange)expandRangeToContiguousList:(NSRange)range {
