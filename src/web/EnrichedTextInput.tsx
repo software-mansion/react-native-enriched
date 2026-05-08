@@ -36,7 +36,7 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
-import { toColor } from './styleConversion/toColor';
+import { enrichedInputThemingToCSSProperties } from './styleConversion/enrichedInputThemingToCSSProperties';
 import {
   htmlStyleToCSSVariables,
   mergeWithDefaultHtmlStyle,
@@ -243,22 +243,15 @@ export const EnrichedTextInput = ({
     [resolvedHtmlStyle]
   );
 
-  const themingStyle = useMemo((): CSSProperties => {
-    const extra: Record<string, string> = {};
-    const caret = toColor(cursorColor);
-    if (caret) {
-      extra.caretColor = caret;
-    }
-    const placeholderCss = toColor(placeholderTextColor);
-    if (placeholderCss) {
-      extra['--eti-placeholder-text-color'] = placeholderCss;
-    }
-    const selectionCss = toColor(selectionColor);
-    if (selectionCss) {
-      extra['--eti-selection-color'] = selectionCss;
-    }
-    return extra as CSSProperties;
-  }, [cursorColor, placeholderTextColor, selectionColor]);
+  const themingStyle = useMemo(
+    (): CSSProperties =>
+      enrichedInputThemingToCSSProperties({
+        cursorColor,
+        placeholderTextColor,
+        selectionColor,
+      }),
+    [cursorColor, placeholderTextColor, selectionColor]
+  );
 
   const finalStyle = useMemo(
     () => ({ ...editorStyle, ...cssVars, ...themingStyle }),
