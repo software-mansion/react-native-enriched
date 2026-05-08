@@ -13,6 +13,4 @@
 
 + (NSTextAlignment)markerToAlignment:(NSString *)marker;
 
-+ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input;
-
 @end

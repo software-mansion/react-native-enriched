@@ -66,25 +66,4 @@
   return @"EnrichedAlignmentNatural";
 }
 
-+ (NSString *)currentAlignmentStringForInput:(EnrichedTextInputView *)input {
-  UITextView *textView = input->textView;
-  NSParagraphStyle *paraStyle = nil;
-
-  if (textView.textStorage.length > 0) {
-    NSUInteger location =
-        MIN(textView.selectedRange.location, textView.textStorage.length - 1);
-    paraStyle = [textView.textStorage attribute:NSParagraphStyleAttributeName
-                                        atIndex:location
-                                 effectiveRange:nil];
-  }
-
-  if (paraStyle == nil) {
-    paraStyle = textView.typingAttributes[NSParagraphStyleAttributeName];
-  }
-
-  NSTextAlignment alignment =
-      paraStyle ? paraStyle.alignment : NSTextAlignmentNatural;
-  return [AlignmentUtils alignmentToString:alignment];
-}
-
 @end
