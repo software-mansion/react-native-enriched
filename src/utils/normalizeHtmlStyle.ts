@@ -6,34 +6,13 @@ import type {
   MentionStyleProperties,
 } from '../types';
 import type { EnrichedTextHtmlStyleInternal } from '../spec/EnrichedTextNativeComponent';
-
-const MENTION_DEFAULT_KEY = '_default';
 import {
   DEFAULT_HTML_STYLE,
   DEFAULT_ENRICHED_TEXT_STYLE,
 } from './defaultHtmlStyle';
+import { expandMentionStylesForIndicators } from './expandMentionStylesForIndicators';
 
-const isMentionStyleRecord = (
-  mentionStyle: HtmlStyle['mention']
-): mentionStyle is Record<string, MentionStyleProperties> => {
-  if (
-    mentionStyle &&
-    typeof mentionStyle === 'object' &&
-    !Array.isArray(mentionStyle)
-  ) {
-    const keys = Object.keys(mentionStyle);
-
-    return (
-      keys.length > 0 &&
-      keys.every(
-        (key) =>
-          typeof (mentionStyle as Record<string, unknown>)[key] === 'object' &&
-          (mentionStyle as Record<string, unknown>)[key] !== null
-      )
-    );
-  }
-  return false;
-};
+const MENTION_DEFAULT_KEY = '_default';
 
 const parseOlStyles = (style: HtmlStyle) => {
   let markerFontWeight: string | undefined;
@@ -55,16 +34,10 @@ const convertToHtmlStyleInternal = (
   style: HtmlStyle,
   mentionIndicators: string[]
 ): HtmlStyleInternal => {
-  const mentionStyles: Record<string, MentionStyleProperties> = {};
-
-  mentionIndicators.forEach((indicator) => {
-    mentionStyles[indicator] = {
-      ...DEFAULT_HTML_STYLE.mention,
-      ...(isMentionStyleRecord(style.mention)
-        ? (style.mention[indicator] ?? style.mention.default ?? {})
-        : style.mention),
-    };
-  });
+  const mentionStyles = expandMentionStylesForIndicators(
+    style.mention,
+    mentionIndicators
+  );
 
   let markerFontWeight: string | undefined;
   if (style.ol?.markerFontWeight) {
