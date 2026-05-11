@@ -16,7 +16,7 @@
 }
 
 .eti-editor ::selection {
-  background-color: var(--eti-selection-color);
+  background-color: var(--eti-selection-color, Highlight);
 }
 
 .eti-editor code {
