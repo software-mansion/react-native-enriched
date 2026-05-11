@@ -12,7 +12,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Manual links (via `setLink` ref method)
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
-- Input theming via `placeholderTextColor`, `cursorColor` (CSS `caret-color`), and `selectionColor` (selection highlight). Behavior may differ slightly from native.
+- Input theming via `placeholderTextColor`, `cursorColor` and `selectionColor` props
 
 ## Unsupported
 
