@@ -22,6 +22,14 @@
   return YES;
 }
 
+- (BOOL)needsZWS {
+  return YES;
+}
+
+- (BOOL)appliesStylingToTyping {
+  return YES;
+}
+
 - (void)applyStyling:(NSRange)range {
   [self.host.textView.textStorage
       enumerateAttribute:NSFontAttributeName
@@ -40,6 +48,21 @@
                                                        value:newFont
                                                        range:subRange];
               }];
+}
+
+- (void)applyStylingToTypingAttrs:(NSMutableDictionary *)attributes {
+  UIFont *currentFont = attributes[NSFontAttributeName];
+
+  if (currentFont == nil) {
+    currentFont = [self.host.config primaryFont];
+  }
+
+  UIFont *newFont = [currentFont setSize:[self getHeadingFontSize]];
+  if ([self isHeadingBold]) {
+    newFont = [newFont setBold];
+  }
+
+  attributes[NSFontAttributeName] = newFont;
 }
 
 // used to make sure headings dont persist after a newline is placed
