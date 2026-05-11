@@ -12,13 +12,15 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Manual links (via `setLink` ref method)
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
+- Submit props: `submitBehavior` and `onSubmitEditing`. `returnKeyType` is only a hint, it maps to [enterkeyhint](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) (`done`, `go`, `next`, `previous`, `search`, `send`, `default`/`enter`) so not all values of `ReturnKeyTypeOptions` are supported, the behavior of this prop is heavily dependent on the browser's implementation of `enterkeyhint`.
+
 
 ## Unsupported
 
+- **`returnKeyLabel`**: ignored on web, it's not possible to set it inside a browser.
 - **Mentions**: `startMention` and `setMention` are no-ops. Props `mentionIndicators`, `onMentionDetected`, `onStartMention`, `onChangeMention`, and `onEndMention` are ignored. `onChangeState.mention` is always inactive.
 - **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
-- **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
 - **Theming props**: `placeholderTextColor`, `cursorColor`, and `selectionColor` are not applied.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
