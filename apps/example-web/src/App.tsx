@@ -10,6 +10,7 @@ import {
   type BlurEvent,
   type EnrichedInputStyle,
   type OnLinkDetected,
+  type OnSubmitEditing,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -122,6 +123,10 @@ function App() {
     setEditorState(e.nativeEvent);
   };
 
+  const handleSubmitEditing = (e: NativeSyntheticEvent<OnSubmitEditing>) => {
+    console.log('[EnrichedTextInput] onSubmitEditing event', e.nativeEvent);
+  };
+
   const handleOnLinkDetected = (e: OnLinkDetected) => {
     console.log('[EnrichedTextInput] onLinkDetected event', e);
     setCurrentLink(e);
@@ -146,6 +151,7 @@ function App() {
         onChangeSelection={handleChangeSelection}
         onChangeHtml={handleOnChangeHtml}
         onChangeState={handleChangeState}
+        onSubmitEditing={handleSubmitEditing}
         onLinkDetected={handleOnLinkDetected}
         htmlStyle={WEB_DEFAULT_HTML_STYLE}
       />

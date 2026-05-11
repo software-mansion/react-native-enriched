@@ -2,6 +2,7 @@ import App from './App';
 import { TestLinks } from './testScreens/TestLinks';
 import { TestSetSelection } from './testScreens/TestSetSelection';
 import { VisualRegression } from './testScreens/VisualRegression';
+import { TestSubmitProps } from './testScreens/TestSubmitProps';
 import { useEffect, useState } from 'react';
 
 export default function RouteSelector() {
@@ -28,6 +29,10 @@ export default function RouteSelector() {
 
   if (path === '/visual-regression') {
     return <VisualRegression />;
+  }
+
+  if (path === '/test-submit-props') {
+    return <TestSubmitProps />;
   }
 
   return <App />;
