@@ -1,5 +1,5 @@
 const FULL_URL_REGEX =
-  /https?:\/\/www\.[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/;
+  /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/;
 const WWW_REGEX =
   /www\.[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/;
 const BARE_REGEX =
@@ -61,5 +61,9 @@ export function matchAutolink(
 }
 
 export function prepareUrl(word: string): string {
-  return /^https?:\/\//i.test(word) ? word : `https://${word}`;
+  if (/^https?:\/\//i.test(word)) return word;
+  if (/^https?:/i.test(word)) {
+    return `https://${word.replace(/^https?:/i, '')}`;
+  }
+  return `https://${word}`;
 }

@@ -17,6 +17,23 @@ describe('findAutolinkRangesInWord', () => {
     expect(prepareUrl(ranges[0]!.text)).toBe('https://www.example.com');
   });
 
+  it('matches full https URL without www as a single range', () => {
+    const w = 'https://example.com';
+    const ranges = findAutolinkRangesInWord(w, undefined);
+    expect(ranges).toHaveLength(1);
+    expect(ranges[0]).toEqual({
+      start: 0,
+      endExclusive: w.length,
+      text: 'https://example.com',
+    });
+    expect(prepareUrl(ranges[0]!.text)).toBe('https://example.com');
+  });
+
+  it('normalizes scheme missing slashes for href', () => {
+    expect(prepareUrl('https:example.com')).toBe('https://example.com');
+    expect(prepareUrl('http:example.com')).toBe('https://example.com');
+  });
+
   it('matches whole bare domain token', () => {
     const w = 'example.com';
     const ranges = findAutolinkRangesInWord(w, undefined);

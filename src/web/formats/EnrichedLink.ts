@@ -8,8 +8,21 @@ import { isLinkBlocked } from './formatRules';
 export const EnrichedLink = Link.extend({
   excludes: 'link code',
 
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      auto: {
+        default: false,
+        parseHTML: (el) => el.getAttribute('data-auto') === 'true',
+        // Internal only — never emit to HTML/DOM (users should not see data-auto).
+        renderHTML: () => ({}),
+      },
+    };
+  },
+
   renderHTML({ HTMLAttributes }) {
-    return ['a', { href: HTMLAttributes.href }, 0];
+    const attrs: Record<string, string> = { href: HTMLAttributes.href };
+    return ['a', attrs, 0];
   },
 
   addOptions() {
