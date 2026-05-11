@@ -142,7 +142,7 @@
                                host:host
                       withSelection:NO];
     offset += 1;
-    if ([index integerValue] <= preAddSelection.location) {
+    if ([index integerValue] < preAddSelection.location) {
       postAddLocationOffset += 1;
     }
     if ([index integerValue] >= preAddSelection.location &&
@@ -164,11 +164,6 @@
                 additionalAttributes:metaAttrs
                                 host:host
                        withSelection:NO];
-      // If the cursor was at the end of the input, it's now 'trapped' before
-      // the ZWS. We must bump it forward by 1.
-      if (preAddSelection.location == lastRange.location) {
-        postAddLocationOffset += 1;
-      }
     }
   }
 
