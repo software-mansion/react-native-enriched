@@ -20,6 +20,10 @@
   return YES;
 }
 
+- (BOOL)appliesStylingToTyping {
+  return YES;
+}
+
 - (void)toggle:(NSRange)range {
   // no-op for alignments
 }
@@ -90,19 +94,8 @@
 
 - (NSString *)getStyleState {
   UITextView *textView = self.host.textView;
-  NSParagraphStyle *paraStyle = nil;
-
-  if (textView.textStorage.length > 0) {
-    NSUInteger location =
-        MIN(textView.selectedRange.location, textView.textStorage.length - 1);
-    paraStyle = [textView.textStorage attribute:NSParagraphStyleAttributeName
-                                        atIndex:location
-                                 effectiveRange:nil];
-  }
-
-  if (paraStyle == nil) {
-    paraStyle = textView.typingAttributes[NSParagraphStyleAttributeName];
-  }
+  NSParagraphStyle *paraStyle =
+      textView.typingAttributes[NSParagraphStyleAttributeName];
 
   NSString *marker =
       [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
@@ -111,6 +104,20 @@
 
   NSTextAlignment currentAlignment = [AlignmentUtils markerToAlignment:marker];
   return [AlignmentUtils alignmentToString:currentAlignment];
+}
+
+- (void)applyStylingToTypingAttrs:(NSMutableDictionary *)attributes {
+  NSMutableParagraphStyle *pStyle =
+      [attributes[NSParagraphStyleAttributeName] mutableCopy];
+  if (pStyle == nil)
+    return;
+  NSString *marker =
+      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                     inArray:pStyle.textLists]
+          .markerFormat;
+  NSTextAlignment alignment = [AlignmentUtils markerToAlignment:marker];
+  pStyle.alignment = alignment;
+  attributes[NSParagraphStyleAttributeName] = pStyle;
 }
 
 - (NSRange)expandRangeToContiguousList:(NSRange)range {

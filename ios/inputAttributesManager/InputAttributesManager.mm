@@ -180,22 +180,14 @@
     if ([_customAttributesKeys containsObject:key]) {
       if ([key isEqualToString:NSParagraphStyleAttributeName]) {
         // NSParagraphStyle for paragraph styles -> only keep the textLists
-        // and alignment properties
+        // property
         NSParagraphStyle *pStyle =
             (NSParagraphStyle *)_input->textView
                 .typingAttributes[NSParagraphStyleAttributeName];
-        if (pStyle != nullptr) {
+        if (pStyle != nullptr && pStyle.textLists.count >= 1) {
           NSMutableParagraphStyle *newPStyle =
               [[NSMutableParagraphStyle alloc] init];
-
-          // Preserve alignment
-          newPStyle.alignment = pStyle.alignment;
-
-          // Preserve text lists if they exist
-          if (pStyle.textLists.count >= 1) {
-            newPStyle.textLists = pStyle.textLists;
-          }
-
+          newPStyle.textLists = pStyle.textLists;
           newAttrs[NSParagraphStyleAttributeName] = newPStyle;
         }
       } else {
@@ -227,6 +219,14 @@
       continue;
 
     newAttrs[entry.key] = entry.value;
+  }
+
+  // Apply active styles to typing attributes so the cursor correctly reflects
+  // the current formatting state (e.g. heading size).
+  for (StyleBase *style in _input->stylesDict.allValues) {
+    if ([style appliesStylingToTyping] && [style detect:selectedRange]) {
+      [style applyStylingToTypingAttrs:newAttrs];
+    }
   }
 
   textView.typingAttributes = newAttrs;
