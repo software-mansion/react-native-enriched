@@ -25,11 +25,9 @@
 #import <react/utils/ManagedObjectWrapper.h>
 
 #define GET_STYLE_STATE(TYPE_ENUM)                                             \
-  {                                                                            \
-    .isActive = [self isStyleActive:TYPE_ENUM],                                \
-    .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],         \
-    .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]    \
-  }
+  {.isActive = [self isStyleActive:TYPE_ENUM],                                 \
+   .isBlocking = [self isStyle:TYPE_ENUM activeInMap:blockingStyles],          \
+   .isConflicting = [self isStyle:TYPE_ENUM activeInMap:conflictingStyles]}
 
 using namespace facebook::react;
 
@@ -846,6 +844,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (_placeholderColor != nullptr) {
     newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
   }
+
+  // Get the current active alignment in input
+  NSParagraphStyle *currentTypingPara =
+      textView.typingAttributes[NSParagraphStyleAttributeName];
+  NSTextAlignment activeAlignment =
+      currentTypingPara ? currentTypingPara.alignment : NSTextAlignmentNatural;
+  NSMutableParagraphStyle *placeholderPStyle =
+      [newAttrs[NSParagraphStyleAttributeName] mutableCopy];
+  if (!placeholderPStyle) {
+    placeholderPStyle = [[NSMutableParagraphStyle alloc] init];
+  }
+  placeholderPStyle.alignment = activeAlignment;
+  newAttrs[NSParagraphStyleAttributeName] = placeholderPStyle;
+
   NSAttributedString *newAttrStr =
       [[NSAttributedString alloc] initWithString:_placeholderLabel.text
                                       attributes:newAttrs];
@@ -1224,7 +1236,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                  range:textView.selectedRange
             withTyping:YES
         withDirtyRange:YES];
+
     [self anyTextMayHaveBeenModified];
+    if (!_placeholderLabel.isHidden) {
+      [self refreshPlaceholderLabelStyles];
+    }
   }
 }
 
