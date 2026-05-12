@@ -37,7 +37,7 @@ export const useOnLinkDetected = (
       const { from: selFrom, to: selTo } = state.selection;
 
       if (!range) {
-        const last = ref.current.lastEmitted;
+        const last = ref.current?.lastEmitted;
         if (!last || last.url === '') return;
         emitLinkDetected(ref, {
           text: '',
