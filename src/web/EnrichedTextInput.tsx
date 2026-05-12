@@ -36,6 +36,7 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
+import { buildMentionRulesCSS } from './styleConversion/buildMentionRulesCSS';
 import {
   htmlStyleToCSSVariables,
   mergeWithDefaultHtmlStyle,
@@ -299,17 +300,25 @@ export const EnrichedTextInput = ({
     [resolvedHtmlStyle]
   );
 
+  const mentionRulesCSS = useMemo(
+    () => buildMentionRulesCSS(resolvedHtmlStyle),
+    [resolvedHtmlStyle]
+  );
+
   const finalStyle = useMemo(
     () => ({ ...editorStyle, ...cssVars }),
     [editorStyle, cssVars]
   );
 
   return (
-    <EditorContent
-      editor={editor}
-      className="eti-editor"
-      style={finalStyle}
-      data-placeholder={placeholder}
-    />
+    <>
+      {mentionRulesCSS ? <style>{mentionRulesCSS}</style> : null}
+      <EditorContent
+        editor={editor}
+        className="eti-editor"
+        style={finalStyle}
+        data-placeholder={placeholder}
+      />
+    </>
   );
 };
