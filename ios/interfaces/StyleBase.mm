@@ -236,7 +236,8 @@
 - (void)applyStyling:(NSRange)range {
 }
 
-// This method gets overridden when the style needs to apply certain typing attributes
+// This method gets overridden when the style needs to apply certain typing
+// attributes
 - (void)applyStylingToTypingAttrs:(NSMutableDictionary *)attributes {
 }
 
