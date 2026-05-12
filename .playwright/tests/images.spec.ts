@@ -169,6 +169,9 @@ test.describe('images', () => {
     const editor = editorLocator(page);
     for (const key of toolbarOrder) {
       await editor.click();
+      await expect(
+        editor.locator('[contenteditable="true"]').first()
+      ).toBeFocused();
       await editor.press('Meta+A');
       await toolbarButton(page, key).click();
       await expect

@@ -62,4 +62,16 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
     marginLeft: 24,
     boxColor: 'rgb(0, 26, 114)',
   },
+  mention: {
+    '@': {
+      backgroundColor: 'lightgreen',
+      color: 'green',
+      textDecorationLine: 'none',
+    },
+    '#': {
+      backgroundColor: 'lightblue',
+      color: 'blue',
+      textDecorationLine: 'underline',
+    },
+  },
 };

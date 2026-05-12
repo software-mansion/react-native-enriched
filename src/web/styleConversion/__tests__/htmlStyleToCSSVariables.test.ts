@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { HtmlStyle } from '../../../types';
+import type { HtmlStyle, MentionStyleProperties } from '../../../types';
 import { DEFAULT_HTML_STYLE } from '../../../utils/defaultHtmlStyle';
 import {
   htmlStyleToCSSVariables,
@@ -8,13 +8,66 @@ import {
 
 type CodeStyle = HtmlStyle['code'];
 
+const DEFAULT_MENTION_CSS_VARS: Record<string, string> = {
+  '--eti-mention-default-color': String(DEFAULT_HTML_STYLE.mention.color),
+  '--eti-mention-default-background-color': String(
+    DEFAULT_HTML_STYLE.mention.backgroundColor
+  ),
+  '--eti-mention-default-text-decoration-line': String(
+    DEFAULT_HTML_STYLE.mention.textDecorationLine
+  ),
+};
+
+const defaultMentionOnlyResolved = {
+  default: { ...DEFAULT_HTML_STYLE.mention },
+};
+
 describe('mergeWithDefaultHtmlStyle', () => {
-  const cases: Array<[HtmlStyle | undefined, Partial<Required<HtmlStyle>>]> = [
-    [undefined, DEFAULT_HTML_STYLE],
-    [{}, DEFAULT_HTML_STYLE],
+  it('undefined → default mention key', () => {
+    expect(mergeWithDefaultHtmlStyle(undefined)).toMatchObject({
+      ...DEFAULT_HTML_STYLE,
+      mention: defaultMentionOnlyResolved,
+    });
+  });
+
+  it('{} → default mention key', () => {
+    expect(mergeWithDefaultHtmlStyle({})).toMatchObject({
+      ...DEFAULT_HTML_STYLE,
+      mention: defaultMentionOnlyResolved,
+    });
+  });
+
+  it('flat mention → default key only', () => {
+    expect(
+      mergeWithDefaultHtmlStyle({ mention: { color: 'purple' } }).mention
+    ).toEqual({
+      default: { ...DEFAULT_HTML_STYLE.mention, color: 'purple' },
+    });
+  });
+
+  it('mention: default key + @', () => {
+    const m = mergeWithDefaultHtmlStyle({
+      mention: {
+        'default': { backgroundColor: 'white' },
+        '@': { color: 'red' },
+      },
+    }).mention as Record<string, MentionStyleProperties>;
+    expect(m.default).toMatchObject({
+      ...DEFAULT_HTML_STYLE.mention,
+      backgroundColor: 'white',
+    });
+    expect(m['@']).toMatchObject({
+      ...DEFAULT_HTML_STYLE.mention,
+      color: 'red',
+      backgroundColor: DEFAULT_HTML_STYLE.mention.backgroundColor,
+    });
+  });
+
+  const cases: Array<[HtmlStyle, Partial<Required<HtmlStyle>>]> = [
     [
       { code: { color: 'purple' } },
       {
+        mention: defaultMentionOnlyResolved,
         code: {
           color: 'purple',
           backgroundColor: DEFAULT_HTML_STYLE.code.backgroundColor,
@@ -23,15 +76,22 @@ describe('mergeWithDefaultHtmlStyle', () => {
     ],
     [
       { code: { color: 'purple', backgroundColor: 'white' } },
-      { code: { color: 'purple', backgroundColor: 'white' } },
+      {
+        mention: defaultMentionOnlyResolved,
+        code: { color: 'purple', backgroundColor: 'white' },
+      },
     ],
     [
       { h1: { fontSize: 48 } },
-      { h1: { fontSize: 48, bold: DEFAULT_HTML_STYLE.h1.bold } },
+      {
+        mention: defaultMentionOnlyResolved,
+        h1: { fontSize: 48, bold: DEFAULT_HTML_STYLE.h1.bold },
+      },
     ],
     [
       { ul: { bulletColor: 'red' } },
       {
+        mention: defaultMentionOnlyResolved,
         ul: {
           bulletColor: 'red',
           bulletSize: DEFAULT_HTML_STYLE.ul.bulletSize,
@@ -48,19 +108,23 @@ describe('mergeWithDefaultHtmlStyle', () => {
 });
 
 describe('htmlStyleToCSSVariables', () => {
-  it('returns empty object for undefined input', () => {
-    expect(htmlStyleToCSSVariables(undefined)).toEqual({});
+  it('undefined → default mention vars only', () => {
+    expect(htmlStyleToCSSVariables(undefined)).toEqual(
+      DEFAULT_MENTION_CSS_VARS as CSSProperties
+    );
   });
 
-  it('returns empty object for empty style', () => {
-    expect(htmlStyleToCSSVariables({})).toEqual({});
+  it('empty style → default mention vars only', () => {
+    expect(htmlStyleToCSSVariables({})).toEqual(
+      DEFAULT_MENTION_CSS_VARS as CSSProperties
+    );
   });
 
   it('integer color → rgba string', () => {
     const input = { code: { color: 0xff0000ff as unknown as string } };
-    expect(htmlStyleToCSSVariables(input)).toEqual({
+    expect(htmlStyleToCSSVariables(input)).toMatchObject({
       '--eti-code-color': 'rgba(255, 0, 0, 1)',
-    } as CSSProperties);
+    });
   });
 
   describe('code styles', () => {
@@ -77,10 +141,10 @@ describe('htmlStyleToCSSVariables', () => {
       ],
       [{}, {}],
       [undefined, {}],
-    ] as Array<[CodeStyle, CSSProperties]>;
+    ] as Array<[CodeStyle, Record<string, string>]>;
 
     it.each(cases)('%j → %j', (code, expected) => {
-      expect(htmlStyleToCSSVariables({ code })).toEqual(expected);
+      expect(htmlStyleToCSSVariables({ code })).toMatchObject(expected);
     });
   });
 
@@ -105,7 +169,7 @@ describe('htmlStyleToCSSVariables', () => {
     ] as Array<[HtmlStyle, CSSProperties]>;
 
     it.each(cases)('%j → %j', (input, expected) => {
-      expect(htmlStyleToCSSVariables(input)).toEqual(expected);
+      expect(htmlStyleToCSSVariables(input)).toMatchObject(expected);
     });
   });
 
@@ -119,12 +183,12 @@ describe('htmlStyleToCSSVariables', () => {
           color: '#444',
         },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-blockquote-border-color': '#ccc',
       '--eti-blockquote-border-width': '3px',
       '--eti-blockquote-gap-width': '12px',
       '--eti-blockquote-color': '#444',
-    } as CSSProperties);
+    });
   });
 
   it('maps codeblock styles to CSS variables', () => {
@@ -136,11 +200,11 @@ describe('htmlStyleToCSSVariables', () => {
           borderRadius: 8,
         },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-codeblock-bg-color': '#1e1e1e',
       '--eti-codeblock-color': '#d4d4d4',
       '--eti-codeblock-border-radius': '8px',
-    } as CSSProperties);
+    });
   });
 
   it('maps anchor link styles to CSS variables', () => {
@@ -148,10 +212,10 @@ describe('htmlStyleToCSSVariables', () => {
       htmlStyleToCSSVariables({
         a: { color: 'blue', textDecorationLine: 'underline' },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-link-color': 'blue',
       '--eti-link-text-decoration-line': 'underline',
-    } as CSSProperties);
+    });
   });
 
   it('maps ul styles to CSS variables', () => {
@@ -164,12 +228,12 @@ describe('htmlStyleToCSSVariables', () => {
           gapWidth: 4,
         },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-ul-bullet-color': '#ff0000',
       '--eti-ul-bullet-size': '12px',
       '--eti-ul-margin-left': '8px',
       '--eti-ul-gap-width': '4px',
-    } as CSSProperties);
+    });
   });
 
   it('maps ol styles to CSS variables', () => {
@@ -182,12 +246,12 @@ describe('htmlStyleToCSSVariables', () => {
           markerColor: '#00ff00',
         },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-ol-gap-width': '6px',
       '--eti-ol-margin-left': '10px',
       '--eti-ol-marker-font-weight': '700',
       '--eti-ol-marker-color': '#00ff00',
-    } as CSSProperties);
+    });
   });
 
   it('maps ulCheckbox styles to CSS variables', () => {
@@ -200,11 +264,41 @@ describe('htmlStyleToCSSVariables', () => {
           boxColor: '#336699',
         },
       })
-    ).toEqual({
+    ).toMatchObject({
       '--eti-checkbox-box-size': '20px',
       '--eti-checkbox-gap-width': '8px',
       '--eti-checkbox-margin-left': '12px',
       '--eti-checkbox-box-color': '#336699',
-    } as CSSProperties);
+    });
+  });
+});
+
+describe('mention CSS variables', () => {
+  it('flat mention → default vars', () => {
+    const vars = htmlStyleToCSSVariables({
+      mention: { color: '#f00' },
+    }) as Record<string, string>;
+    expect(vars['--eti-mention-default-color']).toBe('#f00');
+  });
+
+  it('mention @ + default vars', () => {
+    const merged = mergeWithDefaultHtmlStyle({
+      mention: { '@': { color: '#ff0000' } },
+    });
+    const vars = htmlStyleToCSSVariables(merged) as Record<string, string>;
+    expect(vars['--eti-mention-u0040-color']).toBe('#ff0000');
+    expect(vars['--eti-mention-default-color']).toBe(
+      DEFAULT_HTML_STYLE.mention.color
+    );
+  });
+
+  it('mention {} → default vars', () => {
+    const vars = htmlStyleToCSSVariables({ mention: {} }) as Record<
+      string,
+      string
+    >;
+    expect(vars['--eti-mention-default-color']).toBe(
+      DEFAULT_HTML_STYLE.mention.color
+    );
   });
 });

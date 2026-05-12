@@ -163,6 +163,13 @@ export function Toolbar({
       onPress: onOpenLinkModal,
     },
     {
+      key: 'mention',
+      label: '@',
+      onPress: (editor) => {
+        editor?.startMention('@');
+      },
+    },
+    {
       key: 'image',
       label: '🏞️',
       onPress: onOpenImageModal,

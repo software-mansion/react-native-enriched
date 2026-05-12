@@ -1,19 +1,37 @@
 import type { CSSProperties } from 'react';
 import type { ColorValue } from 'react-native';
-import type { HtmlStyle } from '../../types';
+import type { HtmlStyle, MentionStyleProperties } from '../../types';
 import { DEFAULT_HTML_STYLE } from '../../utils/defaultHtmlStyle';
+import { expandMentionStylesForIndicators } from '../../utils/expandMentionStylesForIndicators';
 import { HEADING_TAGS } from '../formats/EnrichedHeading';
+import {
+  indicatorToMentionCssKey,
+  MENTION_STYLE_DEFAULT_KEY,
+} from './mentionIndicatorCssKey';
 import { toColor } from './toColor';
+import { isMentionStyleRecord } from '../../utils/isMentionStyleRecord';
 
 export function mergeWithDefaultHtmlStyle(
   htmlStyle?: HtmlStyle
 ): Required<HtmlStyle> {
-  const merged: Record<string, any> = { ...DEFAULT_HTML_STYLE };
+  const style = htmlStyle ?? {};
 
-  for (const key in htmlStyle) {
+  const mentionMap = expandMentionStylesForIndicatorsIncludeDefault(style);
+  const converted: HtmlStyle = {
+    ...style,
+    mention: mentionMap,
+  };
+
+  const merged: Record<string, unknown> = { ...DEFAULT_HTML_STYLE };
+
+  for (const key in converted) {
+    if (key === 'mention') {
+      merged[key] = { ...(converted.mention as object) };
+      continue;
+    }
     merged[key] = {
       ...DEFAULT_HTML_STYLE[key as keyof HtmlStyle],
-      ...(htmlStyle[key as keyof HtmlStyle] as object),
+      ...(converted[key as keyof HtmlStyle] as object),
     };
   }
 
@@ -44,6 +62,15 @@ const ETI_CSS_VARS = {
   checkboxGapWidth: '--eti-checkbox-gap-width',
   checkboxMarginLeft: '--eti-checkbox-margin-left',
   checkboxBoxColor: '--eti-checkbox-box-color',
+} as const;
+
+export const ETI_MENTION_CSS_VARS = {
+  color: (indicator: string) =>
+    `--eti-mention-${indicatorToMentionCssKey(indicator)}-color`,
+  backgroundColor: (indicator: string) =>
+    `--eti-mention-${indicatorToMentionCssKey(indicator)}-background-color`,
+  textDecorationLine: (indicator: string) =>
+    `--eti-mention-${indicatorToMentionCssKey(indicator)}-text-decoration-line`,
 } as const;
 
 function setColorVar(
@@ -145,6 +172,42 @@ function applyCheckboxListVars(
   setColorVar(vars, ETI_CSS_VARS.checkboxBoxColor, ulCheckbox?.boxColor);
 }
 
+function applyMentionVars(
+  vars: Record<string, string>,
+  mention: Record<string, MentionStyleProperties>
+): void {
+  for (const [indicator, mentionStyle] of Object.entries(mention)) {
+    setColorVar(
+      vars,
+      ETI_MENTION_CSS_VARS.color(indicator),
+      mentionStyle.color
+    );
+    setColorVar(
+      vars,
+      ETI_MENTION_CSS_VARS.backgroundColor(indicator),
+      mentionStyle.backgroundColor
+    );
+    if (mentionStyle.textDecorationLine != null) {
+      vars[ETI_MENTION_CSS_VARS.textDecorationLine(indicator)] =
+        mentionStyle.textDecorationLine;
+    }
+  }
+}
+
+function expandMentionStylesForIndicatorsIncludeDefault(htmlStyle?: HtmlStyle) {
+  const mentionIndicators = isMentionStyleRecord(htmlStyle?.mention)
+    ? Object.keys(htmlStyle?.mention)
+    : [];
+
+  if (!mentionIndicators.includes(MENTION_STYLE_DEFAULT_KEY))
+    mentionIndicators.push(MENTION_STYLE_DEFAULT_KEY);
+
+  return expandMentionStylesForIndicators(
+    htmlStyle?.mention,
+    mentionIndicators
+  );
+}
+
 export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   const vars: Record<string, string> = {};
   applyCodeVars(vars, htmlStyle?.code);
@@ -155,5 +218,9 @@ export function htmlStyleToCSSVariables(htmlStyle?: HtmlStyle): CSSProperties {
   applyUnorderedListVars(vars, htmlStyle?.ul);
   applyOrderedListVars(vars, htmlStyle?.ol);
   applyCheckboxListVars(vars, htmlStyle?.ulCheckbox);
+  applyMentionVars(
+    vars,
+    expandMentionStylesForIndicatorsIncludeDefault(htmlStyle)
+  );
   return vars as CSSProperties;
 }
