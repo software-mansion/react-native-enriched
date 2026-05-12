@@ -192,6 +192,15 @@
     newAttrs[entry.key] = entry.value;
   }
 
+  // Apply active styles to typing attributes only for styles that require it so
+  // the cursor correctly reflects the current formatting state (e.g. heading
+  // size).
+  for (StyleBase *style in _input->stylesDict.allValues) {
+    if ([style appliesStylingToTyping] && [style detect:selectedRange]) {
+      [style applyStylingToTypingAttrs:newAttrs];
+    }
+  }
+
   textView.typingAttributes = newAttrs;
 }
 
