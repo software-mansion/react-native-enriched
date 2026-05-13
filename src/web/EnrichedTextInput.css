@@ -8,11 +8,15 @@
 }
 
 .eti-editor p.is-editor-empty:first-child::before {
-  color: #adb5bd;
+  color: var(--eti-placeholder-text-color, #adb5bd);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+.eti-editor ::selection {
+  background-color: var(--eti-selection-color, Highlight);
 }
 
 .eti-editor code {

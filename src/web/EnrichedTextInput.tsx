@@ -37,6 +37,7 @@ import {
 } from './tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
+import { enrichedInputThemingToCSSProperties } from './styleConversion/enrichedInputThemingToCSSProperties';
 import { buildMentionRulesCSS } from './styleConversion/buildMentionRulesCSS';
 import {
   htmlStyleToCSSVariables,
@@ -85,6 +86,9 @@ export const EnrichedTextInput = ({
   autoFocus,
   editable = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.editable,
   placeholder = '',
+  placeholderTextColor,
+  cursorColor,
+  selectionColor,
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
   mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.mentionIndicators.slice(),
@@ -357,14 +361,24 @@ export const EnrichedTextInput = ({
     [resolvedHtmlStyle]
   );
 
+  const themingStyle = useMemo(
+    (): CSSProperties =>
+      enrichedInputThemingToCSSProperties({
+        cursorColor,
+        placeholderTextColor,
+        selectionColor,
+      }),
+    [cursorColor, placeholderTextColor, selectionColor]
+  );
+
   const mentionRulesCSS = useMemo(
     () => buildMentionRulesCSS(resolvedHtmlStyle),
     [resolvedHtmlStyle]
   );
 
   const finalStyle = useMemo(
-    () => ({ ...editorStyle, ...cssVars }),
-    [editorStyle, cssVars]
+    () => ({ ...editorStyle, ...cssVars, ...themingStyle }),
+    [editorStyle, cssVars, themingStyle]
   );
 
   return (
