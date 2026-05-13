@@ -1,5 +1,4 @@
 import { Extension } from '@tiptap/core';
-import { Slice } from '@tiptap/pm/model';
 import type { MarkType, Node, Schema } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state';
 import { Mapping } from '@tiptap/pm/transform';
@@ -7,7 +6,6 @@ import type { OnLinkDetected } from '../../../types';
 import { emitLinkDetected, type LinkEmitterRef } from '../../emitLinkDetected';
 import { tiptapPosToNativePos } from '../../positionMapping';
 import { findAutolinkRangesInWord, prepareUrl } from './autolinkRegex';
-import { stripAutolinkMarksOnPaste } from './stripAutolinkMarksOnPaste';
 
 interface Run {
   text: string;
@@ -172,14 +170,6 @@ export function createAutolinkPlugin(ref: LinkEmitterRef): Extension {
       return [
         new Plugin({
           key: new PluginKey('autolinkDetector'),
-          props: {
-            transformPasted: (slice) =>
-              new Slice(
-                stripAutolinkMarksOnPaste(slice.content),
-                slice.openStart,
-                slice.openEnd
-              ),
-          },
           appendTransaction: (transactions, _oldState, newState) => {
             const state = ref.current;
             if (!state || state.linkRegex === null) return null;

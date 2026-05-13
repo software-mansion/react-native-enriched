@@ -14,7 +14,7 @@ export const EnrichedLink = Link.extend({
       auto: {
         default: false,
         parseHTML: (el) => el.getAttribute('data-auto') === 'true',
-        // Internal only — never emit to HTML/DOM (users should not see data-auto).
+        // Internal only
         renderHTML: () => ({}),
       },
     };
