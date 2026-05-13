@@ -21,8 +21,7 @@ export const EnrichedLink = Link.extend({
   },
 
   renderHTML({ HTMLAttributes }) {
-    const attrs: Record<string, string> = { href: HTMLAttributes.href };
-    return ['a', attrs, 0];
+    return ['a', { href: HTMLAttributes.href }, 0];
   },
 
   addOptions() {

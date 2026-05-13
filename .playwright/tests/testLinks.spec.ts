@@ -30,8 +30,6 @@ const sel = {
   editorScreenshot: '[data-testid="test-links-editor"]',
   linkRegexMode: '[data-testid="test-links-link-regex-mode"]',
   linkRegexPattern: '[data-testid="test-links-link-regex-pattern"]',
-  linkRegexIgnoreCase: '[data-testid="test-links-link-regex-ignore-case"]',
-  linkRegexApply: '[data-testid="test-links-link-regex-apply"]',
 } as const;
 
 async function gotoTestLinks(page: Page): Promise<void> {
@@ -359,18 +357,17 @@ test.describe('test-links onLinkDetected', () => {
 });
 
 test.describe('test-links autolink', () => {
-  async function resetEditorAndApplyLinkRegex(
+  async function resetEditorAndSetLinkRegexMode(
     page: Page,
     mode: 'default' | 'disabled' | 'custom'
   ): Promise<void> {
     await gotoTestLinks(page);
     await page.locator(sel.linkRegexMode).selectOption(mode);
-    await page.click(sel.linkRegexApply);
     await setTestLinksEditorHtml(page, '<html><p></p></html>');
   }
 
   test('creates link while typing with default URL regex', async ({ page }) => {
-    await resetEditorAndApplyLinkRegex(page, 'default');
+    await resetEditorAndSetLinkRegexMode(page, 'default');
 
     const editor = page.locator(sel.editorInner);
     await editor.click();
@@ -386,8 +383,6 @@ test.describe('test-links autolink', () => {
     await gotoTestLinks(page);
     await page.locator(sel.linkRegexMode).selectOption('custom');
     await page.fill(sel.linkRegexPattern, String.raw`issue-\d+`);
-    await page.locator(sel.linkRegexIgnoreCase).uncheck();
-    await page.click(sel.linkRegexApply);
     await setTestLinksEditorHtml(page, '<html><p></p></html>');
 
     const editor = page.locator(sel.editorInner);
@@ -403,7 +398,7 @@ test.describe('test-links autolink', () => {
   test('creates link when pasting plain URL with default regex', async ({
     page,
   }) => {
-    await resetEditorAndApplyLinkRegex(page, 'default');
+    await resetEditorAndSetLinkRegexMode(page, 'default');
 
     await pastePlainTextIntoEditor(
       page.locator(sel.editorInner),
@@ -416,7 +411,7 @@ test.describe('test-links autolink', () => {
   });
 
   test('does not autolink when link regex is disabled', async ({ page }) => {
-    await resetEditorAndApplyLinkRegex(page, 'disabled');
+    await resetEditorAndSetLinkRegexMode(page, 'disabled');
 
     const editor = page.locator(sel.editorInner);
     await editor.click();
