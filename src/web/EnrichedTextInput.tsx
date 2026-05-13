@@ -213,8 +213,11 @@ export const EnrichedTextInput = ({
   }, [editor]);
 
   useEffect(() => {
-    const dom = editor?.view.dom;
-    if (!dom) {
+    if (!editor) return;
+    let dom: HTMLElement;
+    try {
+      dom = editor.view.dom;
+    } catch {
       return;
     }
     dom.setAttribute(
