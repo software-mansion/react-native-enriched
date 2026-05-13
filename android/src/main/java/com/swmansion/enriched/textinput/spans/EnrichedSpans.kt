@@ -225,7 +225,9 @@ object EnrichedSpans {
       }
 
       IMAGE -> {
-        StylesMergingConfig()
+        StylesMergingConfig(
+          blockingStyles = arrayOf(INLINE_CODE),
+        )
       }
 
       MENTION -> {

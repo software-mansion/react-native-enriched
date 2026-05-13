@@ -8,18 +8,18 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Headings (h1-h6)
 - Blockquote, code block
 - Ordered lists, unordered lists, checkbox lists
-- Images(via `setImage` ref method)
+- Images (via `setImage` ref method and optional `onPasteImages` when pasting image data)
 - Manual links (via `setLink` ref method)
+- Mentions
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
+- Input theming via `placeholderTextColor`, `cursorColor` and `selectionColor` props
 
 ## Unsupported
 
-- **Mentions**: `startMention` and `setMention` are no-ops. Props `mentionIndicators`, `onMentionDetected`, `onStartMention`, `onChangeMention`, and `onEndMention` are ignored. `onChangeState.mention` is always inactive.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
-- **Theming props**: `placeholderTextColor`, `cursorColor`, and `selectionColor` are not applied.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
 - **`EnrichedText`**: The read-only component is not exported on web.

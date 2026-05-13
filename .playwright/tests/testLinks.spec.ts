@@ -338,6 +338,7 @@ test.describe('test-links onLinkDetected', () => {
 
     const editor = page.locator(sel.editorInner);
     await editor.click();
+    await expect(editor.locator('.ProseMirror')).toBeFocused();
     await editor.press('End');
     await editor.press('Enter');
 

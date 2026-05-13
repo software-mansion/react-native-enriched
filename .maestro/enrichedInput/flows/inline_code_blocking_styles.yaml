@@ -1,0 +1,29 @@
+appId: swmansion.enriched.example
+---
+# When inline code typing is active, link, mention, and image are blocked in the toolbar
+- launchApp
+
+- tapOn:
+    id: "toggle-screen-button"
+
+- tapOn:
+    id: "editor-input"
+
+- tapOn:
+    id: "toolbar-inline-code"
+
+- waitForAnimationToEnd
+
+- inputText: "snippet"
+
+- assertVisible:
+    id: "toolbar-link"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-mention"
+    enabled: false
+
+- assertVisible:
+    id: "toolbar-image"
+    enabled: false

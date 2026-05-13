@@ -12,6 +12,7 @@
 - (NSString *)getValue;
 - (BOOL)isParagraph;
 - (BOOL)needsZWS;
+- (BOOL)appliesStylingToTyping;
 - (instancetype)initWithHost:(id<EnrichedViewHost>)host;
 - (NSRange)actualUsedRange:(NSRange)range;
 - (void)toggle:(NSRange)range;
@@ -30,6 +31,7 @@
 - (BOOL)any:(NSRange)range;
 - (NSArray<StylePair *> *)all:(NSRange)range;
 - (void)applyStyling:(NSRange)range;
+- (void)applyStylingToTypingAttrs:(NSMutableDictionary *)attributes;
 - (void)reapplyFromStylePair:(StylePair *)pair;
 - (AttributeEntry *)getEntryIfPresent:(NSRange)range;
 @end
