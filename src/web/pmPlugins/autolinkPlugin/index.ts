@@ -1,8 +1,8 @@
 import { Extension } from '@tiptap/core';
 import { Slice } from '@tiptap/pm/model';
-import type { MarkType, Node as PMNode, Schema } from '@tiptap/pm/model';
-import type { Transaction } from '@tiptap/pm/state';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import type { MarkType, Node, Schema } from '@tiptap/pm/model';
+import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state';
+import { Mapping } from '@tiptap/pm/transform';
 import type { OnLinkDetected } from '../../../types';
 import { emitLinkDetected, type LinkEmitterRef } from '../../emitLinkDetected';
 import { tiptapPosToNativePos } from '../../positionMapping';
@@ -14,155 +14,155 @@ interface Run {
   startPos: number;
 }
 
-function rangeHasNonAutoLink(
-  doc: PMNode,
+interface DirtyBlock {
+  node: Node;
+  pos: number;
+}
+
+const WHITESPACE_RE = /\S+/g;
+
+function removeAutoLinksInRange(
+  doc: Node,
+  tr: Transaction,
+  linkType: MarkType,
+  from: number,
+  to: number
+): void {
+  if (from >= to) return;
+
+  doc.nodesBetween(from, to, (node, pos) => {
+    if (!node.isText) return true;
+
+    const link = linkType.isInSet(node.marks);
+    if (link?.attrs.auto === true) {
+      tr.removeMark(
+        Math.max(from, pos),
+        Math.min(to, pos + node.nodeSize),
+        linkType
+      );
+    }
+
+    return false;
+  });
+}
+
+function rangeHasManualLink(
+  doc: Node,
   linkType: MarkType,
   from: number,
   to: number
 ): boolean {
   let found = false;
+
   doc.nodesBetween(from, to, (node) => {
     if (found) return false;
     if (!node.isText) return true;
+
     const link = linkType.isInSet(node.marks);
-    if (link && link.attrs.auto !== true) {
-      found = true;
-      return false;
-    }
+    if (link && link.attrs.auto !== true) found = true;
+
     return false;
   });
+
   return found;
 }
 
-function rangeIsAlreadyAutoLink(
-  doc: PMNode,
-  linkType: MarkType,
-  from: number,
-  to: number,
-  href: string
-): boolean {
-  let ok = true;
-  doc.nodesBetween(from, to, (node, pos) => {
-    if (!ok) return false;
-    if (!node.isText) return true;
-    const sliceFrom = Math.max(from, pos);
-    const sliceTo = Math.min(to, pos + node.nodeSize);
-    if (sliceFrom >= sliceTo) return false;
-    const link = linkType.isInSet(node.marks);
-    if (!link || link.attrs.auto !== true || link.attrs.href !== href) {
-      ok = false;
-    }
-    return false;
-  });
-  return ok;
-}
-
-function removeAutoLinkMarksIn(
-  doc: PMNode,
-  linkType: MarkType,
-  tr: Transaction,
-  from: number,
-  to: number
-): void {
-  if (from >= to) return;
-  doc.nodesBetween(from, to, (node, pos) => {
-    if (!node.isText) return true;
-    const link = linkType.isInSet(node.marks);
-    if (!link || link.attrs.auto !== true) return false;
-    const sliceFrom = Math.max(from, pos);
-    const sliceTo = Math.min(to, pos + node.nodeSize);
-    if (sliceFrom < sliceTo) {
-      tr.removeMark(sliceFrom, sliceTo, linkType);
-    }
-    return false;
-  });
-}
-
-/**
- * A "run" is a contiguous span of text inside one inline block that is eligible
- * for autolink detection — i.e. text nodes that are not code-marked and not
- * mention-marked, with no non-text inline nodes between them. URLs are only
- * detected within a single run; runs are separated by code/mention/non-text
- * boundaries (Android parity for word breaks).
- *
- * Runs are concatenated across text-node boundaries so that an existing
- * autolink mark + a freshly typed character (which arrives without the mark)
- * are still recognised as one URL token.
- */
 function extractRuns(
-  block: PMNode,
+  block: Node,
   blockStartPos: number,
   schema: Schema
 ): Run[] {
-  const codeMark = schema.marks.code;
-  const mentionMark = schema.marks.mention;
   const runs: Run[] = [];
-  let cur: Run | null = null;
+  let current: Run | null = null;
 
-  block.forEach((child, offsetInBlock) => {
-    const innerFrom = blockStartPos + 1 + offsetInBlock;
-    if (child.isText && child.text) {
-      const ineligible =
-        codeMark?.isInSet(child.marks) || mentionMark?.isInSet(child.marks);
-      if (ineligible) {
-        if (cur) {
-          runs.push(cur);
-          cur = null;
-        }
-        return;
+  block.forEach((child, offset) => {
+    const eligibleText =
+      child.isText &&
+      child.text &&
+      !schema.marks.code?.isInSet(child.marks) &&
+      !schema.marks.mention?.isInSet(child.marks);
+
+    if (eligibleText) {
+      if (!current) {
+        current = { text: '', startPos: blockStartPos + 1 + offset };
       }
-      if (!cur) cur = { text: '', startPos: innerFrom };
-      cur.text += child.text;
+      current.text += child.text;
       return;
     }
-    if (cur) {
-      runs.push(cur);
-      cur = null;
+
+    if (current) {
+      runs.push(current);
+      current = null;
     }
   });
-  if (cur) runs.push(cur);
+
+  if (current) runs.push(current);
   return runs;
 }
 
 function scanRunForAutolinks(
   run: Run,
-  doc: PMNode,
+  doc: Node,
   linkType: MarkType,
   linkRegex: RegExp | undefined,
   tr: Transaction,
   detected: OnLinkDetected[]
 ): void {
-  const ranges = findAutolinkRangesInWord(run.text, linkRegex);
-  const runEnd = run.startPos + run.text.length;
-  let cursor = run.startPos;
+  for (const match of run.text.matchAll(WHITESPACE_RE)) {
+    const word = match[0];
+    const wordStart = run.startPos + match.index!;
+    const wordEnd = wordStart + word.length;
 
-  for (const r of ranges) {
-    const from = run.startPos + r.start;
-    const to = run.startPos + r.endExclusive;
+    const ranges = findAutolinkRangesInWord(word, linkRegex);
+    const fullMatch = ranges.some(
+      (r) => r.start === 0 && r.endExclusive === word.length
+    );
 
-    removeAutoLinkMarksIn(doc, linkType, tr, cursor, from);
+    if (!fullMatch) continue;
+    if (rangeHasManualLink(doc, linkType, wordStart, wordEnd)) continue;
 
-    if (rangeHasNonAutoLink(doc, linkType, from, to)) {
-      cursor = to;
-      continue;
-    }
-
-    const href = prepareUrl(r.text);
-    if (rangeIsAlreadyAutoLink(doc, linkType, from, to, href)) {
-      cursor = to;
-      continue;
-    }
-
-    tr.addMark(from, to, linkType.create({ href, auto: true }));
+    const href = prepareUrl(word);
+    tr.addMark(wordStart, wordEnd, linkType.create({ href, auto: true }));
     detected.push({
-      text: r.text,
+      text: word,
       url: href,
-      start: tiptapPosToNativePos(doc, from),
-      end: tiptapPosToNativePos(doc, to),
+      start: tiptapPosToNativePos(doc, wordStart),
+      end: tiptapPosToNativePos(doc, wordEnd),
     });
-    cursor = to;
   }
-  removeAutoLinkMarksIn(doc, linkType, tr, cursor, runEnd);
+}
+
+function getDirtyBlocks(
+  doc: Node,
+  transactions: readonly Transaction[]
+): DirtyBlock[] {
+  const mapping = new Mapping();
+  for (const tr of transactions) mapping.appendMapping(tr.mapping);
+
+  const blocks = new Map<number, Node>();
+  const docSize = doc.content.size;
+
+  mapping.maps.forEach((stepMap, i) => {
+    const rest = mapping.slice(i + 1);
+
+    stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
+      const from = Math.max(0, rest.map(newStart, -1) - 1);
+      const to = Math.min(docSize, rest.map(newEnd, 1) + 1);
+
+      doc.nodesBetween(from, to, (node, pos) => {
+        if (node.type.name === 'codeBlock') return false;
+
+        if (node.inlineContent && !blocks.has(pos)) {
+          blocks.set(pos, node);
+          return false;
+        }
+
+        return true;
+      });
+    });
+  });
+
+  return Array.from(blocks, ([pos, node]) => ({ pos, node }));
 }
 
 export function createAutolinkPlugin(ref: LinkEmitterRef): Extension {
@@ -181,21 +181,25 @@ export function createAutolinkPlugin(ref: LinkEmitterRef): Extension {
               ),
           },
           appendTransaction: (transactions, _oldState, newState) => {
-            if (!transactions.some((tr) => tr.docChanged)) return null;
-
             const state = ref.current;
-            if (!state) return null;
-            if (state.linkRegex === null) return null;
-            const linkRegex = state.linkRegex ?? undefined;
+            if (!state || state.linkRegex === null) return null;
 
             const { schema, doc, tr } = newState;
             const linkType = schema.marks.link;
             if (!linkType) return null;
 
+            const linkRegex = state.linkRegex ?? undefined;
+            const dirtyBlocks = getDirtyBlocks(doc, transactions);
+            if (dirtyBlocks.length === 0) return null;
+
             const detected: OnLinkDetected[] = [];
-            doc.descendants((node, pos) => {
-              if (node.type.name === 'codeBlock') return false;
-              if (!node.inlineContent) return undefined;
+
+            for (const { node, pos } of dirtyBlocks) {
+              const from = pos + 1;
+              const to = pos + node.nodeSize - 1;
+
+              removeAutoLinksInRange(doc, tr, linkType, from, to);
+
               for (const run of extractRuns(node, pos, schema)) {
                 scanRunForAutolinks(
                   run,
@@ -206,12 +210,11 @@ export function createAutolinkPlugin(ref: LinkEmitterRef): Extension {
                   detected
                 );
               }
-              return undefined;
-            });
+            }
 
             if (tr.steps.length === 0) return null;
 
-            for (const e of detected) emitLinkDetected(ref, e);
+            for (const event of detected) emitLinkDetected(ref, event);
             return tr;
           },
         }),

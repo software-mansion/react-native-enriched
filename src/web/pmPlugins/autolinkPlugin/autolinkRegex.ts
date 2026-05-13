@@ -5,14 +5,7 @@ const WWW_REGEX =
 const BARE_REGEX =
   /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/;
 
-/** Alternation (same as Android: left-most alternative wins per match). */
 const DEFAULT_AUTOLINK_SUBSTRING_PATTERN = `(?:${FULL_URL_REGEX.source})|(?:${WWW_REGEX.source})|(?:${BARE_REGEX.source})`;
-
-/**
- * Enables `matchAll` without treating the whole `\S+` token as the URL when
- * extra text is pasted in front (e.g. `asdfhttps://…`). Uses a fresh `RegExp`
- * per call — global regexes are stateful.
- */
 
 export type AutolinkRangeInWord = {
   start: number;
@@ -26,10 +19,7 @@ function asGlobalRegex(re: RegExp): RegExp {
     : new RegExp(re.source, `${re.flags.replace(/g/g, '')}g`);
 }
 
-/**
- * URL-like substrings inside a single whitespace-delimited token (`\S+`),
- * aligned with Android {@code regex.matcher(word).find()}.
- */
+// URL-like substrings inside a single whitespace-delimited token (`\S+`),
 export function findAutolinkRangesInWord(
   word: string,
   linkRegex: RegExp | undefined

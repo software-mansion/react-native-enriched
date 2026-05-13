@@ -12,10 +12,23 @@ function toInteger(value: string): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+type LinkRegexMode = 'default' | 'disabled' | 'custom';
+
 export function TestLinks() {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [htmlInput, setHtmlInput] = useState('<html><p></p></html>');
   const [editorHtml, setEditorHtml] = useState('');
+  const [linkRegexModeDraft, setLinkRegexModeDraft] =
+    useState<LinkRegexMode>('default');
+  const [linkRegexPatternDraft, setLinkRegexPatternDraft] = useState(
+    String.raw`issue-\d+`
+  );
+  const [linkRegexIgnoreCaseDraft, setLinkRegexIgnoreCaseDraft] =
+    useState(false);
+  const [appliedLinkRegex, setAppliedLinkRegex] = useState<
+    RegExp | null | undefined
+  >(undefined);
+  const [linkRegexError, setLinkRegexError] = useState('');
   const [startInput, setStartInput] = useState('6');
   const [endInput, setEndInput] = useState('11');
   const [linkTextInput, setLinkTextInput] = useState('world');
@@ -26,6 +39,24 @@ export function TestLinks() {
   const [selEndInput, setSelEndInput] = useState('0');
   const [lastOnLinkDetected, setLastOnLinkDetected] =
     useState<OnLinkDetected | null>(null);
+
+  const applyLinkRegexSettings = () => {
+    setLinkRegexError('');
+    if (linkRegexModeDraft === 'default') {
+      setAppliedLinkRegex(undefined);
+      return;
+    }
+    if (linkRegexModeDraft === 'disabled') {
+      setAppliedLinkRegex(null);
+      return;
+    }
+    try {
+      const flags = linkRegexIgnoreCaseDraft ? 'gi' : 'g';
+      setAppliedLinkRegex(new RegExp(linkRegexPatternDraft, flags));
+    } catch (e) {
+      setLinkRegexError(e instanceof Error ? e.message : 'Invalid regex');
+    }
+  };
 
   return (
     <div data-testid="test-links-root">
@@ -43,7 +74,52 @@ export function TestLinks() {
           onLinkDetected={(e) => {
             setLastOnLinkDetected(e);
           }}
+          linkRegex={appliedLinkRegex}
         />
+      </div>
+
+      <div>
+        <label>
+          Autolink regex mode{' '}
+          <select
+            data-testid="test-links-link-regex-mode"
+            value={linkRegexModeDraft}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+              setLinkRegexModeDraft(e.target.value as LinkRegexMode);
+            }}
+          >
+            <option value="default">default</option>
+            <option value="disabled">disabled</option>
+            <option value="custom">custom</option>
+          </select>
+        </label>
+        <input
+          data-testid="test-links-link-regex-pattern"
+          value={linkRegexPatternDraft}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setLinkRegexPatternDraft(e.target.value);
+          }}
+          aria-label="Custom link regex pattern"
+        />
+        <label>
+          <input
+            data-testid="test-links-link-regex-ignore-case"
+            type="checkbox"
+            checked={linkRegexIgnoreCaseDraft}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              setLinkRegexIgnoreCaseDraft(e.target.checked);
+            }}
+          />{' '}
+          ignore case
+        </label>
+        <button
+          type="button"
+          data-testid="test-links-link-regex-apply"
+          onClick={applyLinkRegexSettings}
+        >
+          Apply link regex
+        </button>
+        <span data-testid="test-links-link-regex-error">{linkRegexError}</span>
       </div>
 
       <textarea

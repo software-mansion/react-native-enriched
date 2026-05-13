@@ -39,7 +39,7 @@ Reuse `gotoTestLinks`, `getTestLinksSerializedHtml`, `sel.editorInner`.
 
 Autolinks do not serialize `data-auto`; assert `href` and link text only.
 
-**Clipboard**: `.playwright/helpers/clipboard.ts` — `writeClipboardAndPaste(locator, text)` (or fallback copy-from-textarea pattern if clipboard is flaky).
+**Clipboard / paste**: `.playwright/helpers/clipboard.ts` — `pastePlainTextIntoProseMirror` dispatches `text/plain` via `ClipboardEvent` + `DataTransfer` (reliable in headless). `writeClipboardAndPaste` remains for keyboard+OS clipboard experiments.
 
 ## Optional follow-up
 

@@ -19,3 +19,22 @@ export async function copyAndPasteBetween(
   await copySelectionFrom(source);
   await pasteInto(dest);
 }
+
+export async function pastePlainTextIntoEditor(
+  editorInnerLocator: Locator,
+  text: string
+): Promise<void> {
+  const pm = editorInnerLocator.locator('.ProseMirror');
+  await pm.click();
+  await pm.evaluate((el, t) => {
+    const dt = new DataTransfer();
+    dt.setData('text/plain', t);
+    el.dispatchEvent(
+      new ClipboardEvent('paste', {
+        clipboardData: dt,
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+  }, text);
+}

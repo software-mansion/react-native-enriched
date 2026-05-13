@@ -34,6 +34,8 @@ const DEFAULT_LINK_STATE: OnLinkDetected = {
   start: 0,
   end: 0,
 };
+const LINK_REGEX =
+  /^(?:enriched:\/\/\S+|(?:https?:\/\/)?(?:www\.)?swmansion\.com(?:\/\S*)?)$/i;
 
 function App() {
   const ref = useRef<EnrichedTextInputInstance>(null);
@@ -261,6 +263,7 @@ function App() {
           onMentionDetected={handleOnMentionDetected}
           mentionIndicators={['@', '#']}
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
+          linkRegex={LINK_REGEX}
         />
         <MentionPopup
           variant="user"
