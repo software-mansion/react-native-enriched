@@ -19,12 +19,25 @@ export function isLinkBlocked(editor: Editor): boolean {
   return (
     editor.isActive('code') ||
     editor.isActive('codeBlock') ||
+    editor.isActive('mention') ||
+    editor.isActive('image')
+  );
+}
+function isMentionBlocked(editor: Editor): boolean {
+  return (
+    editor.isActive('code') ||
+    editor.isActive('codeBlock') ||
+    editor.isActive('link') ||
     editor.isActive('image')
   );
 }
 
 export function isImageBlocked(editor: Editor): boolean {
-  return editor.isActive('code');
+  return (
+    editor.isActive('code') ||
+    editor.isActive('link') ||
+    editor.isActive('mention')
+  );
 }
 
 export function isFormatBlocked(
@@ -40,6 +53,10 @@ export function isFormatBlocked(
   }
   if (tiptapName === 'code' && editor.isActive('image')) {
     return true;
+  }
+
+  if (tiptapName === 'mention') {
+    return isMentionBlocked(editor);
   }
 
   if (editor.isActive('codeBlock')) {
