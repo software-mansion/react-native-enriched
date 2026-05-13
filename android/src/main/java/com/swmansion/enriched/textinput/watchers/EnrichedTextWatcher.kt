@@ -14,6 +14,9 @@ class EnrichedTextWatcher(
   private var startCursorPosition: Int = 0
   private var previousTextLength: Int = 0
 
+  // Track exactly what text is being deleted
+  private var deletedText: String = ""
+
   override fun beforeTextChanged(
     s: CharSequence?,
     start: Int,
@@ -21,6 +24,8 @@ class EnrichedTextWatcher(
     after: Int,
   ) {
     previousTextLength = s?.length ?: 0
+    // If count > 0, text is being deleted or replaced. Capture it.
+    deletedText = if (count > 0 && s != null) s.substring(start, start + count) else ""
   }
 
   override fun onTextChanged(
@@ -47,6 +52,7 @@ class EnrichedTextWatcher(
     view.inlineStyles?.afterTextChanged(s, endCursorPosition)
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    view.alignmentStyles?.afterTextChanged(s, endCursorPosition, deletedText)
     view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
   }
 

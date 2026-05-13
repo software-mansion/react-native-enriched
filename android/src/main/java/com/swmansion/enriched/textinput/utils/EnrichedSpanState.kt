@@ -52,6 +52,15 @@ class EnrichedSpanState(
     private set
   var mentionStart: Int? = null
     private set
+  var currentAlignment: String = "left"
+    private set
+
+  fun setAlignment(value: String) {
+    if (currentAlignment != value) {
+      currentAlignment = value
+      emitStateChangeEvent()
+    }
+  }
 
   fun setBoldStart(start: Int?) {
     this.boldStart = start
@@ -246,6 +255,7 @@ class EnrichedSpanState(
     payload.putMap("image", getStyleState(activeStyles, EnrichedSpans.IMAGE))
     payload.putMap("mention", getStyleState(activeStyles, EnrichedSpans.MENTION))
     payload.putMap("checkboxList", getStyleState(activeStyles, EnrichedSpans.CHECKBOX_LIST))
+    payload.putString("alignment", currentAlignment)
 
     return payload
   }

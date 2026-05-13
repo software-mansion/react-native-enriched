@@ -1,6 +1,8 @@
 package com.swmansion.enriched.text
 
 import com.swmansion.enriched.common.parser.EnrichedSpanFactory
+import com.swmansion.enriched.common.spans.EnrichedAlignmentSpan
+import com.swmansion.enriched.text.spans.EnrichedTextAlignmentSpan
 import com.swmansion.enriched.text.spans.EnrichedTextBlockQuoteSpan
 import com.swmansion.enriched.text.spans.EnrichedTextBoldSpan
 import com.swmansion.enriched.text.spans.EnrichedTextCheckboxListSpan
@@ -22,6 +24,8 @@ import com.swmansion.enriched.text.spans.EnrichedTextUnderlineSpan
 import com.swmansion.enriched.text.spans.EnrichedTextUnorderedListSpan
 
 class EnrichedTextSpanFactory : EnrichedSpanFactory<EnrichedTextStyle> {
+  override fun createAlignmentSpan(cssValue: String) = EnrichedTextAlignmentSpan(cssValue)
+
   override fun createBoldSpan(style: EnrichedTextStyle) = EnrichedTextBoldSpan(style)
 
   override fun createItalicSpan(style: EnrichedTextStyle) = EnrichedTextItalicSpan(style)
