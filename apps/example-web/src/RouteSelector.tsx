@@ -1,4 +1,5 @@
 import App from './App';
+import { TestMentions } from './testScreens/TestMentions';
 import { TestLinks } from './testScreens/TestLinks';
 import { TestSetSelection } from './testScreens/TestSetSelection';
 import { VisualRegression } from './testScreens/VisualRegression';
@@ -28,6 +29,10 @@ export default function RouteSelector() {
 
   if (path === '/visual-regression') {
     return <VisualRegression />;
+  }
+
+  if (path === '/test-mentions') {
+    return <TestMentions />;
   }
 
   return <App />;

@@ -28,8 +28,6 @@ appId: swmansion.enriched.example
 - pressKey: Backspace
 
 - runFlow:
-    when:
-        platform: "android"
     commands:
         - pressKey: Backspace
 - inputText: " "

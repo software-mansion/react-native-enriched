@@ -10,6 +10,8 @@ import {
   type BlurEvent,
   type EnrichedInputStyle,
   type OnLinkDetected,
+  type OnChangeMentionEvent,
+  type OnMentionDetected,
 } from 'react-native-enriched';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -20,6 +22,9 @@ import { LinkModal } from './components/LinkModal';
 import { HtmlOutputPanel } from './components/HtmlOutputPanel';
 import './App.css';
 import { Toolbar } from './components/Toolbar';
+import { MentionPopup, type MentionItem } from './components/MentionPopup';
+import { useUserMention } from './hooks/useUserMention';
+import { useChannelMention } from './hooks/useChannelMention';
 
 const DEFAULT_LINK_STATE: OnLinkDetected = {
   text: '',
@@ -33,6 +38,8 @@ function App() {
   const [currentHtml, setCurrentHtml] = useState('');
   const [showHtmlOutput, setShowHtmlOutput] = useState(false);
   const [isSetValueModalOpen, setIsSetValueModalOpen] = useState(false);
+  const [isChannelPopupOpen, setIsChannelPopupOpen] = useState(false);
+  const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [editorState, setEditorState] = useState<OnChangeStateEvent | null>(
     null
   );
@@ -54,6 +61,82 @@ function App() {
 
   const insideCurrentLink =
     isLinkActive && hasLinkUrl && hasLinkSpan && selectionInsideLink;
+
+  const userMention = useUserMention();
+  const channelMention = useChannelMention();
+
+  const openUserMentionPopup = () => {
+    setIsUserPopupOpen(true);
+  };
+  const closeUserMentionPopup = () => {
+    setIsUserPopupOpen(false);
+    userMention.onMentionChange('');
+  };
+
+  const openChannelMentionPopup = () => {
+    setIsChannelPopupOpen(true);
+  };
+  const closeChannelMentionPopup = () => {
+    setIsChannelPopupOpen(false);
+    channelMention.onMentionChange('');
+  };
+
+  const handleStartMention = (indicator: string) => {
+    console.log('[EnrichedTextInput] Start mention', indicator);
+    if (indicator === '@') {
+      userMention.onMentionChange('');
+      openUserMentionPopup();
+      return;
+    }
+    channelMention.onMentionChange('');
+    openChannelMentionPopup();
+  };
+
+  const handleEndMention = (indicator: string) => {
+    console.log('[EnrichedTextInput] End mention', indicator);
+    if (indicator === '@') {
+      closeUserMentionPopup();
+      userMention.onMentionChange('');
+      return;
+    }
+    closeChannelMentionPopup();
+    channelMention.onMentionChange('');
+  };
+
+  const handleChangeMention = ({ indicator, text }: OnChangeMentionEvent) => {
+    console.log('[EnrichedTextInput] Change mention', indicator, text);
+    if (indicator === '@') {
+      userMention.onMentionChange(text);
+      if (!isUserPopupOpen) setIsUserPopupOpen(true);
+    } else {
+      channelMention.onMentionChange(text);
+      if (!isChannelPopupOpen) setIsChannelPopupOpen(true);
+    }
+  };
+
+  const handleUserMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('@', `@${item.name}`, {
+      id: item.id,
+      type: 'user',
+    });
+    closeUserMentionPopup();
+  };
+
+  const handleChannelMentionSelected = (item: MentionItem) => {
+    ref.current?.setMention('#', `#${item.name}`, {
+      id: item.id,
+      type: 'channel',
+    });
+    closeChannelMentionPopup();
+  };
+
+  const mentionPopoverOpen =
+    (isUserPopupOpen && userMention.data.length > 0) ||
+    (isChannelPopupOpen && channelMention.data.length > 0);
+
+  const handleOnMentionDetected = (e: OnMentionDetected) => {
+    console.log('[EnrichedTextInput] onMentionDetected event', e);
+  };
 
   const handleFocus = (e: FocusEvent) => {
     console.log('[EnrichedTextInput] onFocus', e.nativeEvent);
@@ -131,24 +214,49 @@ function App() {
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
 
-      <EnrichedTextInput
-        ref={ref}
-        placeholder="Type something here..."
-        autoFocus
-        editable
-        scrollEnabled
-        autoCapitalize="sentences"
-        style={enrichedInputStyle}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyPress={handleKeyPress}
-        onChangeText={handleOnChangeText}
-        onChangeSelection={handleChangeSelection}
-        onChangeHtml={handleOnChangeHtml}
-        onChangeState={handleChangeState}
-        onLinkDetected={handleOnLinkDetected}
-        htmlStyle={WEB_DEFAULT_HTML_STYLE}
-      />
+      <div
+        className={
+          mentionPopoverOpen
+            ? 'editor-mention-host editor-mention-host--mention-open'
+            : 'editor-mention-host'
+        }
+      >
+        <EnrichedTextInput
+          ref={ref}
+          placeholder="Type something here..."
+          autoFocus
+          editable
+          scrollEnabled
+          autoCapitalize="sentences"
+          style={enrichedInputStyle}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyPress={handleKeyPress}
+          onChangeText={handleOnChangeText}
+          onChangeSelection={handleChangeSelection}
+          onChangeHtml={handleOnChangeHtml}
+          onChangeState={handleChangeState}
+          onLinkDetected={handleOnLinkDetected}
+          onStartMention={handleStartMention}
+          onChangeMention={handleChangeMention}
+          onEndMention={handleEndMention}
+          onMentionDetected={handleOnMentionDetected}
+          mentionIndicators={['@', '#']}
+          htmlStyle={WEB_DEFAULT_HTML_STYLE}
+        />
+        <MentionPopup
+          variant="user"
+          data={userMention.data}
+          isOpen={isUserPopupOpen}
+          onItemPress={handleUserMentionSelected}
+        />
+        <MentionPopup
+          variant="channel"
+          data={channelMention.data}
+          isOpen={isChannelPopupOpen}
+          onItemPress={handleChannelMentionSelected}
+        />
+      </div>
 
       <Toolbar
         editorRef={ref}

@@ -34,6 +34,10 @@
   return NO;
 }
 
+- (BOOL)appliesStylingToTyping {
+  return NO;
+}
+
 - (instancetype)initWithHost:(id<EnrichedViewHost>)host {
   self = [super init];
   _host = host;
@@ -230,6 +234,11 @@
 
 // This method gets overridden
 - (void)applyStyling:(NSRange)range {
+}
+
+// This method gets overridden when the style needs to apply certain typing
+// attributes
+- (void)applyStylingToTypingAttrs:(NSMutableDictionary *)attributes {
 }
 
 // Called during dirty range re-application to restore a style from a saved

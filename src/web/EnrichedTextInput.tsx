@@ -37,6 +37,7 @@ import {
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
 import { enrichedInputThemingToCSSProperties } from './styleConversion/enrichedInputThemingToCSSProperties';
+import { buildMentionRulesCSS } from './styleConversion/buildMentionRulesCSS';
 import {
   htmlStyleToCSSVariables,
   mergeWithDefaultHtmlStyle,
@@ -51,6 +52,7 @@ import { EnrichedBlockquote } from './formats/EnrichedBlockquote';
 import { EnrichedCodeBlock } from './formats/EnrichedCodeBlock';
 import { EnrichedImage } from './formats/EnrichedImage';
 import { EnrichedLink, setLink, removeLink } from './formats/EnrichedLink';
+import { EnrichedMention } from './formats/EnrichedMention';
 import { EnrichedListItem } from './formats/EnrichedListItem';
 import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
@@ -60,6 +62,13 @@ import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInSt
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import {
+  createMentionPlugin,
+  setMention,
+  startMention,
+  subscribeMentionEvents,
+} from './pmPlugins/mentionPlugin';
+
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 function runFocused(
   editor: Editor,
@@ -79,6 +88,7 @@ export const EnrichedTextInput = ({
   selectionColor,
   autoCapitalize = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.autoCapitalize,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
+  mentionIndicators = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.mentionIndicators.slice(),
   onFocus,
   style,
   onBlur,
@@ -88,6 +98,10 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onMentionDetected,
+  onStartMention,
+  onChangeMention,
+  onEndMention,
   htmlStyle,
 }: EnrichedTextInputProps) => {
   const tiptapContent =
@@ -108,37 +122,73 @@ export const EnrichedTextInput = ({
     []
   );
 
+  const mentionIndicatorsRef = useRef(mentionIndicators);
+  useEffect(() => {
+    mentionIndicatorsRef.current = mentionIndicators;
+  }, [mentionIndicators]);
+
+  const mentionCallbacksRef = useRef({
+    onStartMention,
+    onChangeMention,
+    onEndMention,
+    onMentionDetected,
+  });
+  useEffect(() => {
+    mentionCallbacksRef.current = {
+      onStartMention,
+      onChangeMention,
+      onEndMention,
+      onMentionDetected,
+    };
+  }, [onStartMention, onChangeMention, onEndMention, onMentionDetected]);
+
+  const mentionPlugin = useMemo(
+    () =>
+      createMentionPlugin({
+        indicatorsRef: mentionIndicatorsRef,
+        callbacksRef: mentionCallbacksRef,
+      }),
+    []
+  );
+
+  const extensions = useMemo(
+    () => [
+      Document,
+      Paragraph,
+      Text,
+      EnrichedBold,
+      EnrichedItalic,
+      EnrichedUnderline,
+      EnrichedStrike,
+      EnrichedCode,
+      EnrichedLink,
+      EnrichedImage,
+      EnrichedMention,
+      EnrichedHeading,
+      EnrichedBlockquote,
+      EnrichedCodeBlock,
+      EnrichedListItem,
+      EnrichedCheckboxItem,
+      EnrichedUnorderedList,
+      EnrichedOrderedList,
+      EnrichedCheckboxList,
+      StripMarksInCodeBlockPlugin,
+      StripMarksOnImagePlugin,
+      stripBoldInStyledHeadingsPlugin,
+      MergeAdjacentSameKindBlocksPlugin,
+      StrictMarksPlugin,
+      mentionPlugin,
+      Placeholder.configure({
+        placeholder,
+        showOnlyWhenEditable: true,
+      }),
+    ],
+    [stripBoldInStyledHeadingsPlugin, mentionPlugin, placeholder]
+  );
+
   const editor = useEditor(
     {
-      extensions: [
-        Document,
-        Paragraph,
-        Text,
-        EnrichedBold,
-        EnrichedItalic,
-        EnrichedUnderline,
-        EnrichedStrike,
-        EnrichedCode,
-        EnrichedLink,
-        EnrichedImage,
-        EnrichedHeading,
-        EnrichedBlockquote,
-        EnrichedCodeBlock,
-        EnrichedListItem,
-        EnrichedCheckboxItem,
-        EnrichedUnorderedList,
-        EnrichedOrderedList,
-        EnrichedCheckboxList,
-        StripMarksInCodeBlockPlugin,
-        StripMarksOnImagePlugin,
-        stripBoldInStyledHeadingsPlugin,
-        MergeAdjacentSameKindBlocksPlugin,
-        StrictMarksPlugin,
-        Placeholder.configure({
-          placeholder,
-          showOnlyWhenEditable: true,
-        }),
-      ],
+      extensions,
       editable,
       autofocus: autoFocus,
       onCreate: ({ editor: _editor }) => {
@@ -170,12 +220,17 @@ export const EnrichedTextInput = ({
         },
       },
     },
-    [tiptapContent]
+    [tiptapContent, extensions]
   );
 
   useEffect(() => {
     editor?.commands.normalizeBoldInStyledHeadings();
   }, [editor, resolvedHtmlStyle]);
+
+  useEffect(() => {
+    if (!editor) return;
+    return subscribeMentionEvents(editor, mentionCallbacksRef);
+  }, [editor]);
 
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
@@ -221,10 +276,16 @@ export const EnrichedTextInput = ({
         setLink(editor, start, end, text, url),
       removeLink: (start: number, end: number) =>
         removeLink(editor, start, end),
+      startMention: (indicator: string) => {
+        startMention(editor, indicator, mentionIndicatorsRef.current);
+      },
+      setMention: (
+        indicator: string,
+        text: string,
+        attributes?: Record<string, string>
+      ) => setMention(editor, indicator, text, attributes),
       setImage: (src: string, width: number, height: number) =>
         runFocused(editor, (c) => c.setImage({ src, width, height })),
-      startMention: () => {},
-      setMention: () => {},
       measure: () => {},
       measureInWindow: () => {},
       measureLayout: () => {},
@@ -253,17 +314,25 @@ export const EnrichedTextInput = ({
     [cursorColor, placeholderTextColor, selectionColor]
   );
 
+  const mentionRulesCSS = useMemo(
+    () => buildMentionRulesCSS(resolvedHtmlStyle),
+    [resolvedHtmlStyle]
+  );
+
   const finalStyle = useMemo(
     () => ({ ...editorStyle, ...cssVars, ...themingStyle }),
     [editorStyle, cssVars, themingStyle]
   );
 
   return (
-    <EditorContent
-      editor={editor}
-      className="eti-editor"
-      style={finalStyle}
-      data-placeholder={placeholder}
-    />
+    <>
+      {mentionRulesCSS ? <style>{mentionRulesCSS}</style> : null}
+      <EditorContent
+        editor={editor}
+        className="eti-editor"
+        style={finalStyle}
+        data-placeholder={placeholder}
+      />
+    </>
   );
 };
