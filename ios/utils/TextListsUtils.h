@@ -1,7 +1,7 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@interface TextListUtils : NSObject
+@interface TextListsUtils : NSObject
 
 // Appends value to the array. If exclusivePrefix is non-nil, any existing
 // entry whose markerFormat starts with that prefix is evicted first, ensuring
@@ -31,7 +31,8 @@
 + (BOOL)textLists:(NSArray<NSTextList *> *_Nullable)textLists
     containsPrefix:(NSString *_Nullable)prefix;
 
-// Returns the first entry with a markerFormat that starts with prefix, otherwise nil.
+// Returns the first entry with a markerFormat that starts with prefix,
+// otherwise nil.
 + (NSTextList *_Nullable)
     firstTextListWithPrefix:(NSString *_Nullable)prefix
                     inArray:(NSArray<NSTextList *> *_Nullable)textLists;

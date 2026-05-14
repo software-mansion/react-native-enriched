@@ -1,3 +1,4 @@
+#import "EnrichedTextInputView.h"
 #import <UIKit/UIKit.h>
 #pragma once
 
@@ -12,4 +13,6 @@
                                replacementText:(NSString *)text
                                          input:(id)input;
 + (BOOL)isParagraphEmpty:(NSRange)range inString:(NSString *)string;
++ (void)resetTypingAttributes:(EnrichedTextInputView *)input
+          preservingAlignment:(NSTextAlignment)alignment;
 @end

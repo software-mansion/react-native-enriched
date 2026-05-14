@@ -4,7 +4,7 @@
 #import "HtmlParser.h"
 #import "StringExtension.h"
 #import "TextInsertionUtils.h"
-#import "TextListUtils.h"
+#import "TextListsUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @implementation EnrichedInputTextView
@@ -42,9 +42,10 @@
     return rect;
   }
 
-  NSString *marker = [TextListUtils firstTextListWithPrefix:@"EnrichedAlignment"
-                                                    inArray:pStyle.textLists]
-                         .markerFormat;
+  NSString *marker =
+      [TextListsUtils firstTextListWithPrefix:@"EnrichedAlignment"
+                                      inArray:pStyle.textLists]
+          .markerFormat;
   NSTextAlignment alignment = [AlignmentUtils markerToAlignment:marker];
   CGFloat containerWidth = self.textContainer.size.width;
 

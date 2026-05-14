@@ -2,7 +2,7 @@
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
-#import "TextListUtils.h"
+#import "TextListsUtils.h"
 
 @implementation CheckboxListStyle
 
@@ -52,8 +52,8 @@
   NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
   if (pStyle == nil)
     return NO;
-  return [TextListUtils textLists:pStyle.textLists
-                   containsPrefix:[self getMarkerPrefix]];
+  return [TextListsUtils textLists:pStyle.textLists
+                    containsPrefix:[self getMarkerPrefix]];
 }
 
 - (void)toggleWithChecked:(BOOL)checked range:(NSRange)range {
@@ -87,8 +87,8 @@
 - (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSParagraphStyle *savedPStyle = (NSParagraphStyle *)pair.styleValue;
-  BOOL checked = [TextListUtils textLists:savedPStyle.textLists
-                            containsValue:@"EnrichedCheckbox1"];
+  BOOL checked = [TextListsUtils textLists:savedPStyle.textLists
+                             containsValue:@"EnrichedCheckbox1"];
   [self addWithChecked:checked range:range withTyping:NO withDirtyRange:NO];
 }
 
@@ -103,8 +103,8 @@
                                         atIndex:location
                                  effectiveRange:NULL];
   NSTextList *list =
-      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
-                                     inArray:pStyle.textLists];
+      [TextListsUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                      inArray:pStyle.textLists];
   BOOL isCurrentlyChecked =
       [list.markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
@@ -127,8 +127,8 @@
                                         atIndex:location
                                  effectiveRange:NULL];
 
-  return [TextListUtils textLists:style.textLists
-                    containsValue:@"EnrichedCheckbox1"];
+  return [TextListsUtils textLists:style.textLists
+                     containsValue:@"EnrichedCheckbox1"];
 }
 
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {

@@ -1384,19 +1384,6 @@
   return @"";
 }
 
-+ (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
-  switch (alignment) {
-  case NSTextAlignmentCenter:
-    return @"center";
-  case NSTextAlignmentRight:
-    return @"right";
-  case NSTextAlignmentJustified:
-    return @"justify";
-  default:
-    return nil;
-  }
-}
-
 + (NSString *)prepareCssStyleString:(NSInteger)location
                        isOpeningTag:(BOOL)isOpeningTag
                                host:(id<EnrichedViewHost>)host {
@@ -1408,40 +1395,13 @@
       [host.textView.textStorage attribute:NSParagraphStyleAttributeName
                                    atIndex:location
                             effectiveRange:nil];
-  NSString *alignStr = [self cssValueForAlignment:pStyle.alignment];
+  NSString *alignStr = [AlignmentUtils cssValueForAlignment:pStyle.alignment];
 
   if (alignStr) {
     return [NSString stringWithFormat:@" style=\"text-align: %@\"", alignStr];
   }
 
   return @"";
-}
-
-+ (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
-  if (!params)
-    return NSTextAlignmentNatural;
-
-  NSString *pattern = @"text-align\\s*:\\s*(left|center|right|justify)";
-
-  NSRegularExpression *regex = [NSRegularExpression
-      regularExpressionWithPattern:pattern
-                           options:NSRegularExpressionCaseInsensitive
-                             error:nil];
-
-  NSTextCheckingResult *match =
-      [regex firstMatchInString:params
-                        options:0
-                          range:NSMakeRange(0, params.length)];
-
-  if (match) {
-    // rangeAtIndex:1 corresponds to the capture group
-    // (left|center|right|justify)
-    NSString *value =
-        [[params substringWithRange:[match rangeAtIndex:1]] lowercaseString];
-    return [AlignmentUtils stringToAlignment:value];
-  }
-
-  return NSTextAlignmentNatural;
 }
 
 + (void)checkForAlignments:(NSArray *)tagData
@@ -1454,7 +1414,8 @@
 
   // We look at the params stored in ongoingTags
   NSString *storedParams = (tagData.count > 2) ? tagData[2] : nil;
-  NSTextAlignment align = [self alignmentFromStyleParams:storedParams];
+  NSTextAlignment align =
+      [AlignmentUtils alignmentFromStyleParams:storedParams];
 
   if (align != NSTextAlignmentNatural) {
     NSInteger startLoc = [tagData[0] integerValue];

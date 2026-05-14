@@ -66,4 +66,44 @@
   return @"EnrichedAlignmentNatural";
 }
 
++ (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
+  switch (alignment) {
+  case NSTextAlignmentCenter:
+    return @"center";
+  case NSTextAlignmentRight:
+    return @"right";
+  case NSTextAlignmentJustified:
+    return @"justify";
+  default:
+    return nil;
+  }
+}
+
++ (NSTextAlignment)alignmentFromStyleParams:(NSString *)params {
+  if (!params)
+    return NSTextAlignmentNatural;
+
+  NSString *pattern = @"text-align\\s*:\\s*(left|center|right|justify)";
+
+  NSRegularExpression *regex = [NSRegularExpression
+      regularExpressionWithPattern:pattern
+                           options:NSRegularExpressionCaseInsensitive
+                             error:nil];
+
+  NSTextCheckingResult *match =
+      [regex firstMatchInString:params
+                        options:0
+                          range:NSMakeRange(0, params.length)];
+
+  if (match) {
+    // rangeAtIndex:1 corresponds to the capture group
+    // (left|center|right|justify)
+    NSString *value =
+        [[params substringWithRange:[match rangeAtIndex:1]] lowercaseString];
+    return [AlignmentUtils stringToAlignment:value];
+  }
+
+  return NSTextAlignmentNatural;
+}
+
 @end

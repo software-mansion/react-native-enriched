@@ -1,6 +1,6 @@
-#import "TextListUtils.h"
+#import "TextListsUtils.h"
 
-@implementation TextListUtils
+@implementation TextListsUtils
 
 + (NSArray<NSTextList *> *_Nonnull)
       textListsByAdding:(NSString *_Nonnull)value

@@ -67,7 +67,7 @@
                                    host:typedInput
                           withSelection:YES];
         [self resetTypingAttributes:typedInput
-                  preserveAlignment:savedAlignment];
+                preservingAlignment:savedAlignment];
 
         if (style == cbLStyle) {
           [cbLStyle addWithChecked:isCurrentlyChecked
@@ -90,7 +90,7 @@
                additionalAttributes:nullptr
                                host:typedInput
                       withSelection:YES];
-    [self resetTypingAttributes:typedInput preserveAlignment:savedAlignment];
+    [self resetTypingAttributes:typedInput preservingAlignment:savedAlignment];
     return YES;
   }
 
@@ -252,7 +252,7 @@
                                host:typedInput
                       withSelection:YES];
 
-    [self resetTypingAttributes:typedInput preserveAlignment:savedAlignment];
+    [self resetTypingAttributes:typedInput preservingAlignment:savedAlignment];
     return YES;
   }
 
@@ -260,7 +260,7 @@
 }
 
 + (void)resetTypingAttributes:(EnrichedTextInputView *)input
-            preservingAlignment:(NSTextAlignment)alignment {
+          preservingAlignment:(NSTextAlignment)alignment {
   NSMutableDictionary *resetAttrs =
       [input->defaultTypingAttributes mutableCopy];
 
