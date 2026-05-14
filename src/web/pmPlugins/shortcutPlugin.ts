@@ -3,7 +3,7 @@ import { Extension, type Editor } from '@tiptap/core';
 import type { HtmlStyle } from '../../types';
 import { isFormatBlocked } from '../formats/formatRules';
 
-export interface ShortcutManagerOptions {
+export interface ShortcutPluginOptions {
   getHtmlStyle: () => Required<HtmlStyle>;
 }
 
@@ -14,14 +14,14 @@ function insertPlainTextFromClipboard(editor: Editor): Promise<void> {
   });
 }
 
-export const ShortcutManager = Extension.create<ShortcutManagerOptions>({
-  name: 'shortcutManager',
+export const ShortcutPlugin = Extension.create<ShortcutPluginOptions>({
+  name: 'shortcutPlugin',
 
   addOptions() {
     return {
       getHtmlStyle: () => {
         throw new Error(
-          'ShortcutManager.configure({ getHtmlStyle }) is required'
+          'ShortcutPlugin.configure({ getHtmlStyle }) is required'
         );
       },
     };
