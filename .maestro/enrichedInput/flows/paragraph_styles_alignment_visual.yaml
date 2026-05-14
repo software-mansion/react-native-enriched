@@ -21,7 +21,7 @@ tags:
 - inputText: 'Centre aligned'
 - pressKey: Enter
 
-# Heading 4
+# Heading 6
 - tapOn:
     id: 'toolbar-heading-6'
 - inputText: 'Heading 6'
