@@ -11,7 +11,7 @@
     withExclusivePrefix:(NSString *_Nullable)prefix
                 toArray:(NSArray<NSTextList *> *_Nullable)existing;
 
-// Returns a new array with every entry whose markerFormat equals value removed
+// Returns a new array without entries whose markerFormat equals value removed
 // or whose markerFormat starts with prefix
 + (NSArray<NSTextList *> *_Nonnull)
     textListsByRemoving:(NSString *_Nonnull)value
