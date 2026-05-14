@@ -1,5 +1,7 @@
 # EnrichedText API Reference
 
+> **Web is not supported.** `EnrichedText` is only available on iOS and Android.
+
 ## Props
 
 ### `children`
@@ -43,13 +45,12 @@ How the text should be truncated when `numberOfLines` is set and the text overfl
 - `tail` – truncates at the end, e.g. `abcd...`.
 - `clip` – clips the text without inserting an ellipsis.
 
-| Type                                      | Default Value | Platform |
-| ----------------------------------------- | ------------- | -------- |
+| Type                                     | Default Value | Platform |
+| ---------------------------------------- | ------------- | -------- |
 | `'head' \| 'middle' \| 'tail' \| 'clip'` | `'tail'`      | Both     |
 
 > [!NOTE]
 > On Android, when numberOfLines is set to a value higher than 1, only tail value will work correctly.
-
 
 ### `numberOfLines`
 
