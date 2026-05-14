@@ -70,6 +70,7 @@ import {
 } from './pmPlugins/mentionPlugin';
 
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
+import { ShortcutManager } from './pmPlugins/shortcutManager';
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -151,6 +152,14 @@ export const EnrichedTextInput = ({
     []
   );
 
+  const shortcutManager = useMemo(
+    () =>
+      ShortcutManager.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
+    []
+  );
+
   const extensions = useMemo(
     () => [
       Document,
@@ -178,12 +187,18 @@ export const EnrichedTextInput = ({
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
       mentionPlugin,
+      shortcutManager,
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [stripBoldInStyledHeadingsPlugin, mentionPlugin, placeholder]
+    [
+      stripBoldInStyledHeadingsPlugin,
+      mentionPlugin,
+      shortcutManager,
+      placeholder,
+    ]
   );
 
   const editor = useEditor(
