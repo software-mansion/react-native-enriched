@@ -18,8 +18,7 @@
              withPrefix:(NSString *_Nullable)prefix
               fromArray:(NSArray<NSTextList *> *_Nullable)existing;
 
-// Returns a new array with every entry whose markerFormat starts with prefix
-// removed.
+// Returns a new array without entries whose markerFormat starts with prefix
 + (NSArray<NSTextList *> *_Nonnull)
     textListsByRemovingPrefix:(NSString *_Nullable)prefix
                     fromArray:(NSArray<NSTextList *> *_Nullable)existing;
