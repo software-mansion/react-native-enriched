@@ -13,7 +13,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Mentions
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
-- Submit props: `submitBehavior` and `onSubmitEditing`. `returnKeyType` is only a hint, it maps to [enterkeyhint](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) (`done`, `go`, `next`, `previous`, `search`, `send`, `default`/`enter`) so not all values of `ReturnKeyTypeOptions` are supported, the behavior of this prop is heavily dependent on the browser's implementation of `enterkeyhint`.
+- Submit props: `submitBehavior` and `onSubmitEditing`. `returnKeyType` is only a hint, it maps to [enterkeyhint](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) (`done`, `go`, `next`, `previous`, `search`, `send`, `default`/`enter`). Not all values of `ReturnKeyTypeOptions` are supported, the behavior of this prop is heavily dependent on the browser's capabilities.
 - Input theming via `placeholderTextColor`, `cursorColor` and `selectionColor` props
 
 ## Unsupported
