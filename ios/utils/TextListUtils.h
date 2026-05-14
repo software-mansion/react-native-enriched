@@ -32,7 +32,7 @@
 + (BOOL)textLists:(NSArray<NSTextList *> *_Nullable)textLists
     containsPrefix:(NSString *_Nullable)prefix;
 
-// Returns the first entry whose markerFormat starts with prefix, or nil.
+// Returns the first entry with a markerFormat that starts with prefix, otherwise nil.
 + (NSTextList *_Nullable)
     firstTextListWithPrefix:(NSString *_Nullable)prefix
                     inArray:(NSArray<NSTextList *> *_Nullable)textLists;
