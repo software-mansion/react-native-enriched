@@ -40,7 +40,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
-- **HTML normalizer flag**: `useHtmlNormalizer` is ignored; default ⌘/Ctrl+V paste follows the browser pipeline (rich paste still parses HTML unless blocked elsewhere).
+- **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
 - **`EnrichedText`**: The read-only component is not exported on web.
 - **`ViewProps`**: Props inherited from `View` beyond the implemented subset are not forwarded.
