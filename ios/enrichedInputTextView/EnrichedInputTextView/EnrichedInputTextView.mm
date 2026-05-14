@@ -30,13 +30,8 @@
   NSString *text = self.textStorage.string;
   NSRange paraRange = [text paragraphRangeForRange:NSMakeRange(idx, 0)];
 
-  // Determine whether the paragraph contains no visible characters.
-  BOOL isEmpty = NO;
-  if (paraRange.length == 0) {
-    isEmpty = YES;
-  }
-
-  if (!isEmpty) {
+  // Non-empty paragraph gets its caret drawn the usual way.
+  if (paraRange.length != 0) {
     return rect;
   }
 
