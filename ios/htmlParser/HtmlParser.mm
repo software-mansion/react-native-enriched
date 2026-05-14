@@ -1057,8 +1057,8 @@
                 containsObject:@([CheckboxListStyle getType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:[NSString
-                                   stringWithFormat:@"<p%@>", cssStyleString]];
+          [result appendString:[NSString stringWithFormat:@"\n<p%@>",
+                                                          cssStyleString]];
         }
       }
 
