@@ -260,7 +260,7 @@
 }
 
 + (void)resetTypingAttributes:(EnrichedTextInputView *)input
-            preserveAlignment:(NSTextAlignment)alignment {
+            preservingAlignment:(NSTextAlignment)alignment {
   NSMutableDictionary *resetAttrs =
       [input->defaultTypingAttributes mutableCopy];
 
