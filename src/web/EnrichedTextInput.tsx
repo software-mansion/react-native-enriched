@@ -71,8 +71,8 @@ import {
 } from './pmPlugins/mentionPlugin';
 
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
+import { ShortcutPlugin } from './pmPlugins/shortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
-
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -157,6 +157,14 @@ export const EnrichedTextInput = ({
     []
   );
 
+  const shortcutPlugin = useMemo(
+    () =>
+      ShortcutPlugin.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
+    []
+  );
+
   const submitBehaviorRef = useRef(submitBehavior);
   const onSubmitEditingRef = useRef(onSubmitEditing);
   const onKeyPressRef = useRef(onKeyPress);
@@ -219,12 +227,18 @@ export const EnrichedTextInput = ({
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
       mentionPlugin,
+      shortcutPlugin,
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [stripBoldInStyledHeadingsPlugin, mentionPlugin, placeholder]
+    [
+      stripBoldInStyledHeadingsPlugin,
+      mentionPlugin,
+      shortcutPlugin,
+      placeholder,
+    ]
   );
 
   const editor = useEditor(
