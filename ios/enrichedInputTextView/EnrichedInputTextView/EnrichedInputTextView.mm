@@ -1,8 +1,10 @@
 #import "EnrichedInputTextView.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "HtmlParser.h"
 #import "StringExtension.h"
 #import "TextInsertionUtils.h"
+#import "TextListsUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @implementation EnrichedInputTextView
@@ -16,6 +18,44 @@
   if (input != nil) {
     [input scheduleRelayoutIfNeeded];
   }
+}
+
+// UITextView places the cursor at the leading edge when a paragraph contains
+// zero (or invisible) glyphs because the layout engine has nothing to align.
+// We fix this by reading the active alignment and repositioning the caret rect
+- (CGRect)caretRectForPosition:(UITextPosition *)position {
+  CGRect rect = [super caretRectForPosition:position];
+  NSUInteger idx = [self offsetFromPosition:self.beginningOfDocument
+                                 toPosition:position];
+  NSString *text = self.textStorage.string;
+  NSRange paraRange = [text paragraphRangeForRange:NSMakeRange(idx, 0)];
+
+  // Non-empty paragraph gets its caret drawn the usual way.
+  if (paraRange.length != 0) {
+    return rect;
+  }
+
+  NSParagraphStyle *pStyle =
+      self.typingAttributes[NSParagraphStyleAttributeName];
+
+  if (pStyle == nil) {
+    return rect;
+  }
+
+  NSString *marker =
+      [TextListsUtils firstTextListWithPrefix:@"EnrichedAlignment"
+                                      inArray:pStyle.textLists]
+          .markerFormat;
+  NSTextAlignment alignment = [AlignmentUtils markerToAlignment:marker];
+  CGFloat containerWidth = self.textContainer.size.width;
+
+  if (alignment == NSTextAlignmentCenter) {
+    rect.origin.x = (containerWidth - rect.size.width) / 2.0;
+  } else if (alignment == NSTextAlignmentRight) {
+    rect.origin.x = containerWidth - rect.size.width;
+  }
+
+  return rect;
 }
 
 - (void)copy:(id)sender {

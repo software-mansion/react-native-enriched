@@ -277,4 +277,34 @@
   return NO;
 }
 
++ (void)applyKernForZeroWidthSpacesInRange:(NSRange)range
+                                      host:(id<EnrichedViewHost>)host {
+  if (host == nullptr ||
+      range.location + range.length > host.textView.textStorage.length) {
+    return;
+  }
+
+  NSString *text = [host.textView.textStorage.string substringWithRange:range];
+
+  // Give \u200B a tiny kern so the layout engine recognizes ZWS-only lines
+  // under right/center alignment (zero advance width causes height collapse).
+  [text
+      enumerateSubstringsInRange:NSMakeRange(0, text.length)
+                         options:NSStringEnumerationByComposedCharacterSequences
+                      usingBlock:^(NSString *substring, NSRange substringRange,
+                                   NSRange enclosingRange, BOOL *stop) {
+                        if (![substring isEqualToString:@"\u200B"]) {
+                          return;
+                        }
+
+                        NSRange kernRange = NSMakeRange(
+                            range.location + substringRange.location,
+                            substringRange.length);
+                        [host.textView.textStorage
+                            addAttribute:NSKernAttributeName
+                                   value:@(__FLT_EPSILON__)
+                                   range:kernRange];
+                      }];
+}
+
 @end

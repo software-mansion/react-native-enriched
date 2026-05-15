@@ -1,4 +1,5 @@
 #import "EnrichedTextInputView.h"
+#import "AlignmentUtils.h"
 #import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
@@ -58,6 +59,7 @@ using namespace facebook::react;
   NSArray<NSDictionary *> *_contextMenuItems;
   NSString *_submitBehavior;
   NSDictionary<NSAttributedStringKey, id> *_capturedAttributesBeforeChange;
+  NSString *_recentlyEmittedAlignment;
 }
 
 @synthesize blockEmitting = blockEmitting;
@@ -128,6 +130,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
+  _recentlyEmittedAlignment = @"left";
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
@@ -843,6 +846,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (_placeholderColor != nullptr) {
     newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
   }
+
+  // Get the current active alignment in input
+  NSParagraphStyle *currentTypingPara =
+      textView.typingAttributes[NSParagraphStyleAttributeName];
+  NSTextAlignment activeAlignment =
+      currentTypingPara ? currentTypingPara.alignment : NSTextAlignmentNatural;
+  NSMutableParagraphStyle *placeholderPStyle =
+      [newAttrs[NSParagraphStyleAttributeName] mutableCopy];
+  if (!placeholderPStyle) {
+    placeholderPStyle = [[NSMutableParagraphStyle alloc] init];
+  }
+  placeholderPStyle.alignment = activeAlignment;
+  newAttrs[NSParagraphStyleAttributeName] = placeholderPStyle;
+
   NSAttributedString *newAttrStr =
       [[NSAttributedString alloc] initWithString:_placeholderLabel.text
                                       attributes:newAttrs];
@@ -1052,12 +1069,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  // detect alignment change
+  AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+  NSString *currentAlignment = [alignmentStyle getStyleState];
+  if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
+    updateNeeded = YES;
+  }
+
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
       // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
+      _recentlyEmittedAlignment = currentAlignment;
 
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getType]),
@@ -1078,7 +1103,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
            .image = GET_STYLE_STATE([ImageStyle getType]),
-           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])});
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+           .alignment = [currentAlignment UTF8String]});
     }
   }
 
@@ -1203,6 +1229,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"setTextAlignment"]) {
+    NSString *alignmentString = (NSString *)args[0];
+
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    [alignmentStyle
+          addAlignment:[AlignmentUtils stringToAlignment:alignmentString]
+                 range:textView.selectedRange
+            withTyping:YES
+        withDirtyRange:YES];
+
+    [self anyTextMayHaveBeenModified];
+    if (!_placeholderLabel.isHidden) {
+      [self refreshPlaceholderLabelStyles];
+    }
   }
 }
 
@@ -1768,6 +1808,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           [textView.textStorage.string substringWithRange:selectedRange];
     }
 
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    NSString *currentAlignment = [alignmentStyle getStyleState];
+
     emitter->onContextMenuItemPress(
         {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
@@ -1793,7 +1836,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
              .link = GET_STYLE_STATE([LinkStyle getType]),
              .image = GET_STYLE_STATE([ImageStyle getType]),
              .mention = GET_STYLE_STATE([MentionStyle getType]),
-             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])}});
+             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+             .alignment = [currentAlignment UTF8String]}});
   }
 }
 

@@ -1,8 +1,11 @@
 #import "InputAttributesManager.h"
+#import "AlignmentUtils.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
+#import "ParagraphAttributesUtils.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "ZeroWidthSpaceUtils.h"
 
 @implementation InputAttributesManager {
   NSMutableArray<NSValue *> *_dirtyRanges;
@@ -87,6 +90,11 @@
     [_input->textView.textStorage setAttributes:_input->defaultTypingAttributes
                                           range:dirtyRange];
 
+    // Restore ZWS layout metadata that is stored in regular attributes and was
+    // overwritten by the default-attributes reset above.
+    [ZeroWidthSpaceUtils applyKernForZeroWidthSpacesInRange:dirtyRange
+                                                       host:_input];
+
     // Sort style types so paragraph styles come first. Their broad visual
     // attributes (e.g. foreground color, font) are laid down before inline
     // styles override them on their specific sub-ranges.
@@ -124,8 +132,8 @@
   EnrichedInputTextView *textView = _input->textView;
   NSRange selectedRange = textView.selectedRange;
 
-  // Typing attributes get reset when only selection changed to an empty line
-  // (or empty line with newline).
+  // Typing attributes get reset (except alignment) when only selection changed
+  // to an empty line (or empty line with newline).
   if (onlySelectionChanged) {
     NSRange paragraphRange =
         [textView.textStorage.string paragraphRangeForRange:selectedRange];
@@ -136,7 +144,14 @@
              characterIsMember:[textView.textStorage.string
                                    characterAtIndex:paragraphRange
                                                         .location]])) {
-      textView.typingAttributes = _input->defaultTypingAttributes;
+      NSParagraphStyle *currentTypingStyle =
+          textView.typingAttributes[NSParagraphStyleAttributeName];
+      NSTextAlignment savedAlignment = currentTypingStyle
+                                           ? currentTypingStyle.alignment
+                                           : NSTextAlignmentNatural;
+
+      [ParagraphAttributesUtils resetTypingAttributes:_input
+                                  preservingAlignment:savedAlignment];
       return;
     }
   }
@@ -155,7 +170,7 @@
         NSParagraphStyle *pStyle =
             (NSParagraphStyle *)_input->textView
                 .typingAttributes[NSParagraphStyleAttributeName];
-        if (pStyle != nullptr && pStyle.textLists.count == 1) {
+        if (pStyle != nullptr && pStyle.textLists.count >= 1) {
           NSMutableParagraphStyle *newPStyle =
               [[NSMutableParagraphStyle alloc] init];
           newPStyle.textLists = pStyle.textLists;

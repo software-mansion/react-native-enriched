@@ -97,6 +97,7 @@ function buildState(
       isConflicting: editor.isActive('link'),
       isBlocking: isFormatBlocked('image', editor, htmlStyle),
     },
+    alignment: 'left',
   };
 }
 
