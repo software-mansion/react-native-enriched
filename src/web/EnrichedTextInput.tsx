@@ -6,6 +6,7 @@ import {
   type CSSProperties,
 } from 'react';
 import './EnrichedTextInput.css';
+import type { Node } from '@tiptap/pm/model';
 import type {
   EnrichedTextInputInstance,
   EnrichedTextInputProps,
@@ -71,6 +72,7 @@ import {
 
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/shortcutPlugin';
+import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -99,6 +101,9 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onSubmitEditing,
+  returnKeyType,
+  submitBehavior,
   onMentionDetected,
   onStartMention,
   onChangeMention,
@@ -159,6 +164,41 @@ export const EnrichedTextInput = ({
       }),
     []
   );
+
+  const submitBehaviorRef = useRef(submitBehavior);
+  const onSubmitEditingRef = useRef(onSubmitEditing);
+  const onKeyPressRef = useRef(onKeyPress);
+  const editorInstanceRef = useRef<Editor | null>(null);
+
+  useEffect(() => {
+    submitBehaviorRef.current = submitBehavior;
+  }, [submitBehavior]);
+  useEffect(() => {
+    onSubmitEditingRef.current = onSubmitEditing;
+  }, [onSubmitEditing]);
+  useEffect(() => {
+    onKeyPressRef.current = onKeyPress;
+  }, [onKeyPress]);
+
+  const handleKeyDown = (doc: Node, event: KeyboardEvent): boolean => {
+    onKeyPressRef.current?.(adaptWebToNativeEvent(event, { key: event.key }));
+    if (event.key !== 'Enter') {
+      return false;
+    }
+
+    const sb = submitBehaviorRef.current;
+    if (sb === 'submit' || sb === 'blurAndSubmit') {
+      event.preventDefault();
+      const text = nativeLeafText(doc, 0, doc.content.size);
+      onSubmitEditingRef.current?.(adaptWebToNativeEvent(event, { text }));
+      if (sb === 'blurAndSubmit') {
+        editorInstanceRef.current?.commands.blur();
+      }
+      return true;
+    }
+
+    return false;
+  };
 
   const extensions = useMemo(
     () => [
@@ -226,17 +266,33 @@ export const EnrichedTextInput = ({
         onChangeSelection?.(adaptWebToNativeEvent(null, { start, end, text }));
       },
       editorProps: {
-        handleKeyDown: (_, event) => {
-          onKeyPress?.(adaptWebToNativeEvent(event, { key: event.key }));
-          return false;
-        },
+        handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
         attributes: {
           autoCapitalize,
+          enterkeyhint: returnKeyTypeToEnterKeyHint(returnKeyType),
         },
       },
     },
     [tiptapContent, extensions]
   );
+
+  useEffect(() => {
+    editorInstanceRef.current = editor ?? null;
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    let dom: HTMLElement;
+    try {
+      dom = editor.view.dom;
+    } catch {
+      return;
+    }
+    dom.setAttribute(
+      'enterkeyhint',
+      returnKeyTypeToEnterKeyHint(returnKeyType)
+    );
+  }, [editor, returnKeyType]);
 
   useEffect(() => {
     editor?.commands.normalizeBoldInStyledHeadings();

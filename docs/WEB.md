@@ -13,6 +13,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Mentions
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
+- Submit props: `submitBehavior` and `onSubmitEditing`. `returnKeyType` is only a hint, it maps to [enterkeyhint](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) (`done`, `go`, `next`, `previous`, `search`, `send`, `default`/`enter`). Not all values of `ReturnKeyTypeOptions` are supported, the behavior of this prop is heavily dependent on the browser's capabilities.
 - Input theming via `placeholderTextColor`, `cursorColor` and `selectionColor` props
 - Keyboard shortcuts for formatting 
 
@@ -36,9 +37,9 @@ Web support is still experimental. APIs and behavior can change in future releas
 
 ## Unsupported
 
+- **`returnKeyLabel`**: ignored on web, it's not possible to set it inside a browser.
 - **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
-- **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
