@@ -142,7 +142,11 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
               text:(NSString *)text
         attributes:(NSString *)attributes {
   if (_activeMentionRange == nullptr) {
-    return;
+    // No draft mention (indicator not typed) - fall back to the current
+    // selection.
+    _activeMentionRange =
+        [NSValue valueWithRange:self.host.textView.selectedRange];
+    _activeMentionIndicator = indicator;
   }
 
   _blockMentionEditing = YES;
