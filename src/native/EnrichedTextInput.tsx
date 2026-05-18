@@ -271,7 +271,7 @@ export const EnrichedTextInput = ({
       Commands.setSelection(nullthrows(nativeRef.current), start, end);
     },
     setTextAlignment: (
-      alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+      alignment: 'left' | 'center' | 'right' | 'justify' | 'auto'
     ) => {
       Commands.setTextAlignment(nullthrows(nativeRef.current), alignment);
     },
