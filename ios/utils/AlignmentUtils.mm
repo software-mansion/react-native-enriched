@@ -16,7 +16,7 @@
     return @"justify";
   case NSTextAlignmentNatural:
   default:
-    return @"left";
+    return @"auto";
   }
 }
 
@@ -68,6 +68,8 @@
 
 + (NSString *)cssValueForAlignment:(NSTextAlignment)alignment {
   switch (alignment) {
+  case NSTextAlignmentLeft:
+    return @"left";
   case NSTextAlignmentCenter:
     return @"center";
   case NSTextAlignmentRight:

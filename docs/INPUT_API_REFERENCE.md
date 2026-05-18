@@ -299,7 +299,7 @@ interface OnChangeStateEvent {
 - `isActive` indicates if the style is active within current selection.
 - `isBlocking` indicates if the style is blocked by other currently active, meaning it can't be toggled.
 - `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove conflicting style.
-- `alignment` indicates the current text alignment of the paragraph at the cursor position. Possible values: `'left'`, `'center'`, `'right'`, `'justify'`.
+- `alignment` indicates the current text alignment of the paragraph at the cursor position. Possible values: `'left'`, `'center'`, `'right'`, `'justify'`, `'auto'`.
 
 | Type                                                        | Platform |
 |-------------------------------------------------------------|----------|
@@ -609,12 +609,15 @@ Sets the selection at the given indexes.
 ### `.setTextAlignment()`
 
 ```ts
-setTextAlignment: (alignment: 'left' | 'center' | 'right' | 'justify' | 'default') => void;
+setTextAlignment: (alignment: 'left' | 'center' | 'right' | 'justify' | 'auto') => void;
 ```
 
 Sets text alignment for the paragraph(s) at the current selection. When inside a list, the alignment is applied to all contiguous list items.
 
-- `alignment` - the desired text alignment. Use `'default'` to reset to the system natural alignment.
+- `alignment` - the desired text alignment. Use `'auto'` to reset to the system natural alignment.
+
+> [!NOTE]
+> This method is iOS only.
 
 ### `.startMention()`
 
