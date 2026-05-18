@@ -617,7 +617,7 @@ Sets text alignment for the paragraph(s) at the current selection. When inside a
 - `alignment` - the desired text alignment. Use `'auto'` to reset to the system natural alignment.
 
 > [!NOTE]
-> This method is iOS only.
+> This method is iOS only for now.
 
 ### `.startMention()`
 
