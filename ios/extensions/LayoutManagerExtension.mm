@@ -406,13 +406,14 @@ static void const *kInputKey = &kInputKey;
   UIImage *image = isChecked ? host.config.checkboxCheckedImage
                              : host.config.checkboxUncheckedImage;
   CGFloat gapWidth = [host.config checkboxListGapWidth];
-  CGFloat boxSize = [host.config checkboxListBoxSize];
+  CGFloat configuredBoxSize = [host.config checkboxListBoxSize];
 
+  CGFloat boxSize = MIN(configuredBoxSize, usedRect.size.height);
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
   CGFloat boxX = origin.x + indent - gapWidth - boxSize;
   CGFloat boxY = centerY - boxSize / 2.0;
 
-  [image drawAtPoint:CGPointMake(boxX, boxY)];
+  [image drawInRect:CGRectMake(boxX, boxY, boxSize, boxSize)];
 }
 
 - (void)drawBullet:(id<EnrichedViewHost>)host
