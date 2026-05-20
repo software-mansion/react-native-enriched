@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import { toolbarButton } from '../helpers/toolbar';
 import {
   editorLocator,
+  focusEnrichedEditable,
   getSerializedHtml,
   gotoVisualRegression,
   setEditorHtml,
@@ -166,9 +167,8 @@ test.describe('images', () => {
       timeout: VISIBILITY_TIMEOUT_MS,
     });
 
-    const editor = editorLocator(page);
     for (const key of toolbarOrder) {
-      await editor.click();
+      const editor = await focusEnrichedEditable(page);
       await editor.press('Meta+A');
       await toolbarButton(page, key).click();
       await expect

@@ -1,0 +1,58 @@
+.mention-popup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 1;
+  border: 1px solid grey;
+  background: white;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.mention-popup__list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.mention-popup__item {
+  margin: 0;
+  padding: 0;
+}
+
+.mention-popup__button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: left;
+}
+
+.mention-popup__button:hover,
+.mention-popup__button:focus-visible {
+  background: rgba(0, 26, 114, 0.08);
+}
+
+.mention-popup__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: gainsboro;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mention-popup__label {
+  flex: 1;
+}

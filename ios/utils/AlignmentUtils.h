@@ -13,4 +13,8 @@
 
 + (NSTextAlignment)markerToAlignment:(NSString *)marker;
 
++ (NSString *)cssValueForAlignment:(NSTextAlignment)alignment;
+
++ (NSTextAlignment)alignmentFromStyleParams:(NSString *)params;
+
 @end

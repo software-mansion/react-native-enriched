@@ -1519,15 +1519,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (mentionStyleClass == nullptr) {
     return;
   }
-  if ([mentionStyleClass getActiveMentionRange] == nullptr) {
-    return;
-  }
 
-  if ([StyleUtils
-          handleStyleBlocksAndConflicts:[MentionStyle getType]
-                                  range:[[mentionStyleClass
-                                            getActiveMentionRange] rangeValue]
-                                forHost:self]) {
+  NSValue *activeMentionRange = [mentionStyleClass getActiveMentionRange];
+  NSRange rangeToUse = activeMentionRange != nullptr
+                           ? [activeMentionRange rangeValue]
+                           : self.textView.selectedRange;
+
+  if ([StyleUtils handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                          range:rangeToUse
+                                        forHost:self]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
     [self anyTextMayHaveBeenModified];
   }

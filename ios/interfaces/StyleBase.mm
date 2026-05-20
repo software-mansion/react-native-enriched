@@ -2,7 +2,7 @@
 #import "AttributeEntry.h"
 #import "OccurenceUtils.h"
 #import "RangeUtils.h"
-#import "TextListUtils.h"
+#import "TextListsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
 
 @implementation StyleBase
@@ -101,9 +101,9 @@
                   if (pStyle == nullptr)
                     return;
                   pStyle.textLists =
-                      [TextListUtils textListsByAdding:value
-                                   withExclusivePrefix:[self getMarkerPrefix]
-                                               toArray:pStyle.textLists];
+                      [TextListsUtils textListsByAdding:value
+                                    withExclusivePrefix:[self getMarkerPrefix]
+                                                toArray:pStyle.textLists];
                   [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -139,9 +139,9 @@
                   if (pStyle == nullptr)
                     return;
                   pStyle.textLists =
-                      [TextListUtils textListsByRemoving:[self getValue]
-                                              withPrefix:[self getMarkerPrefix]
-                                               fromArray:pStyle.textLists];
+                      [TextListsUtils textListsByRemoving:[self getValue]
+                                               withPrefix:[self getMarkerPrefix]
+                                                fromArray:pStyle.textLists];
                   [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -165,9 +165,9 @@
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = [TextListUtils textListsByAdding:value
-                                    withExclusivePrefix:[self getMarkerPrefix]
-                                                toArray:pStyle.textLists];
+    pStyle.textLists = [TextListsUtils textListsByAdding:value
+                                     withExclusivePrefix:[self getMarkerPrefix]
+                                                 toArray:pStyle.textLists];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
@@ -187,9 +187,9 @@
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
     pStyle.textLists = pStyle.textLists =
-        [TextListUtils textListsByRemoving:[self getValue]
-                                withPrefix:[self getMarkerPrefix]
-                                 fromArray:pStyle.textLists];
+        [TextListsUtils textListsByRemoving:[self getValue]
+                                 withPrefix:[self getMarkerPrefix]
+                                  fromArray:pStyle.textLists];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
@@ -205,8 +205,8 @@
            [valueString isEqualToString:[self getValue]];
   } else {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
-    return pStyle != nullptr && [TextListUtils textLists:pStyle.textLists
-                                           containsValue:[self getValue]];
+    return pStyle != nullptr && [TextListsUtils textLists:pStyle.textLists
+                                            containsValue:[self getValue]];
   }
 }
 

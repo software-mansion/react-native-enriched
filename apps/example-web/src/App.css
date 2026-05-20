@@ -37,6 +37,16 @@ body {
   margin: 0 0 24px;
 }
 
+.editor-mention-host {
+  position: relative;
+  width: 100%;
+  align-self: stretch;
+}
+
+.editor-mention-host--mention-open {
+  z-index: 100;
+}
+
 .btn {
   flex: 1;
   padding: 16px;

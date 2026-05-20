@@ -2,6 +2,7 @@
 #import "AlignmentUtils.h"
 #import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
+#import "ParagraphAttributesUtils.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "ZeroWidthSpaceUtils.h"
@@ -149,23 +150,8 @@
                                            ? currentTypingStyle.alignment
                                            : NSTextAlignmentNatural;
 
-      NSMutableDictionary *newAttrs =
-          [_input->defaultTypingAttributes mutableCopy];
-
-      NSParagraphStyle *defaultPStyle = newAttrs[NSParagraphStyleAttributeName];
-      NSMutableParagraphStyle *paraStyle =
-          defaultPStyle ? [defaultPStyle mutableCopy]
-                        : [[NSMutableParagraphStyle alloc] init];
-
-      // preserve alignment
-      paraStyle.alignment = savedAlignment;
-      NSString *markerFormat =
-          [AlignmentUtils alignmentToMarker:savedAlignment];
-      paraStyle.textLists =
-          @[ [[NSTextList alloc] initWithMarkerFormat:markerFormat options:0] ];
-
-      newAttrs[NSParagraphStyleAttributeName] = paraStyle;
-      textView.typingAttributes = newAttrs;
+      [ParagraphAttributesUtils resetTypingAttributes:_input
+                                  preservingAlignment:savedAlignment];
       return;
     }
   }

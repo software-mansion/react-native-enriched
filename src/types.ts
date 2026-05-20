@@ -426,7 +426,7 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     attributes?: Record<string, string>
   ) => void;
   setTextAlignment: (
-    alignment: 'left' | 'center' | 'right' | 'justify' | 'default'
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'auto'
   ) => void;
 }
 

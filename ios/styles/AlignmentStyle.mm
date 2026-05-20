@@ -1,6 +1,6 @@
 #import "AlignmentUtils.h"
 #import "StyleHeaders.h"
-#import "TextListUtils.h"
+#import "TextListsUtils.h"
 
 @implementation AlignmentStyle
 
@@ -39,7 +39,7 @@
                     [(NSParagraphStyle *)value mutableCopy];
 
                 NSString *marker =
-                    [TextListUtils
+                    [TextListsUtils
                         firstTextListWithPrefix:[self getMarkerPrefix]
                                         inArray:pStyle.textLists]
                         .markerFormat;
@@ -75,16 +75,16 @@
   NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
   if (pStyle == nil)
     return NO;
-  return [TextListUtils textLists:pStyle.textLists
-                   containsPrefix:[self getMarkerPrefix]];
+  return [TextListsUtils textLists:pStyle.textLists
+                    containsPrefix:[self getMarkerPrefix]];
 }
 
 - (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSParagraphStyle *savedPStyle = pair.styleValue;
   NSString *markerFormat =
-      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
-                                     inArray:savedPStyle.textLists]
+      [TextListsUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                      inArray:savedPStyle.textLists]
           .markerFormat;
   if (markerFormat == nil)
     return;
@@ -98,8 +98,8 @@
       textView.typingAttributes[NSParagraphStyleAttributeName];
 
   NSString *marker =
-      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
-                                     inArray:paraStyle.textLists]
+      [TextListsUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                      inArray:paraStyle.textLists]
           .markerFormat;
 
   NSTextAlignment currentAlignment = [AlignmentUtils markerToAlignment:marker];
@@ -112,8 +112,8 @@
   if (pStyle == nil)
     return;
   NSString *marker =
-      [TextListUtils firstTextListWithPrefix:[self getMarkerPrefix]
-                                     inArray:pStyle.textLists]
+      [TextListsUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                      inArray:pStyle.textLists]
           .markerFormat;
   NSTextAlignment alignment = [AlignmentUtils markerToAlignment:marker];
   pStyle.alignment = alignment;

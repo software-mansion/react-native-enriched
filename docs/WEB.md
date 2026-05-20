@@ -10,17 +10,37 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Ordered lists, unordered lists, checkbox lists
 - Images(via `setImage` ref method)
 - Manual links (via `setLink` ref method)
+- Mentions
 - `getHTML`, `setValue`, selection mapping
 - Core callbacks: `onChange`, `onChangeState`, `onFocus`, `onBlur`, `onSelectionChange`
+- Submit props: `submitBehavior` and `onSubmitEditing`. `returnKeyType` is only a hint, it maps to [enterkeyhint](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) (`done`, `go`, `next`, `previous`, `search`, `send`, `default`/`enter`). Not all values of `ReturnKeyTypeOptions` are supported, the behavior of this prop is heavily dependent on the browser's capabilities.
+- Input theming via `placeholderTextColor`, `cursorColor` and `selectionColor` props
+- Keyboard shortcuts for formatting 
+
+## Keyboard shortcuts
+
+| Action | Mac | Windows/Linux |
+| --- | --- | --- |
+| Bold | ⌘ B | Ctrl+B |
+| Italic | ⌘ I | Ctrl+I |
+| Underline | ⌘ U | Ctrl+U |
+| Strikethrough | ⌘ Shift+X | Ctrl+Shift+X |
+| Inline code | ⌘ Shift+C | Ctrl+Shift+C |
+| Code block | ⌘ Alt Shift+C | Ctrl+Alt+Shift+C |
+| Normal paragraph | ⌘ Alt+0 | Ctrl+Alt+0 |
+| Heading `n` (h1–h6) | ⌘ Alt+1 … ⌘ Alt+6 | Ctrl+Alt+1 … Ctrl+Alt+6 |
+| Numbered list | ⌘ Shift+7 | Ctrl+Shift+7 |
+| Bulleted list | ⌘ Shift+8 | Ctrl+Shift+8 |
+| Checkbox list | ⌘ Shift+9 | Ctrl+Shift+9 |
+| Paste plain text | ⌘ Shift+V | Ctrl+Shift+V |
+
 
 ## Unsupported
 
-- **Mentions**: `startMention` and `setMention` are no-ops. Props `mentionIndicators`, `onMentionDetected`, `onStartMention`, `onChangeMention`, and `onEndMention` are ignored. `onChangeState.mention` is always inactive.
+- **`returnKeyLabel`**: ignored on web, it's not possible to set it inside a browser.
 - **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
-- **Submit and keyboard props**: `onSubmitEditing`, `returnKeyType`, `returnKeyLabel`, and `submitBehavior` have no effect.
 - **Context menu**: `contextMenuItems` is ignored.
-- **Theming props**: `placeholderTextColor`, `cursorColor`, and `selectionColor` are not applied.
 - **HTML normalizer flag**: `useHtmlNormalizer` is ignored; paste behavior follows the browser pipeline.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
 - **`EnrichedText`**: The read-only component is not exported on web.

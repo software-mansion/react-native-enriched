@@ -10,12 +10,9 @@
     @([StrikethroughStyle getType]) : @[],
     @([InlineCodeStyle getType]) :
         @[ @([LinkStyle getType]), @([MentionStyle getType]) ],
-    @([LinkStyle getType]) : @[
-      @([InlineCodeStyle getType]), @([LinkStyle getType]),
-      @([MentionStyle getType])
-    ],
-    @([MentionStyle getType]) :
-        @[ @([InlineCodeStyle getType]), @([LinkStyle getType]) ],
+    @([LinkStyle getType]) :
+        @[ @([LinkStyle getType]), @([MentionStyle getType]) ],
+    @([MentionStyle getType]) : @[ @([LinkStyle getType]) ],
     @([H1Style getType]) : @[
       @([H2Style getType]), @([H3Style getType]), @([H4Style getType]),
       @([H5Style getType]), @([H6Style getType]),
@@ -106,10 +103,14 @@
     @([StrikethroughStyle getType]) : @[ @([CodeBlockStyle getType]) ],
     @([InlineCodeStyle getType]) :
         @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([LinkStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
-    @([MentionStyle getType]) :
-        @[ @([CodeBlockStyle getType]), @([ImageStyle getType]) ],
+    @([LinkStyle getType]) : @[
+      @([CodeBlockStyle getType]), @([ImageStyle getType]),
+      @([InlineCodeStyle getType])
+    ],
+    @([MentionStyle getType]) : @[
+      @([CodeBlockStyle getType]), @([ImageStyle getType]),
+      @([InlineCodeStyle getType])
+    ],
     @([H1Style getType]) : @[],
     @([H2Style getType]) : @[],
     @([H3Style getType]) : @[],
