@@ -16,6 +16,22 @@ import com.swmansion.enriched.textinput.utils.safelyInsertZWS
 class AlignmentStyles(
   private val view: EnrichedTextInputView,
 ) {
+  private fun setAlignmentSpan(
+    spannable: Spannable,
+    cssValue: String,
+    start: Int,
+    end: Int,
+    flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+  ) {
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(
+      EnrichedInputAlignmentSpan(cssValue),
+      safeStart,
+      safeEnd,
+      flags,
+    )
+  }
+
   private fun toCssValue(alignment: String): String =
     when (alignment) {
       "center" -> "center"
@@ -134,12 +150,7 @@ class AlignmentStyles(
       if (paraStart == paraEnd) {
         (s as SpannableStringBuilder).safelyInsertZWS(activeCursor)
 
-        s.setSpan(
-          EnrichedInputAlignmentSpan(anchorAlignmentToRestore),
-          activeCursor,
-          activeCursor + 1,
-          Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-        )
+        setAlignmentSpan(s, anchorAlignmentToRestore, activeCursor, activeCursor + 1)
       }
       autoStretchAlignmentSpan(s, activeCursor)
     } else {
@@ -181,15 +192,15 @@ class AlignmentStyles(
 
       // Preserve the top fragment when a newline split an aligned paragraph.
       if (sStart < paraStart) {
-        s.setSpan(EnrichedInputAlignmentSpan(cssValue), sStart, paraStart, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setAlignmentSpan(s, cssValue, sStart, paraStart)
       }
       // Preserve the bottom fragment.
       if (sEnd > paraEnd) {
-        s.setSpan(EnrichedInputAlignmentSpan(cssValue), paraEnd, sEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setAlignmentSpan(s, cssValue, paraEnd, sEnd)
       }
 
       // Re-apply to the current paragraph with exact bounds.
-      s.setSpan(EnrichedInputAlignmentSpan(dominantCss), paraStart, paraEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      setAlignmentSpan(s, dominantCss, paraStart, paraEnd)
     }
   }
 
@@ -213,27 +224,14 @@ class AlignmentStyles(
         if (paraStart == paraEnd) {
           // Empty paragraph: anchor alignment with a ZWS so the cursor sits inside the span.
           spannable.safelyInsertZWS(paraStart)
-          spannable.setSpan(
-            EnrichedInputAlignmentSpan(cssValue),
-            paraStart,
-            paraStart + 1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-          )
+          setAlignmentSpan(spannable, cssValue, paraStart, paraStart + 1)
 
           shiftedEnd++
           if (paraStart + 1 >= shiftedEnd) break
           cursor = paraStart + 2
           continue
         } else {
-          val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(paraStart, paraEnd)
-          if (safeStart < safeEnd) {
-            spannable.setSpan(
-              EnrichedInputAlignmentSpan(cssValue),
-              safeStart,
-              safeEnd,
-              Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-            )
-          }
+          setAlignmentSpan(spannable, cssValue, paraStart, paraEnd)
         }
       }
 
@@ -293,7 +291,8 @@ class AlignmentStyles(
 
     // INCLUSIVE_EXCLUSIVE is intentional here: autoStretchAlignmentSpan will convert
     // it to EXCLUSIVE_EXCLUSIVE once the merge is complete.
-    dominantTopSpan?.let { s.setSpan(it, paraStart, paraEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE) }
+    val (safeStart, safeEnd) = s.getSafeSpanBoundaries(paraStart, paraEnd)
+    dominantTopSpan?.let { s.setSpan(it, safeStart, safeEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE) }
     return cursorPosition
   }
 
@@ -315,20 +314,10 @@ class AlignmentStyles(
 
     return if (newParaStart == newParaEnd) {
       (s as SpannableStringBuilder).safelyInsertZWS(cursorPosition)
-      s.setSpan(
-        EnrichedInputAlignmentSpan(prevSpan.cssValue),
-        cursorPosition,
-        cursorPosition + 1,
-        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-      )
+      setAlignmentSpan(s, prevSpan.cssValue, cursorPosition, cursorPosition + 1)
       cursorPosition + 1
     } else {
-      s.setSpan(
-        EnrichedInputAlignmentSpan(prevSpan.cssValue),
-        newParaStart,
-        newParaEnd,
-        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-      )
+      setAlignmentSpan(s, prevSpan.cssValue, newParaStart, newParaEnd)
       cursorPosition
     }
   }
@@ -349,10 +338,10 @@ class AlignmentStyles(
       spannable.removeSpan(span)
 
       if (sStart < paraStart) {
-        spannable.setSpan(EnrichedInputAlignmentSpan(span.cssValue), sStart, paraStart, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setAlignmentSpan(spannable, span.cssValue, sStart, paraStart)
       }
       if (sEnd > paraEnd) {
-        spannable.setSpan(EnrichedInputAlignmentSpan(span.cssValue), paraEnd, sEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setAlignmentSpan(spannable, span.cssValue, paraEnd, sEnd)
       }
     }
   }
