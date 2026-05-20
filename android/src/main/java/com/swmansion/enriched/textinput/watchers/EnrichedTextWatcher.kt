@@ -1,11 +1,15 @@
 package com.swmansion.enriched.textinput.watchers
 
 import android.text.Editable
+import android.text.Spannable
 import android.text.TextWatcher
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.events.OnChangeTextEvent
+import com.swmansion.enriched.textinput.spans.EnrichedInputAlignmentSpan
+import com.swmansion.enriched.textinput.spans.EnrichedSpans
 
 class EnrichedTextWatcher(
   private val view: EnrichedTextInputView,
@@ -14,8 +18,8 @@ class EnrichedTextWatcher(
   private var startCursorPosition: Int = 0
   private var previousTextLength: Int = 0
 
-  // Track exactly what text is being deleted
   private var deletedText: String = ""
+  private var anchorAlignmentToRestore: String? = null
 
   override fun beforeTextChanged(
     s: CharSequence?,
@@ -24,8 +28,28 @@ class EnrichedTextWatcher(
     after: Int,
   ) {
     previousTextLength = s?.length ?: 0
-    // If count > 0, text is being deleted or replaced. Capture it.
     deletedText = if (count > 0 && s != null) s.substring(start, start + count) else ""
+
+    anchorAlignmentToRestore = null
+
+    // When a ZWS is being deleted, check whether it was anchoring a list or paragraph
+    // style. If so, capture the co-located alignment value so AlignmentStyles can
+    // re-anchor it after the deletion completes.
+    if (deletedText == EnrichedConstants.ZWS_STRING && s is Spannable) {
+      val isBlockAnchor =
+        EnrichedSpans.listSpans.values
+          .any { config -> s.getSpans(start, start + 1, config.clazz).isNotEmpty() } ||
+          EnrichedSpans.paragraphSpans.values
+            .any { config -> s.getSpans(start, start + 1, config.clazz).isNotEmpty() }
+
+      if (isBlockAnchor) {
+        anchorAlignmentToRestore =
+          s
+            .getSpans(start, start + 1, EnrichedInputAlignmentSpan::class.java)
+            .firstOrNull()
+            ?.cssValue
+      }
+    }
   }
 
   override fun onTextChanged(
@@ -52,7 +76,7 @@ class EnrichedTextWatcher(
     view.inlineStyles?.afterTextChanged(s, endCursorPosition)
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
-    view.alignmentStyles?.afterTextChanged(s, endCursorPosition, deletedText)
+    view.alignmentStyles?.afterTextChanged(s, endCursorPosition, deletedText, anchorAlignmentToRestore)
     view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
   }
 

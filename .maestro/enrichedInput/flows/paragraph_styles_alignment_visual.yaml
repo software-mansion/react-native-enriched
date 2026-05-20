@@ -1,6 +1,4 @@
 appId: swmansion.enriched.example
-tags:
-  - ios-only
 ---
 # Visually validates text alignment rendering
 - launchApp

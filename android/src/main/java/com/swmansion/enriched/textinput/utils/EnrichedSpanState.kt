@@ -52,14 +52,12 @@ class EnrichedSpanState(
     private set
   var mentionStart: Int? = null
     private set
-  var currentAlignment: String = "left"
+  var currentAlignment: String = "auto"
     private set
 
   fun setAlignment(value: String) {
-    if (currentAlignment != value) {
-      currentAlignment = value
-      emitStateChangeEvent()
-    }
+    this.currentAlignment = value
+    emitStateChangeEvent()
   }
 
   fun setBoldStart(start: Int?) {

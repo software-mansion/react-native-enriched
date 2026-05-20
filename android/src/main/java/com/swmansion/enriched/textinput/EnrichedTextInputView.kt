@@ -143,6 +143,16 @@ class EnrichedTextInputView :
     prepareComponent()
   }
 
+  override fun scrollTo(
+    x: Int,
+    y: Int,
+  ) {
+    // Android's internal cursor tracker gets confused by ALIGN_CENTER + LeadingMarginSpan
+    // and attempts to scroll the text horizontally.
+    // We lock the horizontal scroll to 0 to prevent the view from shifting.
+    super.scrollTo(0, y)
+  }
+
   override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
     var inputConnection = super.onCreateInputConnection(outAttrs)
 

@@ -105,7 +105,7 @@ class EnrichedSelection(
       state.setStart(style, getParametrizedStyleStart(config.clazz))
     }
 
-    val currentAlignment = view.alignmentStyles?.getCurrentAlignment() ?: "left"
+    val currentAlignment = view.alignmentStyles?.getCurrentAlignment() ?: "auto"
     state.setAlignment(currentAlignment)
   }
 
