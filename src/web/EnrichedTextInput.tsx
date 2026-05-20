@@ -123,11 +123,6 @@ export const EnrichedTextInput = ({
     htmlStyleRef.current = resolvedHtmlStyle;
   }, [resolvedHtmlStyle]);
 
-  const stripBoldInStyledHeadingsPlugin = useMemo(
-    () => createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
-    []
-  );
-
   const mentionIndicatorsRef = useRef(mentionIndicators);
   useEffect(() => {
     mentionIndicatorsRef.current = mentionIndicators;
@@ -147,23 +142,6 @@ export const EnrichedTextInput = ({
       onMentionDetected,
     };
   }, [onStartMention, onChangeMention, onEndMention, onMentionDetected]);
-
-  const mentionPlugin = useMemo(
-    () =>
-      createMentionPlugin({
-        indicatorsRef: mentionIndicatorsRef,
-        callbacksRef: mentionCallbacksRef,
-      }),
-    []
-  );
-
-  const shortcutPlugin = useMemo(
-    () =>
-      ShortcutPlugin.configure({
-        getHtmlStyle: () => htmlStyleRef.current,
-      }),
-    []
-  );
 
   const submitBehaviorRef = useRef(submitBehavior);
   const onSubmitEditingRef = useRef(onSubmitEditing);
@@ -223,22 +201,22 @@ export const EnrichedTextInput = ({
       EnrichedCheckboxList,
       StripMarksInCodeBlockPlugin,
       StripMarksOnImagePlugin,
-      stripBoldInStyledHeadingsPlugin,
+      createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
-      mentionPlugin,
-      shortcutPlugin,
+      createMentionPlugin({
+        indicatorsRef: mentionIndicatorsRef,
+        callbacksRef: mentionCallbacksRef,
+      }),
+      ShortcutPlugin.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [
-      stripBoldInStyledHeadingsPlugin,
-      mentionPlugin,
-      shortcutPlugin,
-      placeholder,
-    ]
+    [placeholder]
   );
 
   const editor = useEditor(
