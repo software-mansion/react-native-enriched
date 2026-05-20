@@ -1,4 +1,8 @@
-import type { HtmlStyle, OnChangeStateEvent } from 'react-native-enriched';
+import type {
+  EnrichedTextHtmlStyle,
+  HtmlStyle,
+  OnChangeStateEvent,
+} from 'react-native-enriched';
 
 export type StylesState = OnChangeStateEvent;
 
@@ -28,6 +32,7 @@ export const DEFAULT_STYLES: StylesState = {
   image: DEFAULT_STYLE_STATE,
   mention: DEFAULT_STYLE_STATE,
   checkboxList: DEFAULT_STYLE_STATE,
+  alignment: 'left',
 };
 
 export const DEFAULT_LINK_STATE = {
@@ -48,7 +53,7 @@ export const DEBUG_SCROLLABLE = false;
 // See: https://github.com/software-mansion/react-native-enriched/issues/229
 export const ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS = false;
 
-export const htmlStyle: HtmlStyle = {
+export const htmlStyle = {
   h1: {
     fontSize: 72,
     bold: true,
@@ -121,5 +126,25 @@ export const htmlStyle: HtmlStyle = {
     gapWidth: 16,
     marginLeft: 24,
     boxColor: 'rgb(0, 26, 114)',
+  },
+} satisfies HtmlStyle;
+
+export const enrichedTextHtmlStyle: EnrichedTextHtmlStyle = {
+  ...htmlStyle,
+  a: {
+    ...htmlStyle.a,
+    pressColor: 'darkgreen',
+  },
+  mention: {
+    '#': {
+      ...htmlStyle.mention['#'],
+      pressColor: 'darkgreen',
+      pressBackgroundColor: 'lightgreen',
+    },
+    '@': {
+      ...htmlStyle.mention['@'],
+      pressColor: 'darkblue',
+      pressBackgroundColor: 'blue',
+    },
   },
 };

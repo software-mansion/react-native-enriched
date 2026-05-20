@@ -1,0 +1,201 @@
+.tiptap.ProseMirror p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tiptap.ProseMirror-focused {
+  outline: none;
+}
+
+.eti-editor p.is-editor-empty:first-child::before {
+  color: var(--eti-placeholder-text-color, #adb5bd);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.eti-editor ::selection {
+  background-color: var(--eti-selection-color, Highlight);
+}
+
+.eti-editor code {
+  font-family: monospace;
+  background-color: var(--eti-code-bg-color);
+  color: var(--eti-code-color);
+  display: inline;
+  padding: 0;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.eti-editor h1 { font-size: var(--eti-h1-font-size); font-weight: var(--eti-h1-font-weight); margin: 0; line-height: normal; }
+.eti-editor h2 { font-size: var(--eti-h2-font-size); font-weight: var(--eti-h2-font-weight); margin: 0; line-height: normal; }
+.eti-editor h3 { font-size: var(--eti-h3-font-size); font-weight: var(--eti-h3-font-weight); margin: 0; line-height: normal; }
+.eti-editor h4 { font-size: var(--eti-h4-font-size); font-weight: var(--eti-h4-font-weight); margin: 0; line-height: normal; }
+.eti-editor h5 { font-size: var(--eti-h5-font-size); font-weight: var(--eti-h5-font-weight); margin: 0; line-height: normal; }
+.eti-editor h6 { font-size: var(--eti-h6-font-size); font-weight: var(--eti-h6-font-weight); margin: 0; line-height: normal; }
+
+.eti-editor blockquote {
+  border-left: var(--eti-blockquote-border-width) solid var(--eti-blockquote-border-color);
+  padding-left: var(--eti-blockquote-gap-width);
+  margin: 0;
+  color: var(--eti-blockquote-color);
+}
+
+.eti-editor blockquote p {
+  margin: 0;
+}
+
+.eti-editor codeblock {
+  display: block;
+  font-family: monospace;
+  background-color: var(--eti-codeblock-bg-color);
+  color: var(--eti-codeblock-color);
+  border-radius: var(--eti-codeblock-border-radius);
+}
+
+.eti-editor codeblock p {
+  margin: 0;
+}
+
+.eti-editor a {
+  color: var(--eti-link-color);
+  text-decoration-line: var(--eti-link-text-decoration-line);
+}
+
+.eti-editor ul:not([data-type]) {
+  margin: 0;
+  list-style: none;
+  padding-left: calc(
+    var(--eti-ul-margin-left, 16px) + var(--eti-ul-gap-width, 16px)
+  );
+}
+
+.eti-editor ul:not([data-type]) > li {
+  position: relative;
+}
+
+.eti-editor ul:not([data-type]) > li::before {
+  content: '';
+  position: absolute;
+  left: calc(
+    -1 * var(--eti-ul-gap-width, 16px) - var(--eti-ul-bullet-size, 8px)
+  );
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
+  }
+
+  transform: translateY(50%);
+  width: var(--eti-ul-bullet-size, 8px);
+  height: var(--eti-ul-bullet-size, 8px);
+  border-radius: 50%;
+  background-color: var(--eti-ul-bullet-color, currentColor);
+  pointer-events: none;
+}
+
+.eti-editor ol {
+  margin: 0;
+  list-style: none;
+  padding-left: calc(
+    var(--eti-ol-margin-left, 16px) + var(--eti-ol-gap-width, 16px)
+  );
+  counter-reset: eti-ol;
+}
+
+.eti-editor ol > li {
+  position: relative;
+  counter-increment: eti-ol;
+}
+
+.eti-editor ol > li::before {
+  content: counter(eti-ol) '.';
+  position: absolute;
+  left: calc(-1 * var(--eti-ol-gap-width, 16px));
+  bottom: 0;
+  transform: translateX(-50%);
+  color: var(--eti-ol-marker-color, currentColor);
+  font-weight: var(--eti-ol-marker-font-weight, inherit);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.eti-editor li {
+  margin: 0;
+}
+
+.eti-editor li p {
+  margin: 0;
+}
+
+.eti-editor .eti-inline-image {
+  vertical-align: text-bottom;
+  line-height: 0;
+  display: inline-block;
+}
+
+.eti-editor .eti-inline-image-img {
+  object-fit: contain;
+}
+
+.eti-editor .eti-inline-image--placeholder {
+  display: inline-block;
+  overflow: hidden;
+  color: inherit;
+}
+
+.eti-editor .eti-inline-image-broken-glyph {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.eti-editor
+  .react-renderer.node-image.ProseMirror-selectednode
+  .eti-inline-image {
+    box-shadow: inset 0 0 0 999px Highlight;
+}
+
+
+
+.eti-editor ul[data-type="checkboxList"] {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  padding-left: calc(
+    var(--eti-checkbox-margin-left, 16px) + var(--eti-checkbox-gap-width, 16px)
+  );
+}
+
+.eti-editor ul[data-type="checkboxList"] > li {
+  position: relative;
+  list-style: none;
+}
+
+.eti-editor ul[data-type="checkboxList"] > li > label {
+  position: absolute;
+  left: calc(
+    -1 * var(--eti-checkbox-gap-width, 16px) - var(--eti-checkbox-box-size, 24px)
+  );
+  transform: translateY(50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  bottom: 0.4em; 
+  @supports (bottom: 0.5lh) {
+    bottom: 0.5lh;
+  }
+}
+
+.eti-editor ul[data-type="checkboxList"] > li > label input[type='checkbox'] {
+  width: var(--eti-checkbox-box-size, 24px);
+  height: var(--eti-checkbox-box-size, 24px);
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--eti-checkbox-box-color, #0000ff);
+}

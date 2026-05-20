@@ -1,0 +1,30 @@
+appId: swmansion.enriched.example
+---
+# Validates that text alignment is displayed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <p>Left aligned</p>
+          <p style="text-align: center">Centre aligned</p>
+          <h6 style="text-align: center">Heading 6</h6>
+          <p style="text-align: right">Right aligned</p>
+          <ol style="text-align: right">
+            <li>Element 1</li>
+            <li>Element 2</li>
+          </ol>
+        </html>
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'alignment_visual'

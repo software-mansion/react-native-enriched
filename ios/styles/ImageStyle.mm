@@ -1,128 +1,112 @@
 #import "EnrichedTextInputView.h"
 #import "ImageAttachment.h"
-#import "MediaAttachment.h"
-#import "OccurenceUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 
 // custom NSAttributedStringKey to differentiate the image
-static NSString *const ImageAttributeName = @"ImageAttributeName";
+static NSString *const ImageAttributeName = @"EnrichedImage";
 
-@implementation ImageStyle {
-  EnrichedTextInputView *_input;
-}
+@implementation ImageStyle
 
-+ (StyleType)getStyleType {
++ (StyleType)getType {
   return Image;
 }
 
-+ (BOOL)isParagraphStyle {
+- (NSString *)getKey {
+  return ImageAttributeName;
+}
+
+- (BOOL)isParagraph {
   return NO;
 }
 
-- (instancetype)initWithInput:(id)input {
-  self = [super init];
-  _input = (EnrichedTextInputView *)input;
-  return self;
-}
-
-- (void)applyStyle:(NSRange)range {
+- (void)applyStyling:(NSRange)range {
   // no-op for image
 }
 
-- (void)addAttributes:(NSRange)range withTypingAttr:(BOOL)withTypingAttr {
-  // no-op for image
-}
+- (void)reapplyFromStylePair:(StylePair *)pair {
+  NSRange range = [pair.rangeValue rangeValue];
+  ImageData *imageData = (ImageData *)pair.styleValue;
+  if (imageData == nullptr || range.length == 0) {
+    return;
+  }
 
-- (void)addTypingAttributes {
-  // no-op for image
-}
+  ImageAttachment *attachment =
+      [[ImageAttachment alloc] initWithImageData:imageData];
+  attachment.delegate = (id)self.host;
 
-- (void)removeAttributes:(NSRange)range {
-  [_input->textView.textStorage beginEditing];
-  [_input->textView.textStorage removeAttribute:ImageAttributeName range:range];
-  [_input->textView.textStorage removeAttribute:NSAttachmentAttributeName
+  [self.host.textView.textStorage addAttributes:@{
+    NSAttachmentAttributeName : attachment,
+    ImageAttributeName : imageData
+  }
                                           range:range];
-  [_input->textView.textStorage endEditing];
 }
 
-- (void)removeTypingAttributes {
+- (AttributeEntry *)getEntryIfPresent:(NSRange)range {
+  return nullptr;
+}
+
+- (void)toggle:(NSRange)range {
+  // no-op for image
+}
+
+- (void)remove:(NSRange)range withDirtyRange:(BOOL)withDirtyRange {
+  [self.host.textView.textStorage beginEditing];
+  [self.host.textView.textStorage removeAttribute:ImageAttributeName
+                                            range:range];
+  [self.host.textView.textStorage removeAttribute:NSAttachmentAttributeName
+                                            range:range];
+  [self.host.textView.textStorage endEditing];
+
+  if (withDirtyRange) {
+    [self.host.attributesManager addDirtyRange:range];
+  }
+
+  [self removeTyping];
+}
+
+- (void)removeTyping {
   NSMutableDictionary *currentAttributes =
-      [_input->textView.typingAttributes mutableCopy];
+      [self.host.textView.typingAttributes mutableCopy];
   [currentAttributes removeObjectForKey:ImageAttributeName];
   [currentAttributes removeObjectForKey:NSAttachmentAttributeName];
-  _input->textView.typingAttributes = currentAttributes;
+  [self.host.attributesManager didRemoveTypingAttribute:ImageAttributeName];
+  self.host.textView.typingAttributes = currentAttributes;
 }
 
 - (BOOL)styleCondition:(id _Nullable)value range:(NSRange)range {
   return [value isKindOfClass:[ImageData class]];
 }
 
-- (BOOL)anyOccurence:(NSRange)range {
-  return [OccurenceUtils any:ImageAttributeName
-                   withInput:_input
-                     inRange:range
-               withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value range:range];
-               }];
-}
-
-- (BOOL)detectStyle:(NSRange)range {
-  if (range.length >= 1) {
-    return [OccurenceUtils detect:ImageAttributeName
-                        withInput:_input
-                          inRange:range
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value range:range];
-                    }];
-  } else {
-    return [OccurenceUtils detect:ImageAttributeName
-                        withInput:_input
-                          atIndex:range.location
-                    checkPrevious:YES
-                    withCondition:^BOOL(id _Nullable value, NSRange range) {
-                      return [self styleCondition:value range:range];
-                    }];
-  }
-}
-
-- (NSArray<StylePair *> *_Nullable)findAllOccurences:(NSRange)range {
-  return [OccurenceUtils all:ImageAttributeName
-                   withInput:_input
-                     inRange:range
-               withCondition:^BOOL(id _Nullable value, NSRange range) {
-                 return [self styleCondition:value range:range];
-               }];
-}
-
 - (ImageData *)getImageDataAt:(NSUInteger)location {
   NSRange imageRange = NSMakeRange(0, 0);
-  NSRange inputRange = NSMakeRange(0, _input->textView.textStorage.length);
+  NSRange inputRange = NSMakeRange(0, self.host.textView.textStorage.length);
 
   // don't search at the very end of input
   NSUInteger searchLocation = location;
-  if (searchLocation == _input->textView.textStorage.length) {
+  if (searchLocation == self.host.textView.textStorage.length) {
     return nullptr;
   }
 
   ImageData *imageData =
-      [_input->textView.textStorage attribute:ImageAttributeName
-                                      atIndex:searchLocation
-                        longestEffectiveRange:&imageRange
-                                      inRange:inputRange];
+      [self.host.textView.textStorage attribute:ImageAttributeName
+                                        atIndex:searchLocation
+                          longestEffectiveRange:&imageRange
+                                        inRange:inputRange];
 
   return imageData;
 }
 
 - (void)addImageAtRange:(NSRange)range
               imageData:(ImageData *)imageData
-          withSelection:(BOOL)withSelection {
+          withSelection:(BOOL)withSelection
+         withDirtyRange:(BOOL)withDirtyRange {
   if (!imageData)
     return;
 
   ImageAttachment *attachment =
       [[ImageAttachment alloc] initWithImageData:imageData];
-  attachment.delegate = _input;
+  attachment.delegate = (id)self.host;
 
   NSDictionary *attributes =
       @{NSAttachmentAttributeName : attachment, ImageAttributeName : imageData};
@@ -135,14 +119,19 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
     [TextInsertionUtils insertText:placeholderChar
                                 at:range.location
               additionalAttributes:attributes
-                             input:_input
+                              host:self.host
                      withSelection:withSelection];
   } else {
     [TextInsertionUtils replaceText:placeholderChar
                                  at:range
                additionalAttributes:attributes
-                              input:_input
+                               host:self.host
                       withSelection:withSelection];
+  }
+
+  if (withDirtyRange) {
+    NSRange insertedImageRange = NSMakeRange(range.location, 1);
+    [self.host.attributesManager addDirtyRange:insertedImageRange];
   }
 }
 
@@ -152,9 +141,10 @@ static NSString *const ImageAttributeName = @"ImageAttributeName";
   data.width = width;
   data.height = height;
 
-  [self addImageAtRange:_input->textView.selectedRange
+  [self addImageAtRange:self.host.textView.selectedRange
               imageData:data
-          withSelection:YES];
+          withSelection:YES
+         withDirtyRange:YES];
 }
 
 @end

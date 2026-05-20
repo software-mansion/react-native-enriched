@@ -239,29 +239,31 @@ class ListStyles(
     }
   }
 
-  private fun resolveInlineStyleName(name: String): String? = when (name) {
-    "bold" -> EnrichedSpans.BOLD
-    "italic" -> EnrichedSpans.ITALIC
-    "underline" -> EnrichedSpans.UNDERLINE
-    "strikethrough" -> EnrichedSpans.STRIKETHROUGH
-    "inline_code" -> EnrichedSpans.INLINE_CODE
-    else -> null
-  }
+  private fun resolveInlineStyleName(name: String): String? =
+    when (name) {
+      "bold" -> EnrichedSpans.BOLD
+      "italic" -> EnrichedSpans.ITALIC
+      "underline" -> EnrichedSpans.UNDERLINE
+      "strikethrough" -> EnrichedSpans.STRIKETHROUGH
+      "inline_code" -> EnrichedSpans.INLINE_CODE
+      else -> null
+    }
 
-  private fun resolveStyleName(name: String): String? = when (name) {
-    "h1" -> EnrichedSpans.H1
-    "h2" -> EnrichedSpans.H2
-    "h3" -> EnrichedSpans.H3
-    "h4" -> EnrichedSpans.H4
-    "h5" -> EnrichedSpans.H5
-    "h6" -> EnrichedSpans.H6
-    "blockquote" -> EnrichedSpans.BLOCK_QUOTE
-    "codeblock" -> EnrichedSpans.CODE_BLOCK
-    "unordered_list" -> EnrichedSpans.UNORDERED_LIST
-    "ordered_list" -> EnrichedSpans.ORDERED_LIST
-    "checkbox_list" -> EnrichedSpans.CHECKBOX_LIST
-    else -> null
-  }
+  private fun resolveStyleName(name: String): String? =
+    when (name) {
+      "h1" -> EnrichedSpans.H1
+      "h2" -> EnrichedSpans.H2
+      "h3" -> EnrichedSpans.H3
+      "h4" -> EnrichedSpans.H4
+      "h5" -> EnrichedSpans.H5
+      "h6" -> EnrichedSpans.H6
+      "blockquote" -> EnrichedSpans.BLOCK_QUOTE
+      "codeblock" -> EnrichedSpans.CODE_BLOCK
+      "unordered_list" -> EnrichedSpans.UNORDERED_LIST
+      "ordered_list" -> EnrichedSpans.ORDERED_LIST
+      "checkbox_list" -> EnrichedSpans.CHECKBOX_LIST
+      else -> null
+    }
 
   private fun handleConfigurableShortcuts(
     s: Editable,

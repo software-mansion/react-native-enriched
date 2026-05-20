@@ -1,8 +1,9 @@
 #import "LayoutManagerExtension.h"
 #import "ColorExtension.h"
-#import "EnrichedTextInputView.h"
-#import "ParagraphsUtils.h"
+#import "EnrichedViewHost.h"
+#import "RangeUtils.h"
 #import "StyleHeaders.h"
+#import "WeakBox.h"
 #import <objc/runtime.h>
 
 @implementation NSLayoutManager (LayoutManagerExtension)
@@ -10,11 +11,14 @@
 static void const *kInputKey = &kInputKey;
 
 - (id)input {
-  return objc_getAssociatedObject(self, kInputKey);
+  WeakBox *box = objc_getAssociatedObject(self, kInputKey);
+  return box.value;
 }
 
 - (void)setInput:(id)value {
-  objc_setAssociatedObject(self, kInputKey, value,
+  WeakBox *box = [WeakBox new];
+  box.value = value;
+  objc_setAssociatedObject(self, kInputKey, box,
                            OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
@@ -45,39 +49,33 @@ static void const *kInputKey = &kInputKey;
                                atPoint:(CGPoint)origin {
   [self my_drawBackgroundForGlyphRange:glyphRange atPoint:origin];
 
-  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)self.input;
-  if (typedInput == nullptr) {
+  id<EnrichedViewHost> host = self.input;
+  if (host == nullptr) {
     return;
   }
 
   NSRange visibleCharRange = [self characterRangeForGlyphRange:glyphRange
                                               actualGlyphRange:NULL];
 
-  [self drawBlockQuotes:typedInput
-                 origin:origin
-       visibleCharRange:visibleCharRange];
-  [self drawLists:typedInput origin:origin visibleCharRange:visibleCharRange];
-  [self drawCodeBlocks:typedInput
-                origin:origin
-      visibleCharRange:visibleCharRange];
+  [self drawBlockQuotes:host origin:origin visibleCharRange:visibleCharRange];
+  [self drawLists:host origin:origin visibleCharRange:visibleCharRange];
+  [self drawCodeBlocks:host origin:origin visibleCharRange:visibleCharRange];
 }
 
-- (void)drawCodeBlocks:(EnrichedTextInputView *)typedInput
+- (void)drawCodeBlocks:(id<EnrichedViewHost>)host
                 origin:(CGPoint)origin
       visibleCharRange:(NSRange)visibleCharRange {
-  CodeBlockStyle *codeBlockStyle =
-      typedInput->stylesDict[@([CodeBlockStyle getStyleType])];
+  CodeBlockStyle *codeBlockStyle = host.stylesDict[@([CodeBlockStyle getType])];
   if (codeBlockStyle == nullptr) {
     return;
   }
 
-  NSArray<StylePair *> *allCodeBlocks =
-      [codeBlockStyle findAllOccurences:visibleCharRange];
+  NSArray<StylePair *> *allCodeBlocks = [codeBlockStyle all:visibleCharRange];
   NSArray<StylePair *> *mergedCodeBlocks =
       [self mergeContiguousStylePairs:allCodeBlocks];
-  UIColor *bgColor = [[typedInput->config codeBlockBgColor]
-      colorWithAlphaIfNotTransparent:0.4];
-  CGFloat radius = [typedInput->config codeBlockBorderRadius];
+  UIColor *bgColor =
+      [[host.config codeBlockBgColor] colorWithAlphaIfNotTransparent:0.4];
+  CGFloat radius = [host.config codeBlockBorderRadius];
   [bgColor setFill];
 
   for (StylePair *pair in mergedCodeBlocks) {
@@ -86,8 +84,8 @@ static void const *kInputKey = &kInputKey;
       continue;
 
     NSArray *paragraphs =
-        [ParagraphsUtils getSeparateParagraphsRangesIn:typedInput->textView
-                                                 range:blockCharacterRange];
+        [RangeUtils getSeparateParagraphsRangesIn:host.textView
+                                            range:blockCharacterRange];
     if (paragraphs.count == 0)
       continue;
 
@@ -201,19 +199,18 @@ static void const *kInputKey = &kInputKey;
   return mergedPairs;
 }
 
-- (void)drawBlockQuotes:(EnrichedTextInputView *)typedInput
+- (void)drawBlockQuotes:(id<EnrichedViewHost>)host
                  origin:(CGPoint)origin
        visibleCharRange:(NSRange)visibleCharRange {
-  BlockQuoteStyle *bqStyle =
-      typedInput->stylesDict[@([BlockQuoteStyle getStyleType])];
+  BlockQuoteStyle *bqStyle = host.stylesDict[@([BlockQuoteStyle getType])];
   if (bqStyle == nullptr) {
     return;
   }
 
-  NSArray *allBlockquotes = [bqStyle findAllOccurences:visibleCharRange];
+  NSArray *allBlockquotes = [bqStyle all:visibleCharRange];
 
   for (StylePair *pair in allBlockquotes) {
-    NSRange paragraphRange = [typedInput->textView.textStorage.string
+    NSRange paragraphRange = [host.textView.textStorage.string
         paragraphRangeForRange:[pair.rangeValue rangeValue]];
     NSRange paragraphGlyphRange =
         [self glyphRangeForCharacterRange:paragraphRange
@@ -229,116 +226,131 @@ static void const *kInputKey = &kInputKey;
                                    CGFloat x = paddingLeft;
                                    CGFloat y = paddingTop + rect.origin.y;
                                    CGFloat width =
-                                       [typedInput
-                                               ->config blockquoteBorderWidth];
+                                       [host.config blockquoteBorderWidth];
                                    CGFloat height = rect.size.height;
 
                                    CGRect lineRect =
                                        CGRectMake(x, y, width, height);
-                                   [[typedInput->config blockquoteBorderColor]
+                                   [[host.config blockquoteBorderColor]
                                        setFill];
                                    UIRectFill(lineRect);
                                  }];
   }
 }
 
-- (void)drawLists:(EnrichedTextInputView *)typedInput
+- (void)drawLists:(id<EnrichedViewHost>)host
               origin:(CGPoint)origin
     visibleCharRange:(NSRange)visibleCharRange {
   UnorderedListStyle *ulStyle =
-      typedInput->stylesDict[@([UnorderedListStyle getStyleType])];
-  OrderedListStyle *olStyle =
-      typedInput->stylesDict[@([OrderedListStyle getStyleType])];
-  CheckboxListStyle *cbStyle =
-      typedInput->stylesDict[@([CheckboxListStyle getStyleType])];
-  if (ulStyle == nullptr || olStyle == nullptr || cbStyle == nullptr) {
-    return;
-  }
+      host.stylesDict[@([UnorderedListStyle getType])];
+  OrderedListStyle *olStyle = host.stylesDict[@([OrderedListStyle getType])];
+  CheckboxListStyle *cbStyle = host.stylesDict[@([CheckboxListStyle getType])];
 
   NSMutableArray *allLists = [[NSMutableArray alloc] init];
-  [allLists addObjectsFromArray:[ulStyle findAllOccurences:visibleCharRange]];
-  [allLists addObjectsFromArray:[olStyle findAllOccurences:visibleCharRange]];
-  [allLists addObjectsFromArray:[cbStyle findAllOccurences:visibleCharRange]];
+
+  if (ulStyle != nullptr) {
+    [allLists addObjectsFromArray:[ulStyle all:visibleCharRange]];
+  }
+  if (olStyle != nullptr) {
+    [allLists addObjectsFromArray:[olStyle all:visibleCharRange]];
+  }
+  if (cbStyle != nullptr) {
+    [allLists addObjectsFromArray:[cbStyle all:visibleCharRange]];
+  }
 
   for (StylePair *pair in allLists) {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)pair.styleValue;
     NSDictionary *markerAttributes = @{
-      NSFontAttributeName : [typedInput->config orderedListMarkerFont],
-      NSForegroundColorAttributeName :
-          [typedInput->config orderedListMarkerColor]
+      NSFontAttributeName : [host.config orderedListMarkerFont],
+      NSForegroundColorAttributeName : [host.config orderedListMarkerColor]
     };
+    CGFloat indent = pStyle.firstLineHeadIndent;
 
-    NSArray *paragraphs = [ParagraphsUtils
-        getSeparateParagraphsRangesIn:typedInput->textView
-                                range:[pair.rangeValue rangeValue]];
+    NSArray *paragraphs =
+        [RangeUtils getSeparateParagraphsRangesIn:host.textView
+                                            range:[pair.rangeValue rangeValue]];
 
     for (NSValue *paragraph in paragraphs) {
       NSRange paragraphGlyphRange =
           [self glyphRangeForCharacterRange:[paragraph rangeValue]
                        actualCharacterRange:nullptr];
 
-      [self
-          enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
-                                   usingBlock:^(CGRect rect, CGRect usedRect,
-                                                NSTextContainer *container,
-                                                NSRange lineGlyphRange,
-                                                BOOL *stop) {
-                                     NSUInteger charIdx =
-                                         [self characterIndexForGlyphAtIndex:
-                                                   lineGlyphRange.location];
-                                     UIFont *font =
-                                         [typedInput->textView.textStorage
-                                                  attribute:NSFontAttributeName
-                                                    atIndex:charIdx
-                                             effectiveRange:nil];
-                                     CGRect textUsedRect =
-                                         [self getTextAlignedUsedRect:usedRect
-                                                                 font:font];
+      [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
+                                     usingBlock:^(CGRect rect, CGRect usedRect,
+                                                  NSTextContainer *container,
+                                                  NSRange lineGlyphRange,
+                                                  BOOL *stop) {
+                                       NSUInteger charIdx =
+                                           [self characterIndexForGlyphAtIndex:
+                                                     lineGlyphRange.location];
+                                       UIFont *font = [host.textView.textStorage
+                                                attribute:NSFontAttributeName
+                                                  atIndex:charIdx
+                                           effectiveRange:nil];
+                                       CGRect textUsedRect =
+                                           [self getTextAlignedUsedRect:usedRect
+                                                                   font:font];
 
-                                     NSString *markerFormat =
-                                         pStyle.textLists.firstObject
-                                             .markerFormat;
+                                       for (NSTextList *list in pStyle
+                                                .textLists) {
+                                         NSString *markerFormat =
+                                             list.markerFormat;
 
-                                     if (markerFormat ==
-                                         NSTextListMarkerDecimal) {
-                                       NSString *marker = [self
-                                           getDecimalMarkerForList:typedInput
-                                                         charIndex:charIdx];
-                                       [self drawDecimal:typedInput
-                                                     marker:marker
-                                           markerAttributes:markerAttributes
+                                         if ([markerFormat
+                                                 hasPrefix:
+                                                     @"EnrichedAlignment"]) {
+                                           continue;
+                                         }
+
+                                         if ([markerFormat
+                                                 isEqualToString:
+                                                     @"EnrichedOrderedList"]) {
+                                           NSString *marker = [self
+                                               getDecimalMarkerForList:host
+                                                             charIndex:charIdx];
+                                           [self drawDecimal:host
+                                                         marker:marker
+                                               markerAttributes:markerAttributes
+                                                         origin:origin
+                                                       usedRect:usedRect
+                                                         indent:indent];
+                                         } else if ([markerFormat
+                                                        isEqualToString:
+                                                            @"EnrichedUnordered"
+                                                            @"Lis"
+                                                            @"t"]) {
+                                           [self drawBullet:host
                                                      origin:origin
-                                                   usedRect:textUsedRect];
-                                     } else if (markerFormat ==
-                                                NSTextListMarkerDisc) {
-                                       [self drawBullet:typedInput
-                                                 origin:origin
-                                               usedRect:textUsedRect];
-                                     } else if ([markerFormat
-                                                    hasPrefix:@"{checkbox"]) {
-                                       [self drawCheckbox:typedInput
-                                             markerFormat:markerFormat
-                                                   origin:origin
-                                                 usedRect:textUsedRect];
-                                     }
-                                     // only first line of a list gets its
-                                     // marker drawn
-                                     *stop = YES;
-                                   }];
+                                                   usedRect:textUsedRect
+                                                     indent:indent];
+
+                                         } else if ([markerFormat
+                                                        hasPrefix:@"EnrichedChe"
+                                                                  @"ckbox"]) {
+                                           [self drawCheckbox:host
+                                                 markerFormat:markerFormat
+                                                       origin:origin
+                                                     usedRect:textUsedRect
+                                                       indent:indent];
+                                         }
+                                       }
+                                       // only first line of a list gets its
+                                       // marker drawn
+                                       *stop = YES;
+                                     }];
     }
   }
 }
 
-- (NSString *)getDecimalMarkerForList:(EnrichedTextInputView *)input
+- (NSString *)getDecimalMarkerForList:(id<EnrichedViewHost>)host
                             charIndex:(NSUInteger)index {
-  NSString *fullText = input->textView.textStorage.string;
+  NSString *fullText = host.textView.textStorage.string;
   NSInteger itemNumber = 1;
 
   NSRange currentParagraph =
       [fullText paragraphRangeForRange:NSMakeRange(index, 0)];
   if (currentParagraph.location > 0) {
-    OrderedListStyle *olStyle =
-        input->stylesDict[@([OrderedListStyle getStyleType])];
+    OrderedListStyle *olStyle = host.stylesDict[@([OrderedListStyle getType])];
 
     NSInteger prevParagraphsCount = 0;
     NSInteger recentParagraphLocation =
@@ -348,7 +360,7 @@ static void const *kInputKey = &kInputKey;
 
     // seek for previous lists
     while (true) {
-      if ([olStyle detectStyle:NSMakeRange(recentParagraphLocation, 0)]) {
+      if ([olStyle detect:NSMakeRange(recentParagraphLocation, 0)]) {
         prevParagraphsCount += 1;
 
         if (recentParagraphLocation > 0) {
@@ -384,36 +396,39 @@ static void const *kInputKey = &kInputKey;
   return usedRect;
 }
 
-- (void)drawCheckbox:(EnrichedTextInputView *)typedInput
+- (void)drawCheckbox:(id<EnrichedViewHost>)host
         markerFormat:(NSString *)markerFormat
               origin:(CGPoint)origin
-            usedRect:(CGRect)usedRect {
-  BOOL isChecked = [markerFormat isEqualToString:@"{checkbox:1}"];
+            usedRect:(CGRect)usedRect
+              indent:(CGFloat)indent {
+  BOOL isChecked = [markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
-  UIImage *image = isChecked ? typedInput->config.checkboxCheckedImage
-                             : typedInput->config.checkboxUncheckedImage;
-  CGFloat gapWidth = [typedInput->config checkboxListGapWidth];
-  CGFloat boxSize = [typedInput->config checkboxListBoxSize];
+  UIImage *image = isChecked ? host.config.checkboxCheckedImage
+                             : host.config.checkboxUncheckedImage;
+  CGFloat gapWidth = [host.config checkboxListGapWidth];
+  CGFloat configuredBoxSize = [host.config checkboxListBoxSize];
 
+  CGFloat boxSize = MIN(configuredBoxSize, usedRect.size.height);
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
-  CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize;
+  CGFloat boxX = origin.x + indent - gapWidth - boxSize;
   CGFloat boxY = centerY - boxSize / 2.0;
 
-  [image drawAtPoint:CGPointMake(boxX, boxY)];
+  [image drawInRect:CGRectMake(boxX, boxY, boxSize, boxSize)];
 }
 
-- (void)drawBullet:(EnrichedTextInputView *)typedInput
+- (void)drawBullet:(id<EnrichedViewHost>)host
             origin:(CGPoint)origin
-          usedRect:(CGRect)usedRect {
-  CGFloat gapWidth = [typedInput->config unorderedListGapWidth];
-  CGFloat bulletSize = [typedInput->config unorderedListBulletSize];
-  CGFloat bulletX = origin.x + usedRect.origin.x - gapWidth - bulletSize / 2;
+          usedRect:(CGRect)usedRect
+            indent:(CGFloat)indent {
+  CGFloat gapWidth = [host.config unorderedListGapWidth];
+  CGFloat bulletSize = [host.config unorderedListBulletSize];
+  CGFloat bulletX = origin.x + indent - gapWidth - bulletSize / 2;
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
 
   CGContextRef context = UIGraphicsGetCurrentContext();
   CGContextSaveGState(context);
   {
-    [[typedInput->config unorderedListBulletColor] setFill];
+    [[host.config unorderedListBulletColor] setFill];
     CGContextAddArc(context, bulletX, centerY, bulletSize / 2, 0, 2 * M_PI,
                     YES);
     CGContextFillPath(context);
@@ -421,14 +436,15 @@ static void const *kInputKey = &kInputKey;
   CGContextRestoreGState(context);
 }
 
-- (void)drawDecimal:(EnrichedTextInputView *)typedInput
+- (void)drawDecimal:(id<EnrichedViewHost>)host
               marker:(NSString *)marker
     markerAttributes:(NSDictionary *)markerAttributes
               origin:(CGPoint)origin
-            usedRect:(CGRect)usedRect {
-  CGFloat gapWidth = [typedInput->config orderedListGapWidth];
+            usedRect:(CGRect)usedRect
+              indent:(CGFloat)indent {
+  CGFloat gapWidth = [host.config orderedListGapWidth];
   CGSize markerSize = [marker sizeWithAttributes:markerAttributes];
-  CGFloat markerX = usedRect.origin.x - gapWidth - markerSize.width / 2;
+  CGFloat markerX = origin.x + indent - gapWidth - markerSize.width / 2;
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
   CGFloat markerY = centerY - markerSize.height / 2.0;
 

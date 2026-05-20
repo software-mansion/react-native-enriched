@@ -8,16 +8,15 @@ import android.graphics.Paint
 import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.text.Editable
+import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.style.ImageSpan
 import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
-import com.swmansion.enriched.R
 import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ForceRedrawSpan
-import com.swmansion.enriched.common.ResourceManager
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
 import java.io.File
 
@@ -88,28 +87,30 @@ open class EnrichedImageSpan :
 
   private fun registerDrawableLoadCallback(
     d: AsyncDrawable,
-    text: Editable?,
+    text: Spannable?,
   ) {
     d.onLoaded = onLoaded@{
-      val spannable = text as? Spannable
+      val spannable = text
 
       if (spannable == null) {
         return@onLoaded
       }
+      // Ensure we are on the Main Thread before modifying the Spannable
+      Handler(Looper.getMainLooper()).post {
+        val start = spannable.getSpanStart(this@EnrichedImageSpan)
+        val end = spannable.getSpanEnd(this@EnrichedImageSpan)
 
-      val start = spannable.getSpanStart(this@EnrichedImageSpan)
-      val end = spannable.getSpanEnd(this@EnrichedImageSpan)
-
-      if (start != -1 && end != -1) {
-        // trick for adding empty span to force redraw when image is loaded
-        val redrawSpan = ForceRedrawSpan()
-        spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        spannable.removeSpan(redrawSpan)
+        if (start != -1 && end != -1) {
+          // trick for adding empty span to force redraw when image is loaded
+          val redrawSpan = ForceRedrawSpan()
+          spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+          spannable.removeSpan(redrawSpan)
+        }
       }
     }
   }
 
-  fun observeAsyncDrawableLoaded(text: Editable?) {
+  fun observeAsyncDrawableLoaded(text: Spannable?) {
     val d = drawable
 
     if (d !is AsyncDrawable) {

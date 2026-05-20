@@ -1,14 +1,187 @@
 import type { RefObject } from 'react';
 import type {
   ColorValue,
+  DimensionValue,
   NativeMethods,
   NativeSyntheticEvent,
   ReturnKeyTypeOptions,
   TargetedEvent,
   TextStyle,
   ViewProps,
-  ViewStyle,
 } from 'react-native';
+
+/**
+ * Allowed container styles for `<EnrichedTextInput />`'s `style` prop.
+ *
+ * Represents the supported subset of React Native
+ * [`TextStyle`](https://reactnative.dev/docs/text-style-props).
+ * Some properties are not supported on all platforms. In such cases a property
+ * is annotated with a `@platform` directive.
+ */
+export interface EnrichedInputStyle {
+  // Layout / FlexStyle
+  alignSelf?: TextStyle['alignSelf'];
+  aspectRatio?: number | string;
+  borderBottomWidth?: number;
+  borderEndWidth?: number;
+  borderLeftWidth?: number;
+  borderRightWidth?: number;
+  borderStartWidth?: number;
+  borderTopWidth?: number;
+  borderWidth?: number;
+  bottom?: DimensionValue;
+  boxSizing?: TextStyle['boxSizing'];
+  display?: TextStyle['display'];
+  end?: DimensionValue;
+  flex?: number;
+  flexBasis?: DimensionValue;
+  flexGrow?: number;
+  flexShrink?: number;
+  height?: DimensionValue;
+  inset?: DimensionValue;
+  insetBlock?: DimensionValue;
+  insetBlockEnd?: DimensionValue;
+  insetBlockStart?: DimensionValue;
+  insetInline?: DimensionValue;
+  insetInlineEnd?: DimensionValue;
+  insetInlineStart?: DimensionValue;
+  left?: DimensionValue;
+  margin?: DimensionValue;
+  marginBlock?: DimensionValue;
+  marginBlockEnd?: DimensionValue;
+  marginBlockStart?: DimensionValue;
+  marginBottom?: DimensionValue;
+  marginEnd?: DimensionValue;
+  marginHorizontal?: DimensionValue;
+  marginInline?: DimensionValue;
+  marginInlineEnd?: DimensionValue;
+  marginInlineStart?: DimensionValue;
+  marginLeft?: DimensionValue;
+  marginRight?: DimensionValue;
+  marginStart?: DimensionValue;
+  marginTop?: DimensionValue;
+  marginVertical?: DimensionValue;
+  maxHeight?: DimensionValue;
+  maxWidth?: DimensionValue;
+  minHeight?: DimensionValue;
+  minWidth?: DimensionValue;
+  padding?: DimensionValue;
+  paddingBlock?: DimensionValue;
+  paddingBlockEnd?: DimensionValue;
+  paddingBlockStart?: DimensionValue;
+  paddingBottom?: DimensionValue;
+  paddingEnd?: DimensionValue;
+  paddingHorizontal?: DimensionValue;
+  paddingInline?: DimensionValue;
+  paddingInlineEnd?: DimensionValue;
+  paddingInlineStart?: DimensionValue;
+  paddingLeft?: DimensionValue;
+  paddingRight?: DimensionValue;
+  paddingStart?: DimensionValue;
+  paddingTop?: DimensionValue;
+  paddingVertical?: DimensionValue;
+  position?: TextStyle['position'];
+  right?: DimensionValue;
+  start?: DimensionValue;
+  top?: DimensionValue;
+  width?: DimensionValue;
+  zIndex?: number;
+
+  // Shadows
+  /** @platform ios */
+  shadowColor?: ColorValue;
+  /** @platform ios */
+  shadowOffset?: TextStyle['shadowOffset'];
+  /** @platform ios */
+  shadowOpacity?: TextStyle['shadowOpacity'];
+  /** @platform ios */
+  shadowRadius?: number;
+
+  // Transforms
+  transform?: TextStyle['transform'];
+  transformOrigin?: TextStyle['transformOrigin'];
+
+  // View appearance
+  /** @platform ios web */
+  backfaceVisibility?: TextStyle['backfaceVisibility'];
+  backgroundColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockEndColor?: ColorValue;
+  /** @platform ios web */
+  borderBlockStartColor?: ColorValue;
+  /** @platform ios web */
+  borderBottomColor?: ColorValue;
+  /** @platform ios web */
+  borderBottomEndRadius?: TextStyle['borderBottomEndRadius'];
+  /** @platform ios web */
+  borderBottomLeftRadius?: TextStyle['borderBottomLeftRadius'];
+  /** @platform ios web */
+  borderBottomRightRadius?: TextStyle['borderBottomRightRadius'];
+  /** @platform ios web */
+  borderBottomStartRadius?: TextStyle['borderBottomStartRadius'];
+  /** @platform ios web */
+  borderColor?: ColorValue;
+  /** @platform ios web */
+  borderEndColor?: ColorValue;
+  /** @platform ios web */
+  borderEndEndRadius?: TextStyle['borderEndEndRadius'];
+  /** @platform ios web */
+  borderEndStartRadius?: TextStyle['borderEndStartRadius'];
+  /** @platform ios web */
+  borderLeftColor?: ColorValue;
+  /** @platform ios web */
+  borderRadius?: TextStyle['borderRadius'];
+  /** @platform ios web */
+  borderRightColor?: ColorValue;
+  /** @platform ios web */
+  borderStartColor?: ColorValue;
+  /** @platform ios web */
+  borderStartEndRadius?: TextStyle['borderStartEndRadius'];
+  /** @platform ios web */
+  borderStartStartRadius?: TextStyle['borderStartStartRadius'];
+  /** @platform ios web */
+  borderStyle?: TextStyle['borderStyle'];
+  /** @platform ios web */
+  borderTopColor?: ColorValue;
+  /** @platform ios web */
+  borderTopEndRadius?: TextStyle['borderTopEndRadius'];
+  /** @platform ios web */
+  borderTopLeftRadius?: TextStyle['borderTopLeftRadius'];
+  /** @platform ios web */
+  borderTopRightRadius?: TextStyle['borderTopRightRadius'];
+  /** @platform ios web */
+  borderTopStartRadius?: TextStyle['borderTopStartRadius'];
+  boxShadow?: TextStyle['boxShadow'];
+  /** @platform web */
+  cursor?: TextStyle['cursor'];
+  /** @platform android */
+  elevation?: number;
+  /** @platform android web */
+  filter?: TextStyle['filter'];
+  /** @platform android web */
+  mixBlendMode?: TextStyle['mixBlendMode'];
+  opacity?: TextStyle['opacity'];
+  /** @platform ios web */
+  outlineColor?: ColorValue;
+  outlineOffset?: TextStyle['outlineOffset'];
+  /** @platform android web */
+  outlineStyle?: TextStyle['outlineStyle'];
+  outlineWidth?: TextStyle['outlineWidth'];
+  /** @platform ios web */
+  pointerEvents?: TextStyle['pointerEvents'];
+
+  // Typography
+  color?: ColorValue;
+  fontFamily?: string;
+  fontSize?: number;
+  fontStyle?: TextStyle['fontStyle'];
+  fontWeight?: TextStyle['fontWeight'];
+  lineHeight?: number;
+  /** @platform web */
+  letterSpacing?: number;
+}
 
 interface HeadingStyle {
   fontSize?: number;
@@ -174,6 +347,7 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  alignment: string;
 }
 
 export interface OnLinkDetected {
@@ -251,6 +425,9 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  setTextAlignment: (
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'auto'
+  ) => void;
 }
 
 export interface ContextMenuItem {
@@ -284,7 +461,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   selectionColor?: ColorValue;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   htmlStyle?: HtmlStyle;
-  style?: ViewStyle | TextStyle;
+  style?: EnrichedInputStyle;
   scrollEnabled?: boolean;
   linkRegex?: RegExp | null;
   returnKeyType?: ReturnKeyTypeOptions;
@@ -322,7 +499,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Defaults to `[{ trigger: '- ', style: 'unordered_list' }, { trigger: '1.', style: 'ordered_list' }]`
    * to match the previously built-in behavior. Pass an empty array to disable all shortcuts.
    */
-  textShortcuts?: Array<{ trigger: string; style: string; type?: 'block' | 'inline' }>;
+  textShortcuts?: Array<{
+    trigger: string;
+    style: string;
+    type?: 'block' | 'inline';
+  }>;
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -339,4 +520,45 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
+}
+
+export interface EnrichedTextInstance extends NativeMethods {}
+
+export interface EnrichedTextProps extends ViewProps {
+  ref?: RefObject<EnrichedTextInstance | null>;
+  children: string;
+  style?: TextStyle;
+  htmlStyle?: EnrichedTextHtmlStyle;
+  useHtmlNormalizer?: boolean;
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+  numberOfLines?: number;
+  selectable?: boolean;
+  selectionColor?: ColorValue;
+  onLinkPress?: (event: OnLinkPressEvent) => void;
+  onMentionPress?: (event: OnMentionPressEvent) => void;
+}
+
+interface EnrichedTextMentionStyleProperties extends MentionStyleProperties {
+  pressColor?: ColorValue;
+  pressBackgroundColor?: ColorValue;
+}
+
+export interface EnrichedTextHtmlStyle
+  extends Omit<HtmlStyle, 'a' | 'mention'> {
+  a?: HtmlStyle['a'] & {
+    pressColor?: ColorValue;
+  };
+  mention?:
+    | Record<string, EnrichedTextMentionStyleProperties>
+    | EnrichedTextMentionStyleProperties;
+}
+
+export interface OnLinkPressEvent {
+  url: string;
+}
+
+export interface OnMentionPressEvent {
+  text: string;
+  indicator: string;
+  attributes: Record<string, string>;
 }

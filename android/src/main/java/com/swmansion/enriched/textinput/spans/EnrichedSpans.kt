@@ -194,6 +194,8 @@ object EnrichedSpans {
               CHECKBOX_LIST,
               BLOCK_QUOTE,
               INLINE_CODE,
+              LINK,
+              MENTION,
             ),
         )
       }
@@ -223,7 +225,9 @@ object EnrichedSpans {
       }
 
       IMAGE -> {
-        StylesMergingConfig()
+        StylesMergingConfig(
+          blockingStyles = arrayOf(INLINE_CODE),
+        )
       }
 
       MENTION -> {

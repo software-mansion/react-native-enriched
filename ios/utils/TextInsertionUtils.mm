@@ -1,5 +1,4 @@
 #import "TextInsertionUtils.h"
-#import "EnrichedTextInputView.h"
 #import "UIView+React.h"
 
 @implementation TextInsertionUtils
@@ -7,14 +6,13 @@
                       at:(NSInteger)index
     additionalAttributes:
         (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
-                   input:(id)input
+                    host:(id<EnrichedViewHost>)host
            withSelection:(BOOL)withSelection {
-  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
-  if (typedInput == nullptr) {
+  if (host == nullptr) {
     return;
   }
 
-  UITextView *textView = typedInput->textView;
+  UITextView *textView = host.textView;
 
   NSMutableDictionary<NSAttributedStringKey, id> *copiedAttrs =
       [textView.typingAttributes mutableCopy];
@@ -32,22 +30,19 @@
     }
     textView.selectedRange = NSMakeRange(index + text.length, 0);
   }
-  typedInput->recentlyChangedRange = NSMakeRange(index, text.length);
 }
 
 + (void)replaceText:(NSString *)text
                       at:(NSRange)range
     additionalAttributes:
         (NSDictionary<NSAttributedStringKey, id> *)additionalAttrs
-                   input:(id)input
+                    host:(id<EnrichedViewHost>)host
            withSelection:(BOOL)withSelection {
-  EnrichedTextInputView *typedInput = (EnrichedTextInputView *)input;
-  if (typedInput == nullptr) {
+  if (host == nullptr) {
     return;
   }
 
-  UITextView *textView = typedInput->textView;
-
+  UITextView *textView = host.textView;
   [textView.textStorage replaceCharactersInRange:range withString:text];
   if (additionalAttrs != nullptr) {
     [textView.textStorage
@@ -61,6 +56,5 @@
     }
     textView.selectedRange = NSMakeRange(range.location + text.length, 0);
   }
-  typedInput->recentlyChangedRange = NSMakeRange(range.location, text.length);
 }
 @end

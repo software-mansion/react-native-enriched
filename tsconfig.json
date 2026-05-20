@@ -2,8 +2,9 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
+    "types": ["jest"],
     "paths": {
-      "react-native-enriched": ["./src/index"]
+      "react-native-enriched": ["./src/index.native"]
     }
   }
 }

@@ -1,6 +1,22 @@
 #import "ImageAttachment.h"
 #import "ImageExtension.h"
 
+// NSTextStorage frequently recreates NSTextAttachment objects during attribute
+// invalidation (e.g. on every keystroke). Without this cache each recreation
+// would trigger a fresh async network/disk load, causing images to flicker or
+// disappear temporarily. Caching by URI ensures that once an image is loaded it
+// is reused instantly for all subsequent attachment instances with the same
+// URI
+static NSCache<NSString *, UIImage *> *ImageAttachmentCache(void) {
+  static NSCache<NSString *, UIImage *> *cache = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    cache = [[NSCache alloc] init];
+    cache.totalCostLimit = 100 * 1024 * 1024; // 100 MB
+  });
+  return cache;
+}
+
 @implementation ImageAttachment
 
 - (instancetype)initWithImageData:(ImageData *)data {
@@ -9,13 +25,21 @@
     return nil;
 
   _imageData = data;
+  UIImage *cachedImage = nil;
+  if (self.uri.length > 0) {
+    cachedImage = [ImageAttachmentCache() objectForKey:self.uri];
+  }
 
   // Assign an empty image to reserve layout space within the text system.
   // The actual image is not drawn here; it is rendered and overlaid by a
   // separate ImageView.
   self.image = [UIImage new];
 
-  [self loadAsync];
+  if (cachedImage != nil) {
+    self.storedAnimatedImage = cachedImage;
+  } else {
+    [self loadAsync];
+  }
   return self;
 }
 
@@ -59,13 +83,21 @@
     NSData *bytes = [NSData dataWithContentsOfURL:url];
 
     // We pass all image data (including static formats like PNG or JPEG)
-    // through the GIF parser. It safely acts as a universal parser, returning
-    // a single-frame UIImage for static formats and an animated UIImage for
-    // GIFs.
-    UIImage *img = bytes ? [UIImage animatedImageWithAnimatedGIFData:bytes]
+    // through the animated image parser. It safely acts as a universal parser,
+    // returning a single-frame UIImage for static formats and an animated
+    // UIImage for GIFs and WebPs.
+    UIImage *img = bytes ? [UIImage animatedImageWithData:bytes]
                          : [UIImage systemImageNamed:@"photo"];
 
     dispatch_async(dispatch_get_main_queue(), ^{
+      if (bytes != nil && img != nil && self.uri.length > 0) {
+        CGFloat scale = img.scale;
+        // Calculate true byte cost based on pixels
+        // Width (in pixels) * Height (in pixels) * 4 bytes (for RGBA channels)
+        NSUInteger cost = (NSUInteger)(img.size.width * scale *
+                                       img.size.height * scale * 4.0);
+        [ImageAttachmentCache() setObject:img forKey:self.uri cost:cost];
+      }
       self.storedAnimatedImage = img;
       [self notifyUpdate];
     });

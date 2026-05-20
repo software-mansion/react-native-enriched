@@ -1,0 +1,24 @@
+appId: swmansion.enriched.example
+---
+# Validates that mention press events are triggered correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: '<html><p><mention text="@John Doe" indicator="@" id="1" type="user">@John Doe</mention></p></html>'
+
+- tapOn:
+    id: 'enriched-text'
+    point: '5%,50%'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'mention_press'

@@ -1,5 +1,9 @@
 #import "EnrichedTextInputView.h"
+#import "AlignmentUtils.h"
+#import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
+#import "DotReplacementUtils.h"
+#import "HtmlParser.h"
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
@@ -7,6 +11,7 @@
 #import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
+#import "StyleUtils.h"
 #import "TextBlockTapGestureRecognizer.h"
 #import "TextInsertionUtils.h"
 #import "UIView+React.h"
@@ -29,9 +34,9 @@
 
 using namespace facebook::react;
 
-@interface EnrichedTextInputView () <RCTEnrichedTextInputViewViewProtocol,
-                                     UITextViewDelegate,
-                                     UIGestureRecognizerDelegate, NSObject>
+@interface EnrichedTextInputView () <
+    RCTEnrichedTextInputViewViewProtocol, UITextViewDelegate,
+    UIGestureRecognizerDelegate, NSTextStorageDelegate, NSObject>
 
 @end
 
@@ -54,7 +59,11 @@ using namespace facebook::react;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   NSArray<NSDictionary *> *_contextMenuItems;
   NSString *_submitBehavior;
+  NSDictionary<NSAttributedStringKey, id> *_capturedAttributesBeforeChange;
+  NSString *_recentlyEmittedAlignment;
 }
+
+@synthesize blockEmitting = blockEmitting;
 
 // MARK: - Component utils
 
@@ -69,6 +78,36 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 + (BOOL)shouldBeRecycled {
   return NO;
+}
+
+// MARK: - EnrichedViewHost protocol
+
+- (UITextView *)textView {
+  return textView;
+}
+
+- (EnrichedConfig *)config {
+  return config;
+}
+
+- (NSDictionary<NSNumber *, id> *)stylesDict {
+  return stylesDict;
+}
+
+- (InputAttributesManager *)attributesManager {
+  return attributesManager;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictingStyles {
+  return conflictingStyles;
+}
+
+- (NSMutableDictionary<NSNumber *, NSArray<NSNumber *> *> *)blockingStyles {
+  return blockingStyles;
+}
+
+- (NSMutableDictionary<NSAttributedStringKey, id> *)defaultTypingAttributes {
+  return defaultTypingAttributes;
 }
 
 // MARK: - Init
@@ -92,183 +131,37 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
-  recentlyChangedRange = NSMakeRange(0, 0);
+  _recentlyEmittedAlignment = @"left";
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
   blockEmitting = NO;
   _emitFocusBlur = YES;
   _emitTextChange = NO;
+  dotReplacementRange = nullptr;
 
   defaultTypingAttributes =
       [[NSMutableDictionary<NSAttributedStringKey, id> alloc] init];
 
-  stylesDict = @{
-    @([BoldStyle getStyleType]) : [[BoldStyle alloc] initWithInput:self],
-    @([ItalicStyle getStyleType]) : [[ItalicStyle alloc] initWithInput:self],
-    @([UnderlineStyle getStyleType]) :
-        [[UnderlineStyle alloc] initWithInput:self],
-    @([StrikethroughStyle getStyleType]) :
-        [[StrikethroughStyle alloc] initWithInput:self],
-    @([InlineCodeStyle getStyleType]) :
-        [[InlineCodeStyle alloc] initWithInput:self],
-    @([LinkStyle getStyleType]) : [[LinkStyle alloc] initWithInput:self],
-    @([MentionStyle getStyleType]) : [[MentionStyle alloc] initWithInput:self],
-    @([H1Style getStyleType]) : [[H1Style alloc] initWithInput:self],
-    @([H2Style getStyleType]) : [[H2Style alloc] initWithInput:self],
-    @([H3Style getStyleType]) : [[H3Style alloc] initWithInput:self],
-    @([H4Style getStyleType]) : [[H4Style alloc] initWithInput:self],
-    @([H5Style getStyleType]) : [[H5Style alloc] initWithInput:self],
-    @([H6Style getStyleType]) : [[H6Style alloc] initWithInput:self],
-    @([UnorderedListStyle getStyleType]) :
-        [[UnorderedListStyle alloc] initWithInput:self],
-    @([OrderedListStyle getStyleType]) :
-        [[OrderedListStyle alloc] initWithInput:self],
-    @([CheckboxListStyle getStyleType]) :
-        [[CheckboxListStyle alloc] initWithInput:self],
-    @([BlockQuoteStyle getStyleType]) :
-        [[BlockQuoteStyle alloc] initWithInput:self],
-    @([CodeBlockStyle getStyleType]) :
-        [[CodeBlockStyle alloc] initWithInput:self],
-    @([ImageStyle getStyleType]) : [[ImageStyle alloc] initWithInput:self]
-  };
+  stylesDict = [StyleUtils stylesDictForHost:self isInput:YES];
+  conflictingStyles = [[StyleUtils conflictMap] mutableCopy];
+  blockingStyles = [[StyleUtils blockingMap] mutableCopy];
 
-  conflictingStyles = @{
-    @([BoldStyle getStyleType]) : @[],
-    @([ItalicStyle getStyleType]) : @[],
-    @([UnderlineStyle getStyleType]) : @[],
-    @([StrikethroughStyle getStyleType]) : @[],
-    @([InlineCodeStyle getStyleType]) :
-        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ],
-    @([LinkStyle getStyleType]) : @[
-      @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]),
-      @([MentionStyle getStyleType])
-    ],
-    @([MentionStyle getStyleType]) :
-        @[ @([InlineCodeStyle getStyleType]), @([LinkStyle getStyleType]) ],
-    @([H1Style getStyleType]) : @[
-      @([H2Style getStyleType]), @([H3Style getStyleType]),
-      @([H4Style getStyleType]), @([H5Style getStyleType]),
-      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([H2Style getStyleType]) : @[
-      @([H1Style getStyleType]), @([H3Style getStyleType]),
-      @([H4Style getStyleType]), @([H5Style getStyleType]),
-      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([H3Style getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H4Style getStyleType]), @([H5Style getStyleType]),
-      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([H4Style getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H5Style getStyleType]),
-      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([H5Style getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H6Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([H6Style getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([UnorderedListStyle getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([UnorderedListStyle getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([OrderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([OrderedListStyle getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([BlockQuoteStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([CheckboxListStyle getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
-      @([BlockQuoteStyle getStyleType]), @([CodeBlockStyle getStyleType])
-    ],
-    @([BlockQuoteStyle getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
-      @([CodeBlockStyle getStyleType]), @([CheckboxListStyle getStyleType])
-    ],
-    @([CodeBlockStyle getStyleType]) : @[
-      @([H1Style getStyleType]), @([H2Style getStyleType]),
-      @([H3Style getStyleType]), @([H4Style getStyleType]),
-      @([H5Style getStyleType]), @([H6Style getStyleType]),
-      @([BoldStyle getStyleType]), @([ItalicStyle getStyleType]),
-      @([UnderlineStyle getStyleType]), @([StrikethroughStyle getStyleType]),
-      @([UnorderedListStyle getStyleType]), @([OrderedListStyle getStyleType]),
-      @([BlockQuoteStyle getStyleType]), @([InlineCodeStyle getStyleType]),
-      @([MentionStyle getStyleType]), @([LinkStyle getStyleType]),
-      @([CheckboxListStyle getStyleType])
-    ],
-    @([ImageStyle getStyleType]) :
-        @[ @([LinkStyle getStyleType]), @([MentionStyle getStyleType]) ]
-  };
-
-  blockingStyles = [@{
-    @([BoldStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
-    @([ItalicStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
-    @([UnderlineStyle getStyleType]) : @[ @([CodeBlockStyle getStyleType]) ],
-    @([StrikethroughStyle getStyleType]) :
-        @[ @([CodeBlockStyle getStyleType]) ],
-    @([InlineCodeStyle getStyleType]) :
-        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
-    @([LinkStyle getStyleType]) :
-        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
-    @([MentionStyle getStyleType]) :
-        @[ @([CodeBlockStyle getStyleType]), @([ImageStyle getStyleType]) ],
-    @([H1Style getStyleType]) : @[],
-    @([H2Style getStyleType]) : @[],
-    @([H3Style getStyleType]) : @[],
-    @([H4Style getStyleType]) : @[],
-    @([H5Style getStyleType]) : @[],
-    @([H6Style getStyleType]) : @[],
-    @([UnorderedListStyle getStyleType]) : @[],
-    @([OrderedListStyle getStyleType]) : @[],
-    @([CheckboxListStyle getStyleType]) : @[],
-    @([BlockQuoteStyle getStyleType]) : @[],
-    @([CodeBlockStyle getStyleType]) : @[],
-    @([ImageStyle getStyleType]) : @[ @([InlineCodeStyle getStyleType]) ]
-  } mutableCopy];
-
-  parser = [[InputParser alloc] initWithInput:self];
+  parser = [[InputHtmlParser alloc] initWithInput:self];
   _attachmentViews = [[NSMutableDictionary alloc] init];
+  attributesManager = [[InputAttributesManager alloc] initWithInput:self];
 }
 
 - (void)setupTextView {
-  textView = [[InputTextView alloc] init];
+  textView = [[EnrichedInputTextView alloc] init];
   textView.backgroundColor = UIColor.clearColor;
   textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
   textView.textContainer.lineFragmentPadding = 0;
   textView.delegate = self;
   textView.input = self;
   textView.layoutManager.input = self;
+  textView.textStorage.delegate = self;
+
   textView.adjustsFontForContentSizeCategory = YES;
   [textView addGestureRecognizer:[[TextBlockTapGestureRecognizer alloc]
                                      initWithInput:self
@@ -308,13 +201,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // initial config
   if (config == nullptr) {
     isFirstMount = YES;
-    config = [[InputConfig alloc] init];
+    config = [[EnrichedConfig alloc] init];
   }
 
   // any style prop changes:
   // firstly we create the new config for the changes
 
-  InputConfig *newConfig = [config copy];
+  EnrichedConfig *newConfig = [config copy];
 
   if (newViewProps.color != oldViewProps.color) {
     if (isColorMeaningful(newViewProps.color)) {
@@ -374,9 +267,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h1.bold != oldViewProps.htmlStyle.h1.bold) {
     [newConfig setH1Bold:newViewProps.htmlStyle.h1.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h1.bold ? [self addStyleBlock:H1 to:Bold]
-                                   : [self removeStyleBlock:H1 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h1.bold) {
+      [StyleUtils addStyleBlock:H1 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H1 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H1 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H1 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -390,9 +288,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h2.bold != oldViewProps.htmlStyle.h2.bold) {
     [newConfig setH2Bold:newViewProps.htmlStyle.h2.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h2.bold ? [self addStyleBlock:H2 to:Bold]
-                                   : [self removeStyleBlock:H2 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h2.bold) {
+      [StyleUtils addStyleBlock:H2 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H2 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H2 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H2 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -406,9 +309,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h3.bold != oldViewProps.htmlStyle.h3.bold) {
     [newConfig setH3Bold:newViewProps.htmlStyle.h3.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h3.bold ? [self addStyleBlock:H3 to:Bold]
-                                   : [self removeStyleBlock:H3 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h3.bold) {
+      [StyleUtils addStyleBlock:H3 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H3 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H3 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H3 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -422,9 +330,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h4.bold != oldViewProps.htmlStyle.h4.bold) {
     [newConfig setH4Bold:newViewProps.htmlStyle.h4.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h4.bold ? [self addStyleBlock:H4 to:Bold]
-                                   : [self removeStyleBlock:H4 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h4.bold) {
+      [StyleUtils addStyleBlock:H4 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H4 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H4 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H4 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -438,9 +351,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h5.bold != oldViewProps.htmlStyle.h5.bold) {
     [newConfig setH5Bold:newViewProps.htmlStyle.h5.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h5.bold ? [self addStyleBlock:H5 to:Bold]
-                                   : [self removeStyleBlock:H5 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h5.bold) {
+      [StyleUtils addStyleBlock:H5 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H5 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H5 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H5 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -454,9 +372,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (newViewProps.htmlStyle.h6.bold != oldViewProps.htmlStyle.h6.bold) {
     [newConfig setH6Bold:newViewProps.htmlStyle.h6.bold];
 
-    // Update style blocks for bold
-    newViewProps.htmlStyle.h6.bold ? [self addStyleBlock:H6 to:Bold]
-                                   : [self removeStyleBlock:H6 from:Bold];
+    // Update style blocks and conflicts for bold
+    if (newViewProps.htmlStyle.h6.bold) {
+      [StyleUtils addStyleBlock:H6 to:Bold forHost:self];
+      [StyleUtils addStyleConflict:Bold to:H6 forHost:self];
+    } else {
+      [StyleUtils removeStyleBlock:H6 from:Bold forHost:self];
+      [StyleUtils removeStyleConflict:Bold from:H6 forHost:self];
+    }
 
     stylePropChanged = YES;
   }
@@ -711,9 +634,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     // being used!
 
     // the html needs to be generated using the old config
-    NSString *currentHtml = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *currentHtml = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     // we want to preserve the selection between props changes
     NSRange prevSelectedRange = textView.selectedRange;
 
@@ -939,6 +862,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (_placeholderColor != nullptr) {
     newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
   }
+
+  // Get the current active alignment in input
+  NSParagraphStyle *currentTypingPara =
+      textView.typingAttributes[NSParagraphStyleAttributeName];
+  NSTextAlignment activeAlignment =
+      currentTypingPara ? currentTypingPara.alignment : NSTextAlignmentNatural;
+  NSMutableParagraphStyle *placeholderPStyle =
+      [newAttrs[NSParagraphStyleAttributeName] mutableCopy];
+  if (!placeholderPStyle) {
+    placeholderPStyle = [[NSMutableParagraphStyle alloc] init];
+  }
+  placeholderPStyle.alignment = activeAlignment;
+  newAttrs[NSParagraphStyleAttributeName] = placeholderPStyle;
+
   NSAttributedString *newAttrStr =
       [[NSAttributedString alloc] initWithString:_placeholderLabel.text
                                       attributes:newAttrs];
@@ -1057,14 +994,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSRange detectedLinkRange = NSMakeRange(0, 0);
 
   // data for onMentionDetected event
-  MentionParams *detectedMentionParams;
+  MentionParams *detectedMentionParams = nullptr;
   NSRange detectedMentionRange = NSMakeRange(0, 0);
 
   for (NSNumber *type in stylesDict) {
-    id<BaseStyleProtocol> style = stylesDict[type];
+    StyleBase *style = stylesDict[type];
 
     BOOL wasActive = [newActiveStyles containsObject:type];
-    BOOL isActive = [style detectStyle:textView.selectedRange];
+    BOOL isActive = [style detect:textView.selectedRange];
 
     BOOL wasBlocked = [newBlockedStyles containsObject:type];
     BOOL isBlocked = [self isStyle:(StyleType)[type integerValue]
@@ -1090,12 +1027,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
 
     // onLinkDetected event
-    if (isActive && [type intValue] == [LinkStyle getStyleType]) {
+    if (isActive && [type intValue] == [LinkStyle getType]) {
       // get the link data
       LinkData *candidateLinkData;
       NSRange candidateLinkRange = NSMakeRange(0, 0);
       LinkStyle *linkStyleClass =
-          (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+          (LinkStyle *)stylesDict[@([LinkStyle getType])];
       if (linkStyleClass != nullptr) {
         candidateLinkData =
             [linkStyleClass getLinkDataAt:textView.selectedRange.location];
@@ -1107,25 +1044,23 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         // we changed selection from non-link to a link
         detectedLinkData = candidateLinkData;
         detectedLinkRange = candidateLinkRange;
-      } else if (![_recentlyActiveLinkData.url
-                     isEqualToString:candidateLinkData.url] ||
-                 ![_recentlyActiveLinkData.text
-                     isEqualToString:candidateLinkData.text] ||
+      } else if (![_recentlyActiveLinkData
+                     isEqualToLinkData:candidateLinkData] ||
                  !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)) {
-        // we changed selection from one link to the other or modified current
-        // link's text
+        // we changed selection from one link to the other or modified
+        // current link's text
         detectedLinkData = candidateLinkData;
         detectedLinkRange = candidateLinkRange;
       }
     }
 
     // onMentionDetected event
-    if (isActive && [type intValue] == [MentionStyle getStyleType]) {
+    if (isActive && [type intValue] == [MentionStyle getType]) {
       // get mention data
       MentionParams *candidateMentionParams;
       NSRange candidateMentionRange = NSMakeRange(0, 0);
       MentionStyle *mentionStyleClass =
-          (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+          (MentionStyle *)stylesDict[@([MentionStyle getType])];
       if (mentionStyleClass != nullptr) {
         candidateMentionParams = [mentionStyleClass
             getMentionParamsAt:textView.selectedRange.location];
@@ -1150,41 +1085,48 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
+  // detect alignment change
+  AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+  NSString *currentAlignment = [alignmentStyle getStyleState];
+  if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
+    updateNeeded = YES;
+  }
+
   if (updateNeeded) {
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr) {
       // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
+      _recentlyEmittedAlignment = currentAlignment;
 
       emitter->onChangeState(
-          {.bold = GET_STYLE_STATE([BoldStyle getStyleType]),
-           .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
-           .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
-           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getStyleType]),
-           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
-           .link = GET_STYLE_STATE([LinkStyle getStyleType]),
-           .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
-           .h1 = GET_STYLE_STATE([H1Style getStyleType]),
-           .h2 = GET_STYLE_STATE([H2Style getStyleType]),
-           .h3 = GET_STYLE_STATE([H3Style getStyleType]),
-           .h4 = GET_STYLE_STATE([H4Style getStyleType]),
-           .h5 = GET_STYLE_STATE([H5Style getStyleType]),
-           .h6 = GET_STYLE_STATE([H6Style getStyleType]),
-           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getStyleType]),
-           .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
-           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
-           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
-           .image = GET_STYLE_STATE([ImageStyle getStyleType]),
-           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getStyleType])});
+          {.bold = GET_STYLE_STATE([BoldStyle getType]),
+           .italic = GET_STYLE_STATE([ItalicStyle getType]),
+           .underline = GET_STYLE_STATE([UnderlineStyle getType]),
+           .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
+           .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
+           .link = GET_STYLE_STATE([LinkStyle getType]),
+           .mention = GET_STYLE_STATE([MentionStyle getType]),
+           .h1 = GET_STYLE_STATE([H1Style getType]),
+           .h2 = GET_STYLE_STATE([H2Style getType]),
+           .h3 = GET_STYLE_STATE([H3Style getType]),
+           .h4 = GET_STYLE_STATE([H4Style getType]),
+           .h5 = GET_STYLE_STATE([H5Style getType]),
+           .h6 = GET_STYLE_STATE([H6Style getType]),
+           .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
+           .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
+           .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
+           .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
+           .image = GET_STYLE_STATE([ImageStyle getType]),
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+           .alignment = [currentAlignment UTF8String]});
     }
   }
 
   if (detectedLinkData != nullptr) {
     // emit onLinkeDetected event
-    [self emitOnLinkDetectedEvent:detectedLinkData.text
-                              url:detectedLinkData.url
-                            range:detectedLinkRange];
+    [self emitOnLinkDetectedEvent:detectedLinkData range:detectedLinkRange];
   }
 
   if (detectedMentionParams != nullptr) {
@@ -1196,7 +1138,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
   }
-
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
 }
@@ -1230,22 +1171,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
          [_submitBehavior isEqualToString:@"submit"];
 }
 
-- (void)addStyleBlock:(StyleType)blocking to:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if (![blocksArr containsObject:@(blocking)]) {
-    [blocksArr addObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
-- (void)removeStyleBlock:(StyleType)blocking from:(StyleType)blocked {
-  NSMutableArray *blocksArr = [blockingStyles[@(blocked)] mutableCopy];
-  if ([blocksArr containsObject:@(blocking)]) {
-    [blocksArr removeObject:@(blocking)];
-    blockingStyles[@(blocked)] = blocksArr;
-  }
-}
-
 // MARK: - Native commands and events
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
@@ -1257,15 +1182,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *value = (NSString *)args[0];
     [self setValue:value];
   } else if ([commandName isEqualToString:@"toggleBold"]) {
-    [self toggleRegularStyle:[BoldStyle getStyleType]];
+    [self toggleRegularStyle:[BoldStyle getType]];
   } else if ([commandName isEqualToString:@"toggleItalic"]) {
-    [self toggleRegularStyle:[ItalicStyle getStyleType]];
+    [self toggleRegularStyle:[ItalicStyle getType]];
   } else if ([commandName isEqualToString:@"toggleUnderline"]) {
-    [self toggleRegularStyle:[UnderlineStyle getStyleType]];
+    [self toggleRegularStyle:[UnderlineStyle getType]];
   } else if ([commandName isEqualToString:@"toggleStrikeThrough"]) {
-    [self toggleRegularStyle:[StrikethroughStyle getStyleType]];
+    [self toggleRegularStyle:[StrikethroughStyle getType]];
   } else if ([commandName isEqualToString:@"toggleInlineCode"]) {
-    [self toggleRegularStyle:[InlineCodeStyle getStyleType]];
+    [self toggleRegularStyle:[InlineCodeStyle getType]];
   } else if ([commandName isEqualToString:@"addLink"]) {
     NSInteger start = [((NSNumber *)args[0]) integerValue];
     NSInteger end = [((NSNumber *)args[1]) integerValue];
@@ -1285,28 +1210,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     NSString *indicator = (NSString *)args[0];
     [self startMentionWithIndicator:indicator];
   } else if ([commandName isEqualToString:@"toggleH1"]) {
-    [self toggleParagraphStyle:[H1Style getStyleType]];
+    [self toggleRegularStyle:[H1Style getType]];
   } else if ([commandName isEqualToString:@"toggleH2"]) {
-    [self toggleParagraphStyle:[H2Style getStyleType]];
+    [self toggleRegularStyle:[H2Style getType]];
   } else if ([commandName isEqualToString:@"toggleH3"]) {
-    [self toggleParagraphStyle:[H3Style getStyleType]];
+    [self toggleRegularStyle:[H3Style getType]];
   } else if ([commandName isEqualToString:@"toggleH4"]) {
-    [self toggleParagraphStyle:[H4Style getStyleType]];
+    [self toggleRegularStyle:[H4Style getType]];
   } else if ([commandName isEqualToString:@"toggleH5"]) {
-    [self toggleParagraphStyle:[H5Style getStyleType]];
+    [self toggleRegularStyle:[H5Style getType]];
   } else if ([commandName isEqualToString:@"toggleH6"]) {
-    [self toggleParagraphStyle:[H6Style getStyleType]];
+    [self toggleRegularStyle:[H6Style getType]];
   } else if ([commandName isEqualToString:@"toggleUnorderedList"]) {
-    [self toggleParagraphStyle:[UnorderedListStyle getStyleType]];
+    [self toggleRegularStyle:[UnorderedListStyle getType]];
   } else if ([commandName isEqualToString:@"toggleOrderedList"]) {
-    [self toggleParagraphStyle:[OrderedListStyle getStyleType]];
+    [self toggleRegularStyle:[OrderedListStyle getType]];
   } else if ([commandName isEqualToString:@"toggleCheckboxList"]) {
     BOOL checked = [args[0] boolValue];
     [self toggleCheckboxList:checked];
   } else if ([commandName isEqualToString:@"toggleBlockQuote"]) {
-    [self toggleParagraphStyle:[BlockQuoteStyle getStyleType]];
+    [self toggleRegularStyle:[BlockQuoteStyle getType]];
   } else if ([commandName isEqualToString:@"toggleCodeBlock"]) {
-    [self toggleParagraphStyle:[CodeBlockStyle getStyleType]];
+    [self toggleRegularStyle:[CodeBlockStyle getType]];
   } else if ([commandName isEqualToString:@"addImage"]) {
     NSString *uri = (NSString *)args[0];
     CGFloat imgWidth = [(NSNumber *)args[1] floatValue];
@@ -1320,6 +1245,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"setTextAlignment"]) {
+    NSString *alignmentString = (NSString *)args[0];
+
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    [alignmentStyle
+          addAlignment:[AlignmentUtils stringToAlignment:alignmentString]
+                 range:textView.selectedRange
+            withTyping:YES
+        withDirtyRange:YES];
+
+    [self anyTextMayHaveBeenModified];
+    if (!_placeholderLabel.isHidden) {
+      [self refreshPlaceholderLabelStyles];
+    }
   }
 }
 
@@ -1344,15 +1283,17 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)setValue:(NSString *)value {
   NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:value];
   if (initiallyProcessedHtml == nullptr) {
-    // just plain text
+    // reset the text first and reset typing attributes
+    textView.text = @"";
+    textView.typingAttributes = defaultTypingAttributes;
+    // set new text
     textView.text = value;
   } else {
     // we've got some seemingly proper html
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
   }
 
-  // set recentlyChangedRange and check for changes
-  recentlyChangedRange = NSMakeRange(0, textView.textStorage.string.length);
+  // set selectedRange and check for changes
   textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
 }
@@ -1402,21 +1343,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
-- (void)emitOnLinkDetectedEvent:(NSString *)text
-                            url:(NSString *)url
-                          range:(NSRange)range {
+- (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     // update recently active link info
-    LinkData *newLinkData = [[LinkData alloc] init];
-    newLinkData.text = text;
-    newLinkData.url = url;
-    _recentlyActiveLinkData = newLinkData;
+    _recentlyActiveLinkData = linkData;
     _recentlyActiveLinkRange = range;
 
     emitter->onLinkDetected({
-        .text = [text toCppString],
-        .url = [url toCppString],
+        .text = [linkData.text toCppString],
+        .url = [linkData.url toCppString],
         .start = static_cast<int>(range.location),
         .end = static_cast<int>(range.location + range.length),
     });
@@ -1479,9 +1415,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
-    NSString *htmlOutput = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *htmlOutput = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     // make sure html really changed
     if (![htmlOutput isEqualToString:_recentlyEmittedHtml]) {
       _recentlyEmittedHtml = htmlOutput;
@@ -1494,9 +1430,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   auto emitter = [self getEventEmitter];
   if (emitter != nullptr) {
     @try {
-      NSString *htmlOutput = [parser
+      NSString *htmlOutput = [HtmlParser
           parseToHtmlFromRange:NSMakeRange(0,
-                                           textView.textStorage.string.length)];
+                                           textView.textStorage.string.length)
+                          host:self];
       emitter->onRequestHtmlResult({.requestId = static_cast<int>(requestId),
                                     .html = [htmlOutput toCppString]});
     } @catch (NSException *exception) {
@@ -1516,40 +1453,31 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 // MARK: - Styles manipulation
 
 - (void)toggleRegularStyle:(StyleType)type {
-  id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
-
-  if ([self handleStyleBlocksAndConflicts:type range:textView.selectedRange]) {
-    [styleClass applyStyle:textView.selectedRange];
-    [self anyTextMayHaveBeenModified];
+  StyleBase *style = stylesDict[@(type)];
+  NSRange range = textView.selectedRange;
+  if ([style isParagraph]) {
+    range = [textView.textStorage.string paragraphRangeForRange:range];
   }
-}
-
-- (void)toggleParagraphStyle:(StyleType)type {
-  id<BaseStyleProtocol> styleClass = stylesDict[@(type)];
-  // we always pass whole paragraph/s range to these styles
-  NSRange paragraphRange = [textView.textStorage.string
-      paragraphRangeForRange:textView.selectedRange];
-
-  if ([self handleStyleBlocksAndConflicts:type range:paragraphRange]) {
-    [styleClass applyStyle:paragraphRange];
+  if ([StyleUtils handleStyleBlocksAndConflicts:type
+                                          range:range
+                                        forHost:self]) {
+    [style toggle:range];
     [self anyTextMayHaveBeenModified];
   }
 }
 
 - (void)toggleCheckboxList:(BOOL)checked {
-  CheckboxListStyle *checkboxListStyleClass =
-      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
-  if (checkboxListStyleClass == nullptr) {
+  CheckboxListStyle *style =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
+  if (style == nullptr) {
     return;
   }
-  // we always pass whole paragraph/s range to these styles
-  NSRange paragraphRange = [textView.textStorage.string
+  NSRange range = [textView.textStorage.string
       paragraphRangeForRange:textView.selectedRange];
-
-  if ([self handleStyleBlocksAndConflicts:[CheckboxListStyle getStyleType]
-                                    range:paragraphRange]) {
-    [checkboxListStyleClass applyStyleWithCheckedValue:checked
-                                               inRange:paragraphRange];
+  if ([StyleUtils handleStyleBlocksAndConflicts:[CheckboxListStyle getType]
+                                          range:range
+                                        forHost:self]) {
+    [style toggleWithChecked:checked range:range];
     [self anyTextMayHaveBeenModified];
   }
 }
@@ -1558,28 +1486,27 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
               end:(NSInteger)end
              text:(NSString *)text
               url:(NSString *)url {
-  LinkStyle *linkStyleClass =
-      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getType])];
   if (linkStyleClass == nullptr) {
     return;
   }
 
   // translate the output start-end notation to range
   NSRange linkRange = NSMakeRange(start, end - start);
-  if ([self handleStyleBlocksAndConflicts:[LinkStyle getStyleType]
-                                    range:linkRange]) {
-    [linkStyleClass addLink:text
-                        url:url
-                      range:linkRange
-                     manual:YES
-              withSelection:YES];
+  if ([StyleUtils handleStyleBlocksAndConflicts:[LinkStyle getType]
+                                          range:linkRange
+                                        forHost:self]) {
+    LinkData *linkData = [[LinkData alloc] init];
+    linkData.text = text;
+    linkData.url = url;
+    linkData.isManual = YES;
+    [linkStyleClass addLink:linkData range:linkRange withSelection:YES];
     [self anyTextMayHaveBeenModified];
   }
 }
 
 - (void)removeLinkAt:(NSInteger)start end:(NSInteger)end {
-  LinkStyle *linkStyleClass =
-      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
+  LinkStyle *linkStyleClass = (LinkStyle *)stylesDict[@([LinkStyle getType])];
   if (linkStyleClass == nullptr) {
     return;
   }
@@ -1596,7 +1523,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   NSInteger rangeLength = MAX(start, end) - rangeStart;
   NSRange linkRange = NSMakeRange(rangeStart, rangeLength);
 
-  [linkStyleClass removeAttributes:linkRange];
+  [linkStyleClass remove:linkRange withDirtyRange:YES];
   [self anyTextMayHaveBeenModified];
 }
 
@@ -1604,18 +1531,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
               text:(NSString *)text
         attributes:(NSString *)attributes {
   MentionStyle *mentionStyleClass =
-      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass == nullptr) {
     return;
   }
-  if ([mentionStyleClass getActiveMentionRange] == nullptr) {
-    return;
-  }
 
-  if ([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType]
-                                    range:[[mentionStyleClass
-                                              getActiveMentionRange]
-                                              rangeValue]]) {
+  NSValue *activeMentionRange = [mentionStyleClass getActiveMentionRange];
+  NSRange rangeToUse = activeMentionRange != nullptr
+                           ? [activeMentionRange rangeValue]
+                           : self.textView.selectedRange;
+
+  if ([StyleUtils handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                          range:rangeToUse
+                                        forHost:self]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
     [self anyTextMayHaveBeenModified];
   }
@@ -1623,13 +1551,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)addImage:(NSString *)uri width:(float)width height:(float)height {
   ImageStyle *imageStyleClass =
-      (ImageStyle *)stylesDict[@([ImageStyle getStyleType])];
+      (ImageStyle *)stylesDict[@([ImageStyle getType])];
   if (imageStyleClass == nullptr) {
     return;
   }
 
-  if ([self handleStyleBlocksAndConflicts:[ImageStyle getStyleType]
-                                    range:textView.selectedRange]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[ImageStyle getType]
+                                          range:textView.selectedRange
+                                        forHost:self]) {
     [imageStyleClass addImage:uri width:width height:height];
     [self anyTextMayHaveBeenModified];
   }
@@ -1637,87 +1566,25 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
 - (void)startMentionWithIndicator:(NSString *)indicator {
   MentionStyle *mentionStyleClass =
-      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass == nullptr) {
     return;
   }
 
-  if ([self handleStyleBlocksAndConflicts:[MentionStyle getStyleType]
-                                    range:textView.selectedRange]) {
+  if ([StyleUtils handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                          range:textView.selectedRange
+                                        forHost:self]) {
     [mentionStyleClass startMentionWithIndicator:indicator];
     [self anyTextMayHaveBeenModified];
   }
 }
 
-// returns false when style shouldn't be applied and true when it can be
-- (BOOL)handleStyleBlocksAndConflicts:(StyleType)type range:(NSRange)range {
-  // handle blocking styles: if any is present we do not apply the toggled style
-  NSArray<NSNumber *> *blocking =
-      [self getPresentStyleTypesFrom:blockingStyles[@(type)] range:range];
-  if (blocking.count != 0) {
-    return NO;
-  }
-
-  // handle conflicting styles: all of their occurences have to be removed
-  NSArray<NSNumber *> *conflicting =
-      [self getPresentStyleTypesFrom:conflictingStyles[@(type)] range:range];
-  if (conflicting.count != 0) {
-    for (NSNumber *style in conflicting) {
-      id<BaseStyleProtocol> styleClass = stylesDict[style];
-
-      if (range.length >= 1) {
-        // for ranges, we need to remove each occurence
-        NSArray<StylePair *> *allOccurences =
-            [styleClass findAllOccurences:range];
-
-        for (StylePair *pair in allOccurences) {
-          [styleClass removeAttributes:[pair.rangeValue rangeValue]];
-        }
-      } else {
-        // with in-place selection, we just remove the adequate typing
-        // attributes
-        [styleClass removeTypingAttributes];
-      }
-    }
-  }
-  return YES;
-}
-
-- (NSArray<NSNumber *> *)getPresentStyleTypesFrom:(NSArray<NSNumber *> *)types
-                                            range:(NSRange)range {
-  NSMutableArray<NSNumber *> *resultArray =
-      [[NSMutableArray<NSNumber *> alloc] init];
-  for (NSNumber *type in types) {
-    id<BaseStyleProtocol> styleClass = stylesDict[type];
-
-    if (range.length >= 1) {
-      if ([styleClass anyOccurence:range]) {
-        [resultArray addObject:type];
-      }
-    } else {
-      if ([styleClass detectStyle:range]) {
-        [resultArray addObject:type];
-      }
-    }
-  }
-  return resultArray;
-}
-
 - (void)manageSelectionBasedChanges {
-  // link typing attributes fix
-  LinkStyle *linkStyleClass =
-      (LinkStyle *)stylesDict[@([LinkStyle getStyleType])];
-  if (linkStyleClass != nullptr) {
-    [linkStyleClass manageLinkTypingAttributes];
-  }
   NSString *currentString = [textView.textStorage.string copy];
 
-  // mention typing attribtues fix and active editing
   MentionStyle *mentionStyleClass =
-      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass != nullptr) {
-    [mentionStyleClass manageMentionTypingAttributes];
-
     // mention editing runs if only a selection was done (no text change)
     // otherwise we would double-emit with a second call in the
     // anyTextMayHaveBeenModified method
@@ -1726,32 +1593,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
-  // typing attributes for empty lines selection reset
-  if (textView.selectedRange.length == 0 &&
-      [_recentInputString isEqualToString:currentString]) {
-    // no string change means only a selection changed with no character changes
-    NSRange paragraphRange = [textView.textStorage.string
-        paragraphRangeForRange:textView.selectedRange];
-    if (paragraphRange.length == 0 ||
-        (paragraphRange.length == 1 &&
-         [[NSCharacterSet newlineCharacterSet]
-             characterIsMember:[textView.textStorage.string
-                                   characterAtIndex:paragraphRange
-                                                        .location]])) {
-      // user changed selection to an empty line (or empty line with a newline)
-      // typing attributes need to be reset
-      textView.typingAttributes = defaultTypingAttributes;
-    }
-  }
+  // attributes manager handles proper typingAttributes at all times to properly
+  // extend meta-attributes
+  BOOL onlySelectionChanged =
+      textView.selectedRange.length == 0 &&
+      [_recentInputString isEqualToString:currentString];
+  // removedTypingAttributes aren't normally removed during the regular flow
+  // and we do remove them only here - so when we are sure that selection
+  // changed. We want to remember which attributes were removed as long as we
+  // stay at the same position. This prevents a removed attribute from being
+  // re-applied from the preceding character right after we toggled it off.
+  [attributesManager clearRemovedTypingAttributes];
+  [attributesManager
+      manageTypingAttributesWithOnlySelection:onlySelectionChanged];
 
-  // update active styles as well
+  // always update active styles
   [self tryUpdatingActiveStyles];
 }
 
 - (void)handleWordModificationBasedChanges:(NSString *)word
                                    inRange:(NSRange)range {
   // manual links refreshing and automatic links detection handling
-  LinkStyle *linkStyle = [stylesDict objectForKey:@([LinkStyle getStyleType])];
+  LinkStyle *linkStyle = [stylesDict objectForKey:@([LinkStyle getType])];
 
   if (linkStyle != nullptr) {
     // manual links need to be handled first because they can block automatic
@@ -1768,7 +1631,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 
   // zero width space adding or removal
-  [ZeroWidthSpaceUtils handleZeroWidthSpacesInInput:self];
+  [ZeroWidthSpaceUtils handleZeroWidthSpacesInHost:self];
 
   // emptying input typing attributes management
   if (textView.textStorage.string.length == 0 &&
@@ -1777,27 +1640,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.typingAttributes = defaultTypingAttributes;
   }
 
-  // inline code on newlines fix
-  InlineCodeStyle *codeStyle = stylesDict[@([InlineCodeStyle getStyleType])];
-  if (codeStyle != nullptr) {
-    [codeStyle handleNewlines];
-  }
-
-  // blockquote colors management
-  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
-  if (bqStyle != nullptr) {
-    [bqStyle manageBlockquoteColor];
-  }
-
-  // codeblock font and color management
-  CodeBlockStyle *codeBlockStyle = stylesDict[@([CodeBlockStyle getStyleType])];
-  if (codeBlockStyle != nullptr) {
-    [codeBlockStyle manageCodeBlockFontAndColor];
-  }
-
   // mentions management: removal and editing
   MentionStyle *mentionStyleClass =
-      (MentionStyle *)stylesDict[@([MentionStyle getStyleType])];
+      (MentionStyle *)stylesDict[@([MentionStyle getType])];
   if (mentionStyleClass != nullptr) {
     [mentionStyleClass handleExistingMentions];
     [mentionStyleClass manageMentionEditing];
@@ -1811,25 +1656,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [self setPlaceholderLabelShown:YES];
   }
 
-  if (![textView.textStorage.string isEqualToString:_recentInputString]) {
-    // modified words handling
-    NSArray *modifiedWords =
-        [WordsUtils getAffectedWordsFromText:textView.textStorage.string
-                           modificationRange:recentlyChangedRange];
-    if (modifiedWords != nullptr) {
-      for (NSDictionary *wordDict in modifiedWords) {
-        NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
-        NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+  // modified words handling
+  NSArray *currentDirtyRanges = [attributesManager getDirtyRanges];
+  if (currentDirtyRanges.count > 0) {
+    NSMutableArray *modifiedWords = [[NSMutableArray alloc] init];
 
-        if (wordText == nullptr || wordRange == nullptr) {
-          continue;
-        }
-
-        [self handleWordModificationBasedChanges:wordText
-                                         inRange:[wordRange rangeValue]];
+    for (NSValue *dirtyRangeValue in currentDirtyRanges) {
+      NSRange dirtyRange = [dirtyRangeValue rangeValue];
+      NSArray *words =
+          [WordsUtils getAffectedWordsFromText:textView.textStorage.string
+                             modificationRange:dirtyRange];
+      if (words != nullptr) {
+        [modifiedWords addObjectsFromArray:words];
       }
     }
 
+    for (NSDictionary *wordDict in modifiedWords) {
+      NSString *wordText = (NSString *)[wordDict objectForKey:@"word"];
+      NSValue *wordRange = (NSValue *)[wordDict objectForKey:@"range"];
+
+      if (wordText == nullptr || wordRange == nullptr) {
+        continue;
+      }
+
+      [self handleWordModificationBasedChanges:wordText
+                                       inRange:[wordRange rangeValue]];
+    }
+  }
+
+  if (![textView.textStorage.string isEqualToString:_recentInputString]) {
     // emit onChangeText event
     auto emitter = [self getEventEmitter];
     if (emitter != nullptr && _emitTextChange) {
@@ -1844,7 +1699,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       emitter->onChangeText({.value = [stringToBeEmitted toCppString]});
     }
   }
-
+  // all the visible (not meta) attributes handling in the ranges that could
+  // have changed
+  [attributesManager handleDirtyRangesStyling];
   // update height on each character change
   [self tryUpdatingHeight];
   // update active styles as well
@@ -1898,7 +1755,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   [self anyTextMayHaveBeenModified];
 }
 
-// MARK: - UITextView delegate methods
+// MARK: - Delegate methods
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
   auto emitter = [self getEventEmitter];
@@ -1967,6 +1824,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           [textView.textStorage.string substringWithRange:selectedRange];
     }
 
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    NSString *currentAlignment = [alignmentStyle getStyleState];
+
     emitter->onContextMenuItemPress(
         {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
@@ -1974,35 +1834,33 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
          .selectionEnd =
              static_cast<int>(selectedRange.location + selectedRange.length),
          .styleState = {
-             .bold = GET_STYLE_STATE([BoldStyle getStyleType]),
-             .italic = GET_STYLE_STATE([ItalicStyle getStyleType]),
-             .underline = GET_STYLE_STATE([UnderlineStyle getStyleType]),
-             .strikeThrough =
-                 GET_STYLE_STATE([StrikethroughStyle getStyleType]),
-             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getStyleType]),
-             .h1 = GET_STYLE_STATE([H1Style getStyleType]),
-             .h2 = GET_STYLE_STATE([H2Style getStyleType]),
-             .h3 = GET_STYLE_STATE([H3Style getStyleType]),
-             .h4 = GET_STYLE_STATE([H4Style getStyleType]),
-             .h5 = GET_STYLE_STATE([H5Style getStyleType]),
-             .h6 = GET_STYLE_STATE([H6Style getStyleType]),
-             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getStyleType]),
-             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getStyleType]),
-             .orderedList = GET_STYLE_STATE([OrderedListStyle getStyleType]),
-             .unorderedList =
-                 GET_STYLE_STATE([UnorderedListStyle getStyleType]),
-             .link = GET_STYLE_STATE([LinkStyle getStyleType]),
-             .image = GET_STYLE_STATE([ImageStyle getStyleType]),
-             .mention = GET_STYLE_STATE([MentionStyle getStyleType]),
-             .checkboxList =
-                 GET_STYLE_STATE([CheckboxListStyle getStyleType])}});
+             .bold = GET_STYLE_STATE([BoldStyle getType]),
+             .italic = GET_STYLE_STATE([ItalicStyle getType]),
+             .underline = GET_STYLE_STATE([UnderlineStyle getType]),
+             .strikeThrough = GET_STYLE_STATE([StrikethroughStyle getType]),
+             .inlineCode = GET_STYLE_STATE([InlineCodeStyle getType]),
+             .h1 = GET_STYLE_STATE([H1Style getType]),
+             .h2 = GET_STYLE_STATE([H2Style getType]),
+             .h3 = GET_STYLE_STATE([H3Style getType]),
+             .h4 = GET_STYLE_STATE([H4Style getType]),
+             .h5 = GET_STYLE_STATE([H5Style getType]),
+             .h6 = GET_STYLE_STATE([H6Style getType]),
+             .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
+             .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
+             .orderedList = GET_STYLE_STATE([OrderedListStyle getType]),
+             .unorderedList = GET_STYLE_STATE([UnorderedListStyle getType]),
+             .link = GET_STYLE_STATE([LinkStyle getType]),
+             .image = GET_STYLE_STATE([ImageStyle getType]),
+             .mention = GET_STYLE_STATE([MentionStyle getType]),
+             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+             .alignment = [currentAlignment UTF8String]}});
   }
 }
 
 - (void)handleKeyPressInRange:(NSString *)text range:(NSRange)range {
   NSString *key = nil;
 
-  if (text.length == 0 && range.length > 0) {
+  if (text.length == 0) {
     key = @"Backspace";
   } else if ([text isEqualToString:@"\n"]) {
     key = @"Enter";
@@ -2229,6 +2087,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (bool)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
+  // Capture the attributes at range.location that are being replaced
+  // (autocorrect / predictive) so didProcessEditing: can re-stamp them onto the
+  // replacement.
+  if (range.length > 0) {
+    _capturedAttributesBeforeChange =
+        [textView.textStorage attributesAtIndex:range.location
+                                 effectiveRange:NULL];
+  }
+
   // Check if the user pressed "Enter"
   if ([text isEqualToString:@"\n"]) {
     const bool shouldSubmit = [self textInputShouldSubmitOnReturn];
@@ -2247,62 +2114,48 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
   }
 
-  recentlyChangedRange = NSMakeRange(range.location, text.length);
   [self handleKeyPressInRange:text range:range];
 
-  UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getStyleType])];
-  OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getStyleType])];
-  CheckboxListStyle *cbLStyle = stylesDict[@([CheckboxListStyle getStyleType])];
-  BlockQuoteStyle *bqStyle = stylesDict[@([BlockQuoteStyle getStyleType])];
-  CodeBlockStyle *cbStyle = stylesDict[@([CodeBlockStyle getStyleType])];
-  LinkStyle *linkStyle = stylesDict[@([LinkStyle getStyleType])];
-  MentionStyle *mentionStyle = stylesDict[@([MentionStyle getStyleType])];
-  H1Style *h1Style = stylesDict[@([H1Style getStyleType])];
-  H2Style *h2Style = stylesDict[@([H2Style getStyleType])];
-  H3Style *h3Style = stylesDict[@([H3Style getStyleType])];
-  H4Style *h4Style = stylesDict[@([H4Style getStyleType])];
-  H5Style *h5Style = stylesDict[@([H5Style getStyleType])];
-  H6Style *h6Style = stylesDict[@([H6Style getStyleType])];
+  UnorderedListStyle *uStyle = stylesDict[@([UnorderedListStyle getType])];
+  OrderedListStyle *oStyle = stylesDict[@([OrderedListStyle getType])];
+  CheckboxListStyle *cbLStyle =
+      (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
+  H1Style *h1Style = stylesDict[@([H1Style getType])];
+  H2Style *h2Style = stylesDict[@([H2Style getType])];
+  H3Style *h3Style = stylesDict[@([H3Style getType])];
+  H4Style *h4Style = stylesDict[@([H4Style getType])];
+  H5Style *h5Style = stylesDict[@([H5Style getType])];
+  H6Style *h6Style = stylesDict[@([H6Style getType])];
 
   // some of the changes these checks do could interfere with later checks and
-  // cause a crash so here I rely on short circuiting evaluation of the logical
-  // expression either way it's not possible to have two of them come off at the
-  // same time
-  if ([uStyle handleBackspaceInRange:range replacementText:text] ||
-      [oStyle handleBackspaceInRange:range replacementText:text] ||
-      [cbLStyle handleBackspaceInRange:range replacementText:text] ||
+  // cause a crash so here we rely on short circuiting evaluation of the logical
+  // expression. Either way it's not possible to have two of them come off at
+  // the same time
+  if (
+      // ZWS backspace handling for paragraph styles
+      [ZeroWidthSpaceUtils handleBackspaceInRange:range
+                                  replacementText:text
+                                             host:self] ||
       [cbLStyle handleNewlinesInRange:range replacementText:text] ||
-      [bqStyle handleBackspaceInRange:range replacementText:text] ||
-      [cbStyle handleBackspaceInRange:range replacementText:text] ||
-      [linkStyle handleLeadingLinkReplacement:range replacementText:text] ||
-      [mentionStyle handleLeadingMentionReplacement:range
-                                    replacementText:text] ||
       [h1Style handleNewlinesInRange:range replacementText:text] ||
       [h2Style handleNewlinesInRange:range replacementText:text] ||
       [h3Style handleNewlinesInRange:range replacementText:text] ||
       [h4Style handleNewlinesInRange:range replacementText:text] ||
       [h5Style handleNewlinesInRange:range replacementText:text] ||
       [h6Style handleNewlinesInRange:range replacementText:text] ||
-      [h1Style handleBackspaceInRange:range replacementText:text] ||
-      [h2Style handleBackspaceInRange:range replacementText:text] ||
-      [h3Style handleBackspaceInRange:range replacementText:text] ||
-      [h4Style handleBackspaceInRange:range replacementText:text] ||
-      [h5Style handleBackspaceInRange:range replacementText:text] ||
-      [h6Style handleBackspaceInRange:range replacementText:text] ||
-      [ZeroWidthSpaceUtils handleBackspaceInRange:range
-                                  replacementText:text
-                                            input:self] ||
       [ParagraphAttributesUtils handleBackspaceInRange:range
                                        replacementText:text
                                                  input:self] ||
       [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
                                                        replacementText:text
-                                                                 input:self] ||
-      // CRITICAL: This callback HAS TO be always evaluated last.
+                                                                 input:self]
+
+      //       CRITICAL: This callback HAS TO be always evaluated last.
       //
-      // This function is the "Generic Fallback": if no specific style claims
-      // the backspace action to change its state, only then do we proceed to
-      // physically delete the newline and merge paragraphs.
+      //       This function is the "Generic Fallback": if no specific style
+      //       claims the backspace action to change its state, only then do we
+      //       proceed to physically delete the newline and merge paragraphs.
+      ||
       [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
                                                       replacementText:text
                                                                 input:self]) {
@@ -2316,14 +2169,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [self tryHandlingInlineShortcutInRange:range replacementText:text]) {
     [self anyTextMayHaveBeenModified];
     return NO;
-  }
-
-  // Tapping near a link causes iOS to re-derive typingAttributes from
-  // character attributes after textViewDidChangeSelection returns, undoing
-  // the cleanup in manageSelectionBasedChanges. Strip them again here, right
-  // before insertion, so new text never inherits link styling.
-  if (linkStyle != nullptr) {
-    [linkStyle manageLinkTypingAttributes];
   }
 
   return YES;
@@ -2385,9 +2230,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     NSRange prevSelectedRange = textView.selectedRange;
 
-    NSString *currentHtml = [parser
-        parseToHtmlFromRange:NSMakeRange(0,
-                                         textView.textStorage.string.length)];
+    NSString *currentHtml = [HtmlParser
+        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                        host:self];
     NSString *initiallyProcessedHtml =
         [parser initiallyProcessHtml:currentHtml];
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
@@ -2408,11 +2253,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   case TextBlockTapKindCheckbox: {
     CheckboxListStyle *checkboxStyle =
-        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getStyleType])];
+        (CheckboxListStyle *)stylesDict[@([CheckboxListStyle getType])];
 
     if (checkboxStyle) {
       NSUInteger charIndex = (NSUInteger)gr.characterIndex;
-      [checkboxStyle toggleCheckedAt:charIndex];
+      [checkboxStyle toggleCheckedAt:charIndex withDirtyRange:YES];
       [self anyTextMayHaveBeenModified];
 
       NSString *fullText = textView.textStorage.string;
@@ -2442,132 +2287,63 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   }
 }
 
+- (void)textStorage:(NSTextStorage *)textStorage
+    didProcessEditing:(NSTextStorageEditActions)editedMask
+                range:(NSRange)editedRange
+       changeInLength:(NSInteger)delta {
+  // iOS replacing quick double space with ". " attributes fix.
+  [DotReplacementUtils handleDotReplacement:self
+                                textStorage:textStorage
+                                 editedMask:editedMask
+                                editedRange:editedRange
+                                      delta:delta];
+
+  // Needed dirty ranges adjustments happen on every character edition.
+  if ((editedMask & NSTextStorageEditedCharacters) != 0) {
+    // Re-stamp custom meta-attributes captured in shouldChangeTextInRange: onto
+    // the new range so autocorrect/predictive replacements keep their styling.
+    if (_capturedAttributesBeforeChange != nil) {
+      // Skip while an IME composition is in progress; restamp on commit.
+      if (textView.markedTextRange == nil) {
+        NSSet *customKeys = [attributesManager customAttributesKeys];
+        for (NSString *key in _capturedAttributesBeforeChange) {
+          if ([customKeys containsObject:key]) {
+            [textStorage addAttribute:key
+                                value:_capturedAttributesBeforeChange[key]
+                                range:editedRange];
+          }
+        }
+      }
+
+      // Clear after consuming
+      _capturedAttributesBeforeChange = nil;
+    }
+    // Always try shifting dirty ranges (happens only with delta != 0).
+    [attributesManager shiftDirtyRangesWithEditedRange:editedRange
+                                        changeInLength:delta];
+
+    // Add dirty ranges. We also add zero-length ranges because they are useful
+    // for word modification-based changes.
+    [attributesManager addDirtyRange:editedRange];
+  }
+}
+
 // MARK: - Media attachments delegate
 
-- (void)mediaAttachmentDidUpdate:(NSTextAttachment *)attachment {
-  NSTextStorage *storage = textView.textStorage;
-  NSRange fullRange = NSMakeRange(0, storage.length);
-
-  __block NSRange foundRange = NSMakeRange(NSNotFound, 0);
-
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:fullRange
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if (value == attachment) {
-                       foundRange = range;
-                       *stop = YES;
-                     }
-                   }];
-
-  if (foundRange.location == NSNotFound) {
-    return;
-  }
-
-  [storage edited:NSTextStorageEditedAttributes
-               range:foundRange
-      changeInLength:0];
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self layoutAttachments];
-  });
+- (void)mediaAttachmentDidUpdate:(MediaAttachment *)attachment {
+  [AttachmentLayoutUtils handleAttachmentUpdate:attachment
+                                       textView:textView
+                                  onLayoutBlock:^{
+                                    [self layoutAttachments];
+                                  }];
 }
 
 // MARK: - Image/GIF Overlay Management
 
 - (void)layoutAttachments {
-  NSTextStorage *storage = textView.textStorage;
-  NSMutableDictionary<NSValue *, UIImageView *> *activeAttachmentViews =
-      [NSMutableDictionary dictionary];
-
-  // Iterate over the entire text to find ImageAttachments
-  [storage enumerateAttribute:NSAttachmentAttributeName
-                      inRange:NSMakeRange(0, storage.length)
-                      options:0
-                   usingBlock:^(id value, NSRange range, BOOL *stop) {
-                     if ([value isKindOfClass:[ImageAttachment class]]) {
-                       ImageAttachment *attachment = (ImageAttachment *)value;
-
-                       CGRect rect = [self frameForAttachment:attachment
-                                                      atRange:range];
-
-                       // Get or Create the UIImageView for this specific
-                       // attachment key
-                       NSValue *key =
-                           [NSValue valueWithNonretainedObject:attachment];
-                       UIImageView *imgView = _attachmentViews[key];
-
-                       if (!imgView) {
-                         // It doesn't exist yet, create it
-                         imgView = [[UIImageView alloc] initWithFrame:rect];
-                         imgView.contentMode = UIViewContentModeScaleAspectFit;
-                         imgView.tintColor = [UIColor labelColor];
-
-                         // Add it directly to the TextView
-                         [textView addSubview:imgView];
-                       }
-
-                       // Update position (in case text moved/scrolled)
-                       if (!CGRectEqualToRect(imgView.frame, rect)) {
-                         imgView.frame = rect;
-                       }
-                       UIImage *targetImage =
-                           attachment.storedAnimatedImage ?: attachment.image;
-
-                       // Only set if different to avoid resetting the animation
-                       // loop
-                       if (imgView.image != targetImage) {
-                         imgView.image = targetImage;
-                       }
-
-                       // Ensure it is visible on top
-                       imgView.hidden = NO;
-                       [textView bringSubviewToFront:imgView];
-
-                       activeAttachmentViews[key] = imgView;
-                       // Remove from the old map so we know it has been claimed
-                       [_attachmentViews removeObjectForKey:key];
-                     }
-                   }];
-
-  // Everything remaining in _attachmentViews is dead or off-screen
-  for (UIImageView *danglingView in _attachmentViews.allValues) {
-    [danglingView removeFromSuperview];
-  }
-  _attachmentViews = activeAttachmentViews;
-}
-
-- (CGRect)frameForAttachment:(ImageAttachment *)attachment
-                     atRange:(NSRange)range {
-  NSLayoutManager *layoutManager = textView.layoutManager;
-  NSTextContainer *textContainer = textView.textContainer;
-  NSTextStorage *storage = textView.textStorage;
-
-  NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range
-                                             actualCharacterRange:NULL];
-  CGRect glyphRect = [layoutManager boundingRectForGlyphRange:glyphRange
-                                              inTextContainer:textContainer];
-
-  CGRect lineRect =
-      [layoutManager lineFragmentRectForGlyphAtIndex:glyphRange.location
-                                      effectiveRange:NULL];
-  CGSize attachmentSize = attachment.bounds.size;
-
-  UIFont *font = [storage attribute:NSFontAttributeName
-                            atIndex:range.location
-                     effectiveRange:NULL];
-  if (!font) {
-    font = [config primaryFont];
-  }
-
-  // Calculate (Baseline Alignment)
-  CGFloat targetY =
-      CGRectGetMaxY(lineRect) + font.descender - attachmentSize.height;
-  CGRect rect =
-      CGRectMake(glyphRect.origin.x + textView.textContainerInset.left,
-                 targetY + textView.textContainerInset.top,
-                 attachmentSize.width, attachmentSize.height);
-
-  return CGRectIntegral(rect);
+  _attachmentViews =
+      [AttachmentLayoutUtils layoutAttachmentsInTextView:textView
+                                                  config:config
+                                           existingViews:_attachmentViews];
 }
 @end

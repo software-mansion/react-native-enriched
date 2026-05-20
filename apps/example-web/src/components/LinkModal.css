@@ -1,0 +1,14 @@
+.modal-input--single {
+  height: 42px;
+  width: 100%;
+  font-size: 15px;
+  border: 1px solid grey;
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
+  font-family: inherit;
+}
+
+.modal-input--single:focus {
+  border-color: var(--primary);
+}
