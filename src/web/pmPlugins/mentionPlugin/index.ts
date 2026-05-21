@@ -13,26 +13,33 @@ export { setMention } from './setMention';
 export { startMention } from './startMention';
 export { subscribeMentionEvents } from './subscribeMentionEvents';
 
-export function createMentionPlugin(options: MentionPluginOptions): Extension {
-  return Extension.create({
-    name: 'mentionTrigger',
-    addProseMirrorPlugins() {
-      return [
-        new Plugin<TriggerState>({
-          key: mentionPluginKey,
-          props: {
-            transformPasted(slice: Slice): Slice {
-              return new Slice(
-                stripPartialMentionMarks(slice.content),
-                slice.openStart,
-                slice.openEnd
-              );
-            },
+export const MentionPlugin = Extension.create<MentionPluginOptions>({
+  name: 'mentionTrigger',
+  addOptions() {
+    return {
+      getIndicators: () => {
+        throw new Error(
+          'MentionPlugin.configure({ getIndicators, getCallbacks }) is required'
+        );
+      },
+    };
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin<TriggerState>({
+        key: mentionPluginKey,
+        props: {
+          transformPasted(slice: Slice): Slice {
+            return new Slice(
+              stripPartialMentionMarks(slice.content),
+              slice.openStart,
+              slice.openEnd
+            );
           },
-          state: makeMentionPluginState(options),
-          appendTransaction: removeMentionMarksIfSpansResized,
-        }),
-      ];
-    },
-  });
-}
+        },
+        state: makeMentionPluginState(this.options.getIndicators),
+        appendTransaction: removeMentionMarksIfSpansResized,
+      }),
+    ];
+  },
+});

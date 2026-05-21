@@ -59,20 +59,20 @@ import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
 import { EnrichedCheckboxItem } from './formats/EnrichedCheckboxItem';
 import { EnrichedCheckboxList } from './formats/EnrichedCheckboxList';
-import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
+import { StripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
 import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
 import {
-  createMentionPlugin,
+  MentionPlugin,
   setMention,
   startMention,
   subscribeMentionEvents,
 } from './pmPlugins/mentionPlugin';
-
 import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/shortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
+
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -201,12 +201,13 @@ export const EnrichedTextInput = ({
       EnrichedCheckboxList,
       StripMarksInCodeBlockPlugin,
       StripMarksOnImagePlugin,
-      createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
+      StripBoldInStyledHeadingsPlugin.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
-      createMentionPlugin({
-        indicatorsRef: mentionIndicatorsRef,
-        callbacksRef: mentionCallbacksRef,
+      MentionPlugin.configure({
+        getIndicators: () => mentionIndicatorsRef.current,
       }),
       ShortcutPlugin.configure({
         getHtmlStyle: () => htmlStyleRef.current,
@@ -278,7 +279,7 @@ export const EnrichedTextInput = ({
 
   useEffect(() => {
     if (!editor) return;
-    return subscribeMentionEvents(editor, mentionCallbacksRef);
+    return subscribeMentionEvents(editor, () => mentionCallbacksRef.current);
   }, [editor]);
 
   useOnChangeHtml(editor, onChangeHtml);

@@ -11,13 +11,12 @@ export type TriggerState =
     };
 
 export interface MentionPluginOptions {
-  indicatorsRef: { current: string[] };
-  callbacksRef: {
-    current: {
-      onStartMention?: (indicator: string) => void;
-      onChangeMention?: (e: OnChangeMentionEvent) => void;
-      onEndMention?: (indicator: string) => void;
-      onMentionDetected?: (e: OnMentionDetected) => void;
-    };
-  };
+  getIndicators: () => string[];
+}
+
+export interface MentionCallbacks {
+  onStartMention?: (indicator: string) => void;
+  onChangeMention?: (e: OnChangeMentionEvent) => void;
+  onEndMention?: (indicator: string) => void;
+  onMentionDetected?: (e: OnMentionDetected) => void;
 }

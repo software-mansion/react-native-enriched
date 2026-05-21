@@ -39,34 +39,41 @@ function transactionStripBoldInCssBoldHeadings(
   return tr.steps.length > 0 ? tr : null;
 }
 
-export function createStripBoldInStyledHeadingsPlugin(
-  getStyle: () => Required<HtmlStyle>
-) {
-  return Extension.create({
-    name: 'stripBoldInStyledHeadings',
-    addCommands() {
-      return {
-        normalizeBoldInStyledHeadings:
-          () =>
-          ({ state, dispatch }: CommandProps) => {
-            const tr = transactionStripBoldInCssBoldHeadings(state, getStyle());
-            if (!tr) return false;
-            if (dispatch) dispatch(tr);
-            return true;
-          },
-      };
-    },
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          key: new PluginKey('stripBoldInStyledHeadings'),
-          appendTransaction: (transactions, _oldState, newState) => {
-            if (!transactions.some((tr) => tr.docChanged)) return;
+export const StripBoldInStyledHeadingsPlugin = Extension.create({
+  name: 'stripBoldInStyledHeadings',
+  addOptions() {
+    return {
+      getHtmlStyle: () => {
+        throw new Error(
+          'StripBoldInStyledHeadingsPlugin.configure({ getHtmlStyle }) is required'
+        );
+      },
+    };
+  },
+  addCommands() {
+    return {
+      normalizeBoldInStyledHeadings:
+        () =>
+        ({ state, dispatch }: CommandProps) => {
+          const htmlStyle = this.options.getHtmlStyle();
+          const tr = transactionStripBoldInCssBoldHeadings(state, htmlStyle);
+          if (!tr) return false;
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+    };
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('stripBoldInStyledHeadings'),
+        appendTransaction: (transactions, _oldState, newState) => {
+          if (!transactions.some((tr) => tr.docChanged)) return;
+          const htmlStyle = this.options.getHtmlStyle();
 
-            return transactionStripBoldInCssBoldHeadings(newState, getStyle());
-          },
-        }),
-      ];
-    },
-  });
-}
+          return transactionStripBoldInCssBoldHeadings(newState, htmlStyle);
+        },
+      }),
+    ];
+  },
+});
