@@ -59,18 +59,18 @@ import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
 import { EnrichedCheckboxItem } from './formats/EnrichedCheckboxItem';
 import { EnrichedCheckboxList } from './formats/EnrichedCheckboxList';
-import { StripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
-import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
-import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
-import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import { StripBoldInStyledHeadingsPlugin } from './pmPlugins/StripBoldInStyledHeadingsPlugin';
+import { StrictMarksPlugin } from './pmPlugins/StrictMarksPlugin';
+import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/MergeAdjacentSameKindBlocksPlugin';
+import { StripMarksInCodeBlockPlugin } from './pmPlugins/StripMarksInCodeBlockPlugin';
 import {
   MentionPlugin,
   setMention,
   startMention,
   subscribeMentionEvents,
-} from './pmPlugins/mentionPlugin';
-import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
-import { ShortcutPlugin } from './pmPlugins/shortcutPlugin';
+} from './pmPlugins/MentionPlugin';
+import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
+import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
 
 function runFocused(
