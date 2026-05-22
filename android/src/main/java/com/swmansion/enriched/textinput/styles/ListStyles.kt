@@ -177,20 +177,11 @@ class ListStyles(
 
     val isBackspace = previousTextLength > s.length
     val isNewLine = cursorPosition > 0 && s[cursorPosition - 1] == '\n'
-    val isShortcut = config.shortcut?.let { s.substring(start, end).startsWith(it) } ?: false
     val spans = s.getSpans(start, end, config.clazz)
 
     // Remove spans if cursor is at the start of the paragraph and spans exist
     if (isBackspace && start == cursorPosition && spans.isNotEmpty()) {
       removeSpansForRange(s, start, end, config.clazz)
-      return
-    }
-
-    if (!isBackspace && isShortcut) {
-      s.replace(start, cursorPosition, EnrichedConstants.ZWS_STRING)
-      setSpan(s, name, start, start + 1)
-      // Inform that new span has been added
-      view.selection?.validateStyles()
       return
     }
 
@@ -239,166 +230,6 @@ class ListStyles(
     }
   }
 
-  private fun resolveInlineStyleName(name: String): String? =
-    when (name) {
-      "bold" -> EnrichedSpans.BOLD
-      "italic" -> EnrichedSpans.ITALIC
-      "underline" -> EnrichedSpans.UNDERLINE
-      "strikethrough" -> EnrichedSpans.STRIKETHROUGH
-      "inline_code" -> EnrichedSpans.INLINE_CODE
-      else -> null
-    }
-
-  private fun resolveStyleName(name: String): String? =
-    when (name) {
-      "h1" -> EnrichedSpans.H1
-      "h2" -> EnrichedSpans.H2
-      "h3" -> EnrichedSpans.H3
-      "h4" -> EnrichedSpans.H4
-      "h5" -> EnrichedSpans.H5
-      "h6" -> EnrichedSpans.H6
-      "blockquote" -> EnrichedSpans.BLOCK_QUOTE
-      "codeblock" -> EnrichedSpans.CODE_BLOCK
-      "unordered_list" -> EnrichedSpans.UNORDERED_LIST
-      "ordered_list" -> EnrichedSpans.ORDERED_LIST
-      "checkbox_list" -> EnrichedSpans.CHECKBOX_LIST
-      else -> null
-    }
-
-  private fun handleConfigurableShortcuts(
-    s: Editable,
-    endCursorPosition: Int,
-    previousTextLength: Int,
-  ) {
-    val shortcuts = view.textShortcuts
-    if (shortcuts.isEmpty()) return
-    if (previousTextLength >= s.length) return
-
-    val cursorPosition = endCursorPosition.coerceAtMost(s.length)
-    val (start, end) = s.getParagraphBounds(cursorPosition)
-    val paragraphText = s.substring(start, end)
-
-    for ((trigger, styleName, type) in shortcuts) {
-      if (type == "inline") continue
-      if (trigger.isEmpty()) continue
-      if (!paragraphText.startsWith(trigger)) continue
-
-      val resolvedStyle = resolveStyleName(styleName) ?: continue
-
-      s.replace(start, start + trigger.length, EnrichedConstants.ZWS_STRING)
-
-      val listConfig = EnrichedSpans.listSpans[resolvedStyle]
-      if (listConfig != null) {
-        setSpan(s, resolvedStyle, start, start + 1)
-        view.selection?.validateStyles()
-      } else {
-        view.paragraphStyles?.toggleStyle(resolvedStyle)
-      }
-      return
-    }
-  }
-
-  private fun inlineShortcutsSorted(): List<Triple<String, String, String>> =
-    view.textShortcuts
-      .filter { (trigger, _, type) -> type == "inline" && trigger.isNotEmpty() }
-      .sortedByDescending { it.first.length }
-
-  private fun isDelimiterPartOfLongerInlineTrigger(
-    trigger: String,
-    delimStart: Int,
-    text: String,
-    inlineShortcuts: List<Triple<String, String, String>>,
-    isOpening: Boolean,
-  ): Boolean {
-    val delimEnd = delimStart + trigger.length
-
-    for ((longerTrigger, _, _) in inlineShortcuts) {
-      if (longerTrigger.length <= trigger.length) continue
-
-      val longerStart =
-        when {
-          isOpening -> {
-            if (!longerTrigger.endsWith(trigger)) continue
-            delimEnd - longerTrigger.length
-          }
-
-          longerTrigger.startsWith(trigger) -> {
-            delimStart
-          }
-
-          longerTrigger.endsWith(trigger) -> {
-            delimStart - (longerTrigger.length - trigger.length)
-          }
-
-          else -> {
-            continue
-          }
-        }
-
-      if (longerStart < 0 || longerStart + longerTrigger.length > text.length) continue
-
-      if (text.substring(longerStart, longerStart + longerTrigger.length) == longerTrigger) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  private fun handleInlineShortcuts(
-    s: Editable,
-    endCursorPosition: Int,
-    previousTextLength: Int,
-  ) {
-    val shortcuts = view.textShortcuts
-    if (shortcuts.isEmpty()) return
-    if (previousTextLength >= s.length) return
-
-    val cursorPosition = endCursorPosition.coerceAtMost(s.length)
-    val text = s.toString()
-    val (paraStart, _) = s.getParagraphBounds(cursorPosition)
-    val inlineShortcuts = inlineShortcutsSorted()
-
-    for ((trigger, styleName, _) in inlineShortcuts) {
-      val resolvedStyle = resolveInlineStyleName(styleName) ?: continue
-
-      if (cursorPosition < trigger.length) continue
-      val closingDelim = text.substring(cursorPosition - trigger.length, cursorPosition)
-      if (closingDelim != trigger) continue
-
-      val closeDelimStart = cursorPosition - trigger.length
-
-      if (isDelimiterPartOfLongerInlineTrigger(trigger, closeDelimStart, text, inlineShortcuts, isOpening = false)) {
-        continue
-      }
-
-      val searchText = text.substring(paraStart, closeDelimStart)
-      val openIdx = searchText.lastIndexOf(trigger)
-      if (openIdx < 0) continue
-
-      val openAbsolute = paraStart + openIdx
-
-      if (isDelimiterPartOfLongerInlineTrigger(trigger, openAbsolute, text, inlineShortcuts, isOpening = true)) {
-        continue
-      }
-
-      val contentStart = openAbsolute + trigger.length
-      val contentEnd = closeDelimStart
-      if (contentEnd <= contentStart) continue
-
-      s.delete(closeDelimStart, cursorPosition)
-      s.delete(openAbsolute, openAbsolute + trigger.length)
-
-      val adjustedStart = openAbsolute
-      val adjustedEnd = contentEnd - trigger.length
-
-      view.inlineStyles?.applyStyleOnRange(resolvedStyle, adjustedStart, adjustedEnd)
-      view.setSelection(adjustedEnd, adjustedEnd)
-      view.spanState?.setStart(resolvedStyle, null)
-      return
-    }
-  }
-
   fun afterTextChanged(
     s: Editable,
     endCursorPosition: Int,
@@ -407,8 +238,6 @@ class ListStyles(
     handleAfterTextChanged(s, EnrichedSpans.ORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EnrichedSpans.UNORDERED_LIST, endCursorPosition, previousTextLength)
     handleAfterTextChanged(s, EnrichedSpans.CHECKBOX_LIST, endCursorPosition, previousTextLength)
-    handleConfigurableShortcuts(s, endCursorPosition, previousTextLength)
-    handleInlineShortcuts(s, endCursorPosition, previousTextLength)
   }
 
   fun getStyleRange(): Pair<Int, Int> = view.selection?.getParagraphSelection() ?: Pair(0, 0)

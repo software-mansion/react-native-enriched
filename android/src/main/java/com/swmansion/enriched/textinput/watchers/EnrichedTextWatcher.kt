@@ -47,6 +47,7 @@ class EnrichedTextWatcher(
     view.inlineStyles?.afterTextChanged(s, endCursorPosition)
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
+    view.shortcutsHandler?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
   }
 
