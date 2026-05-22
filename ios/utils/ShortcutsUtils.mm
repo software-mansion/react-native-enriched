@@ -1,0 +1,549 @@
+#import "ShortcutsUtils.h"
+#import "ParagraphAttributesUtils.h"
+#import "StyleBase.h"
+#import "StyleUtils.h"
+#import "TextInsertionUtils.h"
+
+typedef struct {
+  EnrichedTextInputView *input;
+  NSString *fullText;
+  NSRange paragraphRange;
+  NSRange changeRange;
+  NSString *replacementText;
+} ShortcutsTextContext;
+
+typedef struct {
+  ShortcutsTextContext text;
+  NSArray<NSDictionary *> *inlineShortcuts;
+} ShortcutsInlineContext;
+
+typedef struct {
+  NSString *trigger;
+  StyleType styleType;
+  NSInteger delimStart;
+  NSInteger delimPrefixLen;
+} ShortcutsTriggerMatch;
+
+typedef struct {
+  NSRange finalContentRange;
+  NSRange closeDeleteRange;
+  NSRange openDeleteRange;
+} ShortcutsInlineApplyRanges;
+
+@implementation ShortcutsUtils
+
++ (NSDictionary<NSString *, NSNumber *> *)shortcutStyleNameMap {
+  static NSDictionary<NSString *, NSNumber *> *map = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    map = @{
+      // Block shortcuts
+      @"h1" : @(H1),
+      @"h2" : @(H2),
+      @"h3" : @(H3),
+      @"h4" : @(H4),
+      @"h5" : @(H5),
+      @"h6" : @(H6),
+      @"blockquote" : @(BlockQuote),
+      @"codeblock" : @(CodeBlock),
+      @"unordered_list" : @(UnorderedList),
+      @"ordered_list" : @(OrderedList),
+      @"checkbox_list" : @(CheckboxList),
+      // Inline shortcuts
+      @"bold" : @(Bold),
+      @"italic" : @(Italic),
+      @"underline" : @(Underline),
+      @"strikethrough" : @(Strikethrough),
+      @"inline_code" : @(InlineCode),
+    };
+  });
+  return map;
+}
+
++ (StyleType)styleTypeForShortcutName:(NSString *)name {
+  NSNumber *styleType = [self shortcutStyleNameMap][name];
+  return styleType ? (StyleType)[styleType integerValue] : None;
+}
+
++ (BOOL)hasTextShortcutsInInput:(EnrichedTextInputView *)input {
+  return input != nullptr && input->textShortcuts != nil &&
+         input->textShortcuts.count > 0;
+}
+
++ (ShortcutsTextContext)textContextWithChangeRange:(NSRange)changeRange
+                                   replacementText:(NSString *)replacementText
+                                             input:(EnrichedTextInputView *)
+                                                       input {
+  NSString *fullText = input->textView.textStorage.string;
+  return (ShortcutsTextContext){
+      .input = input,
+      .fullText = fullText,
+      .paragraphRange = [fullText paragraphRangeForRange:changeRange],
+      .changeRange = changeRange,
+      .replacementText = replacementText,
+  };
+}
+
++ (ShortcutsInlineContext)
+    inlineContextWithChangeRange:(NSRange)changeRange
+                 replacementText:(NSString *)replacementText
+                           input:(EnrichedTextInputView *)input {
+  return (ShortcutsInlineContext){
+      .text = [self textContextWithChangeRange:changeRange
+                               replacementText:replacementText
+                                         input:input],
+      .inlineShortcuts = [self inlineShortcutsFrom:input->textShortcuts],
+  };
+}
+
++ (NSArray<NSDictionary *> *)inlineShortcutsFrom:
+    (NSArray<NSDictionary *> *)textShortcuts {
+  NSMutableArray<NSDictionary *> *inlineShortcuts = [NSMutableArray array];
+  for (NSDictionary *shortcut in textShortcuts) {
+    if ([shortcut[@"type"] isEqualToString:@"inline"]) {
+      [inlineShortcuts addObject:shortcut];
+    }
+  }
+  [inlineShortcuts sortUsingComparator:^NSComparisonResult(NSDictionary *a,
+                                                           NSDictionary *b) {
+    NSUInteger lenA = [a[@"trigger"] length];
+    NSUInteger lenB = [b[@"trigger"] length];
+    if (lenA > lenB) {
+      return NSOrderedAscending;
+    }
+    if (lenA < lenB) {
+      return NSOrderedDescending;
+    }
+    return NSOrderedSame;
+  }];
+  return inlineShortcuts;
+}
+
+/// When [requiredDelimStart] is NSNotFound, the trigger may appear anywhere in
+/// the text. Otherwise the matched delimiter must start at that index (block
+/// shortcuts at paragraph start).
++ (BOOL)isCompletingTrigger:(NSString *)trigger
+                    context:(const ShortcutsTextContext *)context
+         requiredDelimStart:(NSInteger)requiredDelimStart
+                      match:(ShortcutsTriggerMatch *)outMatch {
+  if (trigger.length == 0) {
+    return NO;
+  }
+
+  NSString *lastTriggerChar = [trigger substringFromIndex:trigger.length - 1];
+  if (![context->replacementText isEqualToString:lastTriggerChar]) {
+    return NO;
+  }
+
+  NSInteger delimPrefixLen = (NSInteger)trigger.length - 1;
+  if (delimPrefixLen > 0) {
+    if (context->changeRange.location < delimPrefixLen) {
+      return NO;
+    }
+    NSString *prefix = [trigger substringToIndex:delimPrefixLen];
+    NSString *beforeCursor = [context->fullText
+        substringWithRange:NSMakeRange(context->changeRange.location -
+                                           delimPrefixLen,
+                                       delimPrefixLen)];
+    if (![beforeCursor isEqualToString:prefix]) {
+      return NO;
+    }
+  }
+
+  NSInteger delimStart = context->changeRange.location - delimPrefixLen;
+  if (requiredDelimStart != NSNotFound && delimStart != requiredDelimStart) {
+    return NO;
+  }
+
+  if (outMatch != nullptr) {
+    outMatch->trigger = trigger;
+    outMatch->delimStart = delimStart;
+    outMatch->delimPrefixLen = delimPrefixLen;
+  }
+  return YES;
+}
+
+/// Delimiter at [delimStart] is part of a longer inline trigger (e.g. `*`
+/// inside `**`).
++ (BOOL)isDelimiterPartOfLongerInlineTrigger:(NSString *)trigger
+                                  delimStart:(NSInteger)delimStart
+                                     context:
+                                         (const ShortcutsInlineContext *)context
+                                   isOpening:(BOOL)isOpening {
+  NSInteger delimEnd = delimStart + trigger.length;
+  NSString *fullText = context->text.fullText;
+
+  for (NSDictionary *shortcut in context->inlineShortcuts) {
+    NSString *longerTrigger = shortcut[@"trigger"];
+    if (longerTrigger.length <= trigger.length) {
+      continue;
+    }
+
+    NSInteger longerStart;
+    if (isOpening) {
+      if (![longerTrigger hasSuffix:trigger]) {
+        continue;
+      }
+      longerStart = delimEnd - longerTrigger.length;
+    } else if ([longerTrigger hasPrefix:trigger]) {
+      longerStart = delimStart;
+    } else if ([longerTrigger hasSuffix:trigger]) {
+      longerStart = delimStart - (longerTrigger.length - trigger.length);
+    } else {
+      continue;
+    }
+
+    if (longerStart < 0 ||
+        longerStart + longerTrigger.length > fullText.length) {
+      continue;
+    }
+
+    NSRange longerRange = NSMakeRange(longerStart, longerTrigger.length);
+    if ([[fullText substringWithRange:longerRange]
+            isEqualToString:longerTrigger]) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
+/// Shorter trigger is only a prefix so far (e.g. first `*` of `**`) while a
+/// longer closing delimiter already exists after the cursor.
++ (BOOL)shouldDeferShorterInlineTrigger:(const ShortcutsTriggerMatch *)match
+                                context:
+                                    (const ShortcutsInlineContext *)context {
+  NSInteger writtenLen = match->delimPrefixLen + 1;
+  NSInteger searchFrom = context->text.changeRange.location;
+  NSInteger searchEnd = context->text.paragraphRange.location +
+                        context->text.paragraphRange.length;
+  if (searchFrom >= searchEnd) {
+    return NO;
+  }
+
+  for (NSDictionary *shortcut in context->inlineShortcuts) {
+    NSString *longerTrigger = shortcut[@"trigger"];
+    if (longerTrigger.length <= match->trigger.length) {
+      continue;
+    }
+    if (![longerTrigger hasPrefix:match->trigger]) {
+      continue;
+    }
+    if (writtenLen >= longerTrigger.length) {
+      continue;
+    }
+
+    NSRange longerAhead = [context->text.fullText
+        rangeOfString:longerTrigger
+              options:0
+                range:NSMakeRange(searchFrom, searchEnd - searchFrom)];
+    if (longerAhead.location != NSNotFound) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
+/// Removes delimiters (close first, then open), then applies [style] on
+/// [contentRange].
++ (void)applyInlineShortcutWithMatch:(const ShortcutsTriggerMatch *)match
+                             context:(const ShortcutsInlineContext *)context
+                              ranges:
+                                  (const ShortcutsInlineApplyRanges *)ranges {
+  EnrichedTextInputView *input = context->text.input;
+  input->blockEmitting = YES;
+
+  if (ranges->closeDeleteRange.length > 0) {
+    [TextInsertionUtils replaceText:@""
+                                 at:ranges->closeDeleteRange
+               additionalAttributes:nullptr
+                               host:input
+                      withSelection:NO];
+  }
+
+  if (ranges->openDeleteRange.length > 0) {
+    [TextInsertionUtils replaceText:@""
+                                 at:ranges->openDeleteRange
+               additionalAttributes:nullptr
+                               host:input
+                      withSelection:NO];
+  }
+
+  input->blockEmitting = NO;
+
+  StyleBase *style = input->stylesDict[@(match->styleType)];
+  if (style == nil) {
+    return;
+  }
+
+  [style add:ranges->finalContentRange withTyping:YES withDirtyRange:YES];
+  input->textView.selectedRange =
+      NSMakeRange(NSMaxRange(ranges->finalContentRange), 0);
+}
+
++ (BOOL)applyInlineShortcutWithMatch:(const ShortcutsTriggerMatch *)match
+                             context:(const ShortcutsInlineContext *)context
+                        contentRange:(NSRange)contentRange
+                              ranges:
+                                  (const ShortcutsInlineApplyRanges *)ranges {
+  if (![StyleUtils handleStyleBlocksAndConflicts:match->styleType
+                                           range:contentRange
+                                         forHost:context->text.input]) {
+    return NO;
+  }
+
+  [self applyInlineShortcutWithMatch:match context:context ranges:ranges];
+  return YES;
+}
+
+/// Closing delimiter just completed: find opening trigger before content.
++ (BOOL)tryInlineShortcutClosingFirst:(const ShortcutsTriggerMatch *)match
+                              context:(const ShortcutsInlineContext *)context {
+  const ShortcutsTextContext *text = &context->text;
+  NSInteger searchStart = text->paragraphRange.location;
+  NSInteger searchLength = match->delimStart - searchStart;
+  if (searchLength <= 0) {
+    return NO;
+  }
+
+  NSRange openRange =
+      [text->fullText rangeOfString:match->trigger
+                            options:NSBackwardsSearch
+                              range:NSMakeRange(searchStart, searchLength)];
+  if (openRange.location == NSNotFound) {
+    return NO;
+  }
+
+  if ([self isDelimiterPartOfLongerInlineTrigger:match->trigger
+                                      delimStart:openRange.location
+                                         context:context
+                                       isOpening:YES]) {
+    return NO;
+  }
+
+  NSInteger contentStart = openRange.location + match->trigger.length;
+  NSInteger contentEnd = match->delimStart;
+  if (contentEnd <= contentStart) {
+    return NO;
+  }
+
+  NSInteger finalContentEnd = match->delimStart - match->trigger.length;
+  ShortcutsInlineApplyRanges ranges = {
+      .finalContentRange =
+          NSMakeRange(openRange.location, finalContentEnd - openRange.location),
+      .closeDeleteRange = NSMakeRange(match->delimStart, match->delimPrefixLen),
+      .openDeleteRange = NSMakeRange(openRange.location, match->trigger.length),
+  };
+
+  return
+      [self applyInlineShortcutWithMatch:match
+                                 context:context
+                            contentRange:NSMakeRange(contentStart,
+                                                     contentEnd - contentStart)
+                                  ranges:&ranges];
+}
+
+/// Opening delimiter just completed: find closing trigger after content.
++ (BOOL)tryInlineShortcutOpeningFirst:(const ShortcutsTriggerMatch *)match
+                              context:(const ShortcutsInlineContext *)context {
+  const ShortcutsTextContext *text = &context->text;
+  NSInteger contentStart = (NSInteger)text->changeRange.location;
+  NSInteger searchStart = contentStart;
+  NSInteger searchEnd =
+      text->paragraphRange.location + text->paragraphRange.length;
+  if (searchStart >= searchEnd) {
+    return NO;
+  }
+
+  NSRange closeRange = NSMakeRange(NSNotFound, 0);
+  NSInteger scan = searchStart;
+  while (scan < searchEnd) {
+    NSRange found =
+        [text->fullText rangeOfString:match->trigger
+                              options:0
+                                range:NSMakeRange(scan, searchEnd - scan)];
+    if (found.location == NSNotFound) {
+      break;
+    }
+    if (![self isDelimiterPartOfLongerInlineTrigger:match->trigger
+                                         delimStart:found.location
+                                            context:context
+                                          isOpening:NO]) {
+      closeRange = found;
+      break;
+    }
+    scan = found.location + 1;
+  }
+
+  if (closeRange.location == NSNotFound) {
+    return NO;
+  }
+
+  NSInteger contentEnd = closeRange.location;
+  if (contentEnd <= contentStart) {
+    return NO;
+  }
+
+  NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
+  ShortcutsInlineApplyRanges ranges = {
+      // After removing the opening prefix at delimStart, content spans
+      // [delimStart, delimStart + contentRange.length).
+      .finalContentRange = NSMakeRange(match->delimStart, contentRange.length),
+      .closeDeleteRange =
+          NSMakeRange(closeRange.location, match->trigger.length),
+      .openDeleteRange = NSMakeRange(match->delimStart, match->delimPrefixLen),
+  };
+
+  return [self applyInlineShortcutWithMatch:match
+                                    context:context
+                               contentRange:contentRange
+                                     ranges:&ranges];
+}
+
+/// Paragraph already has a block-level style (list, quote, heading, …).
+/// Alignment is ignored.
++ (BOOL)paragraphHasActiveParagraphStyleInRange:(NSRange)paragraphRange
+                                          input:(EnrichedTextInputView *)input {
+  for (NSNumber *typeKey in input->stylesDict) {
+    StyleBase *style = input->stylesDict[typeKey];
+    if (![style isParagraph] || [[style class] getType] == Alignment) {
+      continue;
+    }
+    if ([style detect:paragraphRange]) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
++ (BOOL)tryHandlingBlockShortcutInRange:(NSRange)range
+                        replacementText:(NSString *)text
+                                  input:(EnrichedTextInputView *)input {
+  if (![self hasTextShortcutsInInput:input]) {
+    return NO;
+  }
+
+  ShortcutsTextContext context = [self textContextWithChangeRange:range
+                                                  replacementText:text
+                                                            input:input];
+
+  if ([self paragraphHasActiveParagraphStyleInRange:context.paragraphRange
+                                              input:input]) {
+    return NO;
+  }
+
+  for (NSDictionary *shortcut in input->textShortcuts) {
+    if ([shortcut[@"type"] isEqualToString:@"inline"]) {
+      continue;
+    }
+
+    NSString *trigger = shortcut[@"trigger"];
+    NSString *styleName = shortcut[@"style"];
+    if (trigger.length == 0 || styleName.length == 0) {
+      continue;
+    }
+
+    ShortcutsTriggerMatch match = {};
+    if (![self isCompletingTrigger:trigger
+                           context:&context
+                requiredDelimStart:context.paragraphRange.location
+                             match:&match]) {
+      continue;
+    }
+
+    StyleType type = [self styleTypeForShortcutName:styleName];
+    if (type == None) {
+      continue;
+    }
+
+    if ([StyleUtils isStyleBlocked:type
+                             range:context.paragraphRange
+                           forHost:input]) {
+      continue;
+    }
+
+    NSParagraphStyle *currentParaStyle =
+        input->textView.typingAttributes[NSParagraphStyleAttributeName];
+    NSTextAlignment savedAlignment =
+        currentParaStyle ? currentParaStyle.alignment : NSTextAlignmentNatural;
+
+    NSRange triggerRange = NSMakeRange(match.delimStart, match.delimPrefixLen);
+
+    input->blockEmitting = YES;
+    [TextInsertionUtils replaceText:@""
+                                 at:triggerRange
+               additionalAttributes:nullptr
+                               host:input
+                      withSelection:YES];
+
+    input->blockEmitting = NO;
+
+    // Drop conflicting inline typing attrs (e.g. italic) at the cursor before
+    // applying the codeblock style.
+    [StyleUtils handleStyleBlocksAndConflicts:type
+                                        range:input->textView.selectedRange
+                                      forHost:input];
+
+    [ParagraphAttributesUtils resetTypingAttributes:input
+                                preservingAlignment:savedAlignment];
+
+    StyleBase *style = input->stylesDict[@(type)];
+    if (style != nil) {
+      [style add:input->textView.selectedRange
+              withTyping:YES
+          withDirtyRange:YES];
+    }
+    return YES;
+  }
+
+  return NO;
+}
+
++ (BOOL)tryHandlingInlineShortcutInRange:(NSRange)range
+                         replacementText:(NSString *)text
+                                   input:(EnrichedTextInputView *)input {
+  if (![self hasTextShortcutsInInput:input]) {
+    return NO;
+  }
+
+  ShortcutsInlineContext context = [self inlineContextWithChangeRange:range
+                                                      replacementText:text
+                                                                input:input];
+
+  for (NSDictionary *shortcut in context.inlineShortcuts) {
+    NSString *trigger = shortcut[@"trigger"];
+    NSString *styleName = shortcut[@"style"];
+    if (trigger.length == 0 || styleName.length == 0) {
+      continue;
+    }
+
+    ShortcutsTriggerMatch match = {};
+    if (![self isCompletingTrigger:trigger
+                           context:&context.text
+                requiredDelimStart:NSNotFound
+                             match:&match]) {
+      continue;
+    }
+
+    if ([self shouldDeferShorterInlineTrigger:&match context:&context]) {
+      continue;
+    }
+
+    StyleType type = [self styleTypeForShortcutName:styleName];
+    if (type == None) {
+      continue;
+    }
+    match.styleType = type;
+
+    if ([self tryInlineShortcutClosingFirst:&match context:&context]) {
+      return YES;
+    }
+
+    if ([self tryInlineShortcutOpeningFirst:&match context:&context]) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
+@end
