@@ -167,9 +167,8 @@ typedef struct {
 /// inside `**`).
 + (BOOL)isDelimiterPartOfLongerInlineTrigger:(NSString *)trigger
                                   delimStart:(NSInteger)delimStart
-                                     context:
-                                         (const ShortcutsInlineContext *)context
-                                   isOpening:(BOOL)isOpening {
+                                     context:(const ShortcutsInlineContext *)
+                                                 context {
   NSInteger delimEnd = delimStart + trigger.length;
   NSString *fullText = context->text.fullText;
 
@@ -178,21 +177,11 @@ typedef struct {
     if (longerTrigger.length <= trigger.length) {
       continue;
     }
-
-    NSInteger longerStart;
-    if (isOpening) {
-      if (![longerTrigger hasSuffix:trigger]) {
-        continue;
-      }
-      longerStart = delimEnd - longerTrigger.length;
-    } else if ([longerTrigger hasPrefix:trigger]) {
-      longerStart = delimStart;
-    } else if ([longerTrigger hasSuffix:trigger]) {
-      longerStart = delimStart - (longerTrigger.length - trigger.length);
-    } else {
+    if (![longerTrigger hasSuffix:trigger]) {
       continue;
     }
 
+    NSInteger longerStart = delimEnd - longerTrigger.length;
     if (longerStart < 0 ||
         longerStart + longerTrigger.length > fullText.length) {
       continue;
@@ -201,42 +190,6 @@ typedef struct {
     NSRange longerRange = NSMakeRange(longerStart, longerTrigger.length);
     if ([[fullText substringWithRange:longerRange]
             isEqualToString:longerTrigger]) {
-      return YES;
-    }
-  }
-  return NO;
-}
-
-/// Shorter trigger is only a prefix so far (e.g. first `*` of `**`) while a
-/// longer closing delimiter already exists after the cursor.
-+ (BOOL)shouldDeferShorterInlineTrigger:(const ShortcutsTriggerMatch *)match
-                                context:
-                                    (const ShortcutsInlineContext *)context {
-  NSInteger writtenLen = match->delimPrefixLen + 1;
-  NSInteger searchFrom = context->text.changeRange.location;
-  NSInteger searchEnd = context->text.paragraphRange.location +
-                        context->text.paragraphRange.length;
-  if (searchFrom >= searchEnd) {
-    return NO;
-  }
-
-  for (NSDictionary *shortcut in context->inlineShortcuts) {
-    NSString *longerTrigger = shortcut[@"trigger"];
-    if (longerTrigger.length <= match->trigger.length) {
-      continue;
-    }
-    if (![longerTrigger hasPrefix:match->trigger]) {
-      continue;
-    }
-    if (writtenLen >= longerTrigger.length) {
-      continue;
-    }
-
-    NSRange longerAhead = [context->text.fullText
-        rangeOfString:longerTrigger
-              options:0
-                range:NSMakeRange(searchFrom, searchEnd - searchFrom)];
-    if (longerAhead.location != NSNotFound) {
       return YES;
     }
   }
@@ -275,9 +228,10 @@ typedef struct {
     return;
   }
 
-  [style add:ranges->finalContentRange withTyping:YES withDirtyRange:YES];
+  [style add:ranges->finalContentRange withTyping:NO withDirtyRange:YES];
   input->textView.selectedRange =
       NSMakeRange(NSMaxRange(ranges->finalContentRange), 0);
+  [style removeTyping];
 }
 
 + (BOOL)applyInlineShortcutWithMatch:(const ShortcutsTriggerMatch *)match
@@ -315,8 +269,7 @@ typedef struct {
 
   if ([self isDelimiterPartOfLongerInlineTrigger:match->trigger
                                       delimStart:openRange.location
-                                         context:context
-                                       isOpening:YES]) {
+                                         context:context]) {
     return NO;
   }
 
@@ -340,63 +293,6 @@ typedef struct {
                             contentRange:NSMakeRange(contentStart,
                                                      contentEnd - contentStart)
                                   ranges:&ranges];
-}
-
-/// Opening delimiter just completed: find closing trigger after content.
-+ (BOOL)tryInlineShortcutOpeningFirst:(const ShortcutsTriggerMatch *)match
-                              context:(const ShortcutsInlineContext *)context {
-  const ShortcutsTextContext *text = &context->text;
-  NSInteger contentStart = (NSInteger)text->changeRange.location;
-  NSInteger searchStart = contentStart;
-  NSInteger searchEnd =
-      text->paragraphRange.location + text->paragraphRange.length;
-  if (searchStart >= searchEnd) {
-    return NO;
-  }
-
-  NSRange closeRange = NSMakeRange(NSNotFound, 0);
-  NSInteger scan = searchStart;
-  while (scan < searchEnd) {
-    NSRange found =
-        [text->fullText rangeOfString:match->trigger
-                              options:0
-                                range:NSMakeRange(scan, searchEnd - scan)];
-    if (found.location == NSNotFound) {
-      break;
-    }
-    if (![self isDelimiterPartOfLongerInlineTrigger:match->trigger
-                                         delimStart:found.location
-                                            context:context
-                                          isOpening:NO]) {
-      closeRange = found;
-      break;
-    }
-    scan = found.location + 1;
-  }
-
-  if (closeRange.location == NSNotFound) {
-    return NO;
-  }
-
-  NSInteger contentEnd = closeRange.location;
-  if (contentEnd <= contentStart) {
-    return NO;
-  }
-
-  NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
-  ShortcutsInlineApplyRanges ranges = {
-      // After removing the opening prefix at delimStart, content spans
-      // [delimStart, delimStart + contentRange.length).
-      .finalContentRange = NSMakeRange(match->delimStart, contentRange.length),
-      .closeDeleteRange =
-          NSMakeRange(closeRange.location, match->trigger.length),
-      .openDeleteRange = NSMakeRange(match->delimStart, match->delimPrefixLen),
-  };
-
-  return [self applyInlineShortcutWithMatch:match
-                                    context:context
-                               contentRange:contentRange
-                                     ranges:&ranges];
 }
 
 /// Paragraph already has a block-level style (list, quote, heading, …).
@@ -524,10 +420,6 @@ typedef struct {
       continue;
     }
 
-    if ([self shouldDeferShorterInlineTrigger:&match context:&context]) {
-      continue;
-    }
-
     StyleType type = [self styleTypeForShortcutName:styleName];
     if (type == None) {
       continue;
@@ -535,10 +427,6 @@ typedef struct {
     match.styleType = type;
 
     if ([self tryInlineShortcutClosingFirst:&match context:&context]) {
-      return YES;
-    }
-
-    if ([self tryInlineShortcutOpeningFirst:&match context:&context]) {
       return YES;
     }
   }
