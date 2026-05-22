@@ -298,6 +298,53 @@ class ListStyles(
     }
   }
 
+  private fun inlineShortcutsSorted(): List<Triple<String, String, String>> =
+    view.textShortcuts
+      .filter { (trigger, _, type) -> type == "inline" && trigger.isNotEmpty() }
+      .sortedByDescending { it.first.length }
+
+  private fun isDelimiterPartOfLongerInlineTrigger(
+    trigger: String,
+    delimStart: Int,
+    text: String,
+    inlineShortcuts: List<Triple<String, String, String>>,
+    isOpening: Boolean,
+  ): Boolean {
+    val delimEnd = delimStart + trigger.length
+
+    for ((longerTrigger, _, _) in inlineShortcuts) {
+      if (longerTrigger.length <= trigger.length) continue
+
+      val longerStart =
+        when {
+          isOpening -> {
+            if (!longerTrigger.endsWith(trigger)) continue
+            delimEnd - longerTrigger.length
+          }
+
+          longerTrigger.startsWith(trigger) -> {
+            delimStart
+          }
+
+          longerTrigger.endsWith(trigger) -> {
+            delimStart - (longerTrigger.length - trigger.length)
+          }
+
+          else -> {
+            continue
+          }
+        }
+
+      if (longerStart < 0 || longerStart + longerTrigger.length > text.length) continue
+
+      if (text.substring(longerStart, longerStart + longerTrigger.length) == longerTrigger) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   private fun handleInlineShortcuts(
     s: Editable,
     endCursorPosition: Int,
@@ -310,11 +357,9 @@ class ListStyles(
     val cursorPosition = endCursorPosition.coerceAtMost(s.length)
     val text = s.toString()
     val (paraStart, _) = s.getParagraphBounds(cursorPosition)
+    val inlineShortcuts = inlineShortcutsSorted()
 
-    for ((trigger, styleName, type) in shortcuts) {
-      if (type != "inline") continue
-      if (trigger.isEmpty()) continue
-
+    for ((trigger, styleName, _) in inlineShortcuts) {
       val resolvedStyle = resolveInlineStyleName(styleName) ?: continue
 
       if (cursorPosition < trigger.length) continue
@@ -323,11 +368,20 @@ class ListStyles(
 
       val closeDelimStart = cursorPosition - trigger.length
 
+      if (isDelimiterPartOfLongerInlineTrigger(trigger, closeDelimStart, text, inlineShortcuts, isOpening = false)) {
+        continue
+      }
+
       val searchText = text.substring(paraStart, closeDelimStart)
       val openIdx = searchText.lastIndexOf(trigger)
       if (openIdx < 0) continue
 
       val openAbsolute = paraStart + openIdx
+
+      if (isDelimiterPartOfLongerInlineTrigger(trigger, openAbsolute, text, inlineShortcuts, isOpening = true)) {
+        continue
+      }
+
       val contentStart = openAbsolute + trigger.length
       val contentEnd = closeDelimStart
       if (contentEnd <= contentStart) continue
@@ -338,10 +392,9 @@ class ListStyles(
       val adjustedStart = openAbsolute
       val adjustedEnd = contentEnd - trigger.length
 
-      view.setCustomSelection(adjustedStart, adjustedEnd)
-      view.inlineStyles?.toggleStyle(resolvedStyle)
-
-      view.setCustomSelection(adjustedEnd, adjustedEnd)
+      view.inlineStyles?.applyStyleOnRange(resolvedStyle, adjustedStart, adjustedEnd)
+      view.setSelection(adjustedEnd, adjustedEnd)
+      view.spanState?.setStart(resolvedStyle, null)
       return
     }
   }
