@@ -596,6 +596,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [textView setScrollEnabled:newViewProps.scrollEnabled];
   }
 
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling ||
+      isFirstMount) {
+    textView.adjustsFontForContentSizeCategory = newViewProps.allowFontScaling;
+    _placeholderLabel.adjustsFontForContentSizeCategory =
+        newViewProps.allowFontScaling;
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if (oldMentionStyle != newMentionStyle) {
@@ -1995,6 +2004,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
  */
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+
+  const auto &viewProps =
+      *std::static_pointer_cast<EnrichedTextInputViewProps const>(_props);
+  if (!viewProps.allowFontScaling) {
+    return;
+  }
 
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {

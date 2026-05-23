@@ -75,6 +75,7 @@ export function DevScreen({ onSwitch }: DevScreenProps) {
             onPasteImages={(e) => editor.handlePasteImagesEvent(e.nativeEvent)}
             useHtmlNormalizer
             testID="editor-input"
+            allowFontScaling={false}
           />
           <Toolbar
             stylesState={editor.stylesState}

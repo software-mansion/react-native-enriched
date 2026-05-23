@@ -582,6 +582,14 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     useHtmlNormalizer = newViewProps.useHtmlNormalizer;
   }
 
+  // allowFontScaling
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling ||
+      isFirstMount) {
+    textView.adjustsFontForContentSizeCategory = newViewProps.allowFontScaling;
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   if (stylePropChanged) {
     config = newConfig;
   }

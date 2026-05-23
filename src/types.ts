@@ -498,6 +498,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
 }
 
 export interface EnrichedTextInstance extends NativeMethods {}
@@ -512,6 +517,11 @@ export interface EnrichedTextProps extends ViewProps {
   numberOfLines?: number;
   selectable?: boolean;
   selectionColor?: ColorValue;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
   onLinkPress?: (event: OnLinkPressEvent) => void;
   onMentionPress?: (event: OnMentionPressEvent) => void;
 }

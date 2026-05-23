@@ -34,6 +34,7 @@ export const EnrichedText = ({
   numberOfLines = 0,
   selectable = false,
   selectionColor,
+  allowFontScaling = true,
   onLinkPress: _onLinkPress,
   onMentionPress: _onMentionPress,
   ...rest
@@ -105,6 +106,7 @@ export const EnrichedText = ({
       numberOfLines={numberOfLines}
       selectable={selectable}
       selectionColor={selectionColor}
+      allowFontScaling={allowFontScaling}
       onLinkPress={onLinkPress}
       onMentionPress={onMentionPress}
       {...rest}
