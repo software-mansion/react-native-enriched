@@ -10,6 +10,7 @@ import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 
 class EnrichedLineHeightSpan(
   val lineHeight: Float,
+  val allowFontScaling: Boolean = true,
 ) : MetricAffectingSpan(),
   LineHeightSpan {
   override fun updateDrawState(p0: TextPaint?) {
@@ -33,7 +34,12 @@ class EnrichedLineHeightSpan(
     // In the future we may consider adding custom lineHeight support for each paragraph style
     if (spannable.getSpans(start, end, EnrichedHeadingSpan::class.java).isNotEmpty()) return
 
-    val lineHeightPx = PixelUtil.toPixelFromSP(lineHeight)
+    val lineHeightPx =
+      if (allowFontScaling) {
+        PixelUtil.toPixelFromSP(lineHeight)
+      } else {
+        PixelUtil.toPixelFromDIP(lineHeight)
+      }
     val currentHeight = (fm.descent - fm.ascent).toFloat()
     if (lineHeightPx <= currentHeight) return
 

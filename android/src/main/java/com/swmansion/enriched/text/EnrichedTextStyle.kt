@@ -63,6 +63,7 @@ data class EnrichedTextStyle(
       context: ReactContext,
       fontSize: Int,
       map: ReadableMap,
+      allowFontScaling: Boolean = true,
     ): EnrichedTextStyle {
       val h1 = map.getMap("h1")
       val h2 = map.getMap("h2")
@@ -80,40 +81,40 @@ data class EnrichedTextStyle(
       val mentions = map.getMap("mention")
 
       return EnrichedTextStyle(
-        h1FontSize = parseFloat(h1, "fontSize").toInt(),
+        h1FontSize = parseFloat(h1, "fontSize", allowFontScaling).toInt(),
         h1Bold = h1?.getBoolean("bold") ?: false,
-        h2FontSize = parseFloat(h2, "fontSize").toInt(),
+        h2FontSize = parseFloat(h2, "fontSize", allowFontScaling).toInt(),
         h2Bold = h2?.getBoolean("bold") ?: false,
-        h3FontSize = parseFloat(h3, "fontSize").toInt(),
+        h3FontSize = parseFloat(h3, "fontSize", allowFontScaling).toInt(),
         h3Bold = h3?.getBoolean("bold") ?: false,
-        h4FontSize = parseFloat(h4, "fontSize").toInt(),
+        h4FontSize = parseFloat(h4, "fontSize", allowFontScaling).toInt(),
         h4Bold = h4?.getBoolean("bold") ?: false,
-        h5FontSize = parseFloat(h5, "fontSize").toInt(),
+        h5FontSize = parseFloat(h5, "fontSize", allowFontScaling).toInt(),
         h5Bold = h5?.getBoolean("bold") ?: false,
-        h6FontSize = parseFloat(h6, "fontSize").toInt(),
+        h6FontSize = parseFloat(h6, "fontSize", allowFontScaling).toInt(),
         h6Bold = h6?.getBoolean("bold") ?: false,
         blockquoteColor = parseOptionalColor(context, blockquote, "color"),
         blockquoteBorderColor = parseColor(context, blockquote, "borderColor"),
-        blockquoteStripeWidth = parseFloat(blockquote, "borderWidth").toInt(),
-        blockquoteGapWidth = parseFloat(blockquote, "gapWidth").toInt(),
-        olGapWidth = parseFloat(orderedList, "gapWidth").toInt(),
-        olMarginLeft = calculateOlMarginLeft(fontSize, parseFloat(orderedList, "marginLeft").toInt()),
+        blockquoteStripeWidth = parseFloat(blockquote, "borderWidth", allowFontScaling).toInt(),
+        blockquoteGapWidth = parseFloat(blockquote, "gapWidth", allowFontScaling).toInt(),
+        olGapWidth = parseFloat(orderedList, "gapWidth", allowFontScaling).toInt(),
+        olMarginLeft = calculateOlMarginLeft(fontSize, parseFloat(orderedList, "marginLeft", allowFontScaling).toInt()),
         olMarkerFontWeight = parseOptionalFontWeight(orderedList, "markerFontWeight"),
         olMarkerColor = parseOptionalColor(context, orderedList, "markerColor"),
-        ulGapWidth = parseFloat(unorderedList, "gapWidth").toInt(),
-        ulMarginLeft = parseFloat(unorderedList, "marginLeft").toInt(),
-        ulBulletSize = parseFloat(unorderedList, "bulletSize").toInt(),
+        ulGapWidth = parseFloat(unorderedList, "gapWidth", allowFontScaling).toInt(),
+        ulMarginLeft = parseFloat(unorderedList, "marginLeft", allowFontScaling).toInt(),
+        ulBulletSize = parseFloat(unorderedList, "bulletSize", allowFontScaling).toInt(),
         ulBulletColor = parseColor(context, unorderedList, "bulletColor"),
         ulCheckboxBoxColor = parseColor(context, checkboxList, "boxColor"),
-        ulCheckboxBoxSize = parseFloat(checkboxList, "boxSize").toInt(),
-        ulCheckboxGapWidth = parseFloat(checkboxList, "gapWidth").toInt(),
-        ulCheckboxMarginLeft = parseFloat(checkboxList, "marginLeft").toInt(),
+        ulCheckboxBoxSize = parseFloat(checkboxList, "boxSize", allowFontScaling).toInt(),
+        ulCheckboxGapWidth = parseFloat(checkboxList, "gapWidth", allowFontScaling).toInt(),
+        ulCheckboxMarginLeft = parseFloat(checkboxList, "marginLeft", allowFontScaling).toInt(),
         aColor = parseColor(context, link, "color"),
         aUnderline = parseIsUnderline(link),
         aPressColor = parseColor(context, link, "pressColor"),
         codeBlockColor = parseColor(context, codeblock, "color"),
         codeBlockBackgroundColor = parseColorWithOpacity(context, codeblock, "backgroundColor", 80),
-        codeBlockRadius = parseFloat(codeblock, "borderRadius"),
+        codeBlockRadius = parseFloat(codeblock, "borderRadius", allowFontScaling),
         inlineCodeColor = parseColor(context, inlineCode, "color"),
         inlineCodeBackgroundColor = parseColorWithOpacity(context, inlineCode, "backgroundColor", 80),
         mentionsStyle = parseMentionsStyle(context, mentions),
@@ -123,9 +124,17 @@ data class EnrichedTextStyle(
     private fun parseFloat(
       map: ReadableMap?,
       key: String,
+      allowFontScaling: Boolean = true,
     ): Float {
       if (map == null || !map.hasKey(key) || map.isNull(key)) return 0f
-      return ceil(PixelUtil.toPixelFromSP(map.getDouble(key)))
+      val raw = map.getDouble(key)
+      return ceil(
+        if (allowFontScaling) {
+          PixelUtil.toPixelFromSP(raw)
+        } else {
+          PixelUtil.toPixelFromDIP(raw)
+        },
+      )
     }
 
     private fun parseColor(

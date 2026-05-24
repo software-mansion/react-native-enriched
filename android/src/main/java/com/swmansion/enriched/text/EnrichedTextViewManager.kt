@@ -121,6 +121,13 @@ class EnrichedTextViewManager :
     view?.setHtmlStyle(value)
   }
 
+  override fun setAllowFontScaling(
+    view: EnrichedTextView?,
+    value: Boolean,
+  ) {
+    view?.allowFontScaling = value
+  }
+
   override fun setUseHtmlNormalizer(
     view: EnrichedTextView?,
     value: Boolean,

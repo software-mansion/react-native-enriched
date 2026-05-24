@@ -96,6 +96,12 @@ object MeasurementStore {
     return YogaMeasureOutput.make(widthInSP, heightInSP)
   }
 
+  private fun getAllowFontScaling(props: ReadableMap?): Boolean {
+    if (props == null) return true
+    if (!props.hasKey("allowFontScaling") || props.isNull("allowFontScaling")) return true
+    return props.getBoolean("allowFontScaling")
+  }
+
   private fun getInitialText(
     context: Context,
     fontSize: Int,
@@ -108,7 +114,9 @@ object MeasurementStore {
 
     try {
       val style = props?.getMap("htmlStyle") ?: return text
-      val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize, style)
+      val allowFontScaling = getAllowFontScaling(props)
+      val enrichedStyle =
+        EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize, style, allowFontScaling)
       val factory = EnrichedTextSpanFactory()
       val parsed = EnrichedParser.fromHtml(text, enrichedStyle, factory)
       return parsed.trimEnd('\n')
@@ -126,7 +134,13 @@ object MeasurementStore {
         else -> EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
       }
 
-    return ceil(PixelUtil.toPixelFromSP(fontSize))
+    return ceil(
+      if (getAllowFontScaling(props)) {
+        PixelUtil.toPixelFromSP(fontSize)
+      } else {
+        PixelUtil.toPixelFromDIP(fontSize)
+      },
+    )
   }
 
   private fun getMeasureById(

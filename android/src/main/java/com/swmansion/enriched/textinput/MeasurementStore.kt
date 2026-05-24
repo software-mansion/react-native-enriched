@@ -99,6 +99,12 @@ object MeasurementStore {
     return YogaMeasureOutput.make(widthInSP, heightInSP)
   }
 
+  private fun getAllowFontScaling(props: ReadableMap?): Boolean {
+    if (props == null) return true
+    if (!props.hasKey("allowFontScaling") || props.isNull("allowFontScaling")) return true
+    return props.getBoolean("allowFontScaling")
+  }
+
   // Returns either: Spannable parsed from HTML defaultValue, or plain text defaultValue, or "I" if no defaultValue
   private fun getInitialText(
     defaultView: EnrichedTextInputView,
@@ -130,7 +136,13 @@ object MeasurementStore {
     val propsFontSize = props?.getDouble("fontSize")?.toFloat()
     if (propsFontSize == null) return defaultView.textSize
 
-    return ceil(PixelUtil.toPixelFromSP(propsFontSize))
+    return ceil(
+      if (getAllowFontScaling(props)) {
+        PixelUtil.toPixelFromSP(propsFontSize)
+      } else {
+        PixelUtil.toPixelFromDIP(propsFontSize)
+      },
+    )
   }
 
   // Called when view measurements are not available in the store
@@ -142,6 +154,9 @@ object MeasurementStore {
     props: ReadableMap?,
   ): Long {
     val defaultView = EnrichedTextInputView(context)
+    val allowFontScaling = getAllowFontScaling(props)
+    // mirrors the real view's state
+    defaultView.allowFontScaling = allowFontScaling
 
     val rawText = getInitialText(defaultView, props)
     val fontSize = getInitialFontSize(defaultView, props)
@@ -155,7 +170,7 @@ object MeasurementStore {
       if (lineHeight > 0f) {
         val spannable = SpannableString(rawText)
         spannable.setSpan(
-          EnrichedLineHeightSpan(lineHeight),
+          EnrichedLineHeightSpan(lineHeight, allowFontScaling),
           0,
           spannable.length,
           Spannable.SPAN_INCLUSIVE_INCLUSIVE,

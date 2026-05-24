@@ -39,6 +39,18 @@ class EnrichedTextView : AppCompatTextView {
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
   private var fontSize: Float = EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
+  private var fontSizeRaw: Float? = null
+  private var htmlStyleMap: ReadableMap? = null
+  var allowFontScaling: Boolean = true
+    set(value) {
+      if (field == value) return
+      field = value
+      // re-apply primary font size in the new unit (no-op if it was never set)
+      fontSizeRaw?.let { setFontSize(it) }
+      // re-parse htmlStyle so headings/list geometry pick up the new unit and
+      // rebuild on-screen spans
+      htmlStyleMap?.let { setHtmlStyle(it) }
+    }
 
   private var enrichedStyle: EnrichedTextStyle? = null
   private val spannableFactory = EnrichedTextSpanFactory()
@@ -247,7 +259,9 @@ class EnrichedTextView : AppCompatTextView {
   fun setHtmlStyle(style: ReadableMap?) {
     if (style == null) return
 
-    val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize.toInt(), style)
+    htmlStyleMap = style
+    val enrichedStyle =
+      EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize.toInt(), style, allowFontScaling)
     this.enrichedStyle = enrichedStyle
 
     val currentText = text ?: return
@@ -287,7 +301,13 @@ class EnrichedTextView : AppCompatTextView {
   fun setFontSize(size: Float) {
     if (size == 0f) return
 
-    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    fontSizeRaw = size
+    val sizeInt =
+      if (allowFontScaling) {
+        ceil(PixelUtil.toPixelFromSP(size))
+      } else {
+        ceil(PixelUtil.toPixelFromDIP(size))
+      }
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
   }

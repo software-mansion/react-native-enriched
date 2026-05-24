@@ -155,7 +155,14 @@ class HtmlStyle : EnrichedStyle {
     val safeMap = ensureValueIsSet(map, key)
 
     val value = safeMap.getDouble(key)
-    return ceil(PixelUtil.toPixelFromSP(value))
+    val scaled =
+      if (view?.allowFontScaling != false) {
+        ceil(PixelUtil.toPixelFromSP(value))
+      } else {
+        ceil(PixelUtil.toPixelFromDIP(value))
+      }
+
+    return scaled
   }
 
   private fun parseColorWithOpacity(

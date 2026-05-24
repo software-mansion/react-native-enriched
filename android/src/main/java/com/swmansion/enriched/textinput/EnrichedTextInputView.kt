@@ -88,6 +88,20 @@ class EnrichedTextInputView :
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
   var scrollEnabled: Boolean = true
+  var allowFontScaling: Boolean = true
+    set(value) {
+      if (field != value) {
+        field = value
+        val raw = fontSizeRaw
+        if (raw != null) {
+          setFontSize(raw) // re-invokes invalidateStyles internally
+        } else {
+          htmlStyle.invalidateStyles()
+        }
+        applyLineSpacing()
+        reApplyHtmlStyleForSpans(htmlStyle, htmlStyle)
+      }
+    }
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -108,6 +122,7 @@ class EnrichedTextInputView :
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
 
+  var fontSizeRaw: Float? = null
   var fontSize: Float? = null
   private var lineHeight: Float? = null
   var submitBehavior: String? = null
@@ -520,8 +535,15 @@ class EnrichedTextInputView :
 
   fun setFontSize(size: Float) {
     if (size == 0f) return
+    fontSizeRaw = size
 
-    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    val sizeInt =
+      if (this.allowFontScaling) {
+        ceil(PixelUtil.toPixelFromSP(size))
+      } else {
+        ceil(PixelUtil.toPixelFromDIP(size))
+      }
+
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
 
@@ -546,7 +568,7 @@ class EnrichedTextInputView :
 
     val lh = lineHeight ?: return
     spannable.setSpan(
-      EnrichedLineHeightSpan(lh),
+      EnrichedLineHeightSpan(lh, allowFontScaling),
       0,
       spannable.length,
       Spannable.SPAN_INCLUSIVE_INCLUSIVE,
