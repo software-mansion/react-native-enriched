@@ -49,7 +49,7 @@ type HtmlRequest = {
 
 const DEFAULT_TEXT_SHORTCUTS: TextShortcut[] = [
   { trigger: '- ', style: 'unordered_list' },
-  { trigger: '1.', style: 'ordered_list' },
+  { trigger: '1. ', style: 'ordered_list' },
 ];
 
 export const EnrichedTextInput = ({
