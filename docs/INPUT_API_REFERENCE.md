@@ -473,7 +473,60 @@ The `style` prop controls the layout, dimensions, typography, borders, shadows, 
 
 | Type                                                | Default Value | Platform |
 | --------------------------------------------------- | ------------- | -------- |
-| [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md)       | -             | Both     |
+| [EnrichedInputStyle](ENRICHED_INPUT_STYLE.md) | -             | Both     |
+
+### `textShortcuts`
+
+An array of shortcuts that auto-convert typed patterns into styles. Each entry maps a `trigger` string to a `style`.
+
+Item type:
+
+```ts
+interface TextShortcut {
+  trigger: string;
+  style: TextShortcutStyle;
+}
+
+type TextShortcutStyle =
+  | 'bold'
+  | 'italic'
+  | 'underline'
+  | 'strikethrough'
+  | 'inline_code'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'blockquote'
+  | 'codeblock'
+  | 'unordered_list'
+  | 'ordered_list'
+  | 'checkbox_list';
+```
+
+- `trigger` is the typed pattern that activates the shortcut.
+- `style` is the style to apply when the trigger completes.
+
+**Block styles** fire at the start of a paragraph (e.g. `# ` → H1, `- ` → unordered list). Supported styles: `h1`–`h6`, `blockquote`, `codeblock`, `unordered_list`, `ordered_list`, `checkbox_list`.
+
+**Inline styles** fire when a closing delimiter is typed around text (e.g. `**text**` → bold). The trigger is the delimiter string (e.g. `**`, `*`, `~~`). Supported styles: `bold`, `italic`, `underline`, `strikethrough`, `inline_code`.
+
+Default value:
+
+```ts
+[
+  { trigger: '- ', style: 'unordered_list' },
+  { trigger: '1. ', style: 'ordered_list' },
+];
+```
+
+| Type             | Default Value | Platform |
+| ---------------- | ------------- | -------- |
+| `TextShortcut[]` | see above     | Both     |
+
+Pass an empty array to disable all shortcuts.
 
 ### `ViewProps`
 

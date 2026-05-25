@@ -505,20 +505,6 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
-  /**
-   * Configure text shortcuts that auto-convert typed patterns into styles.
-   *
-   * Shortcut behavior is determined by `style`:
-   *
-   * **Block styles** trigger at the start of a paragraph. E.g. typing "# " converts the line to H1.
-   * - style: "h1"-"h6", "blockquote", "codeblock", "unordered_list", "ordered_list", "checkbox_list"
-   *
-   * **Inline styles** trigger when a closing delimiter is typed around text. E.g. typing `**text**` applies bold.
-   * The trigger is the delimiter string (e.g. "`", "**", "*", "~~").
-   * - style: "bold", "italic", "underline", "strikethrough", "inline_code"
-   *
-   * Defaults to a built-in markdown-like set. Pass an empty array to disable all shortcuts.
-   */
   textShortcuts?: TextShortcut[];
   /**
    * If true, Android will use experimental synchronous events.
