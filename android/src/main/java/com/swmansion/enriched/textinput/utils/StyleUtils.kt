@@ -25,6 +25,11 @@ fun resolveStyleName(name: String): String? =
     else -> null
   }
 
+fun isInlineShortcutStyle(styleName: String): Boolean {
+  val resolvedStyle = resolveStyleName(styleName) ?: return false
+  return EnrichedSpans.inlineSpans.containsKey(resolvedStyle)
+}
+
 fun isStyleBlockedOnRange(
   styleName: String,
   start: Int,

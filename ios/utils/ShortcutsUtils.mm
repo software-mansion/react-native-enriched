@@ -65,6 +65,21 @@ typedef struct {
   return styleType ? (StyleType)[styleType integerValue] : None;
 }
 
++ (BOOL)isInlineShortcutStyleName:(NSString *)name
+                            input:(EnrichedTextInputView *)input {
+  StyleType type = [self styleTypeForShortcutName:name];
+  if (type == None) {
+    return NO;
+  }
+
+  StyleBase *style = input->stylesDict[@(type)];
+  if (style == nil) {
+    return NO;
+  }
+
+  return ![style isParagraph];
+}
+
 + (BOOL)hasTextShortcutsInInput:(EnrichedTextInputView *)input {
   return input != nullptr && input->textShortcuts != nil &&
          input->textShortcuts.count > 0;
@@ -92,15 +107,17 @@ typedef struct {
       .text = [self textContextWithChangeRange:changeRange
                                replacementText:replacementText
                                          input:input],
-      .inlineShortcuts = [self inlineShortcutsFrom:input->textShortcuts],
+      .inlineShortcuts = [self inlineShortcutsFrom:input->textShortcuts
+                                             input:input],
   };
 }
 
-+ (NSArray<NSDictionary *> *)inlineShortcutsFrom:
-    (NSArray<NSDictionary *> *)textShortcuts {
++ (NSArray<NSDictionary *> *)
+    inlineShortcutsFrom:(NSArray<NSDictionary *> *)textShortcuts
+                  input:(EnrichedTextInputView *)input {
   NSMutableArray<NSDictionary *> *inlineShortcuts = [NSMutableArray array];
   for (NSDictionary *shortcut in textShortcuts) {
-    if ([shortcut[@"type"] isEqualToString:@"inline"]) {
+    if ([self isInlineShortcutStyleName:shortcut[@"style"] input:input]) {
       [inlineShortcuts addObject:shortcut];
     }
   }
@@ -328,7 +345,7 @@ typedef struct {
   }
 
   for (NSDictionary *shortcut in input->textShortcuts) {
-    if ([shortcut[@"type"] isEqualToString:@"inline"]) {
+    if ([self isInlineShortcutStyleName:shortcut[@"style"] input:input]) {
       continue;
     }
 

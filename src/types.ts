@@ -241,6 +241,29 @@ export interface HtmlStyle {
   };
 }
 
+export type TextShortcutStyle =
+  | 'bold'
+  | 'italic'
+  | 'underline'
+  | 'strikethrough'
+  | 'inline_code'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'blockquote'
+  | 'codeblock'
+  | 'unordered_list'
+  | 'ordered_list'
+  | 'checkbox_list';
+
+export interface TextShortcut {
+  trigger: string;
+  style: TextShortcutStyle;
+}
+
 // Event types
 
 export interface OnChangeTextEvent {
@@ -485,25 +508,18 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   /**
    * Configure text shortcuts that auto-convert typed patterns into styles.
    *
-   * Two types of shortcuts are supported:
+   * Shortcut behavior is determined by `style`:
    *
-   * **Block shortcuts** (type: 'block', default):
-   * Trigger at the start of a paragraph. E.g. typing "# " converts the line to H1.
+   * **Block styles** trigger at the start of a paragraph. E.g. typing "# " converts the line to H1.
    * - style: "h1"-"h6", "blockquote", "codeblock", "unordered_list", "ordered_list", "checkbox_list"
    *
-   * **Inline shortcuts** (type: 'inline'):
-   * Trigger when a closing delimiter is typed around text. E.g. typing `code` applies inline code.
+   * **Inline styles** trigger when a closing delimiter is typed around text. E.g. typing `**text**` applies bold.
    * The trigger is the delimiter string (e.g. "`", "**", "*", "~~").
-   * - style: "bold", "italic", "strikethrough", "inline_code"
+   * - style: "bold", "italic", "underline", "strikethrough", "inline_code"
    *
-   * Defaults to `[{ trigger: '- ', style: 'unordered_list' }, { trigger: '1.', style: 'ordered_list' }]`
-   * to match the previously built-in behavior. Pass an empty array to disable all shortcuts.
+   * Defaults to a built-in markdown-like set. Pass an empty array to disable all shortcuts.
    */
-  textShortcuts?: Array<{
-    trigger: string;
-    style: string;
-    type?: 'block' | 'inline';
-  }>;
+  textShortcuts?: TextShortcut[];
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.

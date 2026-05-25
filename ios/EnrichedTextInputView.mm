@@ -696,7 +696,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       const auto &newItem = newViewProps.textShortcuts[i];
       const auto &oldItem = oldViewProps.textShortcuts[i];
       if (newItem.trigger != oldItem.trigger ||
-          newItem.style != oldItem.style || newItem.type != oldItem.type) {
+          newItem.style != oldItem.style) {
         textShortcutsChanged = true;
         break;
       }
@@ -706,12 +706,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (textShortcutsChanged) {
     NSMutableArray *shortcuts = [NSMutableArray new];
     for (const auto &item : newViewProps.textShortcuts) {
-      NSString *type =
-          item.type.empty() ? @"block" : [NSString fromCppString:item.type];
       [shortcuts addObject:@{
         @"trigger" : [NSString fromCppString:item.trigger],
         @"style" : [NSString fromCppString:item.style],
-        @"type" : type
       }];
     }
     textShortcuts = shortcuts;

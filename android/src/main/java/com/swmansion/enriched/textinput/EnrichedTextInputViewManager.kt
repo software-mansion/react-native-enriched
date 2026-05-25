@@ -311,14 +311,13 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     value: ReadableArray?,
   ) {
-    val shortcuts = mutableListOf<Triple<String, String, String>>()
+    val shortcuts = mutableListOf<Pair<String, String>>()
     if (value != null) {
       for (i in 0 until value.size()) {
         val map = value.getMap(i) ?: continue
         val trigger = map.getString("trigger") ?: continue
         val style = map.getString("style") ?: continue
-        val type = map.getString("type") ?: "block"
-        shortcuts.add(Triple(trigger, style, type))
+        shortcuts.add(Pair(trigger, style))
       }
     }
     view?.textShortcuts = shortcuts

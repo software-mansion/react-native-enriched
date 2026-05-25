@@ -110,8 +110,8 @@ class EnrichedTextInputView :
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
 
-  // Triple: (trigger, style, type) where type is "block" or "inline"
-  var textShortcuts: List<Triple<String, String, String>> = emptyList()
+  // Pair: (trigger, style)
+  var textShortcuts: List<Pair<String, String>> = emptyList()
 
   var fontSize: Float? = null
   private var lineHeight: Float? = null

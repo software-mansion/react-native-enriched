@@ -31,6 +31,7 @@ import type {
   EnrichedTextInputProps,
   OnLinkDetected,
   OnMentionDetected,
+  TextShortcut,
 } from '../types';
 
 const warnMentionIndicators = (indicator: string) => {
@@ -50,7 +51,7 @@ type HtmlRequest = {
  * Default text shortcuts matching the previously hardcoded behavior.
  * Consumers can override by passing their own textShortcuts prop.
  */
-const DEFAULT_TEXT_SHORTCUTS: Array<{ trigger: string; style: string }> = [
+const DEFAULT_TEXT_SHORTCUTS: TextShortcut[] = [
   { trigger: '- ', style: 'unordered_list' },
   { trigger: '1.', style: 'ordered_list' },
 ];
