@@ -1,9 +1,9 @@
 import type { StateField } from '@tiptap/pm/state';
 import { isCaretInBlockedContext } from './isCaretInBlockedContext';
-import type { TriggerState } from './types';
+import type { MentionPluginOptions, TriggerState } from './types';
 
 export function makeMentionPluginState(
-  getIndicators: () => string[]
+  getIndicators: MentionPluginOptions['getIndicators']
 ): StateField<TriggerState> {
   return {
     init(): TriggerState {

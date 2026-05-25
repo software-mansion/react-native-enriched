@@ -10,9 +10,9 @@ export function subscribeMentionEvents(
 ): () => void {
   let prevTriggerState: TriggerState = { active: false };
   let prevMentionKey: string | null = null;
-  const cb = getCallbacks();
 
   const handleTransaction = () => {
+    const cb = getCallbacks();
     const curr = mentionPluginKey.getState(editor.state);
     if (!curr) return;
 
@@ -46,6 +46,7 @@ export function subscribeMentionEvents(
   };
 
   const handleBlur = () => {
+    const cb = getCallbacks();
     if (prevTriggerState.active) {
       cb.onEndMention?.(prevTriggerState.indicator);
       prevTriggerState = { active: false };

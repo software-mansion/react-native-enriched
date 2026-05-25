@@ -19,7 +19,7 @@ export const MentionPlugin = Extension.create<MentionPluginOptions>({
     return {
       getIndicators: () => {
         throw new Error(
-          'MentionPlugin.configure({ getIndicators, getCallbacks }) is required'
+          'MentionPlugin.configure({ getIndicators }) is required'
         );
       },
     };
