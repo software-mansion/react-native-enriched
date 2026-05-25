@@ -4,10 +4,10 @@ import android.graphics.Color
 import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.MentionStyle
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import kotlin.Float
 import kotlin.Int
@@ -153,16 +153,8 @@ class HtmlStyle : EnrichedStyle {
     key: String,
   ): Float {
     val safeMap = ensureValueIsSet(map, key)
-
     val value = safeMap.getDouble(key)
-    val scaled =
-      if (view?.allowFontScaling != false) {
-        ceil(PixelUtil.toPixelFromSP(value))
-      } else {
-        ceil(PixelUtil.toPixelFromDIP(value))
-      }
-
-    return scaled
+    return ceil(pixelFromSpOrDp(value, view?.allowFontScaling ?: true))
   }
 
   private fun parseColorWithOpacity(

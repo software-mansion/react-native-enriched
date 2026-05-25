@@ -4,10 +4,10 @@ import android.graphics.Color
 import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.MentionStyle
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import kotlin.math.ceil
 
 data class EnrichedTextStyle(
@@ -127,14 +127,7 @@ data class EnrichedTextStyle(
       allowFontScaling: Boolean = true,
     ): Float {
       if (map == null || !map.hasKey(key) || map.isNull(key)) return 0f
-      val raw = map.getDouble(key)
-      return ceil(
-        if (allowFontScaling) {
-          PixelUtil.toPixelFromSP(raw)
-        } else {
-          PixelUtil.toPixelFromDIP(raw)
-        },
-      )
+      return ceil(pixelFromSpOrDp(map.getDouble(key), allowFontScaling))
     }
 
     private fun parseColor(

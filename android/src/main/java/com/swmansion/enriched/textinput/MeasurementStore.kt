@@ -16,7 +16,9 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.enriched.common.allowFontScalingFromProps
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import java.util.concurrent.ConcurrentHashMap
@@ -99,12 +101,6 @@ object MeasurementStore {
     return YogaMeasureOutput.make(widthInSP, heightInSP)
   }
 
-  private fun getAllowFontScaling(props: ReadableMap?): Boolean {
-    if (props == null) return true
-    if (!props.hasKey("allowFontScaling") || props.isNull("allowFontScaling")) return true
-    return props.getBoolean("allowFontScaling")
-  }
-
   // Returns either: Spannable parsed from HTML defaultValue, or plain text defaultValue, or "I" if no defaultValue
   private fun getInitialText(
     defaultView: EnrichedTextInputView,
@@ -136,13 +132,7 @@ object MeasurementStore {
     val propsFontSize = props?.getDouble("fontSize")?.toFloat()
     if (propsFontSize == null) return defaultView.textSize
 
-    return ceil(
-      if (getAllowFontScaling(props)) {
-        PixelUtil.toPixelFromSP(propsFontSize)
-      } else {
-        PixelUtil.toPixelFromDIP(propsFontSize)
-      },
-    )
+    return ceil(pixelFromSpOrDp(propsFontSize, allowFontScalingFromProps(props)))
   }
 
   // Called when view measurements are not available in the store
@@ -154,7 +144,7 @@ object MeasurementStore {
     props: ReadableMap?,
   ): Long {
     val defaultView = EnrichedTextInputView(context)
-    val allowFontScaling = getAllowFontScaling(props)
+    val allowFontScaling = allowFontScalingFromProps(props)
     // mirrors the real view's state
     defaultView.allowFontScaling = allowFontScaling
 

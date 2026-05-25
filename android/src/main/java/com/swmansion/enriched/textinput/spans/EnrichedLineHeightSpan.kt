@@ -5,7 +5,7 @@ import android.text.Spannable
 import android.text.TextPaint
 import android.text.style.LineHeightSpan
 import android.text.style.MetricAffectingSpan
-import com.facebook.react.uimanager.PixelUtil
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 
 class EnrichedLineHeightSpan(
@@ -34,12 +34,7 @@ class EnrichedLineHeightSpan(
     // In the future we may consider adding custom lineHeight support for each paragraph style
     if (spannable.getSpans(start, end, EnrichedHeadingSpan::class.java).isNotEmpty()) return
 
-    val lineHeightPx =
-      if (allowFontScaling) {
-        PixelUtil.toPixelFromSP(lineHeight)
-      } else {
-        PixelUtil.toPixelFromDIP(lineHeight)
-      }
+    val lineHeightPx = pixelFromSpOrDp(lineHeight, allowFontScaling)
     val currentHeight = (fm.descent - fm.ascent).toFloat()
     if (lineHeightPx <= currentHeight) return
 

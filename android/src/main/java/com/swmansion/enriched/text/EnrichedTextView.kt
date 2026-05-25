@@ -18,7 +18,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
@@ -26,6 +25,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.text.spans.EnrichedTextImageSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextClickableSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
@@ -45,10 +45,9 @@ class EnrichedTextView : AppCompatTextView {
     set(value) {
       if (field == value) return
       field = value
-      // re-apply primary font size in the new unit (no-op if it was never set)
+      // re-apply primary font size
       fontSizeRaw?.let { setFontSize(it) }
-      // re-parse htmlStyle so headings/list geometry pick up the new unit and
-      // rebuild on-screen spans
+      // re-parse htmlStyle
       htmlStyleMap?.let { setHtmlStyle(it) }
     }
 
@@ -302,12 +301,7 @@ class EnrichedTextView : AppCompatTextView {
     if (size == 0f) return
 
     fontSizeRaw = size
-    val sizeInt =
-      if (allowFontScaling) {
-        ceil(PixelUtil.toPixelFromSP(size))
-      } else {
-        ceil(PixelUtil.toPixelFromDIP(size))
-      }
+    val sizeInt = ceil(pixelFromSpOrDp(size, allowFontScaling))
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
   }
