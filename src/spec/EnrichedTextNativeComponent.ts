@@ -84,13 +84,13 @@ export interface NativeProps extends ViewProps {
   text: string;
   htmlStyle?: EnrichedTextHtmlStyleInternal;
   useHtmlNormalizer: boolean;
+  allowFontScaling?: boolean;
 
   // ReactNative TextProps
   ellipsizeMode: string;
   numberOfLines: Int32;
   selectable: boolean;
   selectionColor?: ColorValue;
-  allowFontScaling?: boolean;
 
   // Events
   onLinkPress?: DirectEventHandler<OnLinkPressEvent>;
