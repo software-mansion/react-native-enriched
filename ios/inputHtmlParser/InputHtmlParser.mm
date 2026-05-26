@@ -191,7 +191,6 @@
       zeroWidthSpaceOffset += delta;
     }
   }
-  [_input anyTextMayHaveBeenModified];
 }
 
 - (void)applyProcessedAlignments:(NSArray<AlignmentEntry *> *)alignments
@@ -213,6 +212,7 @@
                       withTyping:NO
                   withDirtyRange:NO];
   }
+  [_input anyTextMayHaveBeenModified];
 }
 
 - (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html {
