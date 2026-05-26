@@ -56,6 +56,15 @@ We can help you build your next dream product –
 yarn add react-native-enriched
 ```
 
+> [!TIP]
+> To try the latest features before they land in a stable release, install the nightly build:
+>
+> ```sh
+> yarn add react-native-enriched@nightly
+> ```
+>
+> Nightly versions are published to npm automatically and may contain breaking changes.
+
 #### 2. Install iOS dependencies
 
 The library includes native code so you will need to re-build the native app to use it.
@@ -318,11 +327,15 @@ You can extend the native text editing menu with custom items using the [context
 
 ```tsx
 import { EnrichedText } from 'react-native-enriched';
-import type { OnLinkPressEvent, OnMentionPressEvent } from 'react-native-enriched';
+import type {
+  OnLinkPressEvent,
+  OnMentionPressEvent,
+} from 'react-native-enriched';
 import { StyleSheet } from 'react-native';
 
 export default function App() {
-  const html = '<html><p>Hello, <b>world</b>! Visit <a href="https://swmansion.com">Software Mansion</a>.</p></html>';
+  const html =
+    '<html><p>Hello, <b>world</b>! Visit <a href="https://swmansion.com">Software Mansion</a>.</p></html>';
 
   const handleLinkPress = (e: OnLinkPressEvent) => {
     console.log('Link pressed:', e.url);
@@ -352,7 +365,6 @@ const styles = StyleSheet.create({
   },
 });
 ```
-
 
 ## API Reference
 
