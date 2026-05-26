@@ -706,6 +706,39 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   _state->updateState(EnrichedTextViewState(selfRef));
 }
 
+/**
+ * Handles iOS Dynamic Type changes (user changing font size in System
+ * Settings).
+ *
+ * Unlike Android, iOS Views do not automatically rescale existing
+ * NSAttributedStrings when the system font size changes. The text attributes
+ * are static once drawn, so we re-parse the HTML to rebuild every run with
+ * fonts at the new content size category.
+ */
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (_props == nullptr) {
+    return;
+  }
+
+  const auto &viewProps =
+      *std::static_pointer_cast<EnrichedTextViewProps const>(_props);
+  if (!viewProps.allowFontScaling) {
+    return;
+  }
+
+  if (previousTraitCollection.preferredContentSizeCategory ==
+      self.traitCollection.preferredContentSizeCategory) {
+    return;
+  }
+
+  [config invalidateFonts];
+  [self syncDefaultTypingAttributesFromConfig];
+  [self renderText:[NSString fromCppString:viewProps.text]];
+  [self tryUpdatingHeight];
+}
+
 - (std::shared_ptr<EnrichedTextViewEventEmitter>)getEventEmitter {
   if (_eventEmitter != nullptr) {
     auto emitter =
