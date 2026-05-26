@@ -103,8 +103,16 @@ class InlineStyles(
 
   fun afterTextChanged(
     s: Editable,
+    startCursorPosition: Int,
     endCursorPosition: Int,
   ) {
+    if (endCursorPosition > startCursorPosition) {
+      for ((style, config) in EnrichedSpans.inlineSpans) {
+        if (view.spanState?.getStart(style) != null) continue
+        splitSpanOnInsertion(s, config.clazz, startCursorPosition, endCursorPosition)
+      }
+    }
+
     for ((style, config) in EnrichedSpans.inlineSpans) {
       val start = view.spanState?.getStart(style) ?: continue
       var end = endCursorPosition
@@ -116,6 +124,47 @@ class InlineStyles(
       }
 
       setSpan(s, config.clazz, start, end)
+    }
+
+    // Collapse same-type inline spans that ended up adjacent
+    // Without this the HTML output would emit separate tags like <b>...</b><b>...</b>.
+    for ((_, config) in EnrichedSpans.inlineSpans) {
+      mergeAdjacentSpansOfType(s, config.clazz)
+    }
+  }
+
+  private fun <T> mergeAdjacentSpansOfType(
+    spannable: Spannable,
+    type: Class<T>,
+  ) {
+    var changed = true
+    while (changed) {
+      changed = false
+      val sortedSpans =
+        spannable
+          .getSpans(0, spannable.length, type)
+          .sortedBy { spannable.getSpanStart(it) }
+
+      for (i in 0 until sortedSpans.size - 1) {
+        val leadingSpan = sortedSpans[i]
+        val trailingSpan = sortedSpans[i + 1]
+        val leadingStart = spannable.getSpanStart(leadingSpan)
+        val leadingEnd = spannable.getSpanEnd(leadingSpan)
+        val trailingStart = spannable.getSpanStart(trailingSpan)
+        val trailingEnd = spannable.getSpanEnd(trailingSpan)
+
+        if (leadingStart < 0 || leadingEnd < 0 || trailingStart < 0 || trailingEnd < 0) continue
+        if (leadingEnd == trailingStart) {
+          spannable.removeSpan(leadingSpan)
+          spannable.removeSpan(trailingSpan)
+          val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(leadingStart, trailingEnd)
+          val mergedSpan =
+            type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+          spannable.setSpan(mergedSpan, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+          changed = true
+          break
+        }
+      }
     }
   }
 
@@ -141,6 +190,33 @@ class InlineStyles(
     val spannable = view.text as Spannable
     setAndMergeSpans(spannable, type, start, end)
     view.selection.validateStyles()
+  }
+
+  private fun <T> splitSpanOnInsertion(
+    spannable: Spannable,
+    type: Class<T>,
+    insertStart: Int,
+    insertEnd: Int,
+  ) {
+    val spans = spannable.getSpans(insertStart, insertEnd, type)
+    for (span in spans) {
+      val spanStart = spannable.getSpanStart(span)
+      val spanEnd = spannable.getSpanEnd(span)
+      if (spanStart < 0 || spanEnd < 0) continue
+
+      spannable.removeSpan(span)
+
+      if (spanStart < insertStart) {
+        val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(spanStart, insertStart)
+        val left = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+        spannable.setSpan(left, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      }
+      if (spanEnd > insertEnd) {
+        val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(insertEnd, spanEnd)
+        val right = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
+        spannable.setSpan(right, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      }
+    }
   }
 
   fun removeStyle(
