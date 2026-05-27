@@ -71,6 +71,25 @@ app_installed() {
   fi
 }
 
+# Adjusts the system's text-size setting.
+set_font_scale() {
+  case "$1" in
+    default) ios_size="large";               android_scale="1.0" ;;
+    large)   ios_size="accessibility-large"; android_scale="1.5" ;;
+    *) echo "set_font_scale: unknown size '$1'" >&2; return 1 ;;
+  esac
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl ui "$DEVICE_ID" content_size "$ios_size"
+  else
+    adb -s "$DEVICE_ID" shell settings put system font_scale "$android_scale"
+  fi
+}
+
+# Guarantees the font scale is restored on any exit.
+# Without this, the accessibility tests below would leave the device
+# in a scaled-up state.
+trap 'set_font_scale default' EXIT
+
 if [ -n "$REBUILD" ] || ! app_installed; then
   [ -n "$REBUILD" ] && echo "=== rebuild requested, building and installing ==="
   [ -z "$REBUILD" ] && echo "=== App ($BUNDLE_ID) not found, building and installing ==="
@@ -97,27 +116,18 @@ esac
 ASSETS_DIR="$MAESTRO_ROOT/assets"
 [ -d "$ASSETS_DIR" ] && FLOWS="$ASSETS_DIR $FLOWS"
 
+# A previous run could have died before its EXIT trap fired (e.g. SIGKILL),
+# leaving the device scaled. Force a known state before the normal tests.
+set_font_scale default
+
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" --exclude-tags accessibility  $EXTRA $FLOWS
+maestro test --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
 
 # These are the tests that require changing the system's settings
 # - something maestro cannot run internally
 echo "=== Running maestro accessibility tests ==="
-# scaling up the font
-if [ "$PLATFORM" = ios ]; then
-  xcrun simctl ui "$DEVICE_ID" content_size accessibility-large
-else
-  adb -s "$DEVICE_ID" shell settings put system font_scale 1.5
-fi
-sleep 2 # Let OS redraw
+set_font_scale large
 
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" --include-tags accessibility  $EXTRA $FLOWS
-
-# restoring the scaled-up font
-if [ "$PLATFORM" = ios ]; then
-  xcrun simctl ui "$DEVICE_ID" content_size large
-else
-  adb -s "$DEVICE_ID" shell settings put system font_scale 1.0
-fi
+maestro test --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
