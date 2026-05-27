@@ -10,7 +10,7 @@ import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 
 class EnrichedLineHeightSpan(
   val lineHeight: Float,
-  val allowFontScaling: Boolean = true,
+  val allowFontScaling: Boolean,
 ) : MetricAffectingSpan(),
   LineHeightSpan {
   override fun updateDrawState(p0: TextPaint?) {

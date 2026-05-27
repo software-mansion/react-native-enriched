@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.EnrichedStyle
 import com.swmansion.enriched.common.MentionStyle
 import com.swmansion.enriched.common.pixelFromSpOrDp
@@ -154,7 +155,7 @@ class HtmlStyle : EnrichedStyle {
   ): Float {
     val safeMap = ensureValueIsSet(map, key)
     val value = safeMap.getDouble(key)
-    return ceil(pixelFromSpOrDp(value, view?.allowFontScaling ?: true))
+    return ceil(pixelFromSpOrDp(value, view?.allowFontScaling ?: EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT))
   }
 
   private fun parseColorWithOpacity(

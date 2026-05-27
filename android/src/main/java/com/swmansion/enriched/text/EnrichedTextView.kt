@@ -41,13 +41,11 @@ class EnrichedTextView : AppCompatTextView {
   private var fontSize: Float = EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
   private var fontSizeRaw: Float? = null
   private var htmlStyleMap: ReadableMap? = null
-  var allowFontScaling: Boolean = true
+  var allowFontScaling: Boolean = EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT
     set(value) {
       if (field == value) return
       field = value
-      // re-apply primary font size
       fontSizeRaw?.let { setFontSize(it) }
-      // re-parse htmlStyle
       htmlStyleMap?.let { setHtmlStyle(it) }
     }
 

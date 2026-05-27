@@ -63,7 +63,7 @@ data class EnrichedTextStyle(
       context: ReactContext,
       fontSize: Int,
       map: ReadableMap,
-      allowFontScaling: Boolean = true,
+      allowFontScaling: Boolean,
     ): EnrichedTextStyle {
       val h1 = map.getMap("h1")
       val h2 = map.getMap("h2")
@@ -124,7 +124,7 @@ data class EnrichedTextStyle(
     private fun parseFloat(
       map: ReadableMap?,
       key: String,
-      allowFontScaling: Boolean = true,
+      allowFontScaling: Boolean,
     ): Float {
       if (map == null || !map.hasKey(key) || map.isNull(key)) return 0f
       return ceil(pixelFromSpOrDp(map.getDouble(key), allowFontScaling))

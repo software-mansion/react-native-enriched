@@ -88,7 +88,7 @@ class EnrichedTextInputView :
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
   var scrollEnabled: Boolean = true
-  var allowFontScaling: Boolean = true
+  var allowFontScaling: Boolean = EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT
     set(value) {
       if (field != value) {
         field = value
@@ -99,7 +99,7 @@ class EnrichedTextInputView :
           htmlStyle.invalidateStyles()
         }
         applyLineSpacing()
-        reApplyHtmlStyleForSpans(htmlStyle, htmlStyle)
+        reApplyHtmlStyleForSpans(htmlStyle, htmlStyle) // force re-apply
       }
     }
 
@@ -122,7 +122,7 @@ class EnrichedTextInputView :
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
 
-  var fontSizeRaw: Float? = null
+  private var fontSizeRaw: Float? = null
   var fontSize: Float? = null
   private var lineHeight: Float? = null
   var submitBehavior: String? = null
