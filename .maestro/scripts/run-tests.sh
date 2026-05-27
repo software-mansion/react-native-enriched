@@ -99,4 +99,25 @@ ASSETS_DIR="$MAESTRO_ROOT/assets"
 
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" $EXTRA $FLOWS
+maestro test --device "$DEVICE_ID" --exclude-tags accessibility  $EXTRA $FLOWS
+
+# These are the tests that require changing the system's settings
+# - something maestro cannot run internally
+echo "=== Running maestro accessibility tests ==="
+# scaling up the font
+if [ "$PLATFORM" = ios ]; then
+  xcrun simctl ui "$DEVICE_ID" content_size accessibility-large
+else
+  adb -s "$DEVICE_ID" shell settings put system font_scale 1.5
+fi
+sleep 2 # Let OS redraw
+
+# shellcheck disable=SC2086
+maestro test --device "$DEVICE_ID" --include-tags accessibility  $EXTRA $FLOWS
+
+# restoring the scaled-up font
+if [ "$PLATFORM" = ios ]; then
+  xcrun simctl ui "$DEVICE_ID" content_size large
+else
+  adb -s "$DEVICE_ID" shell settings put system font_scale 1.0
+fi
