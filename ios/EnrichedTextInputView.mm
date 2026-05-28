@@ -1040,7 +1040,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           detectedLinkData = candidateLinkData;
           detectedLinkRange = candidateLinkRange;
         }
-      } else if (wasActive && [self wasLinkPreviouslyDetected]) {
+      } else if (wasActive) {
         shouldClearLink = YES;
       }
     }
@@ -1074,7 +1074,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           detectedMentionParams = candidateMentionParams;
           detectedMentionRange = candidateMentionRange;
         }
-      } else if (wasActive && [self wasMentionPreviouslyDetected]) {
+      } else if (wasActive) {
         shouldClearMention = YES;
       }
     }
@@ -1345,18 +1345,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         .text = [stringToBeEmitted toCppString],
     });
   }
-}
-
-- (BOOL)wasLinkPreviouslyDetected {
-  return _recentlyActiveLinkData != nullptr &&
-         (_recentlyActiveLinkData.text.length > 0 ||
-          _recentlyActiveLinkData.url.length > 0);
-}
-
-- (BOOL)wasMentionPreviouslyDetected {
-  return _recentlyActiveMentionParams != nullptr &&
-         (_recentlyActiveMentionParams.text.length > 0 ||
-          _recentlyActiveMentionParams.indicator.length > 0);
 }
 
 - (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range {
