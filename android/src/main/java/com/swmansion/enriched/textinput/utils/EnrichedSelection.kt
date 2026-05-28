@@ -190,97 +190,40 @@ class EnrichedSelection(
   private fun <T> getParametrizedStyleStart(type: Class<T>): Int? {
     val (start, end) = getInlineSelection()
     val spannable = view.text as Spannable
+    val spans = spannable.getSpans(start, end, type)
     val isLinkType = type == EnrichedInputLinkSpan::class.java
     val isMentionType = type == EnrichedInputMentionSpan::class.java
 
-    if (isMentionType) {
-      val activeMention = findActiveMentionSpan(spannable, start, end)
-      if (activeMention != null) {
-        val (span, spanStart, spanEnd) = activeMention
-        emitMentionDetectedEvent(span, spanStart, spanEnd)
-        return spanStart
-      }
-      if (wasMentionPreviouslyDetected()) {
-        emitMentionClearedEvent()
-      }
-      return null
-    }
-
-    if (isLinkType) {
-      val activeLink = findActiveLinkSpan(spannable, start, end)
-      if (activeLink != null) {
-        val (span, spanStart, spanEnd) = activeLink
-        emitLinkDetectedEvent(span, spanStart, spanEnd)
-        return spanStart
-      }
+    if (isLinkType && spans.isEmpty()) {
       if (wasLinkPreviouslyDetected()) {
-        emitLinkClearedEvent()
+        emitLinkDetectedEvent(spannable, null, 0, 0)
       }
       return null
     }
 
-    val spans = spannable.getSpans(start, end, type)
+    if (isMentionType && spans.isEmpty()) {
+      if (wasMentionPreviouslyDetected()) {
+        emitMentionDetectedEvent(spannable, null, start, end)
+      }
+      return null
+    }
 
     for (span in spans) {
       val spanStart = spannable.getSpanStart(span)
       val spanEnd = spannable.getSpanEnd(span)
 
       if (start >= spanStart && end <= spanEnd) {
+        if (isLinkType && span is EnrichedInputLinkSpan) {
+          emitLinkDetectedEvent(spannable, span, spanStart, spanEnd)
+        } else if (isMentionType && span is EnrichedInputMentionSpan) {
+          emitMentionDetectedEvent(spannable, span, spanStart, spanEnd)
+        }
+
         return spanStart
       }
     }
 
     return null
-  }
-
-  private fun findActiveLinkSpan(
-    spannable: Spannable,
-    start: Int,
-    end: Int,
-  ): Triple<EnrichedInputLinkSpan, Int, Int>? {
-    val spans = spannable.getSpans(start, end, EnrichedInputLinkSpan::class.java)
-
-    for (span in spans) {
-      val spanStart = spannable.getSpanStart(span)
-      val spanEnd = spannable.getSpanEnd(span)
-
-      if (start >= spanStart && end <= spanEnd) {
-        return Triple(span, spanStart, spanEnd)
-      }
-    }
-
-    return null
-  }
-
-  private fun findActiveMentionSpan(
-    spannable: Spannable,
-    start: Int,
-    end: Int,
-  ): Triple<EnrichedInputMentionSpan, Int, Int>? {
-    val spans = spannable.getSpans(start, end, EnrichedInputMentionSpan::class.java)
-
-    for (span in spans) {
-      val spanStart = spannable.getSpanStart(span)
-      val spanEnd = spannable.getSpanEnd(span)
-
-      if (start >= spanStart && end <= spanEnd) {
-        return Triple(span, spanStart, spanEnd)
-      }
-    }
-
-    return null
-  }
-
-  private fun wasMentionPreviouslyDetected(): Boolean {
-    val previousText = previousMentionDetectedEvent["text"] ?: ""
-    val previousIndicator = previousMentionDetectedEvent["indicator"] ?: ""
-    return previousText.isNotEmpty() || previousIndicator.isNotEmpty()
-  }
-
-  private fun wasLinkPreviouslyDetected(): Boolean {
-    val previousText = previousLinkDetectedEvent["text"] ?: ""
-    val previousUrl = previousLinkDetectedEvent["url"] ?: ""
-    return previousText.isNotEmpty() || previousUrl.isNotEmpty()
   }
 
   private fun emitSelectionChangeEvent(
@@ -309,28 +252,28 @@ class EnrichedSelection(
     )
   }
 
+  private fun wasMentionPreviouslyDetected(): Boolean {
+    val previousText = previousMentionDetectedEvent["text"] ?: ""
+    val previousIndicator = previousMentionDetectedEvent["indicator"] ?: ""
+    return previousText.isNotEmpty() || previousIndicator.isNotEmpty()
+  }
+
+  private fun wasLinkPreviouslyDetected(): Boolean {
+    val previousText = previousLinkDetectedEvent["text"] ?: ""
+    val previousUrl = previousLinkDetectedEvent["url"] ?: ""
+    return previousText.isNotEmpty() || previousUrl.isNotEmpty()
+  }
+
   private fun emitLinkDetectedEvent(
-    span: EnrichedInputLinkSpan,
-    spanStart: Int,
-    spanEnd: Int,
-  ) {
-    val spannable = view.text as Spannable
-    val text = spannable.substring(spanStart, spanEnd).replace(EnrichedConstants.ZWS_STRING, "")
-    dispatchLinkDetectedEvent(text, span.getUrl(), spanStart, spanEnd, spannable)
-  }
-
-  private fun emitLinkClearedEvent() {
-    val spannable = view.text as Spannable
-    dispatchLinkDetectedEvent("", "", 0, 0, spannable)
-  }
-
-  private fun dispatchLinkDetectedEvent(
-    text: String,
-    url: String,
+    spannable: Spannable,
+    span: EnrichedInputLinkSpan?,
     start: Int,
     end: Int,
-    spannable: Spannable,
   ) {
+    val text = spannable.substring(start, end).replace(EnrichedConstants.ZWS_STRING, "")
+    val url = span?.getUrl() ?: ""
+
+    // Prevents emitting unnecessary events
     if (text == previousLinkDetectedEvent["text"] && url == previousLinkDetectedEvent["url"]) return
 
     previousLinkDetectedEvent.put("text", text)
@@ -356,27 +299,16 @@ class EnrichedSelection(
   }
 
   private fun emitMentionDetectedEvent(
-    span: EnrichedInputMentionSpan,
-    spanStart: Int,
-    spanEnd: Int,
+    spannable: Spannable,
+    span: EnrichedInputMentionSpan?,
+    start: Int,
+    end: Int,
   ) {
-    val spannable = view.text as Spannable
-    val text = spannable.substring(spanStart, spanEnd)
-    val attributes = span.getAttributes()
-    val indicator = span.getIndicator()
+    val text = spannable.substring(start, end)
+    val attributes = span?.getAttributes() ?: emptyMap()
+    val indicator = span?.getIndicator() ?: ""
     val payload = JSONObject(attributes).toString()
-    dispatchMentionDetectedEvent(text, indicator, payload)
-  }
 
-  private fun emitMentionClearedEvent() {
-    dispatchMentionDetectedEvent("", "", "{}")
-  }
-
-  private fun dispatchMentionDetectedEvent(
-    text: String,
-    indicator: String,
-    payload: String,
-  ) {
     val previousText = previousMentionDetectedEvent["text"] ?: ""
     val previousPayload = previousMentionDetectedEvent["payload"] ?: ""
     val previousIndicator = previousMentionDetectedEvent["indicator"] ?: ""
