@@ -252,6 +252,34 @@ export const EnrichedTextInput = ({
           autoCapitalize,
           enterkeyhint: returnKeyTypeToEnterKeyHint(returnKeyType),
         },
+        transformPastedHTML: (html) => {
+          console.log('transformPastedHTML', html);
+
+          return html;
+        },
+        transformPastedText: (text) => {
+          console.log('transformPastedText', text);
+
+          return text;
+        },
+        handlePaste: (_view, event, slice) => {
+          const clipboardData = event.clipboardData;
+
+          if (clipboardData) {
+            const rawHtml = clipboardData.getData('text/html');
+            const plainText = clipboardData.getData('text/plain');
+            const plainTextt = clipboardData.getData('text');
+
+            console.log('PASTE === RAW HTML FROM CLIPBOARD ===');
+            console.log(rawHtml); // This is what you'll need to parse for Google Docs
+
+            console.log('PASTE === PLAIN TEXT ===');
+            console.log(plainText);
+            console.log(plainTextt);
+
+            console.log('PASTE Tiptap Parsed Slice:', slice);
+          }
+        },
       },
     },
     [tiptapContent, extensions]
