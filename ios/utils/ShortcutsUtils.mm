@@ -137,7 +137,7 @@ typedef struct {
 }
 
 /// When [requiredDelimStart] is NSNotFound, the trigger may appear anywhere in
-/// the text. Otherwise the matched delimiter must start at that index (block
+/// the text. Otherwise the matched delimiter must start at that index (paragraph
 /// shortcuts at paragraph start).
 + (BOOL)isCompletingTrigger:(NSString *)trigger
                     context:(const ShortcutsTextContext *)context
