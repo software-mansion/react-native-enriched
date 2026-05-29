@@ -3,7 +3,7 @@ import { isCaretInBlockedContext } from './isCaretInBlockedContext';
 import type { MentionPluginOptions, TriggerState } from './types';
 
 export function makeMentionPluginState(
-  options: MentionPluginOptions
+  getIndicators: MentionPluginOptions['getIndicators']
 ): StateField<TriggerState> {
   return {
     init(): TriggerState {
@@ -26,9 +26,8 @@ export function makeMentionPluginState(
         '\n'
       );
 
-      const indicators = options.indicatorsRef.current;
       const mentionType = newEditorState.schema.marks.mention;
-
+      const indicators = getIndicators();
       const found = findLastValidMentionIndicator(text, indicators, (idx) => {
         if (!mentionType) return false;
         const $at = newEditorState.doc.resolve(blockStart + idx + 1);
