@@ -312,7 +312,7 @@ typedef struct {
                                   ranges:&ranges];
 }
 
-/// Paragraph already has a block-level style (list, quote, heading, …).
+/// Paragraph already has a paragraph-level style (list, quote, heading, …).
 /// Alignment is ignored.
 + (BOOL)paragraphHasActiveParagraphStyleInRange:(NSRange)paragraphRange
                                           input:(EnrichedTextInputView *)input {
