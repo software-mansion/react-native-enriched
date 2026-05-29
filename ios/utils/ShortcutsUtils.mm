@@ -328,7 +328,7 @@ typedef struct {
   return NO;
 }
 
-+ (BOOL)tryHandlingBlockShortcutInRange:(NSRange)range
++ (BOOL)tryHandlingParagraphShortcutsInRange:(NSRange)range
                         replacementText:(NSString *)text
                                   input:(EnrichedTextInputView *)input {
   if (![self hasTextShortcutsInInput:input]) {
