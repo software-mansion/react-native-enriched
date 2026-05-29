@@ -137,8 +137,8 @@ typedef struct {
 }
 
 /// When [requiredDelimStart] is NSNotFound, the trigger may appear anywhere in
-/// the text. Otherwise the matched delimiter must start at that index (paragraph
-/// shortcuts at paragraph start).
+/// the text. Otherwise the matched delimiter must start at that index
+/// (paragraph shortcuts at paragraph start).
 + (BOOL)isCompletingTrigger:(NSString *)trigger
                     context:(const ShortcutsTextContext *)context
          requiredDelimStart:(NSInteger)requiredDelimStart
@@ -328,10 +328,27 @@ typedef struct {
   return NO;
 }
 
+/// Handles a paragraph-level shortcut (e.g. `# ` → H1, `- ` → unordered list)
+/// on character insertion.
+///
+///  1. Skip if no shortcuts configured, or the paragraph already has an active
+///     paragraph style — triggers only apply to plain paragraphs.
+///  2. Find a paragraph shortcut whose trigger is anchored to the paragraph
+///     start. Skip if the resolved style is blocked by another active style.
+///  3. Save the current text alignment.
+///  4. Suppress events, delete the trigger text, unsuppress.
+///  5. Remove styles from the range that conflict with the new style (e.g.
+///     italic is removed when applying codeblock).
+//   6. Reset typing attrs to defaults preserving alignment — without this, the
+//   new paragraph
+///     style would inherit the alignment of the previous paragraph.
+///  7. Apply the paragraph style with withTyping:YES so the next typed
+///  character
+///     inherits it immediately.
 + (BOOL)tryHandlingParagraphShortcutsInRange:(NSRange)range
-                        replacementText:(NSString *)text
-                                  input:(EnrichedTextInputView *)input {
-  if (![self hasTextShortcutsInInput:input]) {
+                             replacementText:(NSString *)text
+                                       input:(EnrichedTextInputView *)input {
+  if (![self anyTextShortcutsInInput:input]) {
     return NO;
   }
 
@@ -411,10 +428,25 @@ typedef struct {
   return NO;
 }
 
-+ (BOOL)tryHandlingInlineShortcutInRange:(NSRange)range
-                         replacementText:(NSString *)text
-                                   input:(EnrichedTextInputView *)input {
-  if (![self hasTextShortcutsInInput:input]) {
+/// Handles an inline shortcut (e.g. `**text**` → bold) on character insertion.
+/// Inline shortcuts are symmetric delimiter pairs — the same string opens and
+/// closes the style (e.g. `**`).
+///
+///  1. Build the inline context: inline-only shortcuts sorted longest-first so
+///     `**` is never pre-empted by its shorter suffix `*`.
+///  2. Check if the just-typed character, together with the characters
+///     immediately before the cursor, completes a closing delimiter.
+///  3. Search backwards for a matching opening delimiter. Reject if it is part
+///     of a longer trigger, or if there is no content between the pair.
+///  4. Check style blocks/conflicts; skip if the style cannot be applied.
+///  5. Suppress events, delete the closing-delimiter prefix then the opening
+///     delimiter (close first so the open's earlier index stays valid).
+///  6. Apply the style to the content range, move the cursor to its end, and
+///     clear the typing style.
++ (BOOL)tryHandlingInlineShortcutsInRange:(NSRange)range
+                          replacementText:(NSString *)text
+                                    input:(EnrichedTextInputView *)input {
+  if (![self anyTextShortcutsInInput:input]) {
     return NO;
   }
 

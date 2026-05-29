@@ -478,6 +478,7 @@ The `style` prop controls the layout, dimensions, typography, borders, shadows, 
 ### `textShortcuts`
 
 An array of shortcuts that auto-convert typed patterns into styles. Each entry maps a `trigger` string to a `style`.
+These shortcuts allow users to format text similarly to modern Markdown editors by typing familiar patterns directly in the input.
 
 Item type:
 
@@ -509,9 +510,15 @@ type TextShortcutStyle =
 - `trigger` is the typed pattern that activates the shortcut.
 - `style` is the style to apply when the trigger completes.
 
-**Block styles** fire at the start of a paragraph (e.g. `# ` → H1, `- ` → unordered list). Supported styles: `h1`–`h6`, `blockquote`, `codeblock`, `unordered_list`, `ordered_list`, `checkbox_list`.
+**[Paragraph styles](../README.md#paragraph-tags)** fire at the start of a paragraph (e.g. `# ` → H1, `- ` → unordered list). Supported styles: `h1`–`h6`, `blockquote`, `codeblock`, `unordered_list`, `ordered_list`, `checkbox_list`.
 
-**Inline styles** fire when a closing delimiter is typed around text (e.g. `**text**` → bold). The trigger is the delimiter string (e.g. `**`, `*`, `~~`). Supported styles: `bold`, `italic`, `underline`, `strikethrough`, `inline_code`.
+> [!NOTE]
+> Paragraph shortcuts are only effective on plain paragraphs. If the paragraph already has an active paragraph style (e.g. it is already a heading or a list item), typing the trigger pattern has no effect.
+
+**[Inline styles](../README.md#inline-tags)** fire when a closing delimiter is typed around text (e.g. `**text**` → bold). The trigger is the delimiter string (e.g. `**`, `*`, `~~`). Supported styles: `bold`, `italic`, `underline`, `strikethrough`, `inline_code`.
+
+> [!NOTE]
+> Style rules still apply to shortcut-triggered styles: if the target style is **blocked** by another currently active style (e.g. bold inside a codeblock), the shortcut has no effect. If the target style **conflicts** with another active style, the conflicting style is removed when the new one is applied. See the [inline](../README.md#inline-tags) and [paragraph](../README.md#paragraph-tags) tag tables for the full conflict and blocking rules.
 
 Default value:
 
@@ -526,7 +533,8 @@ Default value:
 | ---------------- | ------------- | -------- |
 | `TextShortcut[]` | see above     | Both     |
 
-Pass an empty array to disable all shortcuts.
+> [!NOTE]
+> Pass an empty array to disable all shortcuts.
 
 ### `ViewProps`
 

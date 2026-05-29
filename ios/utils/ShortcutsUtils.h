@@ -8,13 +8,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ShortcutsUtils : NSObject
 
-+ (BOOL)tryHandlingBlockShortcutInRange:(NSRange)range
-                        replacementText:(NSString *)text
-                                  input:(EnrichedTextInputView *)input;
++ (BOOL)tryHandlingParagraphShortcutsInRange:(NSRange)range
+                             replacementText:(NSString *)text
+                                       input:(EnrichedTextInputView *)input;
 
-+ (BOOL)tryHandlingInlineShortcutInRange:(NSRange)range
-                         replacementText:(NSString *)text
-                                   input:(EnrichedTextInputView *)input;
++ (BOOL)tryHandlingInlineShortcutsInRange:(NSRange)range
+                          replacementText:(NSString *)text
+                                    input:(EnrichedTextInputView *)input;
 
 @end
 
