@@ -2,18 +2,18 @@ import { getMarkRange } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 import type { OnMentionDetected } from '../../../types';
 import { mentionPluginKey } from './mentionPluginKey';
-import type { MentionPluginOptions, TriggerState } from './types';
+import type { MentionCallbacks, TriggerState } from './types';
 
 export function subscribeMentionEvents(
   editor: Editor,
-  callbacksRef: MentionPluginOptions['callbacksRef']
+  getCallbacks: () => MentionCallbacks
 ): () => void {
   let prevTriggerState: TriggerState = { active: false };
   let prevMentionKey: string | null = null;
   let wasInMention = false;
 
   const handleTransaction = () => {
-    const cb = callbacksRef.current;
+    const cb = getCallbacks();
     const curr = mentionPluginKey.getState(editor.state);
     if (!curr) return;
 
@@ -61,8 +61,9 @@ export function subscribeMentionEvents(
   };
 
   const handleBlur = () => {
+    const cb = getCallbacks();
     if (prevTriggerState.active) {
-      callbacksRef.current.onEndMention?.(prevTriggerState.indicator);
+      cb.onEndMention?.(prevTriggerState.indicator);
       prevTriggerState = { active: false };
     }
     prevMentionKey = null;
