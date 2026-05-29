@@ -80,7 +80,7 @@ typedef struct {
   return ![style isParagraph];
 }
 
-+ (BOOL)hasTextShortcutsInInput:(EnrichedTextInputView *)input {
++ (BOOL)anyTextShortcutsInInput:(EnrichedTextInputView *)input {
   return input != nullptr && input->textShortcuts != nil &&
          input->textShortcuts.count > 0;
 }
