@@ -37,7 +37,7 @@ typedef struct {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     map = @{
-      // Block shortcuts
+      // Paragraph shortcuts
       @"h1" : @(H1),
       @"h2" : @(H2),
       @"h3" : @(H3),
