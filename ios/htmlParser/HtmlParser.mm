@@ -155,6 +155,9 @@
   NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
 
   NSArray *tagData = ongoingTags[tagName];
+  if (tagData == nil) {
+    return;
+  }
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
   NSInteger openImageCount = [((NSNumber *)tagData[1]) intValue];
   NSInteger currentImageCount = *precedingImageCount;
@@ -465,6 +468,7 @@
       } else if ([currentTagName isEqualToString:@"li"]) {
         if (!closingTag) {
           // Opening tag <li>
+          // Track checkbox state if we're inside a checkbox list
           if (insideCheckboxList) {
             BOOL isChecked = [currentTagParams containsString:@"checked"];
             checkboxStates[@(plainText.length)] = @(isChecked);
@@ -491,9 +495,8 @@
           }
         }
       } else if (!closingTag) {
-        BOOL isPlainParagraph =
-            [currentTagName isEqualToString:@"p"] &&
-            (!currentTagParams || [currentTagParams length] == 0);
+        BOOL isPlainParagraph = [currentTagName isEqualToString:@"p"] &&
+                                currentTagParams.length == 0;
 
         if (!isPlainParagraph) {
           // we finish opening tag - get its location, the current
