@@ -55,7 +55,7 @@ private fun Spannable.hasStyleInRange(
   return getSpans(start, end, type).isNotEmpty()
 }
 
-private fun getStyleForSpan(span: Any): String? =
+private fun getStyleForSpan(span: EnrichedSpan): String? =
   EnrichedSpans.allSpans.entries
     .firstOrNull { (_, config) ->
       config.clazz.isInstance(span)
@@ -75,7 +75,7 @@ private fun Spannable.removeBlockedPasteStyles(
 
     val spanStart = pastedSpannable.getSpanStart(span)
     val spanEnd = pastedSpannable.getSpanEnd(span)
-    if (spanStart == -1 || spanEnd == -1 || spanStart >= spanEnd) continue
+    if (spanStart == -1 || spanEnd == -1 || spanStart == spanEnd) continue
 
     val pastedStart = start + spanStart
     val pastedEnd = start + spanEnd

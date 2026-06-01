@@ -1,0 +1,43 @@
+appId: swmansion.enriched.example
+---
+# Verifies that pasting inline code into a code block removes inline code style correctly.
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'editor-input'
+
+- tapOn:
+    id: 'toolbar-inline-code'
+- inputText: 'code'
+- tapOn:
+    id: 'toolbar-inline-code'
+
+- pressKey: Enter
+- tapOn:
+    id: 'toolbar-code-block'
+
+- doubleTapOn:
+    id: 'editor-input'
+    point: '10%, 30%'
+
+- tapOn:
+    text: 'Copy'
+
+- tapOn:
+    id: 'editor-input'
+    point: '10%, 70%'
+
+- longPressOn:
+    id: 'editor-input'
+    point: '10%, 70%'
+
+- tapOn:
+    text: 'Paste'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'inline_code_paste_into_codeblock'
