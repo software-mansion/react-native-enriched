@@ -5,12 +5,11 @@
  * custom JS normalizer until they match.
  */
 import sanitizeHtml from 'sanitize-html';
-import { customNormalizeHtml } from '../customHtmlNormalizer';
+import { customNormalizeHtml, SANITIZE_OPTIONS } from '../customHtmlNormalizer';
 
 // Mirrors GumboParser::normalizeHtml — sanitize-html followed by the custom
 // rules. The checkbox/<br> steps in prepareHtmlForTiptap are downstream of the
 // cpp normalizer's scope and intentionally excluded here.
-const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {};
 function normalizeHtml(html: string): string {
   return customNormalizeHtml(sanitizeHtml(html, SANITIZE_OPTIONS));
 }

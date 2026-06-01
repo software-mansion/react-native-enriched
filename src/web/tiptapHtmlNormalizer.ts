@@ -3,13 +3,7 @@ import {
   checkboxHtmlForTiptap,
   checkboxHtmlFromTiptap,
 } from './checkboxHtmlNormalizer';
-import { customNormalizeHtml } from './customHtmlNormalizer';
-
-const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
-  // TODO: tighten allowedTags/allowedAttributes/allowedStyles to match the set
-  // of features our editor actually supports (mirroring GumboNormalizer's
-  // classify_tag / emit_attributes logic).
-};
+import { customNormalizeHtml, SANITIZE_OPTIONS } from './customHtmlNormalizer';
 
 export function prepareHtmlForTiptap(html: string): string {
   html = sanitizeHtml(html, SANITIZE_OPTIONS);
