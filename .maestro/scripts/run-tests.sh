@@ -120,12 +120,33 @@ ASSETS_DIR="$MAESTRO_ROOT/assets"
 # leaving the device scaled. Force a known state before the normal tests.
 set_font_scale default
 
-set +e
+# maestro exits non-zero when the tag filter matches zero flows. That's not a
+# real failure for us (e.g. running a single flow that has no accessibility
+# variant), and letting it propagate aborts latter test suites.
+run_maestro() {
+  local tmp rc
+  tmp=$(mktemp)
+  # `script` allocates a pseudo-TTY so maestro keeps
+  # ANSI colors when piped through `tee`.
+  if [[ "$OSTYPE" == darwin* ]]; then
+    script -q /dev/null maestro test "$@" 2>&1 | tee "$tmp"
+  else
+    local cmd
+    cmd=$(printf '%q ' maestro test "$@")
+    script -qc "$cmd" /dev/null 2>&1 | tee "$tmp"
+  fi
+  rc=${PIPESTATUS[0]}
+  if [ "$rc" -ne 0 ] && grep -q "did not match any Flows" "$tmp"; then
+    echo "warn: no flows matched the tag filter — treating as success" >&2
+    rc=0
+  fi
+  rm -f "$tmp"
+  return "$rc"
+}
 
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
-EXIT_REGULAR=$?
+run_maestro --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
 
 # These are the tests that require changing the system's settings
 # - something maestro cannot run internally
@@ -133,15 +154,4 @@ echo "=== Running maestro accessibility tests ==="
 set_font_scale large
 
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
-EXIT_A11Y=$?
-
-set -e
-
-if [ $EXIT_REGULAR -ne 0 ] || [ $EXIT_A11Y -ne 0 ]; then
-    echo "CI test suite failed."
-    exit 1
-  else
-    echo "CI test suite successful."
-    exit 0
-  fi
+run_maestro --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
