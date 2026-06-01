@@ -1,8 +1,8 @@
 <img src="https://github.com/user-attachments/assets/c8ba03bc-4ea8-48f4-9566-02ebac0c19d3" alt="react-native-enriched by Software Mansion" width="100%">
 
-[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-1?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-enriched-1&n=1)
-[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-2?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-enriched-2&n=1)
-[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-3?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-enriched-3&n=1)
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-1?n=1)](https://swm-delivery.com/www/delivery/ck-slug.php?zoneid=zone-gh-react-native-enriched-1&n=1)
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-2?n=1)](https://swm-delivery.com/www/delivery/ck-slug.php?zoneid=zone-gh-react-native-enriched-2&n=1)
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-enriched-3?n=1)](https://swm-delivery.com/www/delivery/ck-slug.php?zoneid=zone-gh-react-native-enriched-3&n=1)
 
 # react-native-enriched
 
