@@ -61,10 +61,7 @@ class ParametrizedStyles(
     }
 
     val spanEnd = start + text.length
-    val span = EnrichedInputLinkSpan(url, view.htmlStyle, true)
-    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
-    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
+    applyManualLinkSpan(spannable, start, spanEnd, url)
     view.selection?.validateStyles()
     isSettingLinkSpan = false
   }
@@ -90,6 +87,7 @@ class ParametrizedStyles(
     startCursorPosition: Int,
     endCursorPosition: Int,
   ) {
+    afterTextChangedManualLinks(startCursorPosition, endCursorPosition)
     afterTextChangedLinks(startCursorPosition, endCursorPosition)
     afterTextChangedMentions(s, startCursorPosition)
   }
@@ -225,6 +223,66 @@ class ParametrizedStyles(
     }
 
     return true
+  }
+
+  private fun afterTextChangedManualLinks(
+    editStart: Int,
+    editEnd: Int,
+  ) {
+    if (isSettingLinkSpan || editEnd <= editStart) return
+    val spannable = view.text as? Spannable ?: return
+
+    val inserted = spannable.subSequence(editStart, editEnd)
+    if (inserted.none { it == '\n' }) return
+
+    spannable
+      .getSpans(editStart, editEnd, EnrichedInputLinkSpan::class.java)
+      .filter { it.getIsManual() }
+      .distinct()
+      .forEach { splitManualLinkOnNewlines(spannable, it) }
+  }
+
+  private fun splitManualLinkOnNewlines(
+    spannable: Spannable,
+    span: EnrichedInputLinkSpan,
+  ) {
+    val spanStart = spannable.getSpanStart(span)
+    val spanEnd = spannable.getSpanEnd(span)
+    if (spanStart < 0 || spanEnd <= spanStart) return
+
+    val segment = spannable.subSequence(spanStart, spanEnd)
+    if (segment.none { it == '\n' || it == '\r' }) return
+
+    val url = span.getUrl()
+    spannable.removeSpan(span)
+
+    var runStart = spanStart
+    for (i in spanStart until spanEnd) {
+      if (spannable[i] == '\n' || spannable[i] == '\r') {
+        if (runStart < i) {
+          applyManualLinkSpan(spannable, runStart, i, url)
+        }
+        runStart = i + 1
+      }
+    }
+    if (runStart < spanEnd) {
+      applyManualLinkSpan(spannable, runStart, spanEnd, url)
+    }
+  }
+
+  private fun applyManualLinkSpan(
+    spannable: Spannable,
+    start: Int,
+    end: Int,
+    url: String,
+  ) {
+    val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, end)
+    spannable.setSpan(
+      EnrichedInputLinkSpan(url, view.htmlStyle, true),
+      safeStart,
+      safeEnd,
+      Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
   }
 
   private fun afterTextChangedLinks(
