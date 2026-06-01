@@ -47,8 +47,8 @@ fun SpannableStringBuilder.safelyRemoveZWS(
   start: Int,
   end: Int,
 ) {
-  val safeStart = start.coerceAtLeast(0)
-  val safeEnd = end.coerceAtMost(length)
+  val safeStart = minOf(start, end).coerceAtLeast(0)
+  val safeEnd = maxOf(start, end).coerceAtMost(length)
   if (safeStart >= safeEnd) return
 
   val hasAlignment = getSpans(safeStart, safeEnd, EnrichedInputAlignmentSpan::class.java).isNotEmpty()
