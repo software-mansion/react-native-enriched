@@ -4433,6 +4433,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/js-cookie@npm:^3":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10c0/173afaf5ea9d86c22395b9d2a00b6adb0006dcfef165d6dcb0395cdc32f5a5dcf9c3c60f97194119963a15849b8f85121e1ae730b03e40bc0c29b84396ba22f9
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.15, @types/json-schema@npm:^7.0.9":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -9990,6 +9997,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-cookie@npm:3.0.7":
+  version: 3.0.7
+  resolution: "js-cookie@npm:3.0.7"
+  checksum: 10c0/c921c43014e98bb94a1765663a1a10d693048d61444e374c1ecf459eba92320381f9c406e724df9aa44e819c4b606e6a7240f2abe2d5c54ad1e73a3002b191c2
+  languageName: node
+  linkType: hard
+
 "js-cookie@npm:^3.0.5":
   version: 3.0.5
   resolution: "js-cookie@npm:3.0.5"
@@ -12705,6 +12719,7 @@ __metadata:
     "@tiptap/pm": "npm:3.20.4"
     "@tiptap/react": "npm:3.20.4"
     "@types/jest": "npm:^29.5.5"
+    "@types/js-cookie": "npm:^3"
     "@types/react": "npm:^19.1.0"
     "@types/react-dom": "npm:^19.1.0"
     clang-format: "npm:^1.8.0"
@@ -12714,6 +12729,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.1.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     jest: "npm:^29.7.0"
+    js-cookie: "npm:3.0.7"
     playwright: "npm:1.58.2"
     prettier: "npm:^3.0.3"
     react: "npm:19.1.0"
