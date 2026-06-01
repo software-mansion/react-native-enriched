@@ -144,9 +144,12 @@ run_maestro() {
   return "$rc"
 }
 
+set +e
+
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
 run_maestro --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
+EXIT_REGULAR=$?
 
 # These are the tests that require changing the system's settings
 # - something maestro cannot run internally
@@ -155,3 +158,8 @@ set_font_scale large
 
 # shellcheck disable=SC2086
 run_maestro --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
+EXIT_A11Y=$?
+
+set -e
+
+exit $(( EXIT_REGULAR != 0 || EXIT_A11Y != 0 ))
