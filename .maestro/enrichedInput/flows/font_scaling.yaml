@@ -10,7 +10,7 @@ tags:
 - runFlow:
     file: "../subflows/capture_or_assert_screenshot.yaml"
     env:
-        SCREENSHOT_NAME: "font_scaling__placeholder"
+        SCREENSHOT_NAME: "font_scaling_placeholder"
 
 - tapOn:
     id: "editor-input"
