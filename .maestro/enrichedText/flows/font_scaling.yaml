@@ -16,11 +16,10 @@ tags:
     env:
       VALUE: >
         <html>
-          <p>Left aligned</p>
-          <p style="text-align: center">Centre aligned</p>
-          <h6 style="text-align: center">Heading 6</h6>
-          <p style="text-align: right">Right aligned</p>
-          <ol style="text-align: right">
+          <p>Example</p>
+          <p>Text</p>
+          <h6>Heading 6</h6>
+          <ol>
             <li>Element 1</li>
             <li>Element 2</li>
           </ol>

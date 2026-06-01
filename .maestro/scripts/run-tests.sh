@@ -120,9 +120,12 @@ ASSETS_DIR="$MAESTRO_ROOT/assets"
 # leaving the device scaled. Force a known state before the normal tests.
 set_font_scale default
 
+set +e
+
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
 maestro test --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
+EXIT_REGULAR=$?
 
 # These are the tests that require changing the system's settings
 # - something maestro cannot run internally
@@ -131,3 +134,14 @@ set_font_scale large
 
 # shellcheck disable=SC2086
 maestro test --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
+EXIT_A11Y=$?
+
+set -e
+
+if [ $EXIT_REGULAR -ne 0 ] || [ $EXIT_A11Y -ne 0 ]; then
+    echo "CI test suite failed."
+    exit 1
+  else
+    echo "CI test suite successful."
+    exit 0
+  fi
