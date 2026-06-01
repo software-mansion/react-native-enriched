@@ -358,7 +358,7 @@ class EnrichedTextInputView :
         }
       }
 
-    val finalText = currentText.mergeSpannables(start, end, pastedSpannable)
+    val finalText = currentText.mergeSpannables(start, end, pastedSpannable, htmlStyle)
     setValue(finalText, false)
 
     // replacement-safe: oldLength - removed + inserted
