@@ -5,6 +5,7 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
@@ -65,7 +66,7 @@ private fun Spannable.removeBlockedPasteStyles(
   pastedSpannable: Spannable,
   htmlStyle: HtmlStyle,
 ): Spannable {
-  val pastedSpans = pastedSpannable.getSpans(0, pastedSpannable.length, Any::class.java)
+  val pastedSpans = pastedSpannable.getSpans(0, pastedSpannable.length, EnrichedSpan::class.java)
 
   for (span in pastedSpans) {
     val style = getStyleForSpan(span) ?: continue
