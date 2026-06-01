@@ -230,7 +230,7 @@ test('moving within the same mention does not re-fire onMentionDetected', async 
   await expect(detectedCount(page)).toHaveText('1');
 });
 
-test('moving out of a mention does not increment detected count', async ({
+test('moving out of a mention fires clear onMentionDetected', async ({
   page,
 }) => {
   await gotoMentionTest(page);
@@ -244,13 +244,15 @@ test('moving out of a mention does not increment detected count', async ({
     )
     .toBe(true);
   await editor.click();
-  await editor.press('Home');
-  await editor.press('ArrowRight');
-  await editor.press('ArrowRight');
-  await editor.press('ArrowRight');
+  await editor.press('End');
+  await editor.press('ArrowLeft'); // skip trailing space after mention
+  await editor.press('ArrowLeft'); // caret inside mention text
+  await expect(detectedCount(page)).toHaveText('1');
   await editor.press('End');
   await editor.press('Enter');
-  await expect(detectedCount(page)).toHaveText('1');
+  await expect(detectedCount(page)).toHaveText('2');
+  await expect(detectedText(page)).toHaveText('');
+  await expect(detectedIndicator(page)).toHaveText('');
 });
 
 test('mention renders correctly', async ({ page }) => {

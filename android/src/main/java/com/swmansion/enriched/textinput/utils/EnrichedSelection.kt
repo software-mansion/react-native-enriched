@@ -195,12 +195,16 @@ class EnrichedSelection(
     val isMentionType = type == EnrichedInputMentionSpan::class.java
 
     if (isLinkType && spans.isEmpty()) {
-      emitLinkDetectedEvent(spannable, null, start, end)
+      if (wasLinkPreviouslyDetected()) {
+        emitLinkDetectedEvent(spannable, null, 0, 0)
+      }
       return null
     }
 
     if (isMentionType && spans.isEmpty()) {
-      emitMentionDetectedEvent(spannable, null, start, end)
+      if (wasMentionPreviouslyDetected()) {
+        emitMentionDetectedEvent(spannable, null, start, end)
+      }
       return null
     }
 
@@ -246,6 +250,18 @@ class EnrichedSelection(
         view.experimentalSynchronousEvents,
       ),
     )
+  }
+
+  private fun wasMentionPreviouslyDetected(): Boolean {
+    val previousText = previousMentionDetectedEvent["text"] ?: ""
+    val previousIndicator = previousMentionDetectedEvent["indicator"] ?: ""
+    return previousText.isNotEmpty() || previousIndicator.isNotEmpty()
+  }
+
+  private fun wasLinkPreviouslyDetected(): Boolean {
+    val previousText = previousLinkDetectedEvent["text"] ?: ""
+    val previousUrl = previousLinkDetectedEvent["url"] ?: ""
+    return previousText.isNotEmpty() || previousUrl.isNotEmpty()
   }
 
   private fun emitLinkDetectedEvent(
