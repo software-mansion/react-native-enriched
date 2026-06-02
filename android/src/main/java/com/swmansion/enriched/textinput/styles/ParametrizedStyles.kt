@@ -229,16 +229,13 @@ class ParametrizedStyles(
     editStart: Int,
     editEnd: Int,
   ) {
-    if (isSettingLinkSpan || editEnd <= editStart) return
+    if (isSettingLinkSpan) return
     val spannable = view.text as? Spannable ?: return
-
-    val inserted = spannable.subSequence(editStart, editEnd)
-    if (inserted.none { it == '\n' }) return
+    if (spannable.subSequence(editStart, editEnd).none { it == '\n' || it == '\r' }) return
 
     spannable
       .getSpans(editStart, editEnd, EnrichedInputLinkSpan::class.java)
       .filter { it.getIsManual() }
-      .distinct()
       .forEach { splitManualLinkOnNewlines(spannable, it) }
   }
 
@@ -246,27 +243,17 @@ class ParametrizedStyles(
     spannable: Spannable,
     span: EnrichedInputLinkSpan,
   ) {
-    val spanStart = spannable.getSpanStart(span)
-    val spanEnd = spannable.getSpanEnd(span)
-    if (spanStart < 0 || spanEnd <= spanStart) return
-
-    val segment = spannable.subSequence(spanStart, spanEnd)
-    if (segment.none { it == '\n' || it == '\r' }) return
-
+    val start = spannable.getSpanStart(span)
+    val end = spannable.getSpanEnd(span)
     val url = span.getUrl()
     spannable.removeSpan(span)
 
-    var runStart = spanStart
-    for (i in spanStart until spanEnd) {
-      if (spannable[i] == '\n' || spannable[i] == '\r') {
-        if (runStart < i) {
-          applyManualLinkSpan(spannable, runStart, i, url)
-        }
+    var runStart = start
+    for (i in start..end) {
+      if (i == end || spannable[i] == '\n' || spannable[i] == '\r') {
+        if (runStart < i) applyManualLinkSpan(spannable, runStart, i, url)
         runStart = i + 1
       }
-    }
-    if (runStart < spanEnd) {
-      applyManualLinkSpan(spannable, runStart, spanEnd, url)
     }
   }
 
