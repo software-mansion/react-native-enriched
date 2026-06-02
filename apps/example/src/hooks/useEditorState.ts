@@ -44,7 +44,11 @@ export function useEditorState() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isValueModalOpen, setIsValueModalOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
-  const [selection, setSelection] = useState<Selection>();
+  const [selection, setSelection] = useState<Selection>({
+    start: 0,
+    end: 0,
+    text: '',
+  });
   const [stylesState, setStylesState] = useState<StylesState>(DEFAULT_STYLES);
   const [currentLink, setCurrentLink] =
     useState<CurrentLinkState>(DEFAULT_LINK_STATE);
