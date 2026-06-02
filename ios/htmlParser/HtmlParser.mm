@@ -155,6 +155,9 @@
   NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
 
   NSArray *tagData = ongoingTags[tagName];
+  if (tagData == nil) {
+    return;
+  }
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
   NSInteger openImageCount = [((NSNumber *)tagData[1]) intValue];
   NSInteger currentImageCount = *precedingImageCount;
@@ -495,46 +498,44 @@
           checkboxStates[@(plainText.length)] = @(isChecked);
         }
       } else if (!closingTag) {
-        BOOL isPlainParagraph =
-            [currentTagName isEqualToString:@"p"] &&
-            (!currentTagParams || [currentTagParams length] == 0);
+        BOOL isPlainParagraph = [currentTagName isEqualToString:@"p"] &&
+                                currentTagParams.length == 0;
 
-        if (isPlainParagraph) {
-          continue;
-        }
-        // we finish opening tag - get its location, the current
-        // precedingImageCount and optionally params and put them under tag name
-        // key in ongoingTags. Storing the open-time image count lets
-        // finalizeTagEntry: correctly shift the start and extend the length
-        // so the range covers any images finalized between open and close.
-        NSMutableArray *tagArr = [[NSMutableArray alloc] init];
-        [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
-        [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
-        if (currentTagParams.length > 0) {
-          [tagArr addObject:[currentTagParams copy]];
-        }
-        ongoingTags[currentTagName] = tagArr;
+        if (!isPlainParagraph) {
+          // we finish opening tag - get its location, the current
+          // precedingImageCount and optionally params and put them under tag
+          // name key in ongoingTags. Storing the open-time image count lets
+          // finalizeTagEntry: correctly shift the start and extend the length
+          // so the range covers any images finalized between open and close.
+          NSMutableArray *tagArr = [[NSMutableArray alloc] init];
+          [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
+          [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
+          if (currentTagParams.length > 0) {
+            [tagArr addObject:[currentTagParams copy]];
+          }
+          ongoingTags[currentTagName] = tagArr;
 
-        // Check if this is a checkbox list
-        if ([currentTagName isEqualToString:@"ul"] &&
-            [self isUlCheckboxList:currentTagParams]) {
-          insideCheckboxList = YES;
-        }
+          // Check if this is a checkbox list
+          if ([currentTagName isEqualToString:@"ul"] &&
+              [self isUlCheckboxList:currentTagParams]) {
+            insideCheckboxList = YES;
+          }
 
-        // skip one newline if it was added after opening tags that are in
-        // separate lines
-        if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
-            [[NSCharacterSet newlineCharacterSet]
-                characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
-          i += 1;
-        }
+          // skip one newline if it was added after opening tags that are in
+          // separate lines
+          if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
+              [[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
+            i += 1;
+          }
 
-        if (isSelfClosing) {
-          [self finalizeTagEntry:currentTagName
-                         ongoingTags:ongoingTags
-              initiallyProcessedTags:initiallyProcessedTags
-                           plainText:plainText
-                 precedingImageCount:&precedingImageCount];
+          if (isSelfClosing) {
+            [self finalizeTagEntry:currentTagName
+                           ongoingTags:ongoingTags
+                initiallyProcessedTags:initiallyProcessedTags
+                             plainText:plainText
+                   precedingImageCount:&precedingImageCount];
+          }
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag

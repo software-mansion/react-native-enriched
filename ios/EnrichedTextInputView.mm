@@ -1748,15 +1748,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (_emitFocusBlur) {
       emitter->onInputFocus({});
     }
-
-    NSString *textAtSelection =
-        [[[NSMutableString alloc] initWithString:textView.textStorage.string]
-            substringWithRange:textView.selectedRange];
-    emitter->onChangeSelection(
-        {.start = static_cast<int>(textView.selectedRange.location),
-         .end = static_cast<int>(textView.selectedRange.location +
-                                 textView.selectedRange.length),
-         .text = [textAtSelection toCppString]});
   }
   // manage selection changes since textViewDidChangeSelection sometimes doesn't
   // run on focus
