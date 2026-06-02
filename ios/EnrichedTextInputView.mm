@@ -1613,7 +1613,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // When text changed, anyTextMayHaveBeenModified runs tryUpdatingActiveStyles
   if ([_recentInputString isEqualToString:currentString]) {
-    // always update active styles
+    // update active styles
     [self tryUpdatingActiveStyles];
   }
 }
