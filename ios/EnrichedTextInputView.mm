@@ -596,11 +596,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [textView setScrollEnabled:newViewProps.scrollEnabled];
   }
 
-  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling ||
-      isFirstMount) {
-    textView.adjustsFontForContentSizeCategory = newViewProps.allowFontScaling;
-    _placeholderLabel.adjustsFontForContentSizeCategory =
-        newViewProps.allowFontScaling;
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
     [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
     stylePropChanged = YES;
   }
@@ -2005,9 +2001,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  const auto &viewProps =
-      *std::static_pointer_cast<EnrichedTextInputViewProps const>(_props);
-  if (!viewProps.allowFontScaling) {
+  if (!config.allowFontScaling) {
     return;
   }
 

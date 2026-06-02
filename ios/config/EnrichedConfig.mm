@@ -68,7 +68,6 @@
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
   _olMarkerFontNeedsRecreation = YES;
-  _allowFontScaling = YES;
   return self;
 }
 

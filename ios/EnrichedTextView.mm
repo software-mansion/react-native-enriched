@@ -583,9 +583,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   }
 
   // allowFontScaling
-  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling ||
-      isFirstMount) {
-    textView.adjustsFontForContentSizeCategory = newViewProps.allowFontScaling;
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
     [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
     stylePropChanged = YES;
   }
@@ -722,9 +720,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     return;
   }
 
-  const auto &viewProps =
-      *std::static_pointer_cast<EnrichedTextViewProps const>(_props);
-  if (!viewProps.allowFontScaling) {
+  if (!config.allowFontScaling) {
     return;
   }
 
@@ -732,6 +728,9 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
       self.traitCollection.preferredContentSizeCategory) {
     return;
   }
+
+  const auto &viewProps =
+      *std::static_pointer_cast<EnrichedTextViewProps const>(_props);
 
   [config invalidateFonts];
   [self syncDefaultTypingAttributesFromConfig];
