@@ -126,44 +126,19 @@ class InlineStyles(
       setSpan(s, config.clazz, start, end)
     }
 
-    // Collapse same-type inline spans that ended up adjacent
+    val isBackspace = endCursorPosition == startCursorPosition
+    if (!isBackspace) {
+      return
+    }
+
+    // Collapse same-type inline spans that ended up adjacent to each other after deletion.
     // Without this the HTML output would emit separate tags like <b>...</b><b>...</b>.
     for ((_, config) in EnrichedSpans.inlineSpans) {
-      mergeAdjacentSpansOfType(s, config.clazz)
-    }
-  }
-
-  private fun <T> mergeAdjacentSpansOfType(
-    spannable: Spannable,
-    type: Class<T>,
-  ) {
-    var changed = true
-    while (changed) {
-      changed = false
-      val sortedSpans =
-        spannable
-          .getSpans(0, spannable.length, type)
-          .sortedBy { spannable.getSpanStart(it) }
-
-      for (i in 0 until sortedSpans.size - 1) {
-        val leadingSpan = sortedSpans[i]
-        val trailingSpan = sortedSpans[i + 1]
-        val leadingStart = spannable.getSpanStart(leadingSpan)
-        val leadingEnd = spannable.getSpanEnd(leadingSpan)
-        val trailingStart = spannable.getSpanStart(trailingSpan)
-        val trailingEnd = spannable.getSpanEnd(trailingSpan)
-
-        if (leadingStart < 0 || leadingEnd < 0 || trailingStart < 0 || trailingEnd < 0) continue
-        if (leadingEnd == trailingStart) {
-          spannable.removeSpan(leadingSpan)
-          spannable.removeSpan(trailingSpan)
-          val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(leadingStart, trailingEnd)
-          val mergedSpan =
-            type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
-          spannable.setSpan(mergedSpan, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-          changed = true
-          break
-        }
+      for (span in s.getSpans(startCursorPosition, startCursorPosition, config.clazz)) {
+        val spanStart = s.getSpanStart(span)
+        val spanEnd = s.getSpanEnd(span)
+        if (spanStart < 0 || spanEnd < 0) continue
+        setSpan(s, config.clazz, spanStart, spanEnd)
       }
     }
   }
