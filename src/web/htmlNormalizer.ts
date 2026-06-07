@@ -1,74 +1,7 @@
 /*
  * Custom HTML normalizer for TipTap input.
- *
- * Runs after sanitize-html and handles project-specific transforms that mirror
- * the native GumboNormalizer (cpp/parser/GumboNormalizer.c)
+ * Mirrors the native GumboNormalizer (cpp/parser/GumboNormalizer.c)
  */
-import type sanitizeHtml from 'sanitize-html';
-
-export const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
-  allowedTags: [
-    // Inline
-    'b',
-    'i',
-    'u',
-    's',
-    'code',
-    'a',
-    'strong',
-    'em',
-    'del',
-    'strike',
-    'ins',
-    'mention',
-    'span',
-    // Block
-    'p',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'ul',
-    'ol',
-    'li',
-    'blockquote',
-    'codeblock',
-    'pre',
-    'div',
-    // Self-closing
-    'br',
-    'img',
-    // Table
-    'table',
-    'thead',
-    'tbody',
-    'tfoot',
-    'tr',
-    'td',
-    'th',
-    'caption',
-    'colgroup',
-    'col',
-  ],
-  allowedAttributes: {
-    a: ['href'],
-    img: ['src', 'alt', 'width', 'height'],
-    span: ['style'],
-    div: ['style'],
-    b: ['id', 'style'],
-    i: ['style'],
-    u: ['style'],
-    s: ['style'],
-    p: ['style'],
-    ul: ['data-type'],
-    li: ['checked'],
-    mention: ['id', 'text', 'indicator'],
-  },
-  // Preserve self-closing semantic for <br> and <img>
-  selfClosing: ['br', 'img'],
-};
 
 type CssStyles = {
   bold: boolean;
@@ -650,7 +583,7 @@ function walkNode(node: Node, out: { buf: string }): void {
   out.buf += `</${outName}>`;
 }
 
-export function customNormalizeHtml(html: string): string {
+export function normalizeHtml(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(`<body>${html}</body>`, 'text/html');
   const body = doc.body;

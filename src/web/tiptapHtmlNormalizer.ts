@@ -1,13 +1,11 @@
-import sanitizeHtml from 'sanitize-html';
 import {
   checkboxHtmlForTiptap,
   checkboxHtmlFromTiptap,
 } from './checkboxHtmlNormalizer';
-import { customNormalizeHtml, SANITIZE_OPTIONS } from './customHtmlNormalizer';
+import { normalizeHtml } from './htmlNormalizer';
 
 export function prepareHtmlForTiptap(html: string): string {
-  html = sanitizeHtml(html, SANITIZE_OPTIONS);
-  html = customNormalizeHtml(html);
+  html = normalizeHtml(html);
   html = checkboxHtmlForTiptap(html);
   html = html.replace(/<br\s*\/?>/gi, '<p></p>');
   return html;

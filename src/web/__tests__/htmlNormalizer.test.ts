@@ -1,18 +1,9 @@
 /*
  * Port of cpp/tests/GumboParserTest.cpp. Each describe() mirrors a TEST() group
  * from the C++ suite. The expected outputs are the same as the native
- * normalizer's outputs — these tests drive the sanitize-html config plus the
- * custom JS normalizer until they match.
+ * normalizer's outputs
  */
-import sanitizeHtml from 'sanitize-html';
-import { customNormalizeHtml, SANITIZE_OPTIONS } from '../customHtmlNormalizer';
-
-// Mirrors GumboParser::normalizeHtml — sanitize-html followed by the custom
-// rules. The checkbox/<br> steps in prepareHtmlForTiptap are downstream of the
-// cpp normalizer's scope and intentionally excluded here.
-function normalizeHtml(html: string): string {
-  return customNormalizeHtml(sanitizeHtml(html, SANITIZE_OPTIONS));
-}
+import { normalizeHtml } from '../htmlNormalizer';
 
 describe('htmlNormalizer', () => {
   describe('TagRemappings', () => {
