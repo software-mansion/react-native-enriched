@@ -29,6 +29,7 @@ using namespace facebook::react;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   EnrichedTextTouchHandler *_touchHandler;
   TextHtmlParser *_textParser;
+  NSString *_content;
 }
 
 @synthesize blockEmitting = _blockEmitting;
@@ -541,6 +542,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   // text prop
   if (newViewProps.text != oldViewProps.text || isFirstMount) {
     textChanged = YES;
+    _content = [NSString fromCppString:newViewProps.text];
   }
 
   // ellipsizeMode
@@ -595,7 +597,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   [self syncDefaultTypingAttributesFromConfig];
 
   if (textChanged || stylePropChanged) {
-    [self renderText:[NSString fromCppString:newViewProps.text]];
+    [self renderContent];
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -618,13 +620,13 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 
 // MARK: - Rendering
 
-- (void)renderText:(NSString *)html {
-  if (html.length == 0) {
+- (void)renderContent {
+  if (_content.length == 0) {
     [textView.textStorage
         setAttributedString:[[NSAttributedString alloc] initWithString:@""]];
     return;
   }
-  [_textParser replaceWholeFromHtml:html];
+  [_textParser replaceWholeFromHtml:_content];
   [self layoutAttachments];
 }
 
@@ -716,10 +718,6 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (_props == nullptr) {
-    return;
-  }
-
   if (!config.allowFontScaling) {
     return;
   }
@@ -729,12 +727,9 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     return;
   }
 
-  const auto &viewProps =
-      *std::static_pointer_cast<EnrichedTextViewProps const>(_props);
-
   [config invalidateFonts];
   [self syncDefaultTypingAttributesFromConfig];
-  [self renderText:[NSString fromCppString:viewProps.text]];
+  [self renderContent];
   [self tryUpdatingHeight];
 }
 
