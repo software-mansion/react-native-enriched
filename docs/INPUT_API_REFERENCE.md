@@ -4,7 +4,7 @@
 
 ### `allowFontScaling`
 
-If `true`, it respects the system's accessibility font scaling settings.
+If `true`, the input respects the system's accessibility font scaling settings.
 
 | Type   | Default Value | Platform |
 | ------ | ------------- | -------- |
