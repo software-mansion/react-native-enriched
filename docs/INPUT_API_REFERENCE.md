@@ -2,6 +2,14 @@
 
 ## Props
 
+### `allowFontScaling`
+
+If `true`, the input respects the system's accessibility font scaling settings.
+
+| Type   | Default Value | Platform |
+| ------ | ------------- | -------- |
+| `bool` | `true`       | Both     |
+
 ### `autoFocus`
 
 If `true`, focuses the input.

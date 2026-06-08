@@ -596,6 +596,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [textView setScrollEnabled:newViewProps.scrollEnabled];
   }
 
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if (oldMentionStyle != newMentionStyle) {
@@ -1996,30 +2001,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (previousTraitCollection.preferredContentSizeCategory !=
-      self.traitCollection.preferredContentSizeCategory) {
-    [config invalidateFonts];
-
-    NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
-
-    defaultTypingAttributes = newTypingAttrs;
-    textView.typingAttributes = defaultTypingAttributes;
-
-    [self refreshPlaceholderLabelStyles];
-
-    NSRange prevSelectedRange = textView.selectedRange;
-
-    NSString *currentHtml = [HtmlParser
-        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
-                        host:self];
-    NSString *initiallyProcessedHtml =
-        [parser initiallyProcessHtml:currentHtml];
-    [parser replaceWholeFromHtml:initiallyProcessedHtml];
-
-    textView.selectedRange = prevSelectedRange;
-    [self anyTextMayHaveBeenModified];
+  if (!config.allowFontScaling) {
+    return;
   }
+
+  if (previousTraitCollection.preferredContentSizeCategory ==
+      self.traitCollection.preferredContentSizeCategory) {
+    return;
+  }
+
+  [config invalidateFonts];
+
+  NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
+  newTypingAttrs[NSFontAttributeName] = [config primaryFont];
+
+  defaultTypingAttributes = newTypingAttrs;
+  textView.typingAttributes = defaultTypingAttributes;
+
+  [self refreshPlaceholderLabelStyles];
+
+  NSRange prevSelectedRange = textView.selectedRange;
+
+  NSString *currentHtml = [HtmlParser
+      parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                      host:self];
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:currentHtml];
+  [parser replaceWholeFromHtml:initiallyProcessedHtml];
+
+  textView.selectedRange = prevSelectedRange;
+  [self anyTextMayHaveBeenModified];
 }
 
 - (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {

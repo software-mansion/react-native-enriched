@@ -17,7 +17,9 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.allowFontScalingFromProps
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import kotlin.math.ceil
 
 object MeasurementStore {
@@ -108,7 +110,9 @@ object MeasurementStore {
 
     try {
       val style = props?.getMap("htmlStyle") ?: return text
-      val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize, style)
+      val allowFontScaling = allowFontScalingFromProps(props)
+      val enrichedStyle =
+        EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize, style, allowFontScaling)
       val factory = EnrichedTextSpanFactory()
       val parsed = EnrichedParser.fromHtml(text, enrichedStyle, factory)
       return parsed.trimEnd('\n')
@@ -126,7 +130,7 @@ object MeasurementStore {
         else -> EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
       }
 
-    return ceil(PixelUtil.toPixelFromSP(fontSize))
+    return ceil(pixelFromSpOrDp(fontSize, allowFontScalingFromProps(props)))
   }
 
   private fun getMeasureById(

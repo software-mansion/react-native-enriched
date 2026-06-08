@@ -1,0 +1,33 @@
+appId: swmansion.enriched.example
+tags:
+  - accessibility
+---
+# Validates that text alignment is displayed correctly
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'toggle-enriched-text-screen-button'
+
+- runFlow:
+    file: '../subflows/set_enriched_text_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <p>Example</p>
+          <p>Text</p>
+          <h6>Heading 6</h6>
+          <ol>
+            <li>Element 1</li>
+            <li>Element 2</li>
+          </ol>
+        </html>
+
+- scroll
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'font_scaling'

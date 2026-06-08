@@ -29,6 +29,7 @@ using namespace facebook::react;
   NSMutableDictionary<NSValue *, UIImageView *> *_attachmentViews;
   EnrichedTextTouchHandler *_touchHandler;
   TextHtmlParser *_textParser;
+  NSString *_content;
 }
 
 @synthesize blockEmitting = _blockEmitting;
@@ -541,6 +542,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   // text prop
   if (newViewProps.text != oldViewProps.text || isFirstMount) {
     textChanged = YES;
+    _content = [NSString fromCppString:newViewProps.text];
   }
 
   // ellipsizeMode
@@ -582,6 +584,12 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
     useHtmlNormalizer = newViewProps.useHtmlNormalizer;
   }
 
+  // allowFontScaling
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   if (stylePropChanged) {
     config = newConfig;
   }
@@ -589,7 +597,7 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   [self syncDefaultTypingAttributesFromConfig];
 
   if (textChanged || stylePropChanged) {
-    [self renderText:[NSString fromCppString:newViewProps.text]];
+    [self renderContent];
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -612,13 +620,13 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
 
 // MARK: - Rendering
 
-- (void)renderText:(NSString *)html {
-  if (html.length == 0) {
+- (void)renderContent {
+  if (_content.length == 0) {
     [textView.textStorage
         setAttributedString:[[NSAttributedString alloc] initWithString:@""]];
     return;
   }
-  [_textParser replaceWholeFromHtml:html];
+  [_textParser replaceWholeFromHtml:_content];
   [self layoutAttachments];
 }
 
@@ -696,6 +704,33 @@ Class<RCTComponentViewProtocol> EnrichedTextViewCls(void) {
   }
   auto selfRef = wrapManagedObjectWeakly(self);
   _state->updateState(EnrichedTextViewState(selfRef));
+}
+
+/**
+ * Handles iOS Dynamic Type changes (user changing font size in System
+ * Settings).
+ *
+ * Unlike Android, iOS Views do not automatically rescale existing
+ * NSAttributedStrings when the system font size changes. The text attributes
+ * are static once drawn, so we re-parse the HTML to rebuild every run with
+ * fonts at the new content size category.
+ */
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (!config.allowFontScaling) {
+    return;
+  }
+
+  if (previousTraitCollection.preferredContentSizeCategory ==
+      self.traitCollection.preferredContentSizeCategory) {
+    return;
+  }
+
+  [config invalidateFonts];
+  [self syncDefaultTypingAttributesFromConfig];
+  [self renderContent];
+  [self tryUpdatingHeight];
 }
 
 - (std::shared_ptr<EnrichedTextViewEventEmitter>)getEventEmitter {
