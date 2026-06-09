@@ -3,6 +3,7 @@ package com.swmansion.enriched.textinput.utils
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
 import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan
@@ -144,7 +145,7 @@ fun Spannable.mergeSpannables(
       val (_, newParagraphEnd) = builder.getParagraphBounds(spanStart, pasteEnd)
       val flags = builder.getSpanFlags(span)
       builder.removeSpan(span)
-      builder.setSpan(span, spanStart, newParagraphEnd, flags)
+      builder.setSpan(span, spanStart, newParagraphEnd, EnrichedSpanFlags.forSpan(span, flags))
     }
   }
 

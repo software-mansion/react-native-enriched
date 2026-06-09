@@ -5,6 +5,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
@@ -63,7 +64,7 @@ class ParametrizedStyles(
     val spanEnd = start + text.length
     val span = EnrichedInputLinkSpan(url, view.htmlStyle, true)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
-    spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.inlineSpanFlags)
 
     view.selection?.validateStyles()
     isSettingLinkSpan = false
@@ -160,7 +161,7 @@ class ParametrizedStyles(
           span,
           safeStart,
           safeEnd,
-          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          EnrichedSpanFlags.inlineSpanFlags,
         )
       }
     }
@@ -373,7 +374,7 @@ class ParametrizedStyles(
       val span = EnrichedInputMentionSpan(text, indicator, attributes, view.htmlStyle)
       val spanEnd = start + text.length
       val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(start, spanEnd)
-      spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.inlineSpanFlags)
 
       val hasSpaceAtTheEnd = spannable.length > safeEnd && spannable[safeEnd] == ' '
       if (!hasSpaceAtTheEnd) {
