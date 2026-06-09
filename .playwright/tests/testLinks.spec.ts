@@ -347,8 +347,8 @@ test.describe('test-links onLinkDetected', () => {
       .toEqual({
         text: '',
         url: '',
-        start: 8,
-        end: 8,
+        start: 0,
+        end: 0,
       });
   });
 });

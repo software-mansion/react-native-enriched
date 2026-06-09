@@ -28,7 +28,10 @@
   NSUInteger idx = [self offsetFromPosition:self.beginningOfDocument
                                  toPosition:position];
   NSString *text = self.textStorage.string;
-  NSRange paraRange = [text paragraphRangeForRange:NSMakeRange(idx, 0)];
+  NSRange paraRange = NSMakeRange(0, 0);
+  if (idx <= text.length) {
+    paraRange = [text paragraphRangeForRange:NSMakeRange(idx, 0)];
+  }
 
   // Non-empty paragraph gets its caret drawn the usual way.
   if (paraRange.length != 0) {

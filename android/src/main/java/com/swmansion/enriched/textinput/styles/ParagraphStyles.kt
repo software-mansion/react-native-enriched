@@ -338,22 +338,22 @@ class ParagraphStyles(
       }
 
       if (isNewLine) {
-        if (!config.isContinuous) {
-          spanState.setStart(style, null)
-          continue
-        }
-
         // If removing text at the beginning of the line, we want to remove the span for the whole paragraph
         if (isBackspace) {
           val currentParagraphBounds = s.getParagraphBounds(endCursorPosition)
           removeSpansForRange(s, currentParagraphBounds.first, currentParagraphBounds.second, config.clazz)
           spanState.setStart(style, null)
           continue
-        } else {
-          val wasInserted = (s as SpannableStringBuilder).safelyInsertZWS(endCursorPosition)
-          val shift = if (wasInserted) 1 else 0
-          endCursorPosition += shift
         }
+
+        if (!config.isContinuous) {
+          spanState.setStart(style, null)
+          continue
+        }
+
+        val wasInserted = (s as SpannableStringBuilder).safelyInsertZWS(endCursorPosition)
+        val shift = if (wasInserted) 1 else 0
+        endCursorPosition += shift
       }
 
       var (start, end) = s.getParagraphBounds(styleStart, endCursorPosition)

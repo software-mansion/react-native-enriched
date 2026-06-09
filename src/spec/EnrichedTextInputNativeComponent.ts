@@ -370,6 +370,7 @@ export interface NativeProps extends ViewProps {
   returnKeyType?: string;
   returnKeyLabel?: string;
   submitBehavior?: string;
+  allowFontScaling?: boolean;
 
   // event callbacks
   onInputFocus?: DirectEventHandler<TargetedEvent>;

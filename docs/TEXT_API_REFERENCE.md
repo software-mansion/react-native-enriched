@@ -2,6 +2,14 @@
 
 ## Props
 
+### `allowFontScaling`
+
+If `true`, the text respects the system's accessibility font scaling settings.
+
+| Type   | Default Value | Platform |
+| ------ | ------------- | -------- |
+| `bool` | `true`       | Both     |
+
 ### `children`
 
 The HTML string to render. Accepts the HTML format produced by `EnrichedTextInput`.

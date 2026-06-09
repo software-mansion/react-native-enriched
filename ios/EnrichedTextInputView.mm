@@ -596,6 +596,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [textView setScrollEnabled:newViewProps.scrollEnabled];
   }
 
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if (oldMentionStyle != newMentionStyle) {
@@ -976,10 +981,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
+  BOOL shouldClearLink = NO;
 
   // data for onMentionDetected event
   MentionParams *detectedMentionParams = nullptr;
   NSRange detectedMentionRange = NSMakeRange(0, 0);
+  BOOL shouldClearMention = NO;
 
   for (NSNumber *type in stylesDict) {
     StyleBase *style = stylesDict[type];
@@ -1011,60 +1018,69 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
 
     // onLinkDetected event
-    if (isActive && [type intValue] == [LinkStyle getType]) {
-      // get the link data
-      LinkData *candidateLinkData;
-      NSRange candidateLinkRange = NSMakeRange(0, 0);
-      LinkStyle *linkStyleClass =
-          (LinkStyle *)stylesDict[@([LinkStyle getType])];
-      if (linkStyleClass != nullptr) {
-        candidateLinkData =
-            [linkStyleClass getLinkDataAt:textView.selectedRange.location];
-        candidateLinkRange =
-            [linkStyleClass getFullLinkRangeAt:textView.selectedRange.location];
-      }
+    if ([type intValue] == [LinkStyle getType]) {
+      if (isActive) {
+        // get the link data
+        LinkData *candidateLinkData;
+        NSRange candidateLinkRange = NSMakeRange(0, 0);
+        LinkStyle *linkStyleClass =
+            (LinkStyle *)stylesDict[@([LinkStyle getType])];
+        if (linkStyleClass != nullptr) {
+          candidateLinkData =
+              [linkStyleClass getLinkDataAt:textView.selectedRange.location];
+          candidateLinkRange = [linkStyleClass
+              getFullLinkRangeAt:textView.selectedRange.location];
+        }
 
-      if (wasActive == NO) {
-        // we changed selection from non-link to a link
-        detectedLinkData = candidateLinkData;
-        detectedLinkRange = candidateLinkRange;
-      } else if (![_recentlyActiveLinkData
-                     isEqualToLinkData:candidateLinkData] ||
-                 !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)) {
-        // we changed selection from one link to the other or modified
-        // current link's text
-        detectedLinkData = candidateLinkData;
-        detectedLinkRange = candidateLinkRange;
+        if (wasActive == NO) {
+          // we changed selection from non-link to a link
+          detectedLinkData = candidateLinkData;
+          detectedLinkRange = candidateLinkRange;
+        } else if (![_recentlyActiveLinkData
+                       isEqualToLinkData:candidateLinkData] ||
+                   !NSEqualRanges(_recentlyActiveLinkRange,
+                                  candidateLinkRange)) {
+          // we changed selection from one link to the other or modified
+          // current link's text
+          detectedLinkData = candidateLinkData;
+          detectedLinkRange = candidateLinkRange;
+        }
+      } else if (wasActive) {
+        shouldClearLink = YES;
       }
     }
 
     // onMentionDetected event
-    if (isActive && [type intValue] == [MentionStyle getType]) {
-      // get mention data
-      MentionParams *candidateMentionParams;
-      NSRange candidateMentionRange = NSMakeRange(0, 0);
-      MentionStyle *mentionStyleClass =
-          (MentionStyle *)stylesDict[@([MentionStyle getType])];
-      if (mentionStyleClass != nullptr) {
-        candidateMentionParams = [mentionStyleClass
-            getMentionParamsAt:textView.selectedRange.location];
-        candidateMentionRange = [mentionStyleClass
-            getFullMentionRangeAt:textView.selectedRange.location];
-      }
+    if ([type intValue] == [MentionStyle getType]) {
+      if (isActive) {
+        // get mention data
+        MentionParams *candidateMentionParams;
+        NSRange candidateMentionRange = NSMakeRange(0, 0);
+        MentionStyle *mentionStyleClass =
+            (MentionStyle *)stylesDict[@([MentionStyle getType])];
+        if (mentionStyleClass != nullptr) {
+          candidateMentionParams = [mentionStyleClass
+              getMentionParamsAt:textView.selectedRange.location];
+          candidateMentionRange = [mentionStyleClass
+              getFullMentionRangeAt:textView.selectedRange.location];
+        }
 
-      if (wasActive == NO) {
-        // selection was changed from a non-mention to a mention
-        detectedMentionParams = candidateMentionParams;
-        detectedMentionRange = candidateMentionRange;
-      } else if (![_recentlyActiveMentionParams.text
-                     isEqualToString:candidateMentionParams.text] ||
-                 ![_recentlyActiveMentionParams.attributes
-                     isEqualToString:candidateMentionParams.attributes] ||
-                 !NSEqualRanges(_recentlyActiveMentionRange,
-                                candidateMentionRange)) {
-        // selection changed from one mention to another
-        detectedMentionParams = candidateMentionParams;
-        detectedMentionRange = candidateMentionRange;
+        if (wasActive == NO) {
+          // selection was changed from a non-mention to a mention
+          detectedMentionParams = candidateMentionParams;
+          detectedMentionRange = candidateMentionRange;
+        } else if (![_recentlyActiveMentionParams.text
+                       isEqualToString:candidateMentionParams.text] ||
+                   ![_recentlyActiveMentionParams.attributes
+                       isEqualToString:candidateMentionParams.attributes] ||
+                   !NSEqualRanges(_recentlyActiveMentionRange,
+                                  candidateMentionRange)) {
+          // selection changed from one mention to another
+          detectedMentionParams = candidateMentionParams;
+          detectedMentionRange = candidateMentionRange;
+        }
+      } else if (wasActive) {
+        shouldClearMention = YES;
       }
     }
   }
@@ -1111,6 +1127,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (detectedLinkData != nullptr) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData range:detectedLinkRange];
+  } else if (shouldClearLink) {
+    LinkData *emptyLinkData = [[LinkData alloc] init];
+    emptyLinkData.text = @"";
+    emptyLinkData.url = @"";
+    [self emitOnLinkDetectedEvent:emptyLinkData range:NSMakeRange(0, 0)];
   }
 
   if (detectedMentionParams != nullptr) {
@@ -1121,6 +1142,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
+  } else if (shouldClearMention) {
+    [self emitOnMentionDetectedEvent:@"" indicator:@"" attributes:@"{}"];
+    _recentlyActiveMentionParams = nullptr;
+    _recentlyActiveMentionRange = NSMakeRange(0, 0);
   }
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
@@ -1748,15 +1773,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (_emitFocusBlur) {
       emitter->onInputFocus({});
     }
-
-    NSString *textAtSelection =
-        [[[NSMutableString alloc] initWithString:textView.textStorage.string]
-            substringWithRange:textView.selectedRange];
-    emitter->onChangeSelection(
-        {.start = static_cast<int>(textView.selectedRange.location),
-         .end = static_cast<int>(textView.selectedRange.location +
-                                 textView.selectedRange.length),
-         .text = [textAtSelection toCppString]});
   }
   // manage selection changes since textViewDidChangeSelection sometimes doesn't
   // run on focus
@@ -1985,30 +2001,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (previousTraitCollection.preferredContentSizeCategory !=
-      self.traitCollection.preferredContentSizeCategory) {
-    [config invalidateFonts];
-
-    NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
-
-    defaultTypingAttributes = newTypingAttrs;
-    textView.typingAttributes = defaultTypingAttributes;
-
-    [self refreshPlaceholderLabelStyles];
-
-    NSRange prevSelectedRange = textView.selectedRange;
-
-    NSString *currentHtml = [HtmlParser
-        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
-                        host:self];
-    NSString *initiallyProcessedHtml =
-        [parser initiallyProcessHtml:currentHtml];
-    [parser replaceWholeFromHtml:initiallyProcessedHtml];
-
-    textView.selectedRange = prevSelectedRange;
-    [self anyTextMayHaveBeenModified];
+  if (!config.allowFontScaling) {
+    return;
   }
+
+  if (previousTraitCollection.preferredContentSizeCategory ==
+      self.traitCollection.preferredContentSizeCategory) {
+    return;
+  }
+
+  [config invalidateFonts];
+
+  NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
+  newTypingAttrs[NSFontAttributeName] = [config primaryFont];
+
+  defaultTypingAttributes = newTypingAttrs;
+  textView.typingAttributes = defaultTypingAttributes;
+
+  [self refreshPlaceholderLabelStyles];
+
+  NSRange prevSelectedRange = textView.selectedRange;
+
+  NSString *currentHtml = [HtmlParser
+      parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                      host:self];
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:currentHtml];
+  [parser replaceWholeFromHtml:initiallyProcessedHtml];
+
+  textView.selectedRange = prevSelectedRange;
+  [self anyTextMayHaveBeenModified];
 }
 
 - (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {

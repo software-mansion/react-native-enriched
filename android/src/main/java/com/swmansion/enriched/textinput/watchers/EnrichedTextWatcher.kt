@@ -70,6 +70,7 @@ class EnrichedTextWatcher(
 
     if (view.isDuringTransaction) return
     applyStyles(s)
+    view.layoutManager.invalidateLayout()
   }
 
   private fun applyStyles(s: Editable) {
