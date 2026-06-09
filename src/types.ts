@@ -347,6 +347,7 @@ export interface OnChangeStateEvent {
     isConflicting: boolean;
     isBlocking: boolean;
   };
+  alignment: string;
 }
 
 export interface OnLinkDetected {
@@ -424,6 +425,9 @@ export interface EnrichedTextInputInstance extends NativeMethods {
     text: string,
     attributes?: Record<string, string>
   ) => void;
+  setTextAlignment: (
+    alignment: 'left' | 'center' | 'right' | 'justify' | 'auto'
+  ) => void;
 }
 
 export interface ContextMenuItem {
@@ -499,6 +503,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
 }
 
 export interface EnrichedTextInstance extends NativeMethods {}
@@ -513,6 +522,11 @@ export interface EnrichedTextProps extends ViewProps {
   numberOfLines?: number;
   selectable?: boolean;
   selectionColor?: ColorValue;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
   onLinkPress?: (event: OnLinkPressEvent) => void;
   onMentionPress?: (event: OnMentionPressEvent) => void;
 }

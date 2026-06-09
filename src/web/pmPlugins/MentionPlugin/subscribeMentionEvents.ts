@@ -2,17 +2,18 @@ import { getMarkRange } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 import type { OnMentionDetected } from '../../../types';
 import { mentionPluginKey } from './mentionPluginKey';
-import type { MentionPluginOptions, TriggerState } from './types';
+import type { MentionCallbacks, TriggerState } from './types';
 
 export function subscribeMentionEvents(
   editor: Editor,
-  callbacksRef: MentionPluginOptions['callbacksRef']
+  getCallbacks: () => MentionCallbacks
 ): () => void {
   let prevTriggerState: TriggerState = { active: false };
   let prevMentionKey: string | null = null;
+  let wasInMention = false;
 
   const handleTransaction = () => {
-    const cb = callbacksRef.current;
+    const cb = getCallbacks();
     const curr = mentionPluginKey.getState(editor.state);
     if (!curr) return;
 
@@ -31,14 +32,28 @@ export function subscribeMentionEvents(
     }
     prevTriggerState = curr;
 
-    const mention = cb.onMentionDetected ? getActiveMention(editor) : null;
+    if (!cb.onMentionDetected) return;
+
+    const mention = getActiveMention(editor);
     if (!mention) {
-      prevMentionKey = null;
+      if (wasInMention) {
+        wasInMention = false;
+        prevMentionKey = null;
+        cb.onMentionDetected({
+          text: '',
+          indicator: '',
+          attributes: {},
+        });
+      } else {
+        prevMentionKey = null;
+      }
       return;
     }
+
+    wasInMention = true;
     if (mention.key === prevMentionKey) return;
     prevMentionKey = mention.key;
-    cb.onMentionDetected?.({
+    cb.onMentionDetected({
       text: mention.text,
       indicator: mention.indicator,
       attributes: mention.attributes,
@@ -46,8 +61,9 @@ export function subscribeMentionEvents(
   };
 
   const handleBlur = () => {
+    const cb = getCallbacks();
     if (prevTriggerState.active) {
-      callbacksRef.current.onEndMention?.(prevTriggerState.indicator);
+      cb.onEndMention?.(prevTriggerState.indicator);
       prevTriggerState = { active: false };
     }
     prevMentionKey = null;
@@ -67,14 +83,17 @@ function getActiveMention(
 ): (OnMentionDetected & { key: string }) | null {
   const { state } = editor;
   const mentionType = state.schema.marks.mention;
-  if (!mentionType || !state.selection.empty) return null;
+  if (!mentionType) return null;
 
-  const $pos = state.doc.resolve(state.selection.from);
-  const mark = mentionType.isInSet($pos.marks());
+  const { from: selFrom, to: selTo } = state.selection;
+  const $from = state.doc.resolve(selFrom);
+  const mark = mentionType.isInSet($from.marks());
   if (!mark) return null;
 
-  const range = getMarkRange($pos, mentionType);
+  const range = getMarkRange($from, mentionType);
   if (!range) return null;
+
+  if (selFrom < range.from || selTo > range.to) return null;
 
   const { text, indicator, attributes } = mark.attrs;
   return {

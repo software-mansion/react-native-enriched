@@ -19,7 +19,6 @@ export const useOnLinkDetected = (
       const linkType = state.schema.marks.link;
       if (!linkType) return;
 
-      const { from: selFrom, to: selTo } = state.selection;
       const $pos = state.selection.$from;
       const range = getMarkRange($pos, linkType);
 
@@ -29,8 +28,8 @@ export const useOnLinkDetected = (
           onLinkDetected({
             text: '',
             url: '',
-            start: tiptapPosToNativePos(state.doc, selFrom),
-            end: tiptapPosToNativePos(state.doc, selTo),
+            start: 0,
+            end: 0,
           });
         }
         lastEmittedRef.current = null;

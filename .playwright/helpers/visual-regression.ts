@@ -13,6 +13,15 @@ export function editorLocator(page: Page): Locator {
   return page.locator(visualRegressionSelectors.editorInner);
 }
 
+export async function focusEnrichedEditable(page: Page): Promise<Locator> {
+  const editor = editorLocator(page);
+  await editor.click();
+  await expect(
+    editor.locator('[contenteditable="true"]').first()
+  ).toBeFocused();
+  return editor;
+}
+
 export async function gotoVisualRegression(page: Page): Promise<void> {
   await page.goto('/visual-regression');
   await page.waitForSelector(visualRegressionSelectors.editorInner);

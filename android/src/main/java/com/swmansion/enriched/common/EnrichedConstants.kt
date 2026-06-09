@@ -11,4 +11,6 @@ object EnrichedConstants {
 
   const val TEXT_DEFAULT_FONT_SIZE = 16f
   const val CLIPBOARD_TAG = "react-native-enriched-clipboard"
+
+  const val ALLOW_FONT_SCALING_DEFAULT = true
 }

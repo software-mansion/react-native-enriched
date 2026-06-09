@@ -241,6 +241,14 @@ class EnrichedTextInputViewManager :
     view.scrollEnabled = scrollEnabled
   }
 
+  @ReactProp(name = "allowFontScaling")
+  override fun setAllowFontScaling(
+    view: EnrichedTextInputView,
+    allowFontScaling: Boolean,
+  ) {
+    view.allowFontScaling = allowFontScaling
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextInputView) {
     super.onAfterUpdateTransaction(view)
     view.afterUpdateTransaction()
@@ -446,6 +454,13 @@ class EnrichedTextInputViewManager :
     requestId: Int,
   ) {
     view?.requestHTML(requestId)
+  }
+
+  override fun setTextAlignment(
+    view: EnrichedTextInputView?,
+    alignment: String,
+  ) {
+    TODO("Not yet implemented")
   }
 
   override fun measure(

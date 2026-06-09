@@ -54,5 +54,8 @@
 @implementation EnrichedTextCheckboxListStyle
 @end
 
+@implementation EnrichedTextAlignmentStyle
+@end
+
 @implementation EnrichedTextImageStyle
 @end

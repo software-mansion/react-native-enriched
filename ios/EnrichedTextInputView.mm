@@ -1,4 +1,5 @@
 #import "EnrichedTextInputView.h"
+#import "AlignmentUtils.h"
 #import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
@@ -58,6 +59,7 @@ using namespace facebook::react;
   NSArray<NSDictionary *> *_contextMenuItems;
   NSString *_submitBehavior;
   NSDictionary<NSAttributedStringKey, id> *_capturedAttributesBeforeChange;
+  NSString *_recentlyEmittedAlignment;
 }
 
 @synthesize blockEmitting = blockEmitting;
@@ -128,6 +130,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   _blockedStyles = [[NSMutableSet alloc] init];
   _recentlyActiveLinkRange = NSMakeRange(0, 0);
   _recentlyActiveMentionRange = NSMakeRange(0, 0);
+  _recentlyEmittedAlignment = @"left";
   _recentInputString = @"";
   _recentlyEmittedHtml = @"<html>\n<p></p>\n</html>";
   _emitHtml = NO;
@@ -593,6 +596,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [textView setScrollEnabled:newViewProps.scrollEnabled];
   }
 
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
+    [newConfig setAllowFontScaling:newViewProps.allowFontScaling];
+    stylePropChanged = YES;
+  }
+
   folly::dynamic oldMentionStyle = oldViewProps.htmlStyle.mention;
   folly::dynamic newMentionStyle = newViewProps.htmlStyle.mention;
   if (oldMentionStyle != newMentionStyle) {
@@ -843,6 +851,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (_placeholderColor != nullptr) {
     newAttrs[NSForegroundColorAttributeName] = _placeholderColor;
   }
+
+  // Get the current active alignment in input
+  NSParagraphStyle *currentTypingPara =
+      textView.typingAttributes[NSParagraphStyleAttributeName];
+  NSTextAlignment activeAlignment =
+      currentTypingPara ? currentTypingPara.alignment : NSTextAlignmentNatural;
+  NSMutableParagraphStyle *placeholderPStyle =
+      [newAttrs[NSParagraphStyleAttributeName] mutableCopy];
+  if (!placeholderPStyle) {
+    placeholderPStyle = [[NSMutableParagraphStyle alloc] init];
+  }
+  placeholderPStyle.alignment = activeAlignment;
+  newAttrs[NSParagraphStyleAttributeName] = placeholderPStyle;
+
   NSAttributedString *newAttrStr =
       [[NSAttributedString alloc] initWithString:_placeholderLabel.text
                                       attributes:newAttrs];
@@ -959,10 +981,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // data for onLinkDetected event
   LinkData *detectedLinkData;
   NSRange detectedLinkRange = NSMakeRange(0, 0);
+  BOOL shouldClearLink = NO;
 
   // data for onMentionDetected event
   MentionParams *detectedMentionParams = nullptr;
   NSRange detectedMentionRange = NSMakeRange(0, 0);
+  BOOL shouldClearMention = NO;
 
   for (NSNumber *type in stylesDict) {
     StyleBase *style = stylesDict[type];
@@ -994,62 +1018,78 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     }
 
     // onLinkDetected event
-    if (isActive && [type intValue] == [LinkStyle getType]) {
-      // get the link data
-      LinkData *candidateLinkData;
-      NSRange candidateLinkRange = NSMakeRange(0, 0);
-      LinkStyle *linkStyleClass =
-          (LinkStyle *)stylesDict[@([LinkStyle getType])];
-      if (linkStyleClass != nullptr) {
-        candidateLinkData =
-            [linkStyleClass getLinkDataAt:textView.selectedRange.location];
-        candidateLinkRange =
-            [linkStyleClass getFullLinkRangeAt:textView.selectedRange.location];
-      }
+    if ([type intValue] == [LinkStyle getType]) {
+      if (isActive) {
+        // get the link data
+        LinkData *candidateLinkData;
+        NSRange candidateLinkRange = NSMakeRange(0, 0);
+        LinkStyle *linkStyleClass =
+            (LinkStyle *)stylesDict[@([LinkStyle getType])];
+        if (linkStyleClass != nullptr) {
+          candidateLinkData =
+              [linkStyleClass getLinkDataAt:textView.selectedRange.location];
+          candidateLinkRange = [linkStyleClass
+              getFullLinkRangeAt:textView.selectedRange.location];
+        }
 
-      if (wasActive == NO) {
-        // we changed selection from non-link to a link
-        detectedLinkData = candidateLinkData;
-        detectedLinkRange = candidateLinkRange;
-      } else if (![_recentlyActiveLinkData
-                     isEqualToLinkData:candidateLinkData] ||
-                 !NSEqualRanges(_recentlyActiveLinkRange, candidateLinkRange)) {
-        // we changed selection from one link to the other or modified
-        // current link's text
-        detectedLinkData = candidateLinkData;
-        detectedLinkRange = candidateLinkRange;
+        if (wasActive == NO) {
+          // we changed selection from non-link to a link
+          detectedLinkData = candidateLinkData;
+          detectedLinkRange = candidateLinkRange;
+        } else if (![_recentlyActiveLinkData
+                       isEqualToLinkData:candidateLinkData] ||
+                   !NSEqualRanges(_recentlyActiveLinkRange,
+                                  candidateLinkRange)) {
+          // we changed selection from one link to the other or modified
+          // current link's text
+          detectedLinkData = candidateLinkData;
+          detectedLinkRange = candidateLinkRange;
+        }
+      } else if (wasActive) {
+        shouldClearLink = YES;
       }
     }
 
     // onMentionDetected event
-    if (isActive && [type intValue] == [MentionStyle getType]) {
-      // get mention data
-      MentionParams *candidateMentionParams;
-      NSRange candidateMentionRange = NSMakeRange(0, 0);
-      MentionStyle *mentionStyleClass =
-          (MentionStyle *)stylesDict[@([MentionStyle getType])];
-      if (mentionStyleClass != nullptr) {
-        candidateMentionParams = [mentionStyleClass
-            getMentionParamsAt:textView.selectedRange.location];
-        candidateMentionRange = [mentionStyleClass
-            getFullMentionRangeAt:textView.selectedRange.location];
-      }
+    if ([type intValue] == [MentionStyle getType]) {
+      if (isActive) {
+        // get mention data
+        MentionParams *candidateMentionParams;
+        NSRange candidateMentionRange = NSMakeRange(0, 0);
+        MentionStyle *mentionStyleClass =
+            (MentionStyle *)stylesDict[@([MentionStyle getType])];
+        if (mentionStyleClass != nullptr) {
+          candidateMentionParams = [mentionStyleClass
+              getMentionParamsAt:textView.selectedRange.location];
+          candidateMentionRange = [mentionStyleClass
+              getFullMentionRangeAt:textView.selectedRange.location];
+        }
 
-      if (wasActive == NO) {
-        // selection was changed from a non-mention to a mention
-        detectedMentionParams = candidateMentionParams;
-        detectedMentionRange = candidateMentionRange;
-      } else if (![_recentlyActiveMentionParams.text
-                     isEqualToString:candidateMentionParams.text] ||
-                 ![_recentlyActiveMentionParams.attributes
-                     isEqualToString:candidateMentionParams.attributes] ||
-                 !NSEqualRanges(_recentlyActiveMentionRange,
-                                candidateMentionRange)) {
-        // selection changed from one mention to another
-        detectedMentionParams = candidateMentionParams;
-        detectedMentionRange = candidateMentionRange;
+        if (wasActive == NO) {
+          // selection was changed from a non-mention to a mention
+          detectedMentionParams = candidateMentionParams;
+          detectedMentionRange = candidateMentionRange;
+        } else if (![_recentlyActiveMentionParams.text
+                       isEqualToString:candidateMentionParams.text] ||
+                   ![_recentlyActiveMentionParams.attributes
+                       isEqualToString:candidateMentionParams.attributes] ||
+                   !NSEqualRanges(_recentlyActiveMentionRange,
+                                  candidateMentionRange)) {
+          // selection changed from one mention to another
+          detectedMentionParams = candidateMentionParams;
+          detectedMentionRange = candidateMentionRange;
+        }
+      } else if (wasActive) {
+        shouldClearMention = YES;
       }
     }
+  }
+
+  // detect alignment change
+  AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+  NSString *currentAlignment = [alignmentStyle getStyleState];
+  if (![currentAlignment isEqualToString:_recentlyEmittedAlignment]) {
+    updateNeeded = YES;
   }
 
   if (updateNeeded) {
@@ -1058,6 +1098,7 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       // update activeStyles and blockedStyles only if emitter is available
       _activeStyles = newActiveStyles;
       _blockedStyles = newBlockedStyles;
+      _recentlyEmittedAlignment = currentAlignment;
 
       emitter->onChangeState(
           {.bold = GET_STYLE_STATE([BoldStyle getType]),
@@ -1078,13 +1119,19 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
            .blockQuote = GET_STYLE_STATE([BlockQuoteStyle getType]),
            .codeBlock = GET_STYLE_STATE([CodeBlockStyle getType]),
            .image = GET_STYLE_STATE([ImageStyle getType]),
-           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])});
+           .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+           .alignment = [currentAlignment UTF8String]});
     }
   }
 
   if (detectedLinkData != nullptr) {
     // emit onLinkeDetected event
     [self emitOnLinkDetectedEvent:detectedLinkData range:detectedLinkRange];
+  } else if (shouldClearLink) {
+    LinkData *emptyLinkData = [[LinkData alloc] init];
+    emptyLinkData.text = @"";
+    emptyLinkData.url = @"";
+    [self emitOnLinkDetectedEvent:emptyLinkData range:NSMakeRange(0, 0)];
   }
 
   if (detectedMentionParams != nullptr) {
@@ -1095,6 +1142,10 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
     _recentlyActiveMentionParams = detectedMentionParams;
     _recentlyActiveMentionRange = detectedMentionRange;
+  } else if (shouldClearMention) {
+    [self emitOnMentionDetectedEvent:@"" indicator:@"" attributes:@"{}"];
+    _recentlyActiveMentionParams = nullptr;
+    _recentlyActiveMentionRange = NSMakeRange(0, 0);
   }
   // emit onChangeHtml event if needed
   [self tryEmittingOnChangeHtmlEvent];
@@ -1203,6 +1254,20 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   } else if ([commandName isEqualToString:@"requestHTML"]) {
     NSInteger requestId = [((NSNumber *)args[0]) integerValue];
     [self requestHTML:requestId];
+  } else if ([commandName isEqualToString:@"setTextAlignment"]) {
+    NSString *alignmentString = (NSString *)args[0];
+
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    [alignmentStyle
+          addAlignment:[AlignmentUtils stringToAlignment:alignmentString]
+                 range:textView.selectedRange
+            withTyping:YES
+        withDirtyRange:YES];
+
+    [self anyTextMayHaveBeenModified];
+    if (!_placeholderLabel.isHidden) {
+      [self refreshPlaceholderLabelStyles];
+    }
   }
 }
 
@@ -1479,15 +1544,15 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   if (mentionStyleClass == nullptr) {
     return;
   }
-  if ([mentionStyleClass getActiveMentionRange] == nullptr) {
-    return;
-  }
 
-  if ([StyleUtils
-          handleStyleBlocksAndConflicts:[MentionStyle getType]
-                                  range:[[mentionStyleClass
-                                            getActiveMentionRange] rangeValue]
-                                forHost:self]) {
+  NSValue *activeMentionRange = [mentionStyleClass getActiveMentionRange];
+  NSRange rangeToUse = activeMentionRange != nullptr
+                           ? [activeMentionRange rangeValue]
+                           : self.textView.selectedRange;
+
+  if ([StyleUtils handleStyleBlocksAndConflicts:[MentionStyle getType]
+                                          range:rangeToUse
+                                        forHost:self]) {
     [mentionStyleClass addMention:indicator text:text attributes:attributes];
     [self anyTextMayHaveBeenModified];
   }
@@ -1708,15 +1773,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (_emitFocusBlur) {
       emitter->onInputFocus({});
     }
-
-    NSString *textAtSelection =
-        [[[NSMutableString alloc] initWithString:textView.textStorage.string]
-            substringWithRange:textView.selectedRange];
-    emitter->onChangeSelection(
-        {.start = static_cast<int>(textView.selectedRange.location),
-         .end = static_cast<int>(textView.selectedRange.location +
-                                 textView.selectedRange.length),
-         .text = [textAtSelection toCppString]});
   }
   // manage selection changes since textViewDidChangeSelection sometimes doesn't
   // run on focus
@@ -1768,6 +1824,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
           [textView.textStorage.string substringWithRange:selectedRange];
     }
 
+    AlignmentStyle *alignmentStyle = stylesDict[@([AlignmentStyle getType])];
+    NSString *currentAlignment = [alignmentStyle getStyleState];
+
     emitter->onContextMenuItemPress(
         {.itemText = [itemText toCppString],
          .selectedText = [selectedText toCppString],
@@ -1793,7 +1852,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
              .link = GET_STYLE_STATE([LinkStyle getType]),
              .image = GET_STYLE_STATE([ImageStyle getType]),
              .mention = GET_STYLE_STATE([MentionStyle getType]),
-             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType])}});
+             .checkboxList = GET_STYLE_STATE([CheckboxListStyle getType]),
+             .alignment = [currentAlignment UTF8String]}});
   }
 }
 
@@ -1941,30 +2001,35 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (previousTraitCollection.preferredContentSizeCategory !=
-      self.traitCollection.preferredContentSizeCategory) {
-    [config invalidateFonts];
-
-    NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
-    newTypingAttrs[NSFontAttributeName] = [config primaryFont];
-
-    defaultTypingAttributes = newTypingAttrs;
-    textView.typingAttributes = defaultTypingAttributes;
-
-    [self refreshPlaceholderLabelStyles];
-
-    NSRange prevSelectedRange = textView.selectedRange;
-
-    NSString *currentHtml = [HtmlParser
-        parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
-                        host:self];
-    NSString *initiallyProcessedHtml =
-        [parser initiallyProcessHtml:currentHtml];
-    [parser replaceWholeFromHtml:initiallyProcessedHtml];
-
-    textView.selectedRange = prevSelectedRange;
-    [self anyTextMayHaveBeenModified];
+  if (!config.allowFontScaling) {
+    return;
   }
+
+  if (previousTraitCollection.preferredContentSizeCategory ==
+      self.traitCollection.preferredContentSizeCategory) {
+    return;
+  }
+
+  [config invalidateFonts];
+
+  NSMutableDictionary *newTypingAttrs = [defaultTypingAttributes mutableCopy];
+  newTypingAttrs[NSFontAttributeName] = [config primaryFont];
+
+  defaultTypingAttributes = newTypingAttrs;
+  textView.typingAttributes = defaultTypingAttributes;
+
+  [self refreshPlaceholderLabelStyles];
+
+  NSRange prevSelectedRange = textView.selectedRange;
+
+  NSString *currentHtml = [HtmlParser
+      parseToHtmlFromRange:NSMakeRange(0, textView.textStorage.string.length)
+                      host:self];
+  NSString *initiallyProcessedHtml = [parser initiallyProcessHtml:currentHtml];
+  [parser replaceWholeFromHtml:initiallyProcessedHtml];
+
+  textView.selectedRange = prevSelectedRange;
+  [self anyTextMayHaveBeenModified];
 }
 
 - (void)onTextBlockTap:(TextBlockTapGestureRecognizer *)gr {

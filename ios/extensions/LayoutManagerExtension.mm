@@ -264,6 +264,7 @@ static void const *kInputKey = &kInputKey;
       NSFontAttributeName : [host.config orderedListMarkerFont],
       NSForegroundColorAttributeName : [host.config orderedListMarkerColor]
     };
+    CGFloat indent = pStyle.firstLineHeadIndent;
 
     NSArray *paragraphs =
         [RangeUtils getSeparateParagraphsRangesIn:host.textView
@@ -274,57 +275,69 @@ static void const *kInputKey = &kInputKey;
           [self glyphRangeForCharacterRange:[paragraph rangeValue]
                        actualCharacterRange:nullptr];
 
-      [self
-          enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
-                                   usingBlock:^(CGRect rect, CGRect usedRect,
-                                                NSTextContainer *container,
-                                                NSRange lineGlyphRange,
-                                                BOOL *stop) {
-                                     NSUInteger charIdx =
-                                         [self characterIndexForGlyphAtIndex:
-                                                   lineGlyphRange.location];
-                                     UIFont *font = [host.textView.textStorage
-                                              attribute:NSFontAttributeName
-                                                atIndex:charIdx
-                                         effectiveRange:nil];
-                                     CGRect textUsedRect =
-                                         [self getTextAlignedUsedRect:usedRect
-                                                                 font:font];
+      [self enumerateLineFragmentsForGlyphRange:paragraphGlyphRange
+                                     usingBlock:^(CGRect rect, CGRect usedRect,
+                                                  NSTextContainer *container,
+                                                  NSRange lineGlyphRange,
+                                                  BOOL *stop) {
+                                       NSUInteger charIdx =
+                                           [self characterIndexForGlyphAtIndex:
+                                                     lineGlyphRange.location];
+                                       UIFont *font = [host.textView.textStorage
+                                                attribute:NSFontAttributeName
+                                                  atIndex:charIdx
+                                           effectiveRange:nil];
+                                       CGRect textUsedRect =
+                                           [self getTextAlignedUsedRect:usedRect
+                                                                   font:font];
 
-                                     NSString *markerFormat =
-                                         pStyle.textLists.firstObject
-                                             .markerFormat;
+                                       for (NSTextList *list in pStyle
+                                                .textLists) {
+                                         NSString *markerFormat =
+                                             list.markerFormat;
 
-                                     if ([markerFormat
-                                             isEqualToString:
-                                                 @"EnrichedOrderedList"]) {
-                                       NSString *marker = [self
-                                           getDecimalMarkerForList:host
-                                                         charIndex:charIdx];
-                                       [self drawDecimal:host
-                                                     marker:marker
-                                           markerAttributes:markerAttributes
+                                         if ([markerFormat
+                                                 hasPrefix:
+                                                     @"EnrichedAlignment"]) {
+                                           continue;
+                                         }
+
+                                         if ([markerFormat
+                                                 isEqualToString:
+                                                     @"EnrichedOrderedList"]) {
+                                           NSString *marker = [self
+                                               getDecimalMarkerForList:host
+                                                             charIndex:charIdx];
+                                           [self drawDecimal:host
+                                                         marker:marker
+                                               markerAttributes:markerAttributes
+                                                         origin:origin
+                                                       usedRect:usedRect
+                                                         indent:indent];
+                                         } else if ([markerFormat
+                                                        isEqualToString:
+                                                            @"EnrichedUnordered"
+                                                            @"Lis"
+                                                            @"t"]) {
+                                           [self drawBullet:host
                                                      origin:origin
-                                                   usedRect:usedRect];
-                                     } else if ([markerFormat
-                                                    isEqualToString:
-                                                        @"EnrichedUnorderedLis"
-                                                        @"t"]) {
-                                       [self drawBullet:host
-                                                 origin:origin
-                                               usedRect:textUsedRect];
-                                     } else if ([markerFormat
-                                                    hasPrefix:
-                                                        @"EnrichedCheckbox"]) {
-                                       [self drawCheckbox:host
-                                             markerFormat:markerFormat
-                                                   origin:origin
-                                                 usedRect:textUsedRect];
-                                     }
-                                     // only first line of a list gets its
-                                     // marker drawn
-                                     *stop = YES;
-                                   }];
+                                                   usedRect:textUsedRect
+                                                     indent:indent];
+
+                                         } else if ([markerFormat
+                                                        hasPrefix:@"EnrichedChe"
+                                                                  @"ckbox"]) {
+                                           [self drawCheckbox:host
+                                                 markerFormat:markerFormat
+                                                       origin:origin
+                                                     usedRect:textUsedRect
+                                                       indent:indent];
+                                         }
+                                       }
+                                       // only first line of a list gets its
+                                       // marker drawn
+                                       *stop = YES;
+                                     }];
     }
   }
 }
@@ -386,27 +399,30 @@ static void const *kInputKey = &kInputKey;
 - (void)drawCheckbox:(id<EnrichedViewHost>)host
         markerFormat:(NSString *)markerFormat
               origin:(CGPoint)origin
-            usedRect:(CGRect)usedRect {
+            usedRect:(CGRect)usedRect
+              indent:(CGFloat)indent {
   BOOL isChecked = [markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
   UIImage *image = isChecked ? host.config.checkboxCheckedImage
                              : host.config.checkboxUncheckedImage;
   CGFloat gapWidth = [host.config checkboxListGapWidth];
-  CGFloat boxSize = [host.config checkboxListBoxSize];
+  CGFloat configuredBoxSize = [host.config checkboxListBoxSize];
 
+  CGFloat boxSize = MIN(configuredBoxSize, usedRect.size.height);
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
-  CGFloat boxX = origin.x + usedRect.origin.x - gapWidth - boxSize;
+  CGFloat boxX = origin.x + indent - gapWidth - boxSize;
   CGFloat boxY = centerY - boxSize / 2.0;
 
-  [image drawAtPoint:CGPointMake(boxX, boxY)];
+  [image drawInRect:CGRectMake(boxX, boxY, boxSize, boxSize)];
 }
 
 - (void)drawBullet:(id<EnrichedViewHost>)host
             origin:(CGPoint)origin
-          usedRect:(CGRect)usedRect {
+          usedRect:(CGRect)usedRect
+            indent:(CGFloat)indent {
   CGFloat gapWidth = [host.config unorderedListGapWidth];
   CGFloat bulletSize = [host.config unorderedListBulletSize];
-  CGFloat bulletX = origin.x + usedRect.origin.x - gapWidth - bulletSize / 2;
+  CGFloat bulletX = origin.x + indent - gapWidth - bulletSize / 2;
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
 
   CGContextRef context = UIGraphicsGetCurrentContext();
@@ -424,10 +440,11 @@ static void const *kInputKey = &kInputKey;
               marker:(NSString *)marker
     markerAttributes:(NSDictionary *)markerAttributes
               origin:(CGPoint)origin
-            usedRect:(CGRect)usedRect {
+            usedRect:(CGRect)usedRect
+              indent:(CGFloat)indent {
   CGFloat gapWidth = [host.config orderedListGapWidth];
   CGSize markerSize = [marker sizeWithAttributes:markerAttributes];
-  CGFloat markerX = usedRect.origin.x - gapWidth - markerSize.width / 2;
+  CGFloat markerX = origin.x + indent - gapWidth - markerSize.width / 2;
   CGFloat centerY = CGRectGetMidY(usedRect) + origin.y;
   CGFloat markerY = centerY - markerSize.height / 2.0;
 

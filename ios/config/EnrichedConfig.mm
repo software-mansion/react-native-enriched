@@ -12,6 +12,7 @@
   UIFont *_monospacedFont;
   BOOL _primaryFontNeedsRecreation;
   BOOL _monospacedFontNeedsRecreation;
+  BOOL _allowFontScaling;
   NSSet<NSNumber *> *_mentionIndicators;
   CGFloat _h1FontSize;
   BOOL _h1Bold;
@@ -80,6 +81,7 @@
   copy->_primaryFontFamily = [_primaryFontFamily copy];
   copy->_primaryFont = [_primaryFont copy];
   copy->_monospacedFont = [_monospacedFont copy];
+  copy->_allowFontScaling = _allowFontScaling;
   copy->_mentionIndicators = [_mentionIndicators copy];
   copy->_h1FontSize = _h1FontSize;
   copy->_h1Bold = _h1Bold;
@@ -160,6 +162,9 @@
 }
 
 - (CGFloat)scaledPrimaryLineHeight {
+  if (!_allowFontScaling) {
+    return [self primaryLineHeight];
+  }
   return [[UIFontMetrics defaultMetrics]
       scaledValueForValue:[self primaryLineHeight]];
 }
@@ -230,6 +235,9 @@
 }
 
 - (CGFloat)h1FontSize {
+  if (!_allowFontScaling) {
+    return _h1FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h1FontSize];
 }
 
@@ -246,6 +254,9 @@
 }
 
 - (CGFloat)h2FontSize {
+  if (!_allowFontScaling) {
+    return _h2FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h2FontSize];
 }
 
@@ -262,6 +273,9 @@
 }
 
 - (CGFloat)h3FontSize {
+  if (!_allowFontScaling) {
+    return _h3FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h3FontSize];
 }
 
@@ -278,6 +292,9 @@
 }
 
 - (CGFloat)h4FontSize {
+  if (!_allowFontScaling) {
+    return _h4FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h4FontSize];
 }
 
@@ -294,6 +311,9 @@
 }
 
 - (CGFloat)h5FontSize {
+  if (!_allowFontScaling) {
+    return _h5FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h5FontSize];
 }
 
@@ -310,6 +330,9 @@
 }
 
 - (CGFloat)h6FontSize {
+  if (!_allowFontScaling) {
+    return _h6FontSize;
+  }
   return [[UIFontMetrics defaultMetrics] scaledValueForValue:_h6FontSize];
 }
 
@@ -526,7 +549,21 @@
   _olMarkerFontNeedsRecreation = YES;
 }
 
+- (BOOL)allowFontScaling {
+  return _allowFontScaling;
+}
+
+- (void)setAllowFontScaling:(BOOL)newValue {
+  if (_allowFontScaling != newValue) {
+    _allowFontScaling = newValue;
+    [self invalidateFonts];
+  }
+}
+
 - (NSNumber *)scaledPrimaryFontSize {
+  if (!_allowFontScaling) {
+    return [self primaryFontSize];
+  }
   CGFloat scaledSize = [[UIFontMetrics defaultMetrics]
       scaledValueForValue:[[self primaryFontSize] floatValue]];
   return @(scaledSize);

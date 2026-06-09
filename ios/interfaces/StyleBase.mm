@@ -2,6 +2,7 @@
 #import "AttributeEntry.h"
 #import "OccurenceUtils.h"
 #import "RangeUtils.h"
+#import "TextListsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
 
 @implementation StyleBase
@@ -23,6 +24,12 @@
 // override it and parametrised ones completely don't use it
 - (NSString *)getValue {
   return @"AnyValue";
+}
+
+// Paragraph styles that store a family of mutually exclusive markers (e.g.
+// alignment variants) should override this to return the shared prefix.
+- (NSString *)getMarkerPrefix {
+  return nil;
 }
 
 // This method gets overridden
@@ -94,8 +101,9 @@
                   if (pStyle == nullptr)
                     return;
                   pStyle.textLists =
-                      @[ [[NSTextList alloc] initWithMarkerFormat:value
-                                                          options:0] ];
+                      [TextListsUtils textListsByAdding:value
+                                    withExclusivePrefix:[self getMarkerPrefix]
+                                                toArray:pStyle.textLists];
                   [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -130,7 +138,10 @@
                       [(NSParagraphStyle *)existingValue mutableCopy];
                   if (pStyle == nullptr)
                     return;
-                  pStyle.textLists = @[];
+                  pStyle.textLists =
+                      [TextListsUtils textListsByRemoving:[self getValue]
+                                               withPrefix:[self getMarkerPrefix]
+                                                fromArray:pStyle.textLists];
                   [self.host.textView.textStorage
                       addAttribute:NSParagraphStyleAttributeName
                              value:pStyle
@@ -154,8 +165,9 @@
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = @[ [[NSTextList alloc] initWithMarkerFormat:value
-                                                           options:0] ];
+    pStyle.textLists = [TextListsUtils textListsByAdding:value
+                                     withExclusivePrefix:[self getMarkerPrefix]
+                                                 toArray:pStyle.textLists];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
@@ -174,7 +186,10 @@
   } else {
     NSMutableParagraphStyle *pStyle =
         [newTypingAttrs[NSParagraphStyleAttributeName] mutableCopy];
-    pStyle.textLists = @[];
+    pStyle.textLists = pStyle.textLists =
+        [TextListsUtils textListsByRemoving:[self getValue]
+                                 withPrefix:[self getMarkerPrefix]
+                                  fromArray:pStyle.textLists];
     newTypingAttrs[NSParagraphStyleAttributeName] = pStyle;
   }
 
@@ -190,8 +205,8 @@
            [valueString isEqualToString:[self getValue]];
   } else {
     NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
-    return pStyle != nullptr && [pStyle.textLists.firstObject.markerFormat
-                                    isEqualToString:[self getValue]];
+    return pStyle != nullptr && [TextListsUtils textLists:pStyle.textLists
+                                            containsValue:[self getValue]];
   }
 }
 

@@ -32,7 +32,6 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
@@ -41,6 +40,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
@@ -88,6 +88,20 @@ class EnrichedTextInputView :
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
   var scrollEnabled: Boolean = true
+  var allowFontScaling: Boolean = EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT
+    set(value) {
+      if (field != value) {
+        field = value
+        val raw = fontSizeRaw
+        if (raw != null) {
+          setFontSize(raw) // re-invokes invalidateStyles internally
+        } else {
+          htmlStyle.invalidateStyles()
+        }
+        applyLineSpacing()
+        reApplyHtmlStyleForSpans(htmlStyle, htmlStyle) // force re-apply
+      }
+    }
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -108,6 +122,7 @@ class EnrichedTextInputView :
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
 
+  private var fontSizeRaw: Float? = null
   var fontSize: Float? = null
   private var lineHeight: Float? = null
   var submitBehavior: String? = null
@@ -358,7 +373,7 @@ class EnrichedTextInputView :
         }
       }
 
-    val finalText = currentText.mergeSpannables(start, end, pastedSpannable)
+    val finalText = currentText.mergeSpannables(start, end, pastedSpannable, htmlStyle)
     setValue(finalText, false)
 
     // replacement-safe: oldLength - removed + inserted
@@ -520,8 +535,9 @@ class EnrichedTextInputView :
 
   fun setFontSize(size: Float) {
     if (size == 0f) return
+    fontSizeRaw = size
 
-    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    val sizeInt = ceil(pixelFromSpOrDp(size, allowFontScaling))
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
 
@@ -546,7 +562,7 @@ class EnrichedTextInputView :
 
     val lh = lineHeight ?: return
     spannable.setSpan(
-      EnrichedLineHeightSpan(lh),
+      EnrichedLineHeightSpan(lh, allowFontScaling),
       0,
       spannable.length,
       Spannable.SPAN_INCLUSIVE_INCLUSIVE,
