@@ -183,6 +183,7 @@ class AlignmentStyles(
     if (spans.isEmpty()) return
 
     val dominantCss = spans.first().cssValue
+    // Remove and trim all existing alignment spans that overlap this paragraph.
     for (span in spans) {
       val sStart = s.getSpanStart(span)
       val sEnd = s.getSpanEnd(span)
@@ -198,10 +199,10 @@ class AlignmentStyles(
       if (sEnd > paraEnd) {
         setAlignmentSpan(s, cssValue, paraEnd, sEnd)
       }
-
-      // Re-apply to the current paragraph with exact bounds.
-      setAlignmentSpan(s, dominantCss, paraStart, paraEnd)
     }
+
+    // Re-apply a single span for the current paragraph with exact bounds.
+    setAlignmentSpan(s, dominantCss, paraStart, paraEnd)
   }
 
   fun setAlignment(alignment: String) {

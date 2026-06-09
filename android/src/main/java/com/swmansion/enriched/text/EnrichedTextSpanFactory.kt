@@ -1,7 +1,6 @@
 package com.swmansion.enriched.text
 
 import com.swmansion.enriched.common.parser.EnrichedSpanFactory
-import com.swmansion.enriched.common.spans.EnrichedAlignmentSpan
 import com.swmansion.enriched.text.spans.EnrichedTextAlignmentSpan
 import com.swmansion.enriched.text.spans.EnrichedTextBlockQuoteSpan
 import com.swmansion.enriched.text.spans.EnrichedTextBoldSpan

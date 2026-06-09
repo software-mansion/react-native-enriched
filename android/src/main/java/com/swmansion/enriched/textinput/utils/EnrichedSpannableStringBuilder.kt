@@ -3,10 +3,6 @@ package com.swmansion.enriched.textinput.utils
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.spans.EnrichedInputAlignmentSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
-import com.swmansion.enriched.textinput.spans.EnrichedSpans
 
 fun CharSequence.zwsCountBefore(index: Int): Int {
   var count = 0

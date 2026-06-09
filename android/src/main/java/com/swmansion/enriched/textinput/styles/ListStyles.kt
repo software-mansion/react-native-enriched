@@ -213,8 +213,9 @@ class ListStyles(
         }
       }
 
-      (s as SpannableStringBuilder).safelyInsertZWS(cursorPosition)
-      setSpan(s, name, start, end + 1)
+      val wasInserted = (s as SpannableStringBuilder).safelyInsertZWS(cursorPosition)
+      val shift = if (wasInserted) 1 else 0
+      setSpan(s, name, start, end + shift)
       // Inform that new span has been added
       view.selection?.validateStyles()
       return
