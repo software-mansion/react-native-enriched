@@ -55,11 +55,6 @@ class EnrichedSpanState(
   var currentAlignment: String = "auto"
     private set
 
-  fun setAlignment(value: String) {
-    this.currentAlignment = value
-    emitStateChangeEvent()
-  }
-
   fun setBoldStart(start: Int?) {
     this.boldStart = start
     emitStateChangeEvent()
@@ -137,6 +132,11 @@ class EnrichedSpanState(
 
   fun setCheckboxListStart(start: Int?) {
     this.checkboxListStart = start
+    emitStateChangeEvent()
+  }
+
+  fun setAlignment(value: String) {
+    this.currentAlignment = value
     emitStateChangeEvent()
   }
 

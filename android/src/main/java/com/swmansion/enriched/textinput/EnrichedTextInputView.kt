@@ -979,7 +979,6 @@ class EnrichedTextInputView :
       alignmentStyles?.setAlignment(alignment)
     }
     selection?.validateStyles()
-    layoutManager.invalidateLayout()
   }
 
   fun requestHTML(requestId: Int) {

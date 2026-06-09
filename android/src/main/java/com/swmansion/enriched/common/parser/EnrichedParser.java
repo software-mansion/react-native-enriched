@@ -29,6 +29,7 @@ import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan;
+import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan;
 import com.swmansion.enriched.common.spans.interfaces.EnrichedZeroWidthSpaceSpan;
 import java.io.IOException;
 import java.io.StringReader;
@@ -485,12 +486,13 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
         // Collect spans before inserting ZWS. SPAN_EXCLUSIVE_EXCLUSIVE spans will
         // shift to start+1. We must re-anchor them back to `start` to prevent
         // the loop from processing them again and inserting duplicate ZWS.
-        Object[] colocated = mSpannableStringBuilder.getSpans(start, start + 1, Object.class);
+        EnrichedSpan[] colocated =
+            mSpannableStringBuilder.getSpans(start, start + 1, EnrichedSpan.class);
 
         mSpannableStringBuilder.insert(start, EnrichedConstants.ZWS_STRING);
         end++;
 
-        for (Object span : colocated) {
+        for (EnrichedSpan span : colocated) {
           if (span == zeroWidthSpaceSpan) continue;
           // Only re-anchor spans that actually shifted.
           // Skip overlapping or INCLUSIVE spans that kept their original start.
