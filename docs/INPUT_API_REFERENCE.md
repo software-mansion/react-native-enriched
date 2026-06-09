@@ -427,6 +427,7 @@ export interface OnKeyPressEvent {
 Callback invoked when the user pastes one or more images or GIFs into the input.
 
 - `images` - is an array of objects containing the details (URI, MIME type, and dimensions) for each pasted image/GIF.
+- **Web:** each `uri` is a `blob:` URL (`URL.createObjectURL`). If you retain URIs, call `URL.revokeObjectURL` when finished so blobs can be released. 
 
 ```ts
 export interface OnPasteImagesEvent {
