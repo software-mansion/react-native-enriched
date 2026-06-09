@@ -3,5 +3,5 @@
 
 @interface UIColor (ColorExtension)
 - (BOOL)isEqualToColor:(UIColor *)otherColor;
-- (UIColor *)colorWithAlphaIfNotTransparent:(CGFloat)newAlpha;
+- (UIColor *)colorWithDefaultAlpha:(CGFloat)newAlpha;
 @end

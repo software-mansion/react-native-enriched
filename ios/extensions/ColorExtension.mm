@@ -27,10 +27,10 @@
   return [selfColor isEqual:otherColor];
 }
 
-- (UIColor *)colorWithAlphaIfNotTransparent:(CGFloat)newAlpha {
+- (UIColor *)colorWithDefaultAlpha:(CGFloat)newAlpha {
   CGFloat alpha = 0.0;
   [self getRed:nil green:nil blue:nil alpha:&alpha];
-  if (alpha > 0.0) {
+  if (alpha >= 1.0) {
     return [self colorWithAlphaComponent:newAlpha];
   }
   return self;

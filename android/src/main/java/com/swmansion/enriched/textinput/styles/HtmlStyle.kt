@@ -197,8 +197,7 @@ class HtmlStyle : EnrichedStyle {
     color: Int,
     alpha: Int,
   ): Int {
-    // Do not apply opacity to transparent color
-    if (Color.alpha(color) == 0) return color
+    if (Color.alpha(color) != 255) return color
     val a = alpha.coerceIn(0, 255)
     return (color and 0x00FFFFFF) or (a shl 24)
   }
