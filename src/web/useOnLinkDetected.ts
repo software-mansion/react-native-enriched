@@ -34,7 +34,6 @@ export const useOnLinkDetected = (
       if (!linkType) return;
 
       const range = findLinkRangeAt(state, linkType);
-      const { from: selFrom, to: selTo } = state.selection;
 
       if (!range) {
         const last = ref.current.lastEmitted;
@@ -42,8 +41,8 @@ export const useOnLinkDetected = (
         emitLinkDetected(ref.current, {
           text: '',
           url: '',
-          start: tiptapPosToNativePos(state.doc, selFrom),
-          end: tiptapPosToNativePos(state.doc, selTo),
+          start: 0,
+          end: 0,
         });
         return;
       }
