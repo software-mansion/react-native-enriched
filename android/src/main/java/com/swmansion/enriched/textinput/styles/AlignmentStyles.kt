@@ -147,17 +147,17 @@ class AlignmentStyles(
       autoStretchAlignmentSpan(s, activeCursor)
     } else if (isZwsDeleted && anchorAlignmentToRestore != null) {
       val (paraStart, paraEnd) = s.getParagraphBounds(activeCursor)
+      (s as SpannableStringBuilder).safelyInsertZWS(activeCursor)
       if (paraStart == paraEnd) {
-        (s as SpannableStringBuilder).safelyInsertZWS(activeCursor)
-
         setAlignmentSpan(s, anchorAlignmentToRestore, activeCursor, activeCursor + 1)
       }
       autoStretchAlignmentSpan(s, activeCursor)
     } else {
+      if (isZwsDeleted) {
+        activeCursor = handleZwsBackspace(s, activeCursor)
+      }
       view.runAsATransaction {
-        if (isZwsDeleted) {
-          activeCursor = handleZwsBackspace(s, activeCursor)
-        } else if (includesNewlineDeletion) {
+        if (includesNewlineDeletion) {
           activeCursor = handleParagraphMerge(s, activeCursor)
         }
 
@@ -191,13 +191,19 @@ class AlignmentStyles(
 
       s.removeSpan(span)
 
-      // Preserve the top fragment when a newline split an aligned paragraph.
+      // This ensures top fragments always end before the '\n' character, not at the paraStart
       if (sStart < paraStart) {
-        setAlignmentSpan(s, cssValue, sStart, paraStart)
+        val topEnd = if (paraStart > 0 && s[paraStart - 1] == '\n') paraStart - 1 else paraStart
+        if (sStart < topEnd) {
+          setAlignmentSpan(s, cssValue, sStart, topEnd)
+        }
       }
-      // Preserve the bottom fragment.
+      // This ensures bottom fragments always begin at the first character of the next paragraph, not on the '\n'  character
       if (sEnd > paraEnd) {
-        setAlignmentSpan(s, cssValue, paraEnd, sEnd)
+        val bottomStart = if (paraEnd < s.length && s[paraEnd] == '\n') paraEnd + 1 else paraEnd
+        if (bottomStart < sEnd) {
+          setAlignmentSpan(s, cssValue, bottomStart, sEnd)
+        }
       }
     }
 
@@ -321,8 +327,9 @@ class AlignmentStyles(
       setAlignmentSpan(s, prevSpan.cssValue, cursorPosition, cursorPosition + 1)
       cursorPosition + 1
     } else {
-      setAlignmentSpan(s, prevSpan.cssValue, newParaStart, newParaEnd)
-      cursorPosition
+      (s as SpannableStringBuilder).safelyInsertZWS(newParaStart)
+      setAlignmentSpan(s, prevSpan.cssValue, newParaStart, newParaEnd + 1)
+      cursorPosition + 1
     }
   }
 
@@ -341,11 +348,19 @@ class AlignmentStyles(
       val sEnd = spannable.getSpanEnd(span)
       spannable.removeSpan(span)
 
+      // This ensures top fragments always end before the '\n' character, not at the paraStart
       if (sStart < paraStart) {
-        setAlignmentSpan(spannable, span.cssValue, sStart, paraStart)
+        val topEnd = if (paraStart > 0 && spannable[paraStart - 1] == '\n') paraStart - 1 else paraStart
+        if (sStart < topEnd) {
+          setAlignmentSpan(spannable, span.cssValue, sStart, topEnd)
+        }
       }
+      // This ensures bottom fragments always begin at the first character of the next paragraph, not on the '\n'  character
       if (sEnd > paraEnd) {
-        setAlignmentSpan(spannable, span.cssValue, paraEnd, sEnd)
+        val bottomStart = if (paraEnd < spannable.length && spannable[paraEnd] == '\n') paraEnd + 1 else paraEnd
+        if (bottomStart < sEnd) {
+          setAlignmentSpan(spannable, span.cssValue, bottomStart, sEnd)
+        }
       }
     }
   }
