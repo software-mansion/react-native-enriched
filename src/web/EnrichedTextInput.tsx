@@ -317,6 +317,16 @@ export const EnrichedTextInput = ({
           })
         );
       },
+      insertText: (text: string, start?: number, end?: number) => {
+        if (start !== undefined && start >= 0) {
+          const doc = editor.state.doc;
+          const from = nativePosToTiptapPos(doc, start);
+          const to = end !== undefined ? nativePosToTiptapPos(doc, end) : from;
+          editor.chain().focus().insertContentAt({ from, to }, text).run();
+        } else {
+          editor.commands.insertContent(text);
+        }
+      },
       getHTML: () => Promise.resolve(normalizeHtmlFromTiptap(editor.getHTML())),
       toggleBold: () => runFocused(editor, (c) => c.toggleBold()),
       toggleItalic: () => runFocused(editor, (c) => c.toggleItalic()),
