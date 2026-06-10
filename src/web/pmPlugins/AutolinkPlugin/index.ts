@@ -3,7 +3,7 @@ import type { MarkType, Node, Schema } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state';
 import { Mapping } from '@tiptap/pm/transform';
 import type { OnLinkDetected } from '../../../types';
-import { emitLinkDetected, type LinkEmitterRef } from '../../emitLinkDetected';
+import { emitLinkDetected } from '../../emitLinkDetected';
 import { tiptapPosToNativePos } from '../../positionMapping';
 import { findAutolinkRangesInWord } from './autolinkRegex';
 
@@ -164,52 +164,52 @@ function getDirtyBlocks(
   return Array.from(blocks, ([pos, node]) => ({ pos, node }));
 }
 
-export function createAutolinkPlugin(ref: LinkEmitterRef): Extension {
-  return Extension.create({
-    name: 'autolinkDetector',
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          key: new PluginKey('autolinkDetector'),
-          appendTransaction: (transactions, _oldState, newState) => {
-            const state = ref.current;
-            if (!state || state.linkRegex === null) return null;
+export const AutolinkPlugin = Extension.create({
+  name: 'autolinkDetector',
+  addOptions() {
+    return {
+      getLinkEmitter: () => {
+        throw new Error(
+          'AutolinkPlugin.configure({ getLinkEmitter }) is required'
+        );
+      },
+    };
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('autolinkDetector'),
+        appendTransaction: (transactions, _oldState, newState) => {
+          const state = this.options.getLinkEmitter();
+          if (!state || state.linkRegex === null) return null;
 
-            const { schema, doc, tr } = newState;
-            const linkType = schema.marks.link;
-            if (!linkType) return null;
+          const { schema, doc, tr } = newState;
+          const linkType = schema.marks.link;
+          if (!linkType) return null;
 
-            const linkRegex = state.linkRegex ?? undefined;
-            const dirtyBlocks = getDirtyBlocks(doc, transactions);
-            if (dirtyBlocks.length === 0) return null;
+          const linkRegex = state.linkRegex ?? undefined;
+          const dirtyBlocks = getDirtyBlocks(doc, transactions);
+          if (dirtyBlocks.length === 0) return null;
 
-            const detected: OnLinkDetected[] = [];
+          const detected: OnLinkDetected[] = [];
 
-            for (const { node, pos } of dirtyBlocks) {
-              const from = pos + 1;
-              const to = pos + node.nodeSize - 1;
+          for (const { node, pos } of dirtyBlocks) {
+            const from = pos + 1;
+            const to = pos + node.nodeSize - 1;
 
-              removeAutoLinksInRange(doc, tr, linkType, from, to);
+            removeAutoLinksInRange(doc, tr, linkType, from, to);
 
-              for (const run of extractRuns(node, pos, schema)) {
-                scanRunForAutolinks(
-                  run,
-                  doc,
-                  linkType,
-                  linkRegex,
-                  tr,
-                  detected
-                );
-              }
+            for (const run of extractRuns(node, pos, schema)) {
+              scanRunForAutolinks(run, doc, linkType, linkRegex, tr, detected);
             }
+          }
 
-            if (tr.steps.length === 0) return null;
+          if (tr.steps.length === 0) return null;
 
-            for (const event of detected) emitLinkDetected(ref, event);
-            return tr;
-          },
-        }),
-      ];
-    },
-  });
-}
+          for (const event of detected) emitLinkDetected(state, event);
+          return tr;
+        },
+      }),
+    ];
+  },
+});

@@ -75,7 +75,7 @@ import {
 import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
-import { createAutolinkPlugin } from './pmPlugins/autolinkPlugin';
+import { AutolinkPlugin } from './pmPlugins/AutolinkPlugin';
 
 function runFocused(
   editor: Editor,
@@ -199,11 +199,6 @@ export const EnrichedTextInput = ({
     linkEmitterRef.current.onLinkDetected = onLinkDetected;
   }, [linkRegex, onLinkDetected]);
 
-  const autolinkPlugin = useMemo(
-    () => createAutolinkPlugin(linkEmitterRef),
-    []
-  );
-
   const extensions = useMemo(
     () => [
       Document,
@@ -239,13 +234,15 @@ export const EnrichedTextInput = ({
       ShortcutPlugin.configure({
         getHtmlStyle: () => htmlStyleRef.current,
       }),
-      autolinkPlugin,
+      AutolinkPlugin.configure({
+        getLinkEmitter: () => linkEmitterRef.current,
+      }),
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [placeholder, autolinkPlugin]
+    [placeholder]
   );
 
   const editor = useEditor(

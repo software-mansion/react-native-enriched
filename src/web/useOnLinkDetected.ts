@@ -37,9 +37,9 @@ export const useOnLinkDetected = (
       const { from: selFrom, to: selTo } = state.selection;
 
       if (!range) {
-        const last = ref.current?.lastEmitted;
+        const last = ref.current.lastEmitted;
         if (!last || last.url === '') return;
-        emitLinkDetected(ref, {
+        emitLinkDetected(ref.current, {
           text: '',
           url: '',
           start: tiptapPosToNativePos(state.doc, selFrom),
@@ -53,7 +53,7 @@ export const useOnLinkDetected = (
       )?.mark;
       if (!linkMark) return;
 
-      emitLinkDetected(ref, {
+      emitLinkDetected(ref.current, {
         text: state.doc.textBetween(range.from, range.to, '\n'),
         url: (linkMark.attrs.href as string | undefined) ?? '',
         start: tiptapPosToNativePos(state.doc, range.from),

@@ -19,11 +19,9 @@ function isSamePayload(a: OnLinkDetected, b: OnLinkDetected): boolean {
 }
 
 export function emitLinkDetected(
-  ref: LinkEmitterRef,
+  state: LinkEmitterState,
   next: OnLinkDetected
 ): void {
-  const state = ref.current;
-  if (!state) return;
   const prev = state.lastEmitted;
   if (prev && isSamePayload(prev, next)) return;
   state.lastEmitted = next;
