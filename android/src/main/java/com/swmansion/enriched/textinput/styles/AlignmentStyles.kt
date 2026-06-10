@@ -232,7 +232,10 @@ class AlignmentStyles(
           cursor = paraStart + 2
           continue
         } else {
-          setAlignmentSpan(spannable, cssValue, paraStart, paraEnd)
+          val wasInserted = spannable.safelyInsertZWS(paraStart)
+          val shift = if (wasInserted) 1 else 0
+          setAlignmentSpan(spannable, cssValue, paraStart, paraEnd + shift)
+          if (wasInserted) shiftedEnd++
         }
       }
 
