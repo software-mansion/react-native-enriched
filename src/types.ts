@@ -480,6 +480,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
   onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
+  /**
+   * Web: each `images[].uri` is a `blob:` URL from `URL.createObjectURL`. If you keep
+   * URIs around (or replace them after upload), call `URL.revokeObjectURL(uri)` when done
+   * to avoid retaining blob memory. Native uses non-blob URIs; revoke does not apply.
+   */
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
   /**

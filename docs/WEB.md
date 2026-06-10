@@ -8,7 +8,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - Headings (h1-h6)
 - Blockquote, code block
 - Ordered lists, unordered lists, checkbox lists
-- Images(via `setImage` ref method)
+- Images (via `setImage` ref method and optional `onPasteImages` when pasting image data)
 - Manual links (via `setLink` ref method)
 - Mentions
 - `getHTML`, `setValue`, selection mapping
@@ -20,26 +20,24 @@ Web support is still experimental. APIs and behavior can change in future releas
 
 ## Keyboard shortcuts
 
-| Action | Mac | Windows/Linux |
-| --- | --- | --- |
-| Bold | ⌘ B | Ctrl+B |
-| Italic | ⌘ I | Ctrl+I |
-| Underline | ⌘ U | Ctrl+U |
-| Strikethrough | ⌘ Shift+X | Ctrl+Shift+X |
-| Inline code | ⌘ Shift+C | Ctrl+Shift+C |
-| Code block | ⌘ Alt Shift+C | Ctrl+Alt+Shift+C |
-| Normal paragraph | ⌘ Alt+0 | Ctrl+Alt+0 |
+| Action              | Mac               | Windows/Linux           |
+| ------------------- | ----------------- | ----------------------- |
+| Bold                | ⌘ B               | Ctrl+B                  |
+| Italic              | ⌘ I               | Ctrl+I                  |
+| Underline           | ⌘ U               | Ctrl+U                  |
+| Strikethrough       | ⌘ Shift+X         | Ctrl+Shift+X            |
+| Inline code         | ⌘ Shift+C         | Ctrl+Shift+C            |
+| Code block          | ⌘ Alt Shift+C     | Ctrl+Alt+Shift+C        |
+| Normal paragraph    | ⌘ Alt+0           | Ctrl+Alt+0              |
 | Heading `n` (h1–h6) | ⌘ Alt+1 … ⌘ Alt+6 | Ctrl+Alt+1 … Ctrl+Alt+6 |
-| Numbered list | ⌘ Shift+7 | Ctrl+Shift+7 |
-| Bulleted list | ⌘ Shift+8 | Ctrl+Shift+8 |
-| Checkbox list | ⌘ Shift+9 | Ctrl+Shift+9 |
-| Paste plain text | ⌘ Shift+V | Ctrl+Shift+V |
-
+| Numbered list       | ⌘ Shift+7         | Ctrl+Shift+7            |
+| Bulleted list       | ⌘ Shift+8         | Ctrl+Shift+8            |
+| Checkbox list       | ⌘ Shift+9         | Ctrl+Shift+9            |
+| Paste plain text    | ⌘ Shift+V         | Ctrl+Shift+V            |
 
 ## Unsupported
 
 - **`returnKeyLabel`**: ignored on web, it's not possible to set it inside a browser.
-- **Pasting images**: `onPasteImages` is never called.
 - **Automatic link detection**: `linkRegex` is ignored. Links only work when set explicitly via the `setLink` ref method.
 - **Context menu**: `contextMenuItems` is ignored.
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.

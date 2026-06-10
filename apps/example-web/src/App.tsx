@@ -10,6 +10,7 @@ import {
   type BlurEvent,
   type EnrichedInputStyle,
   type OnLinkDetected,
+  type OnPasteImagesEvent,
   type OnSubmitEditing,
   type OnChangeMentionEvent,
   type OnMentionDetected,
@@ -215,6 +216,16 @@ function App() {
     setCurrentLink(e);
   };
 
+  const handlePasteImages = (e: NativeSyntheticEvent<OnPasteImagesEvent>) => {
+    const DEFAULT_W = 80;
+    const DEFAULT_H = 80;
+    for (const image of e.nativeEvent.images) {
+      const w = image.width > 0 ? image.width : DEFAULT_W;
+      const h = image.height > 0 ? image.height : DEFAULT_H;
+      ref.current?.setImage(image.uri, w, h);
+    }
+  };
+
   return (
     <div className="container">
       <h1 className="app-title">Enriched Text Input</h1>
@@ -243,6 +254,7 @@ function App() {
           onChangeState={handleChangeState}
           onSubmitEditing={handleSubmitEditing}
           onLinkDetected={handleOnLinkDetected}
+          onPasteImages={handlePasteImages}
           onStartMention={handleStartMention}
           onChangeMention={handleChangeMention}
           onEndMention={handleEndMention}

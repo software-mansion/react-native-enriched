@@ -4,13 +4,13 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.Log
-import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
 import com.swmansion.enriched.textinput.utils.getParagraphBounds
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
-import com.swmansion.enriched.textinput.utils.removeZWS
+import com.swmansion.enriched.textinput.utils.safelyInsertZWS
+import com.swmansion.enriched.textinput.utils.safelyRemoveZWS
 
 class ParagraphStyles(
   private val view: EnrichedTextInputView,
@@ -135,7 +135,7 @@ class ParagraphStyles(
       }
     }
 
-    ssb.removeZWS(start, end)
+    ssb.safelyRemoveZWS(start, end)
     return true
   }
 
@@ -351,8 +351,9 @@ class ParagraphStyles(
           continue
         }
 
-        s.insert(endCursorPosition, EnrichedConstants.ZWS_STRING)
-        endCursorPosition += 1
+        val wasInserted = (s as SpannableStringBuilder).safelyInsertZWS(endCursorPosition)
+        val shift = if (wasInserted) 1 else 0
+        endCursorPosition += shift
       }
 
       var (start, end) = s.getParagraphBounds(styleStart, endCursorPosition)
@@ -399,8 +400,9 @@ class ParagraphStyles(
     }
 
     if (start == end) {
-      spannable.insert(start, EnrichedConstants.ZWS_STRING)
-      setAndMergeSpans(spannable, type, start, end + 1)
+      val wasInserted = spannable.safelyInsertZWS(start)
+      val shift = if (wasInserted) 1 else 0
+      setAndMergeSpans(spannable, type, start, end + shift)
       view.selection.validateStyles()
 
       return
@@ -411,8 +413,11 @@ class ParagraphStyles(
     val paragraphs = spannable.substring(start, end).split("\n")
 
     for (paragraph in paragraphs) {
-      spannable.insert(currentStart, EnrichedConstants.ZWS_STRING)
-      currentEnd = currentStart + paragraph.length + 1
+      val wasInserted = spannable.safelyInsertZWS(currentStart)
+      val shift = if (wasInserted) 1 else 0
+      currentEnd = currentStart + paragraph.length + shift
+
+      // Safely jump exactly 1 character over the '\n' to the next line
       currentStart = currentEnd + 1
     }
 
