@@ -5,7 +5,7 @@ import { Mapping } from '@tiptap/pm/transform';
 import type { OnLinkDetected } from '../../../types';
 import { emitLinkDetected, type LinkEmitterRef } from '../../emitLinkDetected';
 import { tiptapPosToNativePos } from '../../positionMapping';
-import { findAutolinkRangesInWord, prepareUrl } from './autolinkRegex';
+import { findAutolinkRangesInWord } from './autolinkRegex';
 
 interface Run {
   text: string;
@@ -119,7 +119,8 @@ function scanRunForAutolinks(
     if (!fullMatch) continue;
     if (rangeHasManualLink(doc, linkType, wordStart, wordEnd)) continue;
 
-    const href = prepareUrl(word);
+    // const href = prepareUrl(word);
+    const href = word;
     tr.addMark(wordStart, wordEnd, linkType.create({ href, auto: true }));
     detected.push({
       text: word,

@@ -13,7 +13,7 @@ export const EnrichedLink = Link.extend({
       ...this.parent?.(),
       auto: {
         default: false,
-        parseHTML: (el) => el.getAttribute('data-auto') === 'true',
+        parseHTML: (el) => el.getAttribute('href') === el.textContent,
         // Internal only
         renderHTML: () => ({}),
       },

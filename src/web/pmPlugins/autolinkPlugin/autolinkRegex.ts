@@ -42,18 +42,3 @@ export function findAutolinkRangesInWord(
   }
   return out;
 }
-
-export function matchAutolink(
-  word: string,
-  linkRegex: RegExp | undefined
-): boolean {
-  return findAutolinkRangesInWord(word, linkRegex).length > 0;
-}
-
-export function prepareUrl(word: string): string {
-  if (/^https?:\/\//i.test(word)) return word;
-  if (/^https?:/i.test(word)) {
-    return `https://${word.replace(/^https?:/i, '')}`;
-  }
-  return `https://${word}`;
-}

@@ -392,7 +392,7 @@ test.describe('test-links autolink', () => {
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('<a href="https://issue-123">issue-123</a>');
+      .toContain('<a href="issue-123">issue-123</a>');
   });
 
   test('creates link when pasting plain URL with default regex', async ({
