@@ -3,7 +3,10 @@ import type { MarkType, Node, Schema } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state';
 import { Mapping } from '@tiptap/pm/transform';
 import type { OnLinkDetected } from '../../../types';
-import { emitLinkDetected } from '../../emitLinkDetected';
+import {
+  emitLinkDetected,
+  type LinkEmitterState,
+} from '../../emitLinkDetected';
 import { tiptapPosToNativePos } from '../../positionMapping';
 import { findAutolinkRangesInWord } from './autolinkRegex';
 
@@ -15,6 +18,10 @@ interface Run {
 interface DirtyBlock {
   node: Node;
   pos: number;
+}
+
+interface AutolinkPluginOptions {
+  getLinkEmitter: () => LinkEmitterState;
 }
 
 const WHITESPACE_RE = /\S+/g;
@@ -164,7 +171,7 @@ function getDirtyBlocks(
   return Array.from(blocks, ([pos, node]) => ({ pos, node }));
 }
 
-export const AutolinkPlugin = Extension.create({
+export const AutolinkPlugin = Extension.create<AutolinkPluginOptions>({
   name: 'autolinkDetector',
   addOptions() {
     return {
