@@ -4696,13 +4696,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-beautify@npm:^1.14.3":
-  version: 1.14.3
-  resolution: "@types/js-beautify@npm:1.14.3"
-  checksum: 10c0/e2e8cbe03c39bc596130151ae050884e4da25fc8dfb15cd1a0d0de92ee0963d43fc37b372de46fc8ba8ec99e6041debc70cdf92a1c160e3b472df3effa5b6c8f
-  languageName: node
-  linkType: hard
-
 "@types/jsdom@npm:^21.1.7":
   version: 21.1.7
   resolution: "@types/jsdom@npm:21.1.7"
