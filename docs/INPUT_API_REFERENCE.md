@@ -437,6 +437,7 @@ interface OnSubmitEditing {
 Callback invoked when the user pastes one or more images or GIFs into the input.
 
 - `images` - is an array of objects containing the details (URI, MIME type, and dimensions) for each pasted image/GIF.
+- **Web:** each `uri` is a `blob:` URL (`URL.createObjectURL`). If you retain URIs, call `URL.revokeObjectURL` when finished so blobs can be released.
 
 ```ts
 export interface OnPasteImagesEvent {
@@ -487,21 +488,40 @@ Overrides the return key label with a custom string. Use `returnKeyType` for cro
 
 | Type     | Default Value | Platform     |
 | -------- | ------------- | ------------ |
-| `string` | -             | iOS, Android |
+| `string` | -             | Android      |
 
 ### `returnKeyType`
 
 Specifies the label or icon shown on the keyboard's return key.
 
-Accepts the standard React Native `ReturnKeyTypeOptions` values: `'default' | 'go' | 'google' | 'join' | 'next' | 'route' | 'search' | 'send' | 'yahoo' | 'done' | 'emergency-call'`.
+Is not supported on Android, as `returnKeyType` doesn't work with multiline inputs.
 
-| Type                   | Default Value | Platform          |
-| ---------------------- | ------------- | ----------------- |
-| `ReturnKeyTypeOptions` | `'default'`   | iOS, Android, Web |
+Accepts the standard React Native `ReturnKeyTypeOptions` values: `'go' | 'next' | 'search' | 'send' | 'done' | 'previous' | 'default' | 'google' | 'join' | 'route' | 'yahoo' | 'emergency-call' | 'none'`.
+
+| Type                   | Platform          |
+| ---------------------- | ----------------- |
+| `'go'`                 | iOS, Android      |
+| `'next'`               | iOS, Android      |
+| `'search'`             | iOS, Android      |
+| `'send'`               | iOS, Android      |
+| `'done'`               | iOS, Android      |
+| `'previous'`           | Android           |
+| `'default'`            | iOS               |
+| `'google'`             | iOS               |
+| `'join'`               | iOS               |
+| `'route'`              | iOS               |
+| `'yahoo'`              | iOS               |
+| `emergency-'call'`     | iOS               |
+| `'none'`               | Android           |
+
+
+| Type                   | Default Value | Platform     |
+| ---------------------- | ------------- | ------------ |
+| `ReturnKeyTypeOptions` | `'default'`   | iOS, Web     |
 
 > [!NOTE]
 > On Web, this maps to the [`enterkeyhint`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) attribute on the editor element.
-> Only the values the browser recognises (`'enter'`, `'done'`, `'go'`, `'next'`, `'previous'`, `'search'`, `'send'`) have a visible effect; unsupported values are silently ignored.
+> Only the values the browser recognises (`'enter'`, `'done'`, `'go'`, `'next'`, `'previous'`, `'search'`, `'send'`) have a visible effect; unsupported values are silently ignored and fall back to `'enter'`.
 
 ### `selectionColor`
 
