@@ -110,9 +110,12 @@ export const EnrichedTextInput = ({
   onChangeMention,
   onEndMention,
   htmlStyle,
+  useHtmlNormalizer,
 }: EnrichedTextInputProps) => {
   const tiptapContent =
-    defaultValue != null ? prepareHtmlForTiptap(defaultValue) : defaultValue;
+    defaultValue != null
+      ? prepareHtmlForTiptap(defaultValue, useHtmlNormalizer)
+      : defaultValue;
 
   const resolvedHtmlStyle = useMemo(
     () => mergeWithDefaultHtmlStyle(htmlStyle),
@@ -158,6 +161,11 @@ export const EnrichedTextInput = ({
   useEffect(() => {
     onKeyPressRef.current = onKeyPress;
   }, [onKeyPress]);
+
+  const useHtmlNormalizerRef = useRef(useHtmlNormalizer);
+  useEffect(() => {
+    useHtmlNormalizerRef.current = useHtmlNormalizer;
+  }, [useHtmlNormalizer]);
 
   const handleKeyDown = (doc: Node, event: KeyboardEvent): boolean => {
     onKeyPressRef.current?.(adaptWebToNativeEvent(event, { key: event.key }));
@@ -253,7 +261,7 @@ export const EnrichedTextInput = ({
           enterkeyhint: returnKeyTypeToEnterKeyHint(returnKeyType),
         },
         transformPastedHTML: (html) => {
-          return prepareHtmlForTiptap(html);
+          return prepareHtmlForTiptap(html, useHtmlNormalizerRef.current);
         },
       },
     },
@@ -298,7 +306,9 @@ export const EnrichedTextInput = ({
       focus: () => editor.commands.focus(),
       blur: () => editor.commands.blur(),
       setValue: (value: string) =>
-        editor.commands.setContent(prepareHtmlForTiptap(value)),
+        editor.commands.setContent(
+          prepareHtmlForTiptap(value, useHtmlNormalizerRef.current)
+        ),
       setSelection: (start, end) => {
         const doc = editor.state.doc;
         runFocused(editor, (c) =>
