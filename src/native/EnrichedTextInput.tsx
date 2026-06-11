@@ -31,7 +31,6 @@ import type {
   EnrichedTextInputProps,
   OnLinkDetected,
   OnMentionDetected,
-  TextShortcut,
 } from '../types';
 
 const warnMentionIndicators = (indicator: string) => {
@@ -46,11 +45,6 @@ type HtmlRequest = {
   resolve: (html: string) => void;
   reject: (error: Error) => void;
 };
-
-const DEFAULT_TEXT_SHORTCUTS: TextShortcut[] = [
-  { trigger: '- ', style: 'unordered_list' },
-  { trigger: '1. ', style: 'ordered_list' },
-];
 
 export const EnrichedTextInput = ({
   ref,
@@ -83,7 +77,7 @@ export const EnrichedTextInput = ({
   returnKeyLabel,
   submitBehavior,
   contextMenuItems,
-  textShortcuts,
+  textShortcuts = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.textShortcuts,
   androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.androidExperimentalSynchronousEvents,
   useHtmlNormalizer = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.useHtmlNormalizer,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
@@ -362,7 +356,7 @@ export const EnrichedTextInput = ({
       onRequestHtmlResult={handleRequestHtmlResult}
       onInputKeyPress={onKeyPress}
       contextMenuItems={nativeContextMenuItems}
-      textShortcuts={textShortcuts ?? DEFAULT_TEXT_SHORTCUTS}
+      textShortcuts={textShortcuts}
       onContextMenuItemPress={handleContextMenuItemPress}
       onSubmitEditing={onSubmitEditing}
       returnKeyType={returnKeyType}
