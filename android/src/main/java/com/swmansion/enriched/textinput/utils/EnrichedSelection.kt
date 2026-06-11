@@ -104,11 +104,15 @@ class EnrichedSelection(
     for ((style, config) in EnrichedSpans.parametrizedStyles) {
       state.setStart(style, getParametrizedStyleStart(config.clazz))
     }
+
+    val currentAlignment = view.alignmentStyles?.getCurrentAlignment() ?: "auto"
+    state.setAlignment(currentAlignment)
   }
 
   fun getInlineSelection(): Pair<Int, Int> {
-    val finalStart = start.coerceAtMost(end).coerceAtLeast(0)
-    val finalEnd = end.coerceAtLeast(start).coerceAtLeast(0)
+    val textLength = view.text?.length ?: 0
+    val finalStart = start.coerceAtMost(end).coerceAtLeast(0).coerceAtMost(textLength)
+    val finalEnd = end.coerceAtLeast(start).coerceAtLeast(0).coerceAtMost(textLength)
 
     return Pair(finalStart, finalEnd)
   }

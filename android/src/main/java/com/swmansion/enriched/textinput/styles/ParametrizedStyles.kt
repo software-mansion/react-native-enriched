@@ -11,7 +11,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputLinkSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputMentionSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
-import com.swmansion.enriched.textinput.utils.removeZWS
+import com.swmansion.enriched.textinput.utils.safelyRemoveZWS
 
 class ParametrizedStyles(
   private val view: EnrichedTextInputView,
@@ -31,7 +31,7 @@ class ParametrizedStyles(
     val spans = ssb.getSpans(start, end, clazz)
     if (spans.isEmpty()) return false
 
-    ssb.removeZWS(start, end)
+    ssb.safelyRemoveZWS(start, end)
 
     for (span in spans) {
       ssb.removeSpan(span)

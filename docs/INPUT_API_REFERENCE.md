@@ -309,6 +309,9 @@ interface OnChangeStateEvent {
 - `isConflicting` indicates if the style is in conflict with other currently active styles, meaning toggling it will remove conflicting style.
 - `alignment` indicates the current text alignment of the paragraph at the cursor position. Possible values: `'left'`, `'center'`, `'right'`, `'justify'`, `'auto'`.
 
+> [!NOTE]
+> On Android, `'justify'` is not supported. It is accepted in the type signature but has no justified layout effect — text is shown with natural alignment instead, the same as `'auto'`. On iOS, justified alignment works as expected.
+
 | Type                                                        | Platform |
 |-------------------------------------------------------------|----------|
 | `(event: NativeSyntheticEvent<OnChangeStateEvent>) => void` | Both     |
@@ -626,7 +629,7 @@ Sets text alignment for the paragraph(s) at the current selection. When inside a
 - `alignment` - the desired text alignment. Use `'auto'` to reset to the system natural alignment.
 
 > [!NOTE]
-> This method is iOS only for now.
+> On Android, `'justify'` is not supported. Calling `setTextAlignment('justify')` does not apply justified text — the paragraph ends up with natural alignment, the same as `'auto'`. On iOS, justified alignment works as expected.
 
 ### `.startMention()`
 
