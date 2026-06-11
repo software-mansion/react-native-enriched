@@ -1,7 +1,9 @@
 package com.swmansion.enriched.textinput.utils
 
 import android.text.Editable
+import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.textinput.EnrichedTextInputView
+import com.swmansion.enriched.textinput.spans.EnrichedSpans
 
 class ShortcutsHandler(
   private val view: EnrichedTextInputView,
@@ -11,11 +13,11 @@ class ShortcutsHandler(
     endCursorPosition: Int,
     previousTextLength: Int,
   ) {
-    handleConfigurableShortcuts(s, endCursorPosition, previousTextLength)
+    handleParagraphShortcuts(s, endCursorPosition, previousTextLength)
     handleInlineShortcuts(s, endCursorPosition, previousTextLength)
   }
 
-  private fun handleConfigurableShortcuts(
+  private fun handleParagraphShortcuts(
     s: Editable,
     endCursorPosition: Int,
     previousTextLength: Int,
@@ -28,16 +30,36 @@ class ShortcutsHandler(
     val (start, end) = s.getParagraphBounds(cursorPosition)
     val paragraphText = s.substring(start, end)
 
+    val effectiveTriggerStart =
+      if (paragraphText.startsWith(EnrichedConstants.ZWS_STRING)) {
+        if (paragraphHasNonAlignmentSpan(s, start, end)) return
+        start + 1
+      } else {
+        start
+      }
+
     for ((trigger, styleName) in shortcuts) {
       if (isInlineShortcutStyle(styleName)) continue
       if (trigger.isEmpty()) continue
-      if (!paragraphText.startsWith(trigger)) continue
+      if (!s.substring(effectiveTriggerStart, end).startsWith(trigger)) continue
 
       val resolvedStyle = resolveStyleName(styleName) ?: continue
 
-      s.replace(start, start + trigger.length, "")
+      s.replace(effectiveTriggerStart, effectiveTriggerStart + trigger.length, "")
       view.toggleStyle(resolvedStyle)
       return
+    }
+  }
+
+  private fun paragraphHasNonAlignmentSpan(
+    s: Editable,
+    start: Int,
+    end: Int,
+  ): Boolean {
+    val paragraphAndListClasses =
+      (EnrichedSpans.paragraphSpans.values + EnrichedSpans.listSpans.values).map { it.clazz }
+    return paragraphAndListClasses.any { clazz ->
+      s.getSpans(start, end, clazz).isNotEmpty()
     }
   }
 
