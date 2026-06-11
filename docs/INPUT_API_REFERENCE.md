@@ -8,9 +8,9 @@
 
 If `true`, the input respects the system's accessibility font scaling settings.
 
-| Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `true`       | Both     |
+| Type   | Default Value | Platform     |
+| ------ | ------------- | ------------ |
+| `bool` | `true`        | iOS, Android |
 
 ### `autoFocus`
 
@@ -119,16 +119,16 @@ A custom regex pattern for detecting links in the input. If not provided, a defa
 With this approach you can customize what patterns should be recognized as links, for example you can make it so that only links starting with `https://` are detected, or you can support custom schemes.
 Keep in mind that not all JS regex features are supported, for example variable-width lookbehinds won't work.
 
-| Type     | Default Value                 | Platform          |
-| -------- | ----------------------------- | ----------------- |
-| `RegExp` | default native platform regex | iOS, Android, Web |
+| Type     | Default Value                 | Platform     |
+| -------- | ----------------------------- | ------------ |
+| `RegExp` | default native platform regex | iOS, Android |
 
 > [!TIP]
 > With this approach you can also disable link detection completely by providing a `null` value as the prop.
 
 ### `onBlur`
 
-Callback that's called whenever the input loses focused (is blurred).
+Callback that's called whenever the input loses focus (is blurred).
 
 | Type         | Platform          |
 | ------------ | ----------------- |
@@ -497,7 +497,7 @@ A React ref that lets you call any ref methods on the input.
 
 ### `returnKeyLabel`
 
-Overrides the return key label with a custom string. Not suppported by iOS.
+Overrides the return key label with a custom string. Not suppported on iOS.
 
 | Type     | Default Value | Platform     |
 | -------- | ------------- | ------------ |
@@ -711,6 +711,9 @@ Sets text alignment for the paragraph(s) at the current selection. When inside a
 
 > [!NOTE]
 > On Android, `'justify'` is not supported. Calling `setTextAlignment('justify')` does not apply justified text — the paragraph ends up with natural alignment, the same as `'auto'`. On iOS, justified alignment works as expected.
+
+> [!NOTE]
+> On Web text alignment is not supported. Calling `setTextAlignment()` has no effect.
 
 ### `.startMention()`
 
