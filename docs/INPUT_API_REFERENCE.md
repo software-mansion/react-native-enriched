@@ -494,7 +494,7 @@ A React ref that lets you call any ref methods on the input.
 
 ### `returnKeyLabel`
 
-Overrides the return key label with a custom string. Use `returnKeyType` for cross-platform return key control.
+Overrides the return key label with a custom string. Not suppported by iOS.
 
 | Type     | Default Value | Platform     |
 | -------- | ------------- | ------------ |
@@ -506,7 +506,7 @@ Specifies the label or icon shown on the keyboard's return key.
 
 Is not supported on Android, as `returnKeyType` doesn't work with multiline inputs.
 
-Accepts the standard React Native `ReturnKeyTypeOptions` values: `'go' | 'next' | 'search' | 'send' | 'done' | 'previous' | 'default' | 'google' | 'join' | 'route' | 'yahoo' | 'emergency-call' | 'none'`.
+Accepts the standard React Native `ReturnKeyTypeOptions` values: `'go' | 'next' | 'search' | 'send' | 'done' | 'default' | 'google' | 'join' | 'route' | 'yahoo' | 'emergency-call' | 'previous' | 'none'`.
 
 | Type                   | Platform          |
 | ---------------------- | ----------------- |
@@ -515,13 +515,13 @@ Accepts the standard React Native `ReturnKeyTypeOptions` values: `'go' | 'next' 
 | `'search'`             | iOS, Android      |
 | `'send'`               | iOS, Android      |
 | `'done'`               | iOS, Android      |
-| `'previous'`           | Android           |
 | `'default'`            | iOS               |
 | `'google'`             | iOS               |
 | `'join'`               | iOS               |
 | `'route'`              | iOS               |
 | `'yahoo'`              | iOS               |
 | `emergency-'call'`     | iOS               |
+| `'previous'`           | Android           |
 | `'none'`               | Android           |
 
 
