@@ -27,6 +27,10 @@
   return [selfColor isEqual:otherColor];
 }
 
+- (UIColor *)colorWithDefaultAlpha {
+  return [self colorWithDefaultAlpha:0.4];
+}
+
 - (UIColor *)colorWithDefaultAlpha:(CGFloat)newAlpha {
   CGFloat alpha = 0.0;
   [self getRed:nil green:nil blue:nil alpha:&alpha];

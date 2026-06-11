@@ -115,7 +115,7 @@
     }
     if (bgColor) {
       newAttrs[NSBackgroundColorAttributeName] =
-          [bgColor colorWithDefaultAlpha:0.4];
+          [bgColor colorWithDefaultAlpha];
     }
 
     [self.view.textView.textStorage addAttributes:newAttrs range:_activeRange];

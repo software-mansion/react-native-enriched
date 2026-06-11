@@ -73,7 +73,7 @@ static void const *kInputKey = &kInputKey;
   NSArray<StylePair *> *allCodeBlocks = [codeBlockStyle all:visibleCharRange];
   NSArray<StylePair *> *mergedCodeBlocks =
       [self mergeContiguousStylePairs:allCodeBlocks];
-  UIColor *bgColor = [[host.config codeBlockBgColor] colorWithDefaultAlpha:0.4];
+  UIColor *bgColor = [[host.config codeBlockBgColor] colorWithDefaultAlpha];
   CGFloat radius = [host.config codeBlockBorderRadius];
   [bgColor setFill];
 

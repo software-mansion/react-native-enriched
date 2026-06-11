@@ -3,5 +3,6 @@
 
 @interface UIColor (ColorExtension)
 - (BOOL)isEqualToColor:(UIColor *)otherColor;
+- (UIColor *)colorWithDefaultAlpha;
 - (UIColor *)colorWithDefaultAlpha:(CGFloat)newAlpha;
 @end
