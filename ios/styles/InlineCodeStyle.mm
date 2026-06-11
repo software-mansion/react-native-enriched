@@ -29,7 +29,7 @@
     [self.host.textView.textStorage
         addAttribute:NSBackgroundColorAttributeName
                value:[[self.host.config inlineCodeBgColor]
-                         colorWithDefaultAlpha]
+                         colorWithResolvedAlpha]
                range:subRange];
     [self.host.textView.textStorage
         addAttribute:NSForegroundColorAttributeName
