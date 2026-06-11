@@ -43,6 +43,7 @@ Web support is still experimental. APIs and behavior can change in future releas
 - **RN layout ref methods**: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` are no-ops.
 - **`EnrichedText`**: The read-only component is not exported on web.
 - **`ViewProps`**: Props inherited from `View` beyond the implemented subset are not forwarded.
+- **`textShortcuts`**: ignored on web.
 
 ## HTML sanitization
 
