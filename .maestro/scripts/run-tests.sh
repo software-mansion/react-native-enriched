@@ -71,6 +71,25 @@ app_installed() {
   fi
 }
 
+# Adjusts the system's text-size setting.
+set_font_scale() {
+  case "$1" in
+    default) ios_size="large";               android_scale="1.0" ;;
+    large)   ios_size="accessibility-large"; android_scale="1.5" ;;
+    *) echo "set_font_scale: unknown size '$1'" >&2; return 1 ;;
+  esac
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl ui "$DEVICE_ID" content_size "$ios_size"
+  else
+    adb -s "$DEVICE_ID" shell settings put system font_scale "$android_scale"
+  fi
+}
+
+# Guarantees the font scale is restored on any exit.
+# Without this, the accessibility tests below would leave the device
+# in a scaled-up state.
+trap 'set_font_scale default' EXIT
+
 if [ -n "$REBUILD" ] || ! app_installed; then
   [ -n "$REBUILD" ] && echo "=== rebuild requested, building and installing ==="
   [ -z "$REBUILD" ] && echo "=== App ($BUNDLE_ID) not found, building and installing ==="
@@ -97,6 +116,50 @@ esac
 ASSETS_DIR="$MAESTRO_ROOT/assets"
 [ -d "$ASSETS_DIR" ] && FLOWS="$ASSETS_DIR $FLOWS"
 
+# A previous run could have died before its EXIT trap fired (e.g. SIGKILL),
+# leaving the device scaled. Force a known state before the normal tests.
+set_font_scale default
+
+# maestro exits non-zero when the tag filter matches zero flows. That's not a
+# real failure for us (e.g. running a single flow that has no accessibility
+# variant), and letting it propagate aborts latter test suites.
+run_maestro() {
+  local tmp rc
+  tmp=$(mktemp)
+  # `script` allocates a pseudo-TTY so maestro keeps
+  # ANSI colors when piped through `tee`.
+  if [[ "$OSTYPE" == darwin* ]]; then
+    script -q /dev/null maestro test "$@" 2>&1 | tee "$tmp"
+  else
+    local cmd
+    cmd=$(printf '%q ' maestro test "$@")
+    script -qc "$cmd" /dev/null 2>&1 | tee "$tmp"
+  fi
+  rc=${PIPESTATUS[0]}
+  if [ "$rc" -ne 0 ] && grep -q "did not match any Flows" "$tmp"; then
+    echo "warn: no flows matched the tag filter — treating as success" >&2
+    rc=0
+  fi
+  rm -f "$tmp"
+  return "$rc"
+}
+
+set +e
+
 echo "=== Running maestro tests ==="
 # shellcheck disable=SC2086
-maestro test --device "$DEVICE_ID" $EXTRA $FLOWS
+run_maestro --device "$DEVICE_ID" --exclude-tags accessibility $EXTRA $FLOWS
+EXIT_REGULAR=$?
+
+# These are the tests that require changing the system's settings
+# - something maestro cannot run internally
+echo "=== Running maestro accessibility tests ==="
+set_font_scale large
+
+# shellcheck disable=SC2086
+run_maestro --device "$DEVICE_ID" --include-tags accessibility $EXTRA $FLOWS
+EXIT_A11Y=$?
+
+set -e
+
+exit $(( EXIT_REGULAR != 0 || EXIT_A11Y != 0 ))

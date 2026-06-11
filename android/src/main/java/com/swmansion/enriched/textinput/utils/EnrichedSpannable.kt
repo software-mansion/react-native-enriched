@@ -5,6 +5,9 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.common.spans.interfaces.EnrichedBlockSpan
 import com.swmansion.enriched.common.spans.interfaces.EnrichedParagraphSpan
+import com.swmansion.enriched.common.spans.interfaces.EnrichedSpan
+import com.swmansion.enriched.textinput.spans.EnrichedSpans
+import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 fun Spannable.getSafeSpanBoundaries(
   start: Int,
@@ -43,16 +46,59 @@ fun Spannable.getParagraphBounds(
 
 fun Spannable.getParagraphBounds(index: Int): Pair<Int, Int> = this.getParagraphBounds(index, index)
 
+private fun Spannable.hasStyleInRange(
+  style: String,
+  start: Int,
+  end: Int,
+): Boolean {
+  val type = EnrichedSpans.allSpans[style]?.clazz ?: return false
+  return getSpans(start, end, type).isNotEmpty()
+}
+
+private fun getStyleForSpan(span: EnrichedSpan): String? =
+  EnrichedSpans.allSpans.entries
+    .firstOrNull { (_, config) ->
+      config.clazz.isInstance(span)
+    }?.key
+
+private fun Spannable.removeBlockedPasteStyles(
+  start: Int,
+  pastedSpannable: Spannable,
+  htmlStyle: HtmlStyle,
+): Spannable {
+  val pastedSpans = pastedSpannable.getSpans(0, pastedSpannable.length, EnrichedSpan::class.java)
+
+  for (span in pastedSpans) {
+    val style = getStyleForSpan(span) ?: continue
+    val blockingStyles = EnrichedSpans.getMergingConfigForStyle(style, htmlStyle)?.blockingStyles ?: continue
+    if (blockingStyles.isEmpty()) continue
+
+    val spanStart = pastedSpannable.getSpanStart(span)
+    val spanEnd = pastedSpannable.getSpanEnd(span)
+    if (spanStart == -1 || spanEnd == -1 || spanStart == spanEnd) continue
+
+    val pastedStart = start + spanStart
+    val pastedEnd = start + spanEnd
+    if (blockingStyles.any { hasStyleInRange(it, pastedStart, pastedEnd) }) {
+      removeSpan(span)
+    }
+  }
+
+  return this
+}
+
 fun Spannable.mergeSpannables(
   start: Int,
   end: Int,
   string: String,
-): Spannable = this.mergeSpannables(start, end, SpannableString(string))
+  htmlStyle: HtmlStyle? = null,
+): Spannable = this.mergeSpannables(start, end, SpannableString(string), htmlStyle)
 
 fun Spannable.mergeSpannables(
   start: Int,
   end: Int,
   spannable: Spannable,
+  htmlStyle: HtmlStyle? = null,
 ): Spannable {
   var finalStart = start
   var finalEnd = end
@@ -100,6 +146,10 @@ fun Spannable.mergeSpannables(
       builder.removeSpan(span)
       builder.setSpan(span, spanStart, newParagraphEnd, flags)
     }
+  }
+
+  htmlStyle?.let {
+    builder.removeBlockedPasteStyles(finalStart, spannable, it)
   }
 
   return builder

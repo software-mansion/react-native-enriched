@@ -1,5 +1,6 @@
 package com.swmansion.enriched.common.parser
 
+import com.swmansion.enriched.common.spans.EnrichedAlignmentSpan
 import com.swmansion.enriched.common.spans.EnrichedBlockQuoteSpan
 import com.swmansion.enriched.common.spans.EnrichedBoldSpan
 import com.swmansion.enriched.common.spans.EnrichedCheckboxListSpan
@@ -21,6 +22,8 @@ import com.swmansion.enriched.common.spans.EnrichedUnderlineSpan
 import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan
 
 interface EnrichedSpanFactory<T> {
+  fun createAlignmentSpan(cssValue: String): EnrichedAlignmentSpan
+
   fun createBoldSpan(style: T): EnrichedBoldSpan
 
   fun createItalicSpan(style: T): EnrichedItalicSpan

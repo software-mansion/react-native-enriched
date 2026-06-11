@@ -503,6 +503,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
   onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
+  /**
+   * Web: each `images[].uri` is a `blob:` URL from `URL.createObjectURL`. If you keep
+   * URIs around (or replace them after upload), call `URL.revokeObjectURL(uri)` when done
+   * to avoid retaining blob memory. Native uses non-blob URIs; revoke does not apply.
+   */
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
   textShortcuts?: TextShortcut[];
@@ -522,6 +527,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
 }
 
 export interface EnrichedTextInstance extends NativeMethods {}
@@ -536,6 +546,11 @@ export interface EnrichedTextProps extends ViewProps {
   numberOfLines?: number;
   selectable?: boolean;
   selectionColor?: ColorValue;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
   onLinkPress?: (event: OnLinkPressEvent) => void;
   onMentionPress?: (event: OnMentionPressEvent) => void;
 }

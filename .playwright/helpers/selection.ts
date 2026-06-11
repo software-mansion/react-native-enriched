@@ -28,3 +28,17 @@ export async function selectParagraphTextInclusive(
     { from: fromIndex, to: toIndex }
   );
 }
+
+export async function selectRange(page: Page, start: number, end: number) {
+  await page.keyboard.press('Home');
+
+  for (let i = 0; i < start; i++) {
+    await page.keyboard.press('ArrowRight');
+  }
+
+  await page.keyboard.down('Shift');
+  for (let i = 0; i < end - start; i++) {
+    await page.keyboard.press('ArrowRight');
+  }
+  await page.keyboard.up('Shift');
+}

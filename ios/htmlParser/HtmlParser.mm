@@ -155,6 +155,9 @@
   NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
 
   NSArray *tagData = ongoingTags[tagName];
+  if (tagData == nil) {
+    return;
+  }
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
   NSInteger openImageCount = [((NSNumber *)tagData[1]) intValue];
   NSInteger currentImageCount = *precedingImageCount;
@@ -406,34 +409,6 @@
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
-
-    // this is more like a hack but for some reason the last <br> in
-    // <blockquote> and <codeblock> are not properly changed into zero width
-    // space so we do that manually here
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
-                                  withString:@"<p>\u200B</p>\n</blockquote>"];
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
-                                  withString:@"<p>\u200B</p>\n</codeblock>"];
-
-    // The same like above for (blockquote and codeblock) this is more like a
-    // hack but for some reason the last <li></li> in <ul> and <ol> are not
-    // properly changed into zero width space so we do that manually here
-    // TODO: investigate this further, issue is already described here:
-    // https://github.com/software-mansion/react-native-enriched/issues/505
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<li></li>\n</ul>"
-                                  withString:@"<li>\u200B</li>\n</ul>"];
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<li></li>\n</ol>"
-                                  withString:@"<li>\u200B</li>\n</ol>"];
-
-    // replace "<br>" at the end with "<br>\n" if input is not empty to properly
-    // handle last <br> in html
-    if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
-      fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
-    }
   }
 
   return fixedHtml;
@@ -452,6 +427,7 @@
   BOOL gettingTagName = NO;
   BOOL gettingTagParams = NO;
   BOOL closingTag = NO;
+  BOOL lastTagWasBr = NO;
   NSMutableString *currentTagName =
       [[NSMutableString alloc] initWithString:@""];
   NSMutableString *currentTagParams =
@@ -487,54 +463,82 @@
       }
 
       if ([currentTagName isEqualToString:@"br"]) {
+        lastTagWasBr = YES;
         // do nothing, we don't include these tags in styles
       } else if ([currentTagName isEqualToString:@"li"]) {
-        // Only track checkbox state if we're inside a checkbox list
-        if (insideCheckboxList && !closingTag) {
-          BOOL isChecked = [currentTagParams containsString:@"checked"];
-          checkboxStates[@(plainText.length)] = @(isChecked);
+        if (!closingTag) {
+          // Opening tag <li>
+          // Track checkbox state if we're inside a checkbox list
+          if (insideCheckboxList) {
+            BOOL isChecked = [currentTagParams containsString:@"checked"];
+            checkboxStates[@(plainText.length)] = @(isChecked);
+          }
+          // Record the start location so we can check if it's empty when
+          // closing
+          ongoingTags[@"li"] = @[ @(plainText.length) ];
+        } else {
+          // Closing tag </li>
+          NSArray *tagData = ongoingTags[@"li"];
+          if (tagData != nil) {
+            NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
+            NSString *innerContent = [plainText substringFromIndex:tagLocation];
+
+            // If the li is completely empty (or just contains layout newlines),
+            // inject ZWS
+            if ([innerContent
+                    stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                        newlineCharacterSet]]
+                    .length == 0) {
+              [plainText appendString:@"\u200B"];
+            }
+            [ongoingTags removeObjectForKey:@"li"];
+          }
         }
       } else if (!closingTag) {
-        BOOL isPlainParagraph =
-            [currentTagName isEqualToString:@"p"] &&
-            (!currentTagParams || [currentTagParams length] == 0);
+        BOOL isPlainParagraph = [currentTagName isEqualToString:@"p"] &&
+                                currentTagParams.length == 0;
 
-        if (isPlainParagraph) {
-          continue;
-        }
-        // we finish opening tag - get its location, the current
-        // precedingImageCount and optionally params and put them under tag name
-        // key in ongoingTags. Storing the open-time image count lets
-        // finalizeTagEntry: correctly shift the start and extend the length
-        // so the range covers any images finalized between open and close.
-        NSMutableArray *tagArr = [[NSMutableArray alloc] init];
-        [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
-        [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
-        if (currentTagParams.length > 0) {
-          [tagArr addObject:[currentTagParams copy]];
-        }
-        ongoingTags[currentTagName] = tagArr;
+        if (!isPlainParagraph) {
+          // we finish opening tag - get its location, the current
+          // precedingImageCount and optionally params and put them under tag
+          // name key in ongoingTags. Storing the open-time image count lets
+          // finalizeTagEntry: correctly shift the start and extend the length
+          // so the range covers any images finalized between open and close.
+          NSMutableArray *tagArr = [[NSMutableArray alloc] init];
+          [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
+          [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
+          if (currentTagParams.length > 0) {
+            [tagArr addObject:[currentTagParams copy]];
+          }
+          ongoingTags[currentTagName] = tagArr;
 
-        // Check if this is a checkbox list
-        if ([currentTagName isEqualToString:@"ul"] &&
-            [self isUlCheckboxList:currentTagParams]) {
-          insideCheckboxList = YES;
-        }
+          // Check if this is a checkbox list
+          if ([currentTagName isEqualToString:@"ul"] &&
+              [self isUlCheckboxList:currentTagParams]) {
+            insideCheckboxList = YES;
+          }
 
-        // skip one newline if it was added after opening tags that are in
-        // separate lines
-        if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
-            [[NSCharacterSet newlineCharacterSet]
-                characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
-          i += 1;
-        }
+          // skip one newline if it was added after opening tags that are in
+          // separate lines
+          if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
+              [[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
+            i += 1;
+          }
 
-        if (isSelfClosing) {
-          [self finalizeTagEntry:currentTagName
-                         ongoingTags:ongoingTags
-              initiallyProcessedTags:initiallyProcessedTags
-                           plainText:plainText
-                 precedingImageCount:&precedingImageCount];
+          if ([currentTagName isEqualToString:@"img"]) {
+            // Images have no inner text, so we manually break the <br> streak
+            // here.
+            lastTagWasBr = NO;
+          }
+
+          if (isSelfClosing) {
+            [self finalizeTagEntry:currentTagName
+                           ongoingTags:ongoingTags
+                initiallyProcessedTags:initiallyProcessedTags
+                             plainText:plainText
+                   precedingImageCount:&precedingImageCount];
+          }
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag
@@ -548,12 +552,36 @@
 
         BOOL isBlockTag = [self isBlockTag:currentTagName];
 
+        // ZWS logic for blockquote and codeblock
+        BOOL needsZWS = [currentTagName isEqualToString:@"blockquote"] ||
+                        [currentTagName isEqualToString:@"codeblock"];
+        BOOL isEmptyBlock = NO;
+        if (needsZWS) {
+          NSArray *tagData = ongoingTags[currentTagName];
+          if (tagData != nil) {
+            NSInteger tagLoc = [tagData[0] intValue];
+            NSString *inner = [plainText substringFromIndex:tagLoc];
+            if ([inner stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                           newlineCharacterSet]]
+                    .length == 0) {
+              isEmptyBlock = YES;
+            }
+          }
+        }
+
         // skip one newline if it was added before some closing tags that are
         // in separate lines
         if (isBlockTag && plainText.length > 0 &&
             [[NSCharacterSet newlineCharacterSet]
                 characterIsMember:[plainText
                                       characterAtIndex:plainText.length - 1]]) {
+
+          // If the last thing processed was a <br>, or the block is totally
+          // empty, inject a \u200B before trimming the trailing newline to save
+          // the empty line.
+          if (lastTagWasBr || isEmptyBlock) {
+            [plainText insertString:@"\u200B" atIndex:plainText.length - 1];
+          }
           plainText = [[plainText
               substringWithRange:NSMakeRange(0, plainText.length - 1)]
               mutableCopy];
@@ -588,6 +616,11 @@
           i += escaped.length - 1;
         } else {
           [plainText appendString:currentCharacterStr];
+          // Any typed character that isn't a newline breaks the <br> streak
+          if (![[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:currentCharacterChar]) {
+            lastTagWasBr = NO;
+          }
         }
       } else {
         if (gettingTagName) {

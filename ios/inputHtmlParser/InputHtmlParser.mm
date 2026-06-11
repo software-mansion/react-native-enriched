@@ -37,6 +37,7 @@
            offsetFromBeginning:0
                plainTextLength:plainText.length];
     [self applyProcessedAlignments:alignments offset:0];
+    [_input anyTextMayHaveBeenModified];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -65,6 +66,7 @@
            offsetFromBeginning:range.location
                plainTextLength:plainText.length];
     [self applyProcessedAlignments:alignments offset:range.location];
+    [_input anyTextMayHaveBeenModified];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -95,6 +97,7 @@
            offsetFromBeginning:location
                plainTextLength:plainText.length];
     [self applyProcessedAlignments:alignments offset:location];
+    [_input anyTextMayHaveBeenModified];
   } @catch (NSException *exception) {
     RCTLogWarn(@"[EnrichedTextInput]: Failed to parse HTML: (%@), falling back "
                @"to raw input.",
@@ -191,7 +194,6 @@
       zeroWidthSpaceOffset += delta;
     }
   }
-  [_input anyTextMayHaveBeenModified];
 }
 
 - (void)applyProcessedAlignments:(NSArray<AlignmentEntry *> *)alignments

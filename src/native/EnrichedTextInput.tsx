@@ -87,6 +87,7 @@ export const EnrichedTextInput = ({
   androidExperimentalSynchronousEvents = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.androidExperimentalSynchronousEvents,
   useHtmlNormalizer = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.useHtmlNormalizer,
   scrollEnabled = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.scrollEnabled,
+  allowFontScaling = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.allowFontScaling,
   ...rest
 }: EnrichedTextInputProps) => {
   const nativeRef = useRef<ComponentType | null>(null);
@@ -372,6 +373,7 @@ export const EnrichedTextInput = ({
       }
       useHtmlNormalizer={useHtmlNormalizer}
       scrollEnabled={scrollEnabled}
+      allowFontScaling={allowFontScaling}
       {...rest}
     />
   );

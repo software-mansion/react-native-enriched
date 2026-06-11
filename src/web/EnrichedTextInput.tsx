@@ -26,6 +26,7 @@ import {
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import History from '@tiptap/extension-history';
 import { Placeholder } from '@tiptap/extensions/placeholder';
 import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
@@ -59,19 +60,19 @@ import { EnrichedUnorderedList } from './formats/EnrichedUnorderedList';
 import { EnrichedOrderedList } from './formats/EnrichedOrderedList';
 import { EnrichedCheckboxItem } from './formats/EnrichedCheckboxItem';
 import { EnrichedCheckboxList } from './formats/EnrichedCheckboxList';
-import { createStripBoldInStyledHeadingsPlugin } from './pmPlugins/stripBoldInStyledHeadingsPlugin';
-import { StrictMarksPlugin } from './pmPlugins/strictMarksPlugin';
-import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/mergeAdjacentSameKindBlocksPlugin';
-import { StripMarksInCodeBlockPlugin } from './pmPlugins/stripMarksInCodeBlockPlugin';
+import { StripBoldInStyledHeadingsPlugin } from './pmPlugins/StripBoldInStyledHeadingsPlugin';
+import { StrictMarksPlugin } from './pmPlugins/StrictMarksPlugin';
+import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/MergeAdjacentSameKindBlocksPlugin';
+import { StripMarksInCodeBlockPlugin } from './pmPlugins/StripMarksInCodeBlockPlugin';
+import { handleClipboardPasteImages } from './pasteImages';
 import {
-  createMentionPlugin,
+  MentionPlugin,
   setMention,
   startMention,
   subscribeMentionEvents,
-} from './pmPlugins/mentionPlugin';
-
-import { StripMarksOnImagePlugin } from './pmPlugins/stripMarksOnImagePlugin';
-import { ShortcutPlugin } from './pmPlugins/shortcutPlugin';
+} from './pmPlugins/MentionPlugin';
+import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
+import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
 function runFocused(
   editor: Editor,
@@ -104,6 +105,7 @@ export const EnrichedTextInput = ({
   onSubmitEditing,
   returnKeyType,
   submitBehavior,
+  onPasteImages,
   onMentionDetected,
   onStartMention,
   onChangeMention,
@@ -123,10 +125,10 @@ export const EnrichedTextInput = ({
     htmlStyleRef.current = resolvedHtmlStyle;
   }, [resolvedHtmlStyle]);
 
-  const stripBoldInStyledHeadingsPlugin = useMemo(
-    () => createStripBoldInStyledHeadingsPlugin(() => htmlStyleRef.current),
-    []
-  );
+  const onPasteImagesRef = useRef(onPasteImages);
+  useEffect(() => {
+    onPasteImagesRef.current = onPasteImages;
+  }, [onPasteImages]);
 
   const mentionIndicatorsRef = useRef(mentionIndicators);
   useEffect(() => {
@@ -147,23 +149,6 @@ export const EnrichedTextInput = ({
       onMentionDetected,
     };
   }, [onStartMention, onChangeMention, onEndMention, onMentionDetected]);
-
-  const mentionPlugin = useMemo(
-    () =>
-      createMentionPlugin({
-        indicatorsRef: mentionIndicatorsRef,
-        callbacksRef: mentionCallbacksRef,
-      }),
-    []
-  );
-
-  const shortcutPlugin = useMemo(
-    () =>
-      ShortcutPlugin.configure({
-        getHtmlStyle: () => htmlStyleRef.current,
-      }),
-    []
-  );
 
   const submitBehaviorRef = useRef(submitBehavior);
   const onSubmitEditingRef = useRef(onSubmitEditing);
@@ -205,6 +190,7 @@ export const EnrichedTextInput = ({
       Document,
       Paragraph,
       Text,
+      History,
       EnrichedBold,
       EnrichedItalic,
       EnrichedUnderline,
@@ -223,22 +209,23 @@ export const EnrichedTextInput = ({
       EnrichedCheckboxList,
       StripMarksInCodeBlockPlugin,
       StripMarksOnImagePlugin,
-      stripBoldInStyledHeadingsPlugin,
+      StripBoldInStyledHeadingsPlugin.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
       MergeAdjacentSameKindBlocksPlugin,
       StrictMarksPlugin,
-      mentionPlugin,
-      shortcutPlugin,
+      MentionPlugin.configure({
+        getIndicators: () => mentionIndicatorsRef.current,
+      }),
+      ShortcutPlugin.configure({
+        getHtmlStyle: () => htmlStyleRef.current,
+      }),
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
       }),
     ],
-    [
-      stripBoldInStyledHeadingsPlugin,
-      mentionPlugin,
-      shortcutPlugin,
-      placeholder,
-    ]
+    [placeholder]
   );
 
   const editor = useEditor(
@@ -267,6 +254,12 @@ export const EnrichedTextInput = ({
       },
       editorProps: {
         handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
+        handlePaste: (_view, event) =>
+          handleClipboardPasteImages(
+            event,
+            () => editorInstanceRef.current,
+            () => onPasteImagesRef.current
+          ),
         attributes: {
           autoCapitalize,
           enterkeyhint: returnKeyTypeToEnterKeyHint(returnKeyType),
@@ -300,7 +293,7 @@ export const EnrichedTextInput = ({
 
   useEffect(() => {
     if (!editor) return;
-    return subscribeMentionEvents(editor, mentionCallbacksRef);
+    return subscribeMentionEvents(editor, () => mentionCallbacksRef.current);
   }, [editor]);
 
   useOnChangeHtml(editor, onChangeHtml);
