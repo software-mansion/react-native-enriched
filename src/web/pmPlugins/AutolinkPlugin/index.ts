@@ -126,7 +126,6 @@ function scanRunForAutolinks(
     if (!fullMatch) continue;
     if (rangeHasManualLink(doc, linkType, wordStart, wordEnd)) continue;
 
-    // const href = prepareUrl(word);
     const href = word;
     tr.addMark(wordStart, wordEnd, linkType.create({ href, auto: true }));
     detected.push({
