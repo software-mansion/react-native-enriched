@@ -1966,15 +1966,6 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
       [ParagraphAttributesUtils handleResetTypingAttributesOnBackspace:range
                                                        replacementText:text
                                                                  input:self]
-
-      //       CRITICAL: This callback HAS TO be always evaluated last.
-      //
-      //       This function is the "Generic Fallback": if no specific style
-      //       claims the backspace action to change its state, only then do we
-      //       proceed to physically delete the newline and merge paragraphs.
-      || [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
-                                                         replacementText:text
-                                                                   input:self]
       // Check configurable text shortcuts (block: "# " → h1, inline: `code` →
       // inline_code)
       || [ShortcutsUtils tryHandlingParagraphShortcutsInRange:range
@@ -1982,7 +1973,16 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
                                                         input:self] ||
       [ShortcutsUtils tryHandlingInlineShortcutsInRange:range
                                         replacementText:text
-                                                  input:self]) {
+                                                  input:self]
+      //       CRITICAL: This callback HAS TO be always evaluated last.
+      //
+      //       This function is the "Generic Fallback": if no specific style
+      //       claims the backspace action to change its state, only then do we
+      //       proceed to physically delete the newline and merge paragraphs.
+      ||
+      [ParagraphAttributesUtils handleParagraphStylesMergeOnBackspace:range
+                                                      replacementText:text
+                                                                input:self]) {
     [self anyTextMayHaveBeenModified];
     return NO;
   }
