@@ -15,11 +15,6 @@ data class ParagraphSpanConfig(
   val isContinuous: Boolean,
 ) : ISpanConfig
 
-data class ListSpanConfig(
-  override val clazz: Class<*>,
-  val shortcut: String?,
-) : ISpanConfig
-
 data class StylesMergingConfig(
   // styles that should be removed when we apply specific style
   val conflictingStyles: Array<String> = emptyArray(),
@@ -76,11 +71,11 @@ object EnrichedSpans {
       CODE_BLOCK to ParagraphSpanConfig(EnrichedInputCodeBlockSpan::class.java, true),
     )
 
-  val listSpans: Map<String, ListSpanConfig> =
+  val listSpans: Map<String, BaseSpanConfig> =
     mapOf(
-      UNORDERED_LIST to ListSpanConfig(EnrichedInputUnorderedListSpan::class.java, "- "),
-      ORDERED_LIST to ListSpanConfig(EnrichedInputOrderedListSpan::class.java, "1. "),
-      CHECKBOX_LIST to ListSpanConfig(EnrichedInputCheckboxListSpan::class.java, null),
+      UNORDERED_LIST to BaseSpanConfig(EnrichedInputUnorderedListSpan::class.java),
+      ORDERED_LIST to BaseSpanConfig(EnrichedInputOrderedListSpan::class.java),
+      CHECKBOX_LIST to BaseSpanConfig(EnrichedInputCheckboxListSpan::class.java),
     )
 
   val parametrizedStyles: Map<String, BaseSpanConfig> =

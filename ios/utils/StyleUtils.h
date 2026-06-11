@@ -8,6 +8,9 @@
                                                (id<EnrichedViewHost>)host
                                                      isInput:(BOOL)isInput;
 
++ (BOOL)isStyleBlocked:(StyleType)type
+                 range:(NSRange)range
+               forHost:(id<EnrichedViewHost>)host;
 + (BOOL)handleStyleBlocksAndConflicts:(StyleType)type
                                 range:(NSRange)range
                               forHost:(id<EnrichedViewHost>)host;

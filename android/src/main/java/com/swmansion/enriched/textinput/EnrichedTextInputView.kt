@@ -67,6 +67,7 @@ import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
+import com.swmansion.enriched.textinput.utils.ShortcutsHandler
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.utils.zwsCountBefore
@@ -85,6 +86,7 @@ class EnrichedTextInputView :
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
+  val shortcutsHandler: ShortcutsHandler? = ShortcutsHandler(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
   val alignmentStyles: AlignmentStyles? = AlignmentStyles(this)
   var isDuringTransaction: Boolean = false
@@ -123,6 +125,9 @@ class EnrichedTextInputView :
   var shouldEmitOnChangeText: Boolean = false
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
+
+  // Pair: (trigger, style)
+  var textShortcuts: List<Pair<String, String>> = emptyList()
 
   private var fontSizeRaw: Float? = null
   var fontSize: Float? = null
@@ -794,7 +799,7 @@ class EnrichedTextInputView :
     layoutManager.invalidateLayout()
   }
 
-  private fun toggleStyle(name: String) {
+  internal fun toggleStyle(name: String) {
     when (name) {
       EnrichedSpans.BOLD -> inlineStyles?.toggleStyle(EnrichedSpans.BOLD)
       EnrichedSpans.ITALIC -> inlineStyles?.toggleStyle(EnrichedSpans.ITALIC)

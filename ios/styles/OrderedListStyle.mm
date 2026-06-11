@@ -45,44 +45,4 @@
               }];
 }
 
-- (BOOL)tryHandlingListShorcutInRange:(NSRange)range
-                      replacementText:(NSString *)text {
-  NSRange paragraphRange =
-      [self.host.textView.textStorage.string paragraphRangeForRange:range];
-  // a dot was added - check if we are both at the paragraph beginning + 1
-  // character (which we want to be a digit '1')
-  if ([text isEqualToString:@"."] &&
-      range.location - 1 == paragraphRange.location) {
-    unichar charBefore = [self.host.textView.textStorage.string
-        characterAtIndex:range.location - 1];
-    if (charBefore == '1') {
-      // we got a match - add a list if possible
-      if ([StyleUtils handleStyleBlocksAndConflicts:[[self class] getType]
-                                              range:paragraphRange
-                                            forHost:self.host]) {
-        // don't emit during the replacing
-        self.host.blockEmitting = YES;
-
-        // remove the number
-        [TextInsertionUtils replaceText:@""
-                                     at:NSMakeRange(paragraphRange.location, 1)
-                   additionalAttributes:nullptr
-                                   host:self.host
-                          withSelection:YES];
-
-        self.host.blockEmitting = NO;
-
-        // add attributes on the paragraph
-        [self add:NSMakeRange(paragraphRange.location,
-                              paragraphRange.length - 1)
-                withTyping:YES
-            withDirtyRange:YES];
-
-        return YES;
-      }
-    }
-  }
-  return NO;
-}
-
 @end
