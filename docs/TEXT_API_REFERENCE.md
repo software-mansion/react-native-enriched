@@ -1,6 +1,6 @@
 # EnrichedText API Reference
 
-> **Web is not supported.** `EnrichedText` is only available on iOS and Android.
+> **Web is not yet supported.** `EnrichedText` is only available on iOS and Android.
 
 ## Props
 
