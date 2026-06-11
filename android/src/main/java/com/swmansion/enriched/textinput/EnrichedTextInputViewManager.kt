@@ -460,7 +460,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     alignment: String,
   ) {
-    TODO("Not yet implemented")
+    view?.setTextAlignment(alignment)
   }
 
   override fun measure(
