@@ -16,7 +16,9 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import com.swmansion.enriched.common.allowFontScalingFromProps
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import java.util.concurrent.ConcurrentHashMap
@@ -130,7 +132,7 @@ object MeasurementStore {
     val propsFontSize = props?.getDouble("fontSize")?.toFloat()
     if (propsFontSize == null) return defaultView.textSize
 
-    return ceil(PixelUtil.toPixelFromSP(propsFontSize))
+    return ceil(pixelFromSpOrDp(propsFontSize, allowFontScalingFromProps(props)))
   }
 
   // Called when view measurements are not available in the store
@@ -142,6 +144,9 @@ object MeasurementStore {
     props: ReadableMap?,
   ): Long {
     val defaultView = EnrichedTextInputView(context)
+    val allowFontScaling = allowFontScalingFromProps(props)
+    // mirrors the real view's state
+    defaultView.allowFontScaling = allowFontScaling
 
     val rawText = getInitialText(defaultView, props)
     val fontSize = getInitialFontSize(defaultView, props)
@@ -155,7 +160,7 @@ object MeasurementStore {
       if (lineHeight > 0f) {
         val spannable = SpannableString(rawText)
         spannable.setSpan(
-          EnrichedLineHeightSpan(lineHeight),
+          EnrichedLineHeightSpan(lineHeight, allowFontScaling),
           0,
           spannable.length,
           Spannable.SPAN_INCLUSIVE_INCLUSIVE,

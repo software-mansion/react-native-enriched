@@ -41,10 +41,11 @@ class EnrichedTextWatcher(
 
     if (view.isDuringTransaction) return
     applyStyles(s)
+    view.layoutManager.invalidateLayout()
   }
 
   private fun applyStyles(s: Editable) {
-    view.inlineStyles?.afterTextChanged(s, endCursorPosition)
+    view.inlineStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)
     view.paragraphStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.listStyles?.afterTextChanged(s, endCursorPosition, previousTextLength)
     view.parametrizedStyles?.afterTextChanged(s, startCursorPosition, endCursorPosition)

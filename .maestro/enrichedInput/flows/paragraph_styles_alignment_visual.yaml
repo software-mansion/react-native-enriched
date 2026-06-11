@@ -1,0 +1,46 @@
+appId: swmansion.enriched.example
+tags:
+  - ios-only
+---
+# Visually validates text alignment rendering
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- tapOn:
+    id: 'editor-input'
+
+# Left-aligned text
+- inputText: 'Left aligned'
+- pressKey: Enter
+
+# Centre-aligned
+- tapOn:
+    id: 'toolbar-align-center'
+- inputText: 'Centre aligned'
+- pressKey: Enter
+
+# Heading 6
+- tapOn:
+    id: 'toolbar-heading-6'
+- inputText: 'Heading 6'
+- pressKey: Enter
+
+# Right-aligned text
+- tapOn:
+    id: 'toolbar-align-right'
+- inputText: 'Right aligned'
+- pressKey: Enter
+
+# List with right-aligned items
+- tapOn:
+    id: 'toolbar-ordered-list'
+- inputText: 'Element 1'
+- pressKey: Enter
+- inputText: 'Element 2'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'paragraph_styles_alignment'

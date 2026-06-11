@@ -2,6 +2,7 @@
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
+#import "TextListsUtils.h"
 
 @implementation CheckboxListStyle
 
@@ -11,6 +12,10 @@
 
 - (NSString *)getValue {
   return @"EnrichedCheckbox0";
+}
+
+- (NSString *)getMarkerPrefix {
+  return @"EnrichedCheckbox";
 }
 
 - (BOOL)isParagraph {
@@ -45,9 +50,10 @@
 
 - (BOOL)styleCondition:(id)value range:(NSRange)range {
   NSParagraphStyle *pStyle = (NSParagraphStyle *)value;
-  return pStyle != nullptr && pStyle.textLists.count == 1 &&
-         [pStyle.textLists.firstObject.markerFormat
-             hasPrefix:@"EnrichedCheckbox"];
+  if (pStyle == nil)
+    return NO;
+  return [TextListsUtils textLists:pStyle.textLists
+                    containsPrefix:[self getMarkerPrefix]];
 }
 
 - (void)toggleWithChecked:(BOOL)checked range:(NSRange)range {
@@ -81,9 +87,8 @@
 - (void)reapplyFromStylePair:(StylePair *)pair {
   NSRange range = [pair.rangeValue rangeValue];
   NSParagraphStyle *savedPStyle = (NSParagraphStyle *)pair.styleValue;
-  BOOL checked =
-      savedPStyle != nullptr && [savedPStyle.textLists.firstObject.markerFormat
-                                    isEqualToString:@"EnrichedCheckbox1"];
+  BOOL checked = [TextListsUtils textLists:savedPStyle.textLists
+                             containsValue:@"EnrichedCheckbox1"];
   [self addWithChecked:checked range:range withTyping:NO withDirtyRange:NO];
 }
 
@@ -97,8 +102,9 @@
       [self.host.textView.textStorage attribute:NSParagraphStyleAttributeName
                                         atIndex:location
                                  effectiveRange:NULL];
-  NSTextList *list = pStyle.textLists.firstObject;
-
+  NSTextList *list =
+      [TextListsUtils firstTextListWithPrefix:[self getMarkerPrefix]
+                                      inArray:pStyle.textLists];
   BOOL isCurrentlyChecked =
       [list.markerFormat isEqualToString:@"EnrichedCheckbox1"];
 
@@ -121,14 +127,8 @@
                                         atIndex:location
                                  effectiveRange:NULL];
 
-  if (style && style.textLists.count > 0) {
-    NSTextList *list = style.textLists.firstObject;
-    if ([list.markerFormat isEqualToString:@"EnrichedCheckbox1"]) {
-      return YES;
-    }
-  }
-
-  return NO;
+  return [TextListsUtils textLists:style.textLists
+                     containsValue:@"EnrichedCheckbox1"];
 }
 
 - (BOOL)handleNewlinesInRange:(NSRange)range replacementText:(NSString *)text {

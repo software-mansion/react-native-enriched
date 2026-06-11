@@ -6,4 +6,5 @@ export const ENRICHED_TEXT_INPUT_DEFAULT_PROPS = {
   scrollEnabled: true,
   androidExperimentalSynchronousEvents: false,
   useHtmlNormalizer: false,
+  allowFontScaling: true,
 } as const;

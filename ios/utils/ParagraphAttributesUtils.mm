@@ -1,4 +1,5 @@
 #import "ParagraphAttributesUtils.h"
+#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
@@ -44,6 +45,12 @@
   if (range.location == nonNewlineRange.location &&
       range.length >= nonNewlineRange.length) {
 
+    // Preserve the paragraph alignment across typing attribute resets.
+    NSParagraphStyle *currentParaStyle =
+        typedInput->textView.typingAttributes[NSParagraphStyleAttributeName];
+    NSTextAlignment savedAlignment =
+        currentParaStyle ? currentParaStyle.alignment : NSTextAlignmentNatural;
+
     // for styles that need ZWS (lists, quotes, etc.) we do the following:
     // - manually do the removing
     // - reset typing attributes so that the previous line styles don't get
@@ -59,8 +66,8 @@
                    additionalAttributes:nullptr
                                    host:typedInput
                           withSelection:YES];
-        typedInput->textView.typingAttributes =
-            typedInput->defaultTypingAttributes;
+        [self resetTypingAttributes:typedInput
+                preservingAlignment:savedAlignment];
 
         if (style == cbLStyle) {
           [cbLStyle addWithChecked:isCurrentlyChecked
@@ -83,7 +90,7 @@
                additionalAttributes:nullptr
                                host:typedInput
                       withSelection:YES];
-    typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
+    [self resetTypingAttributes:typedInput preservingAlignment:savedAlignment];
     return YES;
   }
 
@@ -234,17 +241,39 @@
   }
 
   if (isLeftLineEmpty && isRightLineEmpty) {
+    NSParagraphStyle *currentParaStyle =
+        typedInput->textView.typingAttributes[NSParagraphStyleAttributeName];
+    NSTextAlignment savedAlignment =
+        currentParaStyle ? currentParaStyle.alignment : NSTextAlignmentNatural;
+
     [TextInsertionUtils replaceText:text
                                  at:range
                additionalAttributes:nullptr
                                host:typedInput
                       withSelection:YES];
 
-    typedInput->textView.typingAttributes = typedInput->defaultTypingAttributes;
+    [self resetTypingAttributes:typedInput preservingAlignment:savedAlignment];
     return YES;
   }
 
   return NO;
+}
+
++ (void)resetTypingAttributes:(EnrichedTextInputView *)input
+          preservingAlignment:(NSTextAlignment)alignment {
+  NSMutableDictionary *resetAttrs =
+      [input->defaultTypingAttributes mutableCopy];
+
+  NSMutableParagraphStyle *paraStyle =
+      [resetAttrs[NSParagraphStyleAttributeName] mutableCopy]
+          ?: [[NSMutableParagraphStyle alloc] init];
+  paraStyle.textLists = @[ [[NSTextList alloc]
+      initWithMarkerFormat:[AlignmentUtils alignmentToMarker:alignment]
+                   options:0] ];
+  paraStyle.alignment = alignment;
+  resetAttrs[NSParagraphStyleAttributeName] = paraStyle;
+
+  input->textView.typingAttributes = resetAttrs;
 }
 
 + (BOOL)isParagraphEmpty:(NSRange)range inString:(NSString *)string {

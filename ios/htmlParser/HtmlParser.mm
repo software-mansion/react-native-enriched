@@ -1,4 +1,6 @@
 #import "HtmlParser.h"
+#import "AlignmentEntry.h"
+#import "AlignmentUtils.h"
 #import "ImageData.h"
 #import "LinkData.h"
 #import "MentionParams.h"
@@ -153,6 +155,9 @@
   NSMutableArray *tagEntry = [[NSMutableArray alloc] init];
 
   NSArray *tagData = ongoingTags[tagName];
+  if (tagData == nil) {
+    return;
+  }
   NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
   NSInteger openImageCount = [((NSNumber *)tagData[1]) intValue];
   NSInteger currentImageCount = *precedingImageCount;
@@ -404,34 +409,6 @@
                                          inString:fixedHtml
                                           leading:NO
                                          trailing:YES];
-
-    // this is more like a hack but for some reason the last <br> in
-    // <blockquote> and <codeblock> are not properly changed into zero width
-    // space so we do that manually here
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<br>\n</blockquote>"
-                                  withString:@"<p>\u200B</p>\n</blockquote>"];
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<br>\n</codeblock>"
-                                  withString:@"<p>\u200B</p>\n</codeblock>"];
-
-    // The same like above for (blockquote and codeblock) this is more like a
-    // hack but for some reason the last <li></li> in <ul> and <ol> are not
-    // properly changed into zero width space so we do that manually here
-    // TODO: investigate this further, issue is already described here:
-    // https://github.com/software-mansion/react-native-enriched/issues/505
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<li></li>\n</ul>"
-                                  withString:@"<li>\u200B</li>\n</ul>"];
-    fixedHtml = [fixedHtml
-        stringByReplacingOccurrencesOfString:@"<li></li>\n</ol>"
-                                  withString:@"<li>\u200B</li>\n</ol>"];
-
-    // replace "<br>" at the end with "<br>\n" if input is not empty to properly
-    // handle last <br> in html
-    if ([fixedHtml hasSuffix:@"<br>"] && fixedHtml.length != 4) {
-      fixedHtml = [fixedHtml stringByAppendingString:@"\n"];
-    }
   }
 
   return fixedHtml;
@@ -442,12 +419,15 @@
   NSMutableDictionary *ongoingTags = [[NSMutableDictionary alloc] init];
   NSMutableArray *initiallyProcessedTags = [[NSMutableArray alloc] init];
   NSMutableDictionary *checkboxStates = [[NSMutableDictionary alloc] init];
+  NSMutableArray<AlignmentEntry *> *foundAlignments =
+      [[NSMutableArray alloc] init];
   BOOL insideCheckboxList = NO;
   NSInteger precedingImageCount = 0;
   BOOL insideTag = NO;
   BOOL gettingTagName = NO;
   BOOL gettingTagParams = NO;
   BOOL closingTag = NO;
+  BOOL lastTagWasBr = NO;
   NSMutableString *currentTagName =
       [[NSMutableString alloc] initWithString:@""];
   NSMutableString *currentTagParams =
@@ -482,49 +462,83 @@
         isSelfClosing = YES;
       }
 
-      if ([currentTagName isEqualToString:@"p"] ||
-          [currentTagName isEqualToString:@"br"]) {
+      if ([currentTagName isEqualToString:@"br"]) {
+        lastTagWasBr = YES;
         // do nothing, we don't include these tags in styles
       } else if ([currentTagName isEqualToString:@"li"]) {
-        // Only track checkbox state if we're inside a checkbox list
-        if (insideCheckboxList && !closingTag) {
-          BOOL isChecked = [currentTagParams containsString:@"checked"];
-          checkboxStates[@(plainText.length)] = @(isChecked);
+        if (!closingTag) {
+          // Opening tag <li>
+          // Track checkbox state if we're inside a checkbox list
+          if (insideCheckboxList) {
+            BOOL isChecked = [currentTagParams containsString:@"checked"];
+            checkboxStates[@(plainText.length)] = @(isChecked);
+          }
+          // Record the start location so we can check if it's empty when
+          // closing
+          ongoingTags[@"li"] = @[ @(plainText.length) ];
+        } else {
+          // Closing tag </li>
+          NSArray *tagData = ongoingTags[@"li"];
+          if (tagData != nil) {
+            NSInteger tagLocation = [((NSNumber *)tagData[0]) intValue];
+            NSString *innerContent = [plainText substringFromIndex:tagLocation];
+
+            // If the li is completely empty (or just contains layout newlines),
+            // inject ZWS
+            if ([innerContent
+                    stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                        newlineCharacterSet]]
+                    .length == 0) {
+              [plainText appendString:@"\u200B"];
+            }
+            [ongoingTags removeObjectForKey:@"li"];
+          }
         }
       } else if (!closingTag) {
-        // we finish opening tag - get its location, the current
-        // precedingImageCount and optionally params and put them under tag name
-        // key in ongoingTags. Storing the open-time image count lets
-        // finalizeTagEntry: correctly shift the start and extend the length
-        // so the range covers any images finalized between open and close.
-        NSMutableArray *tagArr = [[NSMutableArray alloc] init];
-        [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
-        [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
-        if (currentTagParams.length > 0) {
-          [tagArr addObject:[currentTagParams copy]];
-        }
-        ongoingTags[currentTagName] = tagArr;
+        BOOL isPlainParagraph = [currentTagName isEqualToString:@"p"] &&
+                                currentTagParams.length == 0;
 
-        // Check if this is a checkbox list
-        if ([currentTagName isEqualToString:@"ul"] &&
-            [self isUlCheckboxList:currentTagParams]) {
-          insideCheckboxList = YES;
-        }
+        if (!isPlainParagraph) {
+          // we finish opening tag - get its location, the current
+          // precedingImageCount and optionally params and put them under tag
+          // name key in ongoingTags. Storing the open-time image count lets
+          // finalizeTagEntry: correctly shift the start and extend the length
+          // so the range covers any images finalized between open and close.
+          NSMutableArray *tagArr = [[NSMutableArray alloc] init];
+          [tagArr addObject:[NSNumber numberWithInteger:plainText.length]];
+          [tagArr addObject:[NSNumber numberWithInteger:precedingImageCount]];
+          if (currentTagParams.length > 0) {
+            [tagArr addObject:[currentTagParams copy]];
+          }
+          ongoingTags[currentTagName] = tagArr;
 
-        // skip one newline if it was added after opening tags that are in
-        // separate lines
-        if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
-            [[NSCharacterSet newlineCharacterSet]
-                characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
-          i += 1;
-        }
+          // Check if this is a checkbox list
+          if ([currentTagName isEqualToString:@"ul"] &&
+              [self isUlCheckboxList:currentTagParams]) {
+            insideCheckboxList = YES;
+          }
 
-        if (isSelfClosing) {
-          [self finalizeTagEntry:currentTagName
-                         ongoingTags:ongoingTags
-              initiallyProcessedTags:initiallyProcessedTags
-                           plainText:plainText
-                 precedingImageCount:&precedingImageCount];
+          // skip one newline if it was added after opening tags that are in
+          // separate lines
+          if ([self isBlockTag:currentTagName] && i + 1 < fixedHtml.length &&
+              [[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:[fixedHtml characterAtIndex:i + 1]]) {
+            i += 1;
+          }
+
+          if ([currentTagName isEqualToString:@"img"]) {
+            // Images have no inner text, so we manually break the <br> streak
+            // here.
+            lastTagWasBr = NO;
+          }
+
+          if (isSelfClosing) {
+            [self finalizeTagEntry:currentTagName
+                           ongoingTags:ongoingTags
+                initiallyProcessedTags:initiallyProcessedTags
+                             plainText:plainText
+                   precedingImageCount:&precedingImageCount];
+          }
         }
       } else {
         // we finish closing tags - pack tag name, tag range and optionally tag
@@ -538,17 +552,45 @@
 
         BOOL isBlockTag = [self isBlockTag:currentTagName];
 
+        // ZWS logic for blockquote and codeblock
+        BOOL needsZWS = [currentTagName isEqualToString:@"blockquote"] ||
+                        [currentTagName isEqualToString:@"codeblock"];
+        BOOL isEmptyBlock = NO;
+        if (needsZWS) {
+          NSArray *tagData = ongoingTags[currentTagName];
+          if (tagData != nil) {
+            NSInteger tagLoc = [tagData[0] intValue];
+            NSString *inner = [plainText substringFromIndex:tagLoc];
+            if ([inner stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                           newlineCharacterSet]]
+                    .length == 0) {
+              isEmptyBlock = YES;
+            }
+          }
+        }
+
         // skip one newline if it was added before some closing tags that are
         // in separate lines
         if (isBlockTag && plainText.length > 0 &&
             [[NSCharacterSet newlineCharacterSet]
                 characterIsMember:[plainText
                                       characterAtIndex:plainText.length - 1]]) {
+
+          // If the last thing processed was a <br>, or the block is totally
+          // empty, inject a \u200B before trimming the trailing newline to save
+          // the empty line.
+          if (lastTagWasBr || isEmptyBlock) {
+            [plainText insertString:@"\u200B" atIndex:plainText.length - 1];
+          }
           plainText = [[plainText
               substringWithRange:NSMakeRange(0, plainText.length - 1)]
               mutableCopy];
         }
 
+        [self checkForAlignments:ongoingTags[currentTagName]
+                       plainText:plainText
+                 foundAlignments:foundAlignments
+             precedingImageCount:precedingImageCount];
         [self finalizeTagEntry:currentTagName
                        ongoingTags:ongoingTags
             initiallyProcessedTags:initiallyProcessedTags
@@ -574,6 +616,11 @@
           i += escaped.length - 1;
         } else {
           [plainText appendString:currentCharacterStr];
+          // Any typed character that isn't a newline breaks the <br> streak
+          if (![[NSCharacterSet newlineCharacterSet]
+                  characterIsMember:currentCharacterChar]) {
+            lastTagWasBr = NO;
+          }
         }
       } else {
         if (gettingTagName) {
@@ -781,7 +828,7 @@
     [processedStyles addObject:styleArr];
   }
 
-  return @[ plainText, processedStyles ];
+  return @[ plainText, processedStyles, foundAlignments ];
 }
 
 + (NSString *)parseToHtmlFromRange:(NSRange)range
@@ -813,6 +860,10 @@
     // check each existing style existence
     for (NSNumber *type in host.stylesDict) {
       StyleBase *style = host.stylesDict[type];
+      // we do not want to add <></> tags for alignment
+      if ([style isKindOfClass:[AlignmentStyle class]]) {
+        continue;
+      }
       if ([style detect:currentRange]) {
         [currentActiveStyles addObject:type];
 
@@ -979,19 +1030,26 @@
           [result appendString:@"\n</ul>"];
         }
 
+        NSString *cssStyleString =
+            [self prepareCssStyleString:currentRange.location
+                           isOpeningTag:YES
+                                   host:host];
+
         // handle starting unordered list
         if (!inUnorderedList &&
             [currentActiveStyles
                 containsObject:@([UnorderedListStyle getType])]) {
           inUnorderedList = YES;
-          [result appendString:@"\n<ul>"];
+          [result appendString:[NSString stringWithFormat:@"\n<ul%@>",
+                                                          cssStyleString]];
         }
         // handle starting ordered list
         if (!inOrderedList &&
             [currentActiveStyles
                 containsObject:@([OrderedListStyle getType])]) {
           inOrderedList = YES;
-          [result appendString:@"\n<ol>"];
+          [result appendString:[NSString stringWithFormat:@"\n<ol%@>",
+                                                          cssStyleString]];
         }
         // handle starting blockquotes
         if (!inBlockQuote &&
@@ -1010,7 +1068,9 @@
             [currentActiveStyles
                 containsObject:@([CheckboxListStyle getType])]) {
           inCheckboxList = YES;
-          [result appendString:@"\n<ul data-type=\"checkbox\">"];
+          [result appendString:[NSString stringWithFormat:
+                                             @"\n<ul data-type=\"checkbox\"%@>",
+                                             cssStyleString]];
         }
 
         // don't add the <p> tag if some paragraph styles are present
@@ -1030,7 +1090,8 @@
                 containsObject:@([CheckboxListStyle getType])]) {
           [result appendString:@"\n"];
         } else {
-          [result appendString:@"\n<p>"];
+          [result appendString:[NSString stringWithFormat:@"\n<p%@>",
+                                                          cssStyleString]];
         }
       }
 
@@ -1239,6 +1300,9 @@
                       openingTag:(BOOL)openingTag
                         location:(NSInteger)location
                             host:(id<EnrichedViewHost>)host {
+  NSString *cssStyleString = [self prepareCssStyleString:location
+                                            isOpeningTag:openingTag
+                                                    host:host];
   if ([style isEqualToNumber:@([BoldStyle getType])]) {
     return @"b";
   } else if ([style isEqualToNumber:@([ItalicStyle getType])]) {
@@ -1318,17 +1382,17 @@
       return @"mention";
     }
   } else if ([style isEqualToNumber:@([H1Style getType])]) {
-    return @"h1";
+    return [NSString stringWithFormat:@"h1%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H2Style getType])]) {
-    return @"h2";
+    return [NSString stringWithFormat:@"h2%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H3Style getType])]) {
-    return @"h3";
+    return [NSString stringWithFormat:@"h3%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H4Style getType])]) {
-    return @"h4";
+    return [NSString stringWithFormat:@"h4%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H5Style getType])]) {
-    return @"h5";
+    return [NSString stringWithFormat:@"h5%@", cssStyleString];
   } else if ([style isEqualToNumber:@([H6Style getType])]) {
-    return @"h6";
+    return [NSString stringWithFormat:@"h6%@", cssStyleString];
   } else if ([style isEqualToNumber:@([UnorderedListStyle getType])] ||
              [style isEqualToNumber:@([OrderedListStyle getType])]) {
     return @"li";
@@ -1348,9 +1412,57 @@
   } else if ([style isEqualToNumber:@([BlockQuoteStyle getType])] ||
              [style isEqualToNumber:@([CodeBlockStyle getType])]) {
     // blockquotes and codeblock use <p> tags the same way lists use <li>
-    return @"p";
+    return [NSString stringWithFormat:@"p%@", cssStyleString];
   }
   return @"";
+}
+
++ (NSString *)prepareCssStyleString:(NSInteger)location
+                       isOpeningTag:(BOOL)isOpeningTag
+                               host:(id<EnrichedViewHost>)host {
+  if (!isOpeningTag) {
+    return @"";
+  }
+
+  NSParagraphStyle *pStyle =
+      [host.textView.textStorage attribute:NSParagraphStyleAttributeName
+                                   atIndex:location
+                            effectiveRange:nil];
+  NSString *alignStr = [AlignmentUtils cssValueForAlignment:pStyle.alignment];
+
+  if (alignStr) {
+    return [NSString stringWithFormat:@" style=\"text-align: %@\"", alignStr];
+  }
+
+  return @"";
+}
+
++ (void)checkForAlignments:(NSArray *)tagData
+                 plainText:(NSString *)plainText
+           foundAlignments:(NSMutableArray<AlignmentEntry *> *)foundAlignments
+       precedingImageCount:(NSInteger)precedingImageCount {
+  if (tagData == nil) {
+    return;
+  }
+
+  // We look at the params stored in ongoingTags
+  NSString *storedParams = (tagData.count > 2) ? tagData[2] : nil;
+  NSTextAlignment align =
+      [AlignmentUtils alignmentFromStyleParams:storedParams];
+
+  if (align != NSTextAlignmentNatural) {
+    NSInteger startLoc = [tagData[0] integerValue];
+    // Calculate range relative to plainText
+    NSInteger actualStart = startLoc + precedingImageCount;
+    NSInteger length = plainText.length - startLoc;
+
+    if (length > 0) {
+      AlignmentEntry *entry = [[AlignmentEntry alloc] init];
+      entry.alignment = align;
+      entry.range = NSMakeRange(actualStart, length);
+      [foundAlignments addObject:entry];
+    }
+  }
 }
 
 @end

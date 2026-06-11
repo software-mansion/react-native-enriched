@@ -365,7 +365,7 @@ class ParametrizedStyles(
       spannable.removeSpan(span)
     }
 
-    val start = mentionStart ?: return
+    val start = mentionStart ?: selectionStart
 
     view.runAsATransaction {
       spannable.replace(start, selectionEnd, text)
@@ -383,6 +383,7 @@ class ParametrizedStyles(
 
     view.mentionHandler?.reset()
     view.selection.validateStyles()
+    mentionStart = null
   }
 
   fun getStyleRange(): Pair<Int, Int> = view.selection?.getInlineSelection() ?: Pair(0, 0)
