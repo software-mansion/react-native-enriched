@@ -40,9 +40,9 @@ A prop for customizing styles of HTML elements, including press colors for inter
 
 If `true`, external HTML (e.g. from Google Docs, Word, web pages) will be normalized before rendering. This converts arbitrary HTML into the canonical tag subset that the enriched parser understands.
 
-| Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `false`       | Both     |
+| Type   | Default Value | Platform     |
+| ------ | ------------- | ------------ |
+| `bool` | `false`       | iOS, Android |
 
 ### `ellipsizeMode`
 

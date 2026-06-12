@@ -445,7 +445,7 @@ interface OnSubmitEditing {
 | -------------------------------------------------------- | ----------------- |
 | `(event: NativeSyntheticEvent<OnSubmitEditing>) => void` | iOS, Android, Web |
 
-### `OnPasteImages`
+### `onPasteImages`
 
 Callback invoked when the user pastes one or more images or GIFs into the input.
 
