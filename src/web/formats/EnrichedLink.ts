@@ -74,6 +74,10 @@ export const EnrichedLink = Link.extend({
       },
     };
   },
+
+  addPasteRules() {
+    return [];
+  },
 });
 
 export function removeLink(editor: Editor, start: number, end: number) {
