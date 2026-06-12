@@ -497,7 +497,7 @@ A React ref that lets you call any ref methods on the input.
 
 ### `returnKeyLabel`
 
-Overrides the return key label with a custom string. Not suppported on iOS.
+Overrides the return key label with a custom string. Not supported on iOS.
 
 | Type     | Default Value | Platform |
 | -------- | ------------- | -------- |
