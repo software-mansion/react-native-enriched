@@ -2,8 +2,15 @@ import {
   checkboxHtmlForTiptap,
   checkboxHtmlFromTiptap,
 } from './checkboxHtmlNormalizer';
+import { normalizeHtml } from './htmlNormalizer';
 
-export function prepareHtmlForTiptap(html: string): string {
+export function prepareHtmlForTiptap(
+  html: string,
+  useHtmlNormalizer: boolean | undefined
+): string {
+  if (useHtmlNormalizer) {
+    html = normalizeHtml(html);
+  }
   html = checkboxHtmlForTiptap(html);
   html = html.replace(/<br\s*\/?>/gi, '<p></p>');
   return html;

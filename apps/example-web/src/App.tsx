@@ -261,6 +261,7 @@ function App() {
           onMentionDetected={handleOnMentionDetected}
           mentionIndicators={['@', '#']}
           htmlStyle={WEB_DEFAULT_HTML_STYLE}
+          useHtmlNormalizer
         />
         <MentionPopup
           variant="user"

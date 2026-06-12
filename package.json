@@ -127,6 +127,7 @@
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "playwright": "1.58.2",
     "prettier": "^3.0.3",
     "react": "19.1.0",
@@ -147,15 +148,35 @@
   ],
   "packageManager": "yarn@4.13.0",
   "jest": {
-    "preset": "react-native",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/apps/example/node_modules",
-      "<rootDir>/lib/"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "<rootDir>/.playwright/",
-      "<rootDir>/apps/example-web/"
+    "projects": [
+      {
+        "displayName": "native",
+        "preset": "react-native",
+        "modulePathIgnorePatterns": [
+          "<rootDir>/apps/example/node_modules",
+          "<rootDir>/lib/"
+        ],
+        "testPathIgnorePatterns": [
+          "/node_modules/",
+          "<rootDir>/.playwright/",
+          "<rootDir>/apps/example-web/",
+          "<rootDir>/src/web/"
+        ]
+      },
+      {
+        "displayName": "web",
+        "testEnvironment": "jsdom",
+        "testMatch": [
+          "<rootDir>/src/web/**/__tests__/**/*.test.{ts,tsx}"
+        ],
+        "modulePathIgnorePatterns": [
+          "<rootDir>/apps/example/node_modules",
+          "<rootDir>/lib/"
+        ],
+        "transform": {
+          "^.+\\.(js|ts|tsx)$": "babel-jest"
+        }
+      }
     ]
   },
   "commitlint": {
