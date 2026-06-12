@@ -933,6 +933,8 @@ The following keyboard shortcuts are available on Web. `Mod` is `⌘` on macOS a
 | Bulleted list       | ⌘ Shift+8         | Ctrl+Shift+8            |
 | Checkbox list       | ⌘ Shift+9         | Ctrl+Shift+9            |
 | Paste as plain text | ⌘ Shift+V         | Ctrl+Shift+V            |
+| Undo                | ⌘ Z               | Ctrl+Z                  |
+| Redo                | ⌘ Shift+Z         | Ctrl+Shift+Z            |
 
 ## HtmlStyle type
 
