@@ -241,6 +241,29 @@ export interface HtmlStyle {
   };
 }
 
+export type TextShortcutStyle =
+  | 'bold'
+  | 'italic'
+  | 'underline'
+  | 'strikethrough'
+  | 'inline_code'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'blockquote'
+  | 'codeblock'
+  | 'unordered_list'
+  | 'ordered_list'
+  | 'checkbox_list';
+
+export interface TextShortcut {
+  trigger: string;
+  style: TextShortcutStyle;
+}
+
 // Event types
 
 export interface OnChangeTextEvent {
@@ -480,8 +503,14 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   onChangeSelection?: (e: NativeSyntheticEvent<OnChangeSelectionEvent>) => void;
   onKeyPress?: (e: NativeSyntheticEvent<OnKeyPressEvent>) => void;
   onSubmitEditing?: (e: NativeSyntheticEvent<OnSubmitEditing>) => void;
+  /**
+   * Web: each `images[].uri` is a `blob:` URL from `URL.createObjectURL`. If you keep
+   * URIs around (or replace them after upload), call `URL.revokeObjectURL(uri)` when done
+   * to avoid retaining blob memory. Native uses non-blob URIs; revoke does not apply.
+   */
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
+  textShortcuts?: TextShortcut[];
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
@@ -498,6 +527,11 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    * Disabled by default.
    */
   useHtmlNormalizer?: boolean;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
 }
 
 export interface EnrichedTextInstance extends NativeMethods {}
@@ -512,6 +546,11 @@ export interface EnrichedTextProps extends ViewProps {
   numberOfLines?: number;
   selectable?: boolean;
   selectionColor?: ColorValue;
+  /**
+   * If true, fonts will scale to respect the system's accessibility text size.
+   * Enabled by default.
+   */
+  allowFontScaling?: boolean;
   onLinkPress?: (event: OnLinkPressEvent) => void;
   onMentionPress?: (event: OnMentionPressEvent) => void;
 }

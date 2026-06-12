@@ -18,7 +18,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
@@ -27,6 +26,7 @@ import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.text.spans.EnrichedTextImageSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextClickableSpan
 import com.swmansion.enriched.text.spans.interfaces.EnrichedTextSpan
@@ -40,6 +40,15 @@ class EnrichedTextView : AppCompatTextView {
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
   private var fontSize: Float = EnrichedConstants.TEXT_DEFAULT_FONT_SIZE
+  private var fontSizeRaw: Float? = null
+  private var htmlStyleMap: ReadableMap? = null
+  var allowFontScaling: Boolean = EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT
+    set(value) {
+      if (field == value) return
+      field = value
+      fontSizeRaw?.let { setFontSize(it) }
+      htmlStyleMap?.let { setHtmlStyle(it) }
+    }
 
   private var enrichedStyle: EnrichedTextStyle? = null
   private val spannableFactory = EnrichedTextSpanFactory()
@@ -248,7 +257,9 @@ class EnrichedTextView : AppCompatTextView {
   fun setHtmlStyle(style: ReadableMap?) {
     if (style == null) return
 
-    val enrichedStyle = EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize.toInt(), style)
+    htmlStyleMap = style
+    val enrichedStyle =
+      EnrichedTextStyle.fromReadableMap(context as ReactContext, fontSize.toInt(), style, allowFontScaling)
     this.enrichedStyle = enrichedStyle
 
     val currentText = text ?: return
@@ -288,7 +299,8 @@ class EnrichedTextView : AppCompatTextView {
   fun setFontSize(size: Float) {
     if (size == 0f) return
 
-    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    fontSizeRaw = size
+    val sizeInt = ceil(pixelFromSpOrDp(size, allowFontScaling))
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
   }

@@ -32,7 +32,6 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
-import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
@@ -42,6 +41,7 @@ import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
+import com.swmansion.enriched.common.pixelFromSpOrDp
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
@@ -58,6 +58,7 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedLineHeightSpan
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.spans.interfaces.EnrichedInputSpan
+import com.swmansion.enriched.textinput.styles.AlignmentStyles
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 import com.swmansion.enriched.textinput.styles.InlineStyles
 import com.swmansion.enriched.textinput.styles.ListStyles
@@ -67,6 +68,7 @@ import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
+import com.swmansion.enriched.textinput.utils.ShortcutsHandler
 import com.swmansion.enriched.textinput.utils.mergeSpannables
 import com.swmansion.enriched.textinput.utils.setCheckboxClickListener
 import com.swmansion.enriched.textinput.utils.zwsCountBefore
@@ -85,10 +87,26 @@ class EnrichedTextInputView :
   val inlineStyles: InlineStyles? = InlineStyles(this)
   val paragraphStyles: ParagraphStyles? = ParagraphStyles(this)
   val listStyles: ListStyles? = ListStyles(this)
+  val shortcutsHandler: ShortcutsHandler? = ShortcutsHandler(this)
   val parametrizedStyles: ParametrizedStyles? = ParametrizedStyles(this)
+  val alignmentStyles: AlignmentStyles? = AlignmentStyles(this)
   var isDuringTransaction: Boolean = false
   var isRemovingMany: Boolean = false
   var scrollEnabled: Boolean = true
+  var allowFontScaling: Boolean = EnrichedConstants.ALLOW_FONT_SCALING_DEFAULT
+    set(value) {
+      if (field != value) {
+        field = value
+        val raw = fontSizeRaw
+        if (raw != null) {
+          setFontSize(raw) // re-invokes invalidateStyles internally
+        } else {
+          htmlStyle.invalidateStyles()
+        }
+        applyLineSpacing()
+        reApplyHtmlStyleForSpans(htmlStyle, htmlStyle) // force re-apply
+      }
+    }
 
   val mentionHandler: MentionHandler? = MentionHandler(this)
   var htmlStyle: HtmlStyle = HtmlStyle(this, null)
@@ -109,6 +127,10 @@ class EnrichedTextInputView :
   var experimentalSynchronousEvents: Boolean = false
   var useHtmlNormalizer: Boolean = false
 
+  // Pair: (trigger, style)
+  var textShortcuts: List<Pair<String, String>> = emptyList()
+
+  private var fontSizeRaw: Float? = null
   var fontSize: Float? = null
   private var lineHeight: Float? = null
   var submitBehavior: String? = null
@@ -140,6 +162,16 @@ class EnrichedTextInputView :
     defStyleAttr,
   ) {
     prepareComponent()
+  }
+
+  override fun scrollTo(
+    x: Int,
+    y: Int,
+  ) {
+    // Android's internal cursor tracker gets confused by ALIGN_CENTER + LeadingMarginSpan
+    // and attempts to scroll the text horizontally.
+    // We lock the horizontal scroll to 0 to prevent the view from shifting.
+    super.scrollTo(0, y)
   }
 
   override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
@@ -521,8 +553,9 @@ class EnrichedTextInputView :
 
   fun setFontSize(size: Float) {
     if (size == 0f) return
+    fontSizeRaw = size
 
-    val sizeInt = ceil(PixelUtil.toPixelFromSP(size))
+    val sizeInt = ceil(pixelFromSpOrDp(size, allowFontScaling))
     fontSize = sizeInt
     setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeInt)
 
@@ -547,7 +580,7 @@ class EnrichedTextInputView :
 
     val lh = lineHeight ?: return
     spannable.setSpan(
-      EnrichedLineHeightSpan(lh),
+      EnrichedLineHeightSpan(lh, allowFontScaling),
       0,
       spannable.length,
       Spannable.SPAN_INCLUSIVE_INCLUSIVE,
@@ -767,7 +800,7 @@ class EnrichedTextInputView :
     layoutManager.invalidateLayout()
   }
 
-  private fun toggleStyle(name: String) {
+  internal fun toggleStyle(name: String) {
     when (name) {
       EnrichedSpans.BOLD -> inlineStyles?.toggleStyle(EnrichedSpans.BOLD)
       EnrichedSpans.ITALIC -> inlineStyles?.toggleStyle(EnrichedSpans.ITALIC)
@@ -961,6 +994,13 @@ class EnrichedTextInputView :
     if (!isValid) return
 
     parametrizedStyles?.setMentionSpan(text, indicator, attributes)
+  }
+
+  fun setTextAlignment(alignment: String) {
+    runAsATransaction {
+      alignmentStyles?.setAlignment(alignment)
+    }
+    selection?.validateStyles()
   }
 
   fun requestHTML(requestId: Int) {

@@ -64,6 +64,7 @@ import { StripBoldInStyledHeadingsPlugin } from './pmPlugins/StripBoldInStyledHe
 import { StrictMarksPlugin } from './pmPlugins/StrictMarksPlugin';
 import { MergeAdjacentSameKindBlocksPlugin } from './pmPlugins/MergeAdjacentSameKindBlocksPlugin';
 import { StripMarksInCodeBlockPlugin } from './pmPlugins/StripMarksInCodeBlockPlugin';
+import { handleClipboardPasteImages } from './pasteImages';
 import {
   MentionPlugin,
   setMention,
@@ -73,7 +74,6 @@ import {
 import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
-
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -105,6 +105,7 @@ export const EnrichedTextInput = ({
   onSubmitEditing,
   returnKeyType,
   submitBehavior,
+  onPasteImages,
   onMentionDetected,
   onStartMention,
   onChangeMention,
@@ -123,6 +124,11 @@ export const EnrichedTextInput = ({
   useEffect(() => {
     htmlStyleRef.current = resolvedHtmlStyle;
   }, [resolvedHtmlStyle]);
+
+  const onPasteImagesRef = useRef(onPasteImages);
+  useEffect(() => {
+    onPasteImagesRef.current = onPasteImages;
+  }, [onPasteImages]);
 
   const mentionIndicatorsRef = useRef(mentionIndicators);
   useEffect(() => {
@@ -248,6 +254,12 @@ export const EnrichedTextInput = ({
       },
       editorProps: {
         handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
+        handlePaste: (_view, event) =>
+          handleClipboardPasteImages(
+            event,
+            () => editorInstanceRef.current,
+            () => onPasteImagesRef.current
+          ),
         attributes: {
           autoCapitalize,
           enterkeyhint: returnKeyTypeToEnterKeyHint(returnKeyType),

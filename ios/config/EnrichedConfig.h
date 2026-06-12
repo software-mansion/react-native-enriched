@@ -90,6 +90,8 @@
 - (void)setCodeBlockBorderRadius:(CGFloat)newValue;
 - (void)invalidateFonts;
 - (NSNumber *)scaledPrimaryFontSize;
+- (BOOL)allowFontScaling;
+- (void)setAllowFontScaling:(BOOL)newValue;
 - (CGFloat)checkboxListBoxSize;
 - (void)setCheckboxListBoxSize:(CGFloat)newValue;
 - (CGFloat)checkboxListGapWidth;

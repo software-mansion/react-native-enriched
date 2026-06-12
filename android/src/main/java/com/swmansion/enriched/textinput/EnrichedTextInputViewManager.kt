@@ -241,6 +241,14 @@ class EnrichedTextInputViewManager :
     view.scrollEnabled = scrollEnabled
   }
 
+  @ReactProp(name = "allowFontScaling")
+  override fun setAllowFontScaling(
+    view: EnrichedTextInputView,
+    allowFontScaling: Boolean,
+  ) {
+    view.allowFontScaling = allowFontScaling
+  }
+
   override fun onAfterUpdateTransaction(view: EnrichedTextInputView) {
     super.onAfterUpdateTransaction(view)
     view.afterUpdateTransaction()
@@ -305,6 +313,22 @@ class EnrichedTextInputViewManager :
     value: Boolean,
   ) {
     view?.useHtmlNormalizer = value
+  }
+
+  override fun setTextShortcuts(
+    view: EnrichedTextInputView?,
+    value: ReadableArray?,
+  ) {
+    val shortcuts = mutableListOf<Pair<String, String>>()
+    if (value != null) {
+      for (i in 0 until value.size()) {
+        val map = value.getMap(i) ?: continue
+        val trigger = map.getString("trigger") ?: continue
+        val style = map.getString("style") ?: continue
+        shortcuts.add(Pair(trigger, style))
+      }
+    }
+    view?.textShortcuts = shortcuts
   }
 
   override fun focus(view: EnrichedTextInputView?) {
@@ -452,7 +476,7 @@ class EnrichedTextInputViewManager :
     view: EnrichedTextInputView?,
     alignment: String,
   ) {
-    TODO("Not yet implemented")
+    view?.setTextAlignment(alignment)
   }
 
   override fun measure(
