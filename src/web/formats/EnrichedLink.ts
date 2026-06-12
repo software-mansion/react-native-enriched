@@ -1,5 +1,5 @@
 import Link from '@tiptap/extension-link';
-import type { CommandProps } from '@tiptap/core';
+import { mergeAttributes, type CommandProps } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 
 import { nativePosToTiptapPos } from '../positionMapping';
@@ -13,15 +13,22 @@ export const EnrichedLink = Link.extend({
       ...this.parent?.(),
       auto: {
         default: false,
-        parseHTML: (el) => el.getAttribute('href') === el.textContent,
-        // Internal only
-        renderHTML: () => ({}),
+        parseHTML: (el) => {
+          return el.getAttribute('data-auto') === 'true';
+        },
+        renderHTML: (attributes) => {
+          return { 'data-auto': attributes.auto };
+        },
       },
     };
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['a', { href: HTMLAttributes.href }, 0];
+    return [
+      'a',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      0,
+    ];
   },
 
   addOptions() {
