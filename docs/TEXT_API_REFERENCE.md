@@ -1,46 +1,48 @@
 # EnrichedText API Reference
 
+> **Web is not yet supported.** `EnrichedText` is only available on iOS and Android.
+
 ## Props
 
 ### `allowFontScaling`
 
 If `true`, the text respects the system's accessibility font scaling settings.
 
-| Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `true`       | Both     |
+| Type   | Default Value | Platform     |
+| ------ | ------------- | ------------ |
+| `bool` | `true`        | iOS, Android |
 
 ### `children`
 
 The HTML string to render. Accepts the HTML format produced by `EnrichedTextInput`.
 
-| Type     | Default Value | Platform |
-| -------- | ------------- | -------- |
-| `string` | -             | Both     |
+| Type     | Default Value | Platform     |
+| -------- | ------------- | ------------ |
+| `string` | -             | iOS, Android |
 
 ### `style`
 
 Standard React Native `TextStyle` applied to the text.
 
-| Type        | Default Value | Platform |
-| ----------- | ------------- | -------- |
-| `TextStyle` | -             | Both     |
+| Type        | Default Value | Platform     |
+| ----------- | ------------- | ------------ |
+| `TextStyle` | -             | iOS, Android |
 
 ### `htmlStyle`
 
 A prop for customizing styles of HTML elements, including press colors for interactive elements.
 
-| Type                                                   | Default Value | Platform |
-| ------------------------------------------------------ | ------------- | -------- |
-| [`EnrichedTextHtmlStyle`](#enrichedtexthtmlstyle-type) | -             | Both     |
+| Type                                                   | Default Value | Platform     |
+| ------------------------------------------------------ | ------------- | ------------ |
+| [`EnrichedTextHtmlStyle`](#enrichedtexthtmlstyle-type) | -             | iOS, Android |
 
 ### `useHtmlNormalizer`
 
 If `true`, external HTML (e.g. from Google Docs, Word, web pages) will be normalized before rendering. This converts arbitrary HTML into the canonical tag subset that the enriched parser understands.
 
-| Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `false`       | Both     |
+| Type   | Default Value | Platform     |
+| ------ | ------------- | ------------ |
+| `bool` | `false`       | iOS, Android |
 
 ### `ellipsizeMode`
 
@@ -51,37 +53,36 @@ How the text should be truncated when `numberOfLines` is set and the text overfl
 - `tail` – truncates at the end, e.g. `abcd...`.
 - `clip` – clips the text without inserting an ellipsis.
 
-| Type                                      | Default Value | Platform |
-| ----------------------------------------- | ------------- | -------- |
-| `'head' \| 'middle' \| 'tail' \| 'clip'` | `'tail'`      | Both     |
+| Type                                     | Default Value | Platform     |
+| ---------------------------------------- | ------------- | ------------ |
+| `'head' \| 'middle' \| 'tail' \| 'clip'` | `'tail'`      | iOS, Android |
 
 > [!NOTE]
 > On Android, when numberOfLines is set to a value higher than 1, only tail value will work correctly.
-
 
 ### `numberOfLines`
 
 Limits the number of displayed lines. Set to `0` for unlimited lines.
 
-| Type     | Default Value | Platform |
-| -------- | ------------- | -------- |
-| `number` | `0`           | Both     |
+| Type     | Default Value | Platform     |
+| -------- | ------------- | ------------ |
+| `number` | `0`           | iOS, Android |
 
 ### `selectable`
 
 If `true`, the text can be selected by the user (e.g. for copy/paste).
 
-| Type   | Default Value | Platform |
-| ------ | ------------- | -------- |
-| `bool` | `false`       | Both     |
+| Type   | Default Value | Platform     |
+| ------ | ------------- | ------------ |
+| `bool` | `false`       | iOS, Android |
 
 ### `selectionColor`
 
 The color of the text selection highlight.
 
-| Type                                           | Default Value  | Platform |
-| ---------------------------------------------- | -------------- | -------- |
-| [`color`](https://reactnative.dev/docs/colors) | system default | Both     |
+| Type                                           | Default Value  | Platform     |
+| ---------------------------------------------- | -------------- | ------------ |
+| [`color`](https://reactnative.dev/docs/colors) | system default | iOS, Android |
 
 ### `onLinkPress`
 
@@ -93,9 +94,9 @@ interface OnLinkPressEvent {
 }
 ```
 
-| Type                                | Default Value | Platform |
-| ----------------------------------- | ------------- | -------- |
-| `(event: OnLinkPressEvent) => void` | -             | Both     |
+| Type                                | Default Value | Platform     |
+| ----------------------------------- | ------------- | ------------ |
+| `(event: OnLinkPressEvent) => void` | -             | iOS, Android |
 
 ### `onMentionPress`
 
@@ -109,9 +110,9 @@ interface OnMentionPressEvent {
 }
 ```
 
-| Type                                   | Default Value | Platform |
-| -------------------------------------- | ------------- | -------- |
-| `(event: OnMentionPressEvent) => void` | -             | Both     |
+| Type                                   | Default Value | Platform     |
+| -------------------------------------- | ------------- | ------------ |
+| `(event: OnMentionPressEvent) => void` | -             | iOS, Android |
 
 ## EnrichedTextHtmlStyle type
 

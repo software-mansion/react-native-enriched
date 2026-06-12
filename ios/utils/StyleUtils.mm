@@ -182,15 +182,21 @@
 }
 
 // returns false when style shouldn't be applied and true when it can be
-+ (BOOL)handleStyleBlocksAndConflicts:(StyleType)type
-                                range:(NSRange)range
-                              forHost:(id<EnrichedViewHost>)host {
-  // handle blocking styles: if any is present we do not apply the toggled style
++ (BOOL)isStyleBlocked:(StyleType)type
+                 range:(NSRange)range
+               forHost:(id<EnrichedViewHost>)host {
   NSArray<NSNumber *> *blocking =
       [self getPresentStyleTypesFrom:host.blockingStyles[@(type)]
                                range:range
                              forHost:host];
-  if (blocking.count != 0) {
+  return blocking.count != 0;
+}
+
+// returns false when style shouldn't be applied and true when it can be
++ (BOOL)handleStyleBlocksAndConflicts:(StyleType)type
+                                range:(NSRange)range
+                              forHost:(id<EnrichedViewHost>)host {
+  if ([self isStyleBlocked:type range:range forHost:host]) {
     return NO;
   }
 

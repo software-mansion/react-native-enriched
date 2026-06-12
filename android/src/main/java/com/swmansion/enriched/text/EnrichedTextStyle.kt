@@ -155,7 +155,7 @@ data class EnrichedTextStyle(
       opacity: Int,
     ): Int {
       val color = parseColor(context, map, key)
-      if (Color.alpha(color) == 0) return color
+      if (Color.alpha(color) != 255) return color
       return (color and 0x00FFFFFF) or (opacity.coerceIn(0, 255) shl 24)
     }
 

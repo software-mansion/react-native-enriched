@@ -241,6 +241,29 @@ export interface HtmlStyle {
   };
 }
 
+export type TextShortcutStyle =
+  | 'bold'
+  | 'italic'
+  | 'underline'
+  | 'strikethrough'
+  | 'inline_code'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'blockquote'
+  | 'codeblock'
+  | 'unordered_list'
+  | 'ordered_list'
+  | 'checkbox_list';
+
+export interface TextShortcut {
+  trigger: string;
+  style: TextShortcutStyle;
+}
+
 // Event types
 
 export interface OnChangeTextEvent {
@@ -487,6 +510,7 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    */
   onPasteImages?: (e: NativeSyntheticEvent<OnPasteImagesEvent>) => void;
   contextMenuItems?: ContextMenuItem[];
+  textShortcuts?: TextShortcut[];
   /**
    * If true, Android will use experimental synchronous events.
    * This will prevent from input flickering when updating component size.
