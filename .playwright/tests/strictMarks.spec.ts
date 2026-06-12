@@ -307,8 +307,12 @@ test.describe('strict marks', () => {
       .poll(async () => {
         const html = await getSerializedHtml(page);
         return (
-          html.includes('<a href="https://example.com">Hello</a>') &&
-          !html.includes('<a href="https://example.com">Hello more</a>')
+          html.includes(
+            '<a href="https://example.com" data-auto="false">Hello</a>'
+          ) &&
+          !html.includes(
+            '<a href="https://example.com" data-auto="false">Hello more</a>'
+          )
         );
       })
       .toBe(true);

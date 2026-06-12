@@ -72,6 +72,31 @@ function rangeHasManualLink(
   return found;
 }
 
+function rangeHasExactAutoLink(
+  doc: Node,
+  linkType: MarkType,
+  from: number,
+  to: number,
+  href: string
+): boolean {
+  let hasExact = true;
+  let hasText = false;
+
+  doc.nodesBetween(from, to, (node) => {
+    if (!hasExact) return false;
+    if (!node.isText) return true;
+
+    hasText = true;
+    const link = linkType.isInSet(node.marks);
+    if (!link || link.attrs.auto !== true || link.attrs.href !== href) {
+      hasExact = false;
+    }
+    return false;
+  });
+
+  return hasText && hasExact;
+}
+
 function extractRuns(
   block: Node,
   blockStartPos: number,
@@ -103,38 +128,6 @@ function extractRuns(
 
   if (current) runs.push(current);
   return runs;
-}
-
-function scanRunForAutolinks(
-  run: Run,
-  doc: Node,
-  linkType: MarkType,
-  linkRegex: RegExp | undefined,
-  tr: Transaction,
-  detected: OnLinkDetected[]
-): void {
-  for (const match of run.text.matchAll(WHITESPACE_RE)) {
-    const word = match[0];
-    const wordStart = run.startPos + match.index!;
-    const wordEnd = wordStart + word.length;
-
-    const ranges = findAutolinkRangesInWord(word, linkRegex);
-    const fullMatch = ranges.some(
-      (r) => r.start === 0 && r.endExclusive === word.length
-    );
-
-    if (!fullMatch) continue;
-    if (rangeHasManualLink(doc, linkType, wordStart, wordEnd)) continue;
-
-    const href = word;
-    tr.addMark(wordStart, wordEnd, linkType.create({ href, auto: true }));
-    detected.push({
-      text: word,
-      url: href,
-      start: tiptapPosToNativePos(doc, wordStart),
-      end: tiptapPosToNativePos(doc, wordEnd),
-    });
-  }
 }
 
 function getDirtyBlocks(
@@ -189,37 +182,85 @@ export const AutolinkPlugin = Extension.create<AutolinkPluginOptions>({
           const state = this.options.getLinkEmitter();
           if (!state || state.linkRegex === null) return null;
 
-          console.log('autoLink transaction');
-
           const { schema, doc, tr } = newState;
           const linkType = schema.marks.link;
           if (!linkType) return null;
 
           const dirtyBlocks = getDirtyBlocks(doc, transactions);
           if (dirtyBlocks.length === 0) return null;
-          // console.log('autoLink transaction');
 
           const detected: OnLinkDetected[] = [];
 
           for (const { node, pos } of dirtyBlocks) {
-            const from = pos + 1;
-            const to = pos + node.nodeSize - 1;
+            const blockFrom = pos + 1;
+            const blockTo = pos + node.nodeSize - 1;
 
-            removeAutoLinksInRange(doc, tr, linkType, from, to);
+            // find all valid links that should exist in this block
+            const desiredLinks: Array<{
+              start: number;
+              end: number;
+              href: string;
+            }> = [];
 
             for (const run of extractRuns(node, pos, schema)) {
-              scanRunForAutolinks(
-                run,
+              for (const match of run.text.matchAll(WHITESPACE_RE)) {
+                const word = match[0];
+                const wordStart = run.startPos + match.index!;
+                const wordEnd = wordStart + word.length;
+
+                const ranges = findAutolinkRangesInWord(word, state.linkRegex);
+                const fullMatch = ranges.some(
+                  (r) => r.start === 0 && r.endExclusive === word.length
+                );
+
+                if (!fullMatch) continue;
+                if (rangeHasManualLink(doc, linkType, wordStart, wordEnd))
+                  continue;
+
+                desiredLinks.push({
+                  start: wordStart,
+                  end: wordEnd,
+                  href: word,
+                });
+              }
+            }
+
+            let lastPos = blockFrom;
+
+            for (const link of desiredLinks) {
+              // strip auto links in the "gap" before this desired link
+              removeAutoLinksInRange(doc, tr, linkType, lastPos, link.start);
+
+              tr.addMark(
+                link.start,
+                link.end,
+                linkType.create({ href: link.href, auto: true })
+              );
+
+              const alreadyExisted = rangeHasExactAutoLink(
                 doc,
                 linkType,
-                state.linkRegex,
-                tr,
-                detected
+                link.start,
+                link.end,
+                link.href
               );
-            }
-          }
 
-          console.log('transaction steps length', tr.steps.length);
+              // don't emit if the link was not changed
+              if (!alreadyExisted) {
+                detected.push({
+                  text: link.href,
+                  url: link.href,
+                  start: tiptapPosToNativePos(doc, link.start),
+                  end: tiptapPosToNativePos(doc, link.end),
+                });
+              }
+
+              lastPos = link.end;
+            }
+
+            // strip rest of the auto links that are now not desired
+            removeAutoLinksInRange(doc, tr, linkType, lastPos, blockTo);
+          }
 
           if (tr.steps.length === 0) return null;
 

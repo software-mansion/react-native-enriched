@@ -79,7 +79,7 @@ test('link mark round-trips in serialized HTML', async ({ page }) => {
 
   await expect
     .poll(async () => getSerializedHtml(page))
-    .toContain('<a href="https://example.com">Example</a>');
+    .toContain('<a href="https://example.com" data-auto="false">Example</a>');
 });
 
 test.describe('test-links setLink table', () => {
@@ -99,7 +99,8 @@ test.describe('test-links setLink table', () => {
       end: '11',
       text: 'world',
       url: 'https://example.com',
-      expectContains: '<p>Hello <a href="https://example.com">world</a></p>',
+      expectContains:
+        '<p>Hello <a href="https://example.com" data-auto="false">world</a></p>',
     },
     {
       name: 'wraps multiword phrase with spaces',
@@ -109,7 +110,7 @@ test.describe('test-links setLink table', () => {
       text: 'two three',
       url: 'https://multi.example',
       expectContains:
-        '<p>one <a href="https://multi.example">two three</a></p>',
+        '<p>one <a href="https://multi.example" data-auto="false">two three</a></p>',
     },
     {
       name: 'inserts linked text at cursor when start and end are the same',
@@ -118,7 +119,8 @@ test.describe('test-links setLink table', () => {
       end: '1',
       text: 'm',
       url: 'https://same-range.example',
-      expectContains: '<p>x<a href="https://same-range.example">m</a>x</p>',
+      expectContains:
+        '<p>x<a href="https://same-range.example" data-auto="false">m</a>x</p>',
     },
     {
       name: 'setLink blocked when selection entirely in codeblock',
@@ -164,7 +166,8 @@ test.describe('test-links setLink table', () => {
       end: '99999',
       text: 'Z',
       url: 'https://clamp.setlink',
-      expectContains: '<p><a href="https://clamp.setlink">Z</a></p>',
+      expectContains:
+        '<p><a href="https://clamp.setlink" data-auto="false">Z</a></p>',
     },
     {
       name: 'setLink wraps link text before inline image - keeps the image',
@@ -174,7 +177,7 @@ test.describe('test-links setLink table', () => {
       text: 'abc',
       url: 'https://example.com',
       expectContains:
-        '<p><a href="https://example.com">abc</a><img src="" width="80" height="80"/></p>',
+        '<p><a href="https://example.com" data-auto="false">abc</a><img src="" width="80" height="80"/></p>',
     },
     {
       name: 'wraps bold italic list item text with link',
@@ -184,7 +187,7 @@ test.describe('test-links setLink table', () => {
       text: 'styled',
       url: 'https://list-styled.example',
       expectContains:
-        '<ul><li><a href="https://list-styled.example"><b><i>styled</i></b></a></li><li>hello</li></ul>',
+        '<ul><li><a href="https://list-styled.example" data-auto="false"><b><i>styled</i></b></a></li><li>hello</li></ul>',
     },
     {
       name: 'inserts linked text at cursor at very start of first list item',
@@ -194,7 +197,7 @@ test.describe('test-links setLink table', () => {
       text: 'Link',
       url: 'https://cursor-list.example',
       expectContains:
-        '<ul><li><a href="https://cursor-list.example">Link</a>first</li><li>second</li></ul>',
+        '<ul><li><a href="https://cursor-list.example" data-auto="false">Link</a>first</li><li>second</li></ul>',
     },
     {
       name: 'inserts linked text at cursor inside empty list item',
@@ -204,7 +207,7 @@ test.describe('test-links setLink table', () => {
       text: 'Link',
       url: 'https://empty-list.example',
       expectContains:
-        '<ul><li><a href="https://empty-list.example">Link</a></li></ul>',
+        '<ul><li><a href="https://empty-list.example" data-auto="false">Link</a></li></ul>',
     },
     {
       name: 'wraps mixed bold and bold-italic text in list item with link as outermost mark',
@@ -214,7 +217,7 @@ test.describe('test-links setLink table', () => {
       text: 'abcd',
       url: 'https://mixed-marks.example',
       expectContains:
-        '<ul><li><a href="https://mixed-marks.example"><b>ab<i>cd</i></b></a></li></ul>',
+        '<ul><li><a href="https://mixed-marks.example" data-auto="false"><b>ab<i>cd</i></b></a></li></ul>',
     },
     {
       name: 'setLink replacement longer than selection applies marks from range start only',
@@ -224,7 +227,7 @@ test.describe('test-links setLink table', () => {
       text: 'abcdef',
       url: 'https://mixed-marks-longer.example',
       expectContains:
-        '<ul><li><a href="https://mixed-marks-longer.example"><b>abcdef</b></a></li></ul>',
+        '<ul><li><a href="https://mixed-marks-longer.example" data-auto="false"><b>abcdef</b></a></li></ul>',
     },
   ];
 
@@ -267,7 +270,8 @@ test.describe('test-links removeLink table', () => {
       html: '<html><p><a href="https://partial.test">abcde</a></p></html>',
       start: '0',
       end: '2',
-      expectContains: '<p>ab<a href="https://partial.test">cde</a></p>',
+      expectContains:
+        '<p>ab<a href="https://partial.test" data-auto="false">cde</a></p>',
     },
     {
       name: 'no link: plain paragraph unchanged',
@@ -288,7 +292,7 @@ test.describe('test-links removeLink table', () => {
       html: '<html><p>prefix <a href="https://noop.rm">ab</a> tail</p></html>',
       start: '1000',
       end: '1000',
-      expectContains: '<a href="https://noop.rm">ab</a>',
+      expectContains: '<a href="https://noop.rm" data-auto="false">ab</a>',
     },
   ];
 
@@ -376,7 +380,9 @@ test.describe('test-links autolink', () => {
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('<a href="https://example.com">https://example.com</a>');
+      .toContain(
+        '<a href="https://example.com" data-auto="true">https://example.com</a>'
+      );
   });
 
   test('creates link while typing with custom regex', async ({ page }) => {
@@ -392,7 +398,7 @@ test.describe('test-links autolink', () => {
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('<a href="issue-123">issue-123</a>');
+      .toContain('<a href="issue-123" data-auto="true">issue-123</a>');
   });
 
   test('creates link when pasting plain URL with default regex', async ({
@@ -407,7 +413,9 @@ test.describe('test-links autolink', () => {
 
     await expect
       .poll(async () => getTestLinksSerializedHtml(page))
-      .toContain('<a href="https://example.com">https://example.com</a>');
+      .toContain(
+        '<a href="https://example.com" data-auto="true">https://example.com</a>'
+      );
   });
 
   test('does not autolink when link regex is disabled', async ({ page }) => {
