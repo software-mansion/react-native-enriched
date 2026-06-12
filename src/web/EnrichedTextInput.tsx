@@ -35,7 +35,7 @@ import { useOnLinkDetected } from './useOnLinkDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
-} from './tiptapHtmlNormalizer';
+} from './normalization/tiptapHtmlNormalizer';
 import { ENRICHED_TEXT_INPUT_DEFAULT_PROPS } from '../utils/EnrichedTextInputDefaultProps';
 import { enrichedInputStyleToCSSProperties } from './styleConversion/enrichedInputStyleToCSSProperties';
 import { enrichedInputThemingToCSSProperties } from './styleConversion/enrichedInputThemingToCSSProperties';

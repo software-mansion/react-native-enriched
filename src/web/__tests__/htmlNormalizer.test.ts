@@ -3,7 +3,7 @@
  * from the C++ suite. The expected outputs are the same as the native
  * normalizer's outputs
  */
-import { normalizeHtml } from '../htmlNormalizer';
+import { normalizeHtml } from '../normalization/htmlNormalizer';
 
 describe('htmlNormalizer', () => {
   describe('TagRemappings', () => {
