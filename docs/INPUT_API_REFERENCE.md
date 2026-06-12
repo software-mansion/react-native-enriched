@@ -507,25 +507,24 @@ Overrides the return key label with a custom string. Not supported on iOS.
 
 Specifies the label or icon shown on the keyboard's return key.
 
-Is not supported on Android, as `returnKeyType` doesn't work with multiline inputs.
+On Android, this prop is accepted but ignored, as `returnKeyType` doesn't work with multiline inputs.
 
 Accepts the standard React Native `ReturnKeyTypeOptions` values: `'go' | 'next' | 'search' | 'send' | 'done' | 'default' | 'google' | 'join' | 'route' | 'yahoo' | 'emergency-call' | 'previous' | 'none'`.
 
-| Type               | Platform     |
-| ------------------ | ------------ |
-| `'go'`             | iOS, Android |
-| `'next'`           | iOS, Android |
-| `'search'`         | iOS, Android |
-| `'send'`           | iOS, Android |
-| `'done'`           | iOS, Android |
-| `'default'`        | iOS          |
-| `'google'`         | iOS          |
-| `'join'`           | iOS          |
-| `'route'`          | iOS          |
-| `'yahoo'`          | iOS          |
-| `emergency-'call'` | iOS          |
-| `'previous'`       | Android      |
-| `'none'`           | Android      |
+| Type               | Platform |
+| ------------------ | -------- |
+| `'go'`             | iOS, Web |
+| `'next'`           | iOS, Web |
+| `'search'`         | iOS, Web |
+| `'send'`           | iOS, Web |
+| `'done'`           | iOS, Web |
+| `'default'`        | iOS      |
+| `'google'`         | iOS      |
+| `'join'`           | iOS      |
+| `'route'`          | iOS      |
+| `'yahoo'`          | iOS      |
+| `'emergency-call'` | iOS      |
+| `'previous'`       | Web      |
 
 | Type                   | Default Value | Platform |
 | ---------------------- | ------------- | -------- |
