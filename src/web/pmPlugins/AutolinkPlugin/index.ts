@@ -189,13 +189,15 @@ export const AutolinkPlugin = Extension.create<AutolinkPluginOptions>({
           const state = this.options.getLinkEmitter();
           if (!state || state.linkRegex === null) return null;
 
+          console.log('autoLink transaction');
+
           const { schema, doc, tr } = newState;
           const linkType = schema.marks.link;
           if (!linkType) return null;
 
-          const linkRegex = state.linkRegex ?? undefined;
           const dirtyBlocks = getDirtyBlocks(doc, transactions);
           if (dirtyBlocks.length === 0) return null;
+          // console.log('autoLink transaction');
 
           const detected: OnLinkDetected[] = [];
 
@@ -206,9 +208,18 @@ export const AutolinkPlugin = Extension.create<AutolinkPluginOptions>({
             removeAutoLinksInRange(doc, tr, linkType, from, to);
 
             for (const run of extractRuns(node, pos, schema)) {
-              scanRunForAutolinks(run, doc, linkType, linkRegex, tr, detected);
+              scanRunForAutolinks(
+                run,
+                doc,
+                linkType,
+                state.linkRegex,
+                tr,
+                detected
+              );
             }
           }
+
+          console.log('transaction steps length', tr.steps.length);
 
           if (tr.steps.length === 0) return null;
 

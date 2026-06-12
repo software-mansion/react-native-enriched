@@ -24,10 +24,9 @@ export function findAutolinkRangesInWord(
   word: string,
   linkRegex: RegExp | undefined
 ): readonly AutolinkRangeInWord[] {
-  const re =
-    linkRegex === undefined
-      ? new RegExp(DEFAULT_AUTOLINK_SUBSTRING_PATTERN, 'gi')
-      : asGlobalRegex(linkRegex);
+  const re = linkRegex
+    ? asGlobalRegex(linkRegex)
+    : new RegExp(DEFAULT_AUTOLINK_SUBSTRING_PATTERN, 'gi');
 
   const out: AutolinkRangeInWord[] = [];
   for (const m of word.matchAll(re)) {

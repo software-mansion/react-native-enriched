@@ -214,7 +214,7 @@ function App() {
   };
 
   const handleOnLinkDetected = (e: OnLinkDetected) => {
-    console.log('[EnrichedTextInput] onLinkDetected event', e);
+    console.log('[EnrichedTextInput] transaction onLinkDetected event', e);
     setCurrentLink(e);
   };
 

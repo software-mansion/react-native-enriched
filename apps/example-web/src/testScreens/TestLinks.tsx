@@ -22,9 +22,7 @@ export function TestLinks() {
   const [linkRegexPattern, setLinkRegexPattern] = useState(
     String.raw`issue-\d+`
   );
-  const [appliedLinkRegex, setAppliedLinkRegex] = useState<
-    RegExp | null | undefined
-  >(undefined);
+  const [appliedLinkRegex, setAppliedLinkRegex] = useState<RegExp | null>();
   const [linkRegexError, setLinkRegexError] = useState('');
   const [startInput, setStartInput] = useState('6');
   const [endInput, setEndInput] = useState('11');
