@@ -17,7 +17,7 @@ export const EnrichedLink = Link.extend({
           return el.getAttribute('data-auto') === 'true';
         },
         renderHTML: (attributes) => {
-          return { 'data-auto': attributes.auto };
+          return attributes.auto ? { 'data-auto': attributes.auto } : {};
         },
       },
     };
