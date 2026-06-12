@@ -179,9 +179,10 @@ export const AutolinkPlugin = Extension.create<AutolinkPluginOptions>({
       new Plugin({
         key: new PluginKey('autolinkDetector'),
         appendTransaction: (transactions, _oldState, newState) => {
+          if (!transactions.some((tr) => tr.docChanged)) return null;
+
           const state = this.options.getLinkEmitter();
           if (!state || state.linkRegex === null) return null;
-
           const { schema, doc, tr } = newState;
           const linkType = schema.marks.link;
           if (!linkType) return null;
