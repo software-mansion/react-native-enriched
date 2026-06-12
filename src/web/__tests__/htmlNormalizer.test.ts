@@ -354,8 +354,8 @@ describe('htmlNormalizer', () => {
       ],
 
       [
-        '<div><br>here\'s more!</div><div><br></div><img src="https://example.com/image.png" alt="image.png" width="336" height="297">',
-        '<br><p>here\'s more!</p><br><p><img src="https://example.com/image.png" alt="image.png" width="336" height="297" /></p>',
+        '<div><br>here&#39;s more!</div><div><br></div><img src="https://example.com/image.png" alt="image.png" width="336" height="297">',
+        '<br><p>here&#39;s more!</p><br><p><img src="https://example.com/image.png" alt="image.png" width="336" height="297" /></p>',
       ],
       [
         '<div>what do you think of this craziness</div><span><blockquote><div><div><ul><li><b>another one </b>hello<div><br></div><div>hi</div></li></ul></div></div></blockquote></span>',
@@ -426,6 +426,25 @@ describe('htmlNormalizer', () => {
       ).toBe(
         '<p><b>Asdasdasd</b></p><br><br><p>Sent with <a href="https://google.com">Net</a></p>'
       );
+    });
+  });
+
+  describe('character escaping', () => {
+    // Each special character in text content is re-emitted as its entity.
+    test.each([
+      ['<p>a & b</p>', '<p>a &amp; b</p>'],
+      ['<p>a < b</p>', '<p>a &lt; b</p>'],
+      ['<p>a > b</p>', '<p>a &gt; b</p>'],
+      ['<p>"quoted"</p>', '<p>&quot;quoted&quot;</p>'],
+      ["<p>it's</p>", '<p>it&#39;s</p>'],
+      ['<p>&amp;&lt;&gt;"\'</p>', '<p>&amp;&lt;&gt;&quot;&#39;</p>'],
+      ['<p>&<>"\'</p>', '<p>&amp;&lt;&gt;&quot;&#39;</p>'],
+      [
+        '<a href="https://example.com?a=1&b=\'2\'">x</a>',
+        '<a href="https://example.com?a=1&amp;b=&#39;2&#39;">x</a>',
+      ],
+    ])('%s → %s', (input, expected) => {
+      expect(normalizeHtml(input)).toBe(expected);
     });
   });
 });

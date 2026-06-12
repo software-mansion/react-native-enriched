@@ -234,7 +234,8 @@ function emitStylesClose(s: CssStyles): string {
 function emitOneAttr(el: Element, attr: string): string {
   const val = el.getAttribute(attr);
   if (val == null || val === '') return '';
-  return ` ${attr}="${val}"`;
+  const escaped = escapeText(val);
+  return ` ${attr}="${escaped}"`;
 }
 
 function emitAttributes(el: Element, name: string): string {
@@ -272,7 +273,22 @@ function isGoogleDocsWrapper(el: Element, tag: string): boolean {
 }
 
 function escapeText(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/[&<>"']/g, (match) => {
+    switch (match) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return match;
+    }
+  });
 }
 
 // --- Blockquote content flattening ---
