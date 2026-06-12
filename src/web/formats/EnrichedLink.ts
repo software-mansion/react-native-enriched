@@ -1,5 +1,5 @@
 import Link from '@tiptap/extension-link';
-import type { CommandProps } from '@tiptap/core';
+import { mergeAttributes, type CommandProps } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 
 import { nativePosToTiptapPos } from '../positionMapping';
@@ -8,8 +8,27 @@ import { isLinkBlocked } from './formatRules';
 export const EnrichedLink = Link.extend({
   excludes: 'link code',
 
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      auto: {
+        default: false,
+        parseHTML: (el) => {
+          return el.getAttribute('data-auto') === 'true';
+        },
+        renderHTML: (attributes) => {
+          return attributes.auto ? { 'data-auto': attributes.auto } : {};
+        },
+      },
+    };
+  },
+
   renderHTML({ HTMLAttributes }) {
-    return ['a', { href: HTMLAttributes.href }, 0];
+    return [
+      'a',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      0,
+    ];
   },
 
   addOptions() {
@@ -54,6 +73,10 @@ export const EnrichedLink = Link.extend({
         return parent?.unsetLink?.()(props) ?? false;
       },
     };
+  },
+
+  addPasteRules() {
+    return [];
   },
 });
 

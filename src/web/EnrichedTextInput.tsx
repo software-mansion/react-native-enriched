@@ -32,6 +32,7 @@ import { useOnChangeHtml } from './useOnChangeHtml';
 import { useOnChangeText } from './useOnChangeText';
 import { useOnChangeState } from './useOnChangeState';
 import { useOnLinkDetected } from './useOnLinkDetected';
+import type { LinkEmitterState } from './emitLinkDetected';
 import {
   prepareHtmlForTiptap,
   normalizeHtmlFromTiptap,
@@ -74,6 +75,8 @@ import {
 import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { returnKeyTypeToEnterKeyHint } from './returnKeyTypeToEnterKeyHint';
+import { AutolinkPlugin } from './pmPlugins/AutolinkPlugin';
+
 function runFocused(
   editor: Editor,
   apply: (chain: ChainedCommands) => ChainedCommands
@@ -110,6 +113,7 @@ export const EnrichedTextInput = ({
   onStartMention,
   onChangeMention,
   onEndMention,
+  linkRegex,
   htmlStyle,
 }: EnrichedTextInputProps) => {
   const tiptapContent =
@@ -185,6 +189,16 @@ export const EnrichedTextInput = ({
     return false;
   };
 
+  const linkEmitterRef = useRef<LinkEmitterState>({
+    linkRegex,
+    onLinkDetected,
+    lastEmitted: null,
+  });
+  useEffect(() => {
+    linkEmitterRef.current.linkRegex = linkRegex;
+    linkEmitterRef.current.onLinkDetected = onLinkDetected;
+  }, [linkRegex, onLinkDetected]);
+
   const extensions = useMemo(
     () => [
       Document,
@@ -219,6 +233,9 @@ export const EnrichedTextInput = ({
       }),
       ShortcutPlugin.configure({
         getHtmlStyle: () => htmlStyleRef.current,
+      }),
+      AutolinkPlugin.configure({
+        getLinkEmitter: () => linkEmitterRef.current,
       }),
       Placeholder.configure({
         placeholder,
@@ -299,7 +316,7 @@ export const EnrichedTextInput = ({
   useOnChangeHtml(editor, onChangeHtml);
   useOnChangeText(editor, onChangeText);
   useOnChangeState(editor, resolvedHtmlStyle, onChangeState);
-  useOnLinkDetected(editor, onLinkDetected);
+  useOnLinkDetected(editor, linkEmitterRef);
 
   useImperativeHandle(
     ref,
