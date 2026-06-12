@@ -433,7 +433,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
       if (end == start) {
         mSpannableStringBuilder.removeSpan(obj[i]);
       } else {
-        // TODO: verify if Spannable.SPAN_EXCLUSIVE_EXCLUSIVE does not break anything.
+        // TODO: verify if Spannable.SPAN_EXCLUSIVE_EXCLUSIVE from
+        // EnrichedSpanFlags.paragraphSpanFlags does not break anything.
         // Previously it was SPAN_PARAGRAPH. I've changed that in order to fix ranges for list
         // items.
         mSpannableStringBuilder.setSpan(obj[i], start, end, EnrichedSpanFlags.paragraphSpanFlags);
@@ -788,7 +789,7 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
         spanFactory.createImageSpan(src, Integer.parseInt(width), Integer.parseInt(height)),
         len,
         text.length(),
-        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        EnrichedSpanFlags.inlineSpanFlags);
   }
 
   private static void startA(Editable text, Attributes attributes) {
