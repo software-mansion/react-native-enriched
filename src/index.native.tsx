@@ -19,6 +19,8 @@ export type {
   EnrichedTextInputInstance,
   ContextMenuItem,
   OnChangeMentionEvent,
+  TextShortcut,
+  TextShortcutStyle,
 } from './types';
 
 // EnrichedText

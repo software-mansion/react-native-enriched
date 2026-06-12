@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
   BOOL useHtmlNormalizer;
 @public
   NSValue *dotReplacementRange;
+@public
+  NSArray<NSDictionary *> *textShortcuts;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range;
