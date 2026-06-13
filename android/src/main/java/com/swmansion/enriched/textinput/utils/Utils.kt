@@ -7,6 +7,7 @@ import android.text.Spanned
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.TextView
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import org.json.JSONObject
 
@@ -78,7 +79,7 @@ fun TextView.setCheckboxClickListener() {
 
             // Reapply span so changes are visible without need to redraw entire TextView
             spannable.removeSpan(span)
-            spannable.setSpan(span, start, end, flags)
+            spannable.setSpan(span, start, end, EnrichedSpanFlags.forSpan(span, flags))
 
             // For focused input, ensure cursor is active for affected paragraph
             if (tv.isFocused) {

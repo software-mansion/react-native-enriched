@@ -38,6 +38,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.common.pixelFromSpOrDp
@@ -1108,7 +1109,7 @@ class EnrichedTextInputView :
 
         spannable.removeSpan(span)
         val newSpan = span.rebuildWithStyle(htmlStyle)
-        spannable.setSpan(newSpan, start, end, flags)
+        spannable.setSpan(newSpan, start, end, EnrichedSpanFlags.forSpan(newSpan, flags))
       }
 
       if (shouldEmitStateChange) {

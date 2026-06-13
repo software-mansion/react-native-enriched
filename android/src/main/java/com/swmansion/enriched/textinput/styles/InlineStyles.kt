@@ -2,6 +2,7 @@ package com.swmansion.enriched.textinput.styles
 
 import android.text.Editable
 import android.text.Spannable
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
@@ -41,7 +42,7 @@ class InlineStyles(
 
     val span = type.getDeclaredConstructor(HtmlStyle::class.java).newInstance(view.htmlStyle)
     val (safeStart, safeEnd) = spannable.getSafeSpanBoundaries(minimum, maximum)
-    spannable.setSpan(span, safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.inlineSpanFlags)
   }
 
   private fun <T> setAndMergeSpans(

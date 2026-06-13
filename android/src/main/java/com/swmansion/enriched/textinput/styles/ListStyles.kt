@@ -5,6 +5,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
+import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
@@ -66,18 +67,18 @@ class ListStyles(
     when (name) {
       EnrichedSpans.UNORDERED_LIST -> {
         val span = EnrichedInputUnorderedListSpan(view.htmlStyle)
-        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.paragraphSpanFlags)
       }
 
       EnrichedSpans.ORDERED_LIST -> {
         val index = getOrderedListIndex(spannable, safeStart)
         val span = EnrichedInputOrderedListSpan(index, view.htmlStyle)
-        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.paragraphSpanFlags)
       }
 
       EnrichedSpans.CHECKBOX_LIST -> {
         val span = EnrichedInputCheckboxListSpan(isChecked ?: false, view.htmlStyle)
-        spannable.setSpan(span, safeStart, safeEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(span, safeStart, safeEnd, EnrichedSpanFlags.paragraphSpanFlags)
 
         // Invalidate layout to update checkbox drawing in case checkbox is bigger than line height
         view.layoutManager.invalidateLayout()
