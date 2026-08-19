@@ -28,6 +28,8 @@
     "android",
     "ios",
     "cpp",
+    "Package.swift",
+    "react-native-spm-prefix.h",
     "*.podspec",
     "react-native.config.js",
     "!ios/build",

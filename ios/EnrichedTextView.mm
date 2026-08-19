@@ -1,5 +1,6 @@
 #import "EnrichedTextView.h"
 #import "AttachmentLayoutUtils.h"
+#import "EnrichedTextComponentDescriptor.h"
 #import "EnrichedTextStyleHeaders.h"
 #import "EnrichedTextTextView.h"
 #import "EnrichedTextTouchHandler.h"
@@ -7,15 +8,14 @@
 #import "LinkData.h"
 #import "MentionParams.h"
 #import "MentionStyleProps.h"
-#import "RCTFabricComponentsPlugins.h"
 #import "StringExtension.h"
 #import "StyleUtils.h"
 #import "TextDecorationLineEnum.h"
 #import "TextHtmlParser.h"
+#import "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/EventEmitters.h"
+#import "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/Props.h"
 #import <React/RCTConversions.h>
-#import <ReactNativeEnrichedHtml/EnrichedTextComponentDescriptor.h>
-#import <ReactNativeEnrichedHtml/EventEmitters.h>
-#import <ReactNativeEnrichedHtml/Props.h>
+#import <React/RCTFabricComponentsPlugins.h>
 #import <folly/dynamic.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
