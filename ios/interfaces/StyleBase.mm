@@ -1,9 +1,9 @@
 #import "StyleBase.h"
 #import "AttributeEntry.h"
-#import "OccurenceUtils.h"
-#import "RangeUtils.h"
-#import "TextListsUtils.h"
-#import "ZeroWidthSpaceUtils.h"
+#import "utils/OccurenceUtils.h"
+#import "utils/RangeUtils.h"
+#import "utils/TextListsUtils.h"
+#import "utils/ZeroWidthSpaceUtils.h"
 
 @implementation StyleBase
 

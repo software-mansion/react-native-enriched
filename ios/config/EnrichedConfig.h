@@ -1,7 +1,7 @@
 #pragma once
-#import "LinkRegexConfig.h"
-#import "MentionStyleProps.h"
-#import "TextDecorationLineEnum.h"
+#import "interfaces/LinkRegexConfig.h"
+#import "interfaces/MentionStyleProps.h"
+#import "interfaces/TextDecorationLineEnum.h"
 #import <UIKit/UIKit.h>
 
 @interface EnrichedConfig : NSObject <NSCopying>

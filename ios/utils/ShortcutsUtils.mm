@@ -1,8 +1,8 @@
 #import "ShortcutsUtils.h"
 #import "ParagraphAttributesUtils.h"
-#import "StyleBase.h"
 #import "StyleUtils.h"
 #import "TextInsertionUtils.h"
+#import "interfaces/StyleBase.h"
 
 typedef struct {
   EnrichedTextInputView *input;

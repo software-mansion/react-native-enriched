@@ -1,6 +1,6 @@
 #import "AlignmentUtils.h"
 #import "RangeUtils.h"
-#import "StyleHeaders.h"
+#import "interfaces/StyleHeaders.h"
 
 @implementation AlignmentUtils
 

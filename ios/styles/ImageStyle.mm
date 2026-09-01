@@ -1,7 +1,7 @@
 #import "EnrichedTextInputView.h"
-#import "ImageAttachment.h"
-#import "StyleHeaders.h"
-#import "TextInsertionUtils.h"
+#import "interfaces/ImageAttachment.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/TextInsertionUtils.h"
 
 // custom NSAttributedStringKey to differentiate the image
 static NSString *const ImageAttributeName = @"EnrichedImage";

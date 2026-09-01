@@ -1,13 +1,13 @@
 #import "TextHtmlParser.h"
-#import "AlignmentEntry.h"
-#import "ArrayExtension.h"
 #import "EnrichedTextView.h"
-#import "HtmlParser.h"
-#import "LinkData.h"
-#import "MentionParams.h"
-#import "StyleHeaders.h"
-#import "StyleUtils.h"
-#import "ZeroWidthSpaceUtils.h"
+#import "extensions/ArrayExtension.h"
+#import "htmlParser/HtmlParser.h"
+#import "interfaces/AlignmentEntry.h"
+#import "interfaces/LinkData.h"
+#import "interfaces/MentionParams.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/StyleUtils.h"
+#import "utils/ZeroWidthSpaceUtils.h"
 #import <React/RCTLog.h>
 
 @implementation TextHtmlParser

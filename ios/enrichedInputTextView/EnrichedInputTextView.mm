@@ -1,10 +1,10 @@
 #import "EnrichedInputTextView.h"
-#import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
-#import "HtmlParser.h"
-#import "StringExtension.h"
-#import "TextInsertionUtils.h"
-#import "TextListsUtils.h"
+#import "extensions/StringExtension.h"
+#import "htmlParser/HtmlParser.h"
+#import "utils/AlignmentUtils.h"
+#import "utils/TextInsertionUtils.h"
+#import "utils/TextListsUtils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @implementation EnrichedInputTextView

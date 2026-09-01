@@ -1,12 +1,12 @@
 #pragma once
-#import "BaseStyleProtocol.h"
-#import "EnrichedConfig.h"
-#import "EnrichedInputTextView.h"
-#import "EnrichedViewHost.h"
-#import "InputAttributesManager.h"
-#import "InputHtmlParser.h"
-#import "LinkData.h"
-#import "MediaAttachment.h"
+#import "config/EnrichedConfig.h"
+#import "enrichedInputTextView/EnrichedInputTextView.h"
+#import "inputAttributesManager/InputAttributesManager.h"
+#import "inputHtmlParser/InputHtmlParser.h"
+#import "interfaces/BaseStyleProtocol.h"
+#import "interfaces/EnrichedViewHost.h"
+#import "interfaces/LinkData.h"
+#import "interfaces/MediaAttachment.h"
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
 

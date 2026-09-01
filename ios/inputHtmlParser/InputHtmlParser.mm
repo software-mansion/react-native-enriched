@@ -1,11 +1,11 @@
 #import "InputHtmlParser.h"
-#import "AlignmentEntry.h"
 #import "EnrichedTextInputView.h"
-#import "HtmlParser.h"
-#import "StringExtension.h"
-#import "StyleHeaders.h"
-#import "StyleUtils.h"
-#import "TextInsertionUtils.h"
+#import "extensions/StringExtension.h"
+#import "htmlParser/HtmlParser.h"
+#import "interfaces/AlignmentEntry.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/StyleUtils.h"
+#import "utils/TextInsertionUtils.h"
 #import <React/RCTLog.h>
 
 @implementation InputHtmlParser {

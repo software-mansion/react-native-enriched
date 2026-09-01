@@ -1,7 +1,7 @@
 #pragma once
-#import "EnrichedConfig.h"
-#import "InputAttributesManager.h"
 #import "StyleTypeEnum.h"
+#import "config/EnrichedConfig.h"
+#import "inputAttributesManager/InputAttributesManager.h"
 #import <UIKit/UIKit.h>
 
 @protocol EnrichedViewHost <NSObject>

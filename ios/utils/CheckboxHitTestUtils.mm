@@ -1,7 +1,7 @@
 #import "CheckboxHitTestUtils.h"
-#import "EnrichedConfig.h"
 #import "EnrichedTextInputView.h"
-#import "StyleHeaders.h"
+#import "config/EnrichedConfig.h"
+#import "interfaces/StyleHeaders.h"
 
 static const CGFloat kCheckboxHitSlopLeft = 8.0;
 static const CGFloat kCheckboxHitSlopVertical = 6.0;

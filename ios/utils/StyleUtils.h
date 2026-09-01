@@ -1,5 +1,5 @@
-#import "EnrichedTextStyleHeaders.h"
-#import "StyleHeaders.h"
+#import "interfaces/EnrichedTextStyleHeaders.h"
+#import "interfaces/StyleHeaders.h"
 
 @interface StyleUtils : NSObject
 + (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *)conflictMap;

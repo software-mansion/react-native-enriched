@@ -1,4 +1,4 @@
-#import <EnrichedConfig.h>
+#import "config/EnrichedConfig.h"
 #import <React/RCTFont.h>
 
 @implementation EnrichedConfig {

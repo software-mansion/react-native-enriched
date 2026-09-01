@@ -1,5 +1,5 @@
 #import "MentionStyleProps.h"
-#import "StringExtension.h"
+#import "extensions/StringExtension.h"
 #import <React/RCTConversions.h>
 
 @implementation MentionStyleProps

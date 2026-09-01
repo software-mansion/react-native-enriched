@@ -1,4 +1,4 @@
-#import "EnrichedTextStyleHeaders.h"
+#import "interfaces/EnrichedTextStyleHeaders.h"
 
 @implementation EnrichedTextBoldStyle
 @end

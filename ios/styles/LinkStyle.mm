@@ -1,10 +1,10 @@
-#import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
-#import "LinkData.h"
-#import "OccurenceUtils.h"
-#import "StyleHeaders.h"
-#import "TextInsertionUtils.h"
-#import "WordsUtils.h"
+#import "interfaces/AttributeEntry.h"
+#import "interfaces/LinkData.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/OccurenceUtils.h"
+#import "utils/TextInsertionUtils.h"
+#import "utils/WordsUtils.h"
 #import <React/UIView+React.h>
 
 static NSString *const ManualLinkAttributeName = @"EnrichedManualLink";
