@@ -6,18 +6,6 @@ let headerSearchPaths: [String] = [
     "cpp/GumboParser",
     "cpp/parser",
     "ios",
-    "ios/config",
-    "ios/enrichedInputTextView",
-    "ios/enrichedTextTextView",
-    "ios/extensions",
-    "ios/generated/ReactCodegen/ReactNativeEnrichedSpec",
-    "ios/htmlParser",
-    "ios/inputAttributesManager",
-    "ios/inputHtmlParser",
-    "ios/interfaces",
-    "ios/internals",
-    "ios/textHtmlParser",
-    "ios/utils",
     ".",
 ]
 
