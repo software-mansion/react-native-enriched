@@ -66,19 +66,26 @@
 }
 
 - (void)handleDirtyRangesStyling {
-  // snapshot edited ranges (including 0-length ones) before filtering, so
-  // we can use them when recalculating adjacent ordered lists
-  NSArray<NSValue *> *editedRangesForListRecalc = [_dirtyRanges copy];
-
-  // Filter out 0 length ranges for styling.
-  NSPredicate *predicate = [NSPredicate
-      predicateWithBlock:^BOOL(NSValue *evaluatedObject, NSDictionary *_) {
-        return [evaluatedObject rangeValue].length > 0;
-      }];
-  [_dirtyRanges filterUsingPredicate:predicate];
+  OrderedListStyle *orderedListStyle =
+      (OrderedListStyle *)_input->stylesDict[@([OrderedListStyle getType])];
 
   for (NSValue *rangeObj in _dirtyRanges) {
     NSRange dirtyRange = [rangeObj rangeValue];
+
+    // deletion (0-length dirtyRange) means we need to refresh the ordered
+    // list margins. If the ordered list style is not present itself,
+    // it might mean that we have just deleted a list element and need
+    // to recalculate the potentially split list (current adjacent lists)
+    if (dirtyRange.length == 0) {
+      if (orderedListStyle != nil) {
+        if ([orderedListStyle detect:dirtyRange]) {
+          [orderedListStyle applyStyling:dirtyRange];
+        } else {
+          [orderedListStyle recalculateListsAroundEditedRange:dirtyRange];
+        }
+      }
+      continue;
+    }
 
     // dirty range can sometimes be wrong because of apple doing some changes
     // behind the scenes
@@ -92,6 +99,13 @@
       // the dict has keys of StyleType NSNumber and values of an array of all
       // occurences
       presentStyles[@([[style class] getType])] = [style all:dirtyRange];
+    }
+
+    // it's possible that ordered list style has just got removed,
+    // so we have to refresh adjacent ordered lists
+    if (orderedListStyle != nil &&
+        [presentStyles[@([OrderedListStyle getType])] count] == 0) {
+      [orderedListStyle recalculateListsAroundEditedRange:dirtyRange];
     }
 
     // now reset the attributes to default ones
@@ -124,15 +138,6 @@
         [style reapplyFromStylePair:stylePair];
         [style applyStyling:occurenceRange];
       }
-    }
-  }
-  // refresh ordered lists adjacent to any edit
-  OrderedListStyle *orderedListStyle =
-      (OrderedListStyle *)_input->stylesDict[@([OrderedListStyle getType])];
-  if (orderedListStyle != nil) {
-    for (NSValue *rangeObj in editedRangesForListRecalc) {
-      [orderedListStyle
-          recalculateListsAroundEditedRange:[rangeObj rangeValue]];
     }
   }
 

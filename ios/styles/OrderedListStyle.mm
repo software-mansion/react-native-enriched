@@ -182,48 +182,78 @@
     return NSMakeRange(range.location, 0);
   }
 
+  NSTextStorage *textStorage = self.host.textView.textStorage;
+  NSRange fullRange = NSMakeRange(0, length);
   NSUInteger seedLocation = MIN(range.location, length - 1);
-  NSRange initialParagraph =
-      [fullText paragraphRangeForRange:NSMakeRange(seedLocation, 0)];
-  NSRange firstParagraph = initialParagraph;
 
-  NSInteger precedingCount = 0;
+  NSRange seedRun;
+  [textStorage attribute:NSParagraphStyleAttributeName
+                    atIndex:seedLocation
+      longestEffectiveRange:&seedRun
+                    inRange:fullRange];
 
-  // seek backward over preceding ordered-list paragraphs, counting items
-  while (firstParagraph.location > 0) {
-    NSRange previous = [fullText
-        paragraphRangeForRange:NSMakeRange(firstParagraph.location - 1, 0)];
-    if (![self detect:NSMakeRange(previous.location, 0)]) {
+  NSUInteger firstParagraphStart = seedRun.location;
+  NSUInteger lastParagraphEnd = NSMaxRange(seedRun);
+
+  // seek backward over preceding ordered-list runs
+  while (firstParagraphStart > 0) {
+    if (![self detect:NSMakeRange(firstParagraphStart - 1, 0)]) {
       break;
     }
-    firstParagraph = previous;
-    precedingCount += 1;
+    NSRange previousRun;
+    [textStorage attribute:NSParagraphStyleAttributeName
+                      atIndex:firstParagraphStart - 1
+        longestEffectiveRange:&previousRun
+                      inRange:fullRange];
+    firstParagraphStart = previousRun.location;
   }
 
-  // seek forward over following ordered-list paragraphs, counting items
-  NSInteger followingCount = 0;
-  NSRange lastParagraph = initialParagraph;
-  NSRange cursor = initialParagraph;
-  while (true) {
-    lastParagraph = cursor;
-    NSUInteger nextLocation = NSMaxRange(cursor);
-    if (nextLocation >= length) {
+  // seek forward over following ordered-list runs
+  while (lastParagraphEnd < length) {
+    if (![self detect:NSMakeRange(lastParagraphEnd, 0)]) {
       break;
     }
-    NSRange next =
-        [fullText paragraphRangeForRange:NSMakeRange(nextLocation, 0)];
-    if (![self detect:NSMakeRange(next.location, 0)]) {
-      break;
-    }
-    cursor = next;
-    followingCount += 1;
+    NSRange nextRun;
+    [textStorage attribute:NSParagraphStyleAttributeName
+                      atIndex:lastParagraphEnd
+        longestEffectiveRange:&nextRun
+                      inRange:fullRange];
+    lastParagraphEnd = NSMaxRange(nextRun);
   }
+
+  NSRange listRange =
+      NSMakeRange(firstParagraphStart, lastParagraphEnd - firstParagraphStart);
 
   if (outCount != nullptr) {
-    *outCount = precedingCount + followingCount + 1;
+    *outCount =
+        [self countParagraphsInRange:listRange
+                              inText:self.host.textView.textStorage.string];
   }
-  return NSMakeRange(firstParagraph.location,
-                     NSMaxRange(lastParagraph) - firstParagraph.location);
+  return listRange;
+}
+
+// counts paragraphs (newline-delimited) within a range that is already known
+// to start and end exactly on paragraph boundaries
+- (NSInteger)countParagraphsInRange:(NSRange)listRange inText:(NSString *)text {
+  if (listRange.length == 0) {
+    return 0;
+  }
+
+  NSCharacterSet *newlineSet = [NSCharacterSet newlineCharacterSet];
+  NSUInteger rangeEnd = NSMaxRange(listRange);
+  NSUInteger cursor = listRange.location;
+  NSInteger count = 0;
+
+  while (cursor < rangeEnd) {
+    count += 1;
+    NSRange newline =
+        [text rangeOfCharacterFromSet:newlineSet
+                              options:0
+                                range:NSMakeRange(cursor, rangeEnd - cursor)];
+    cursor = newline.location != NSNotFound ? NSMaxRange(newline) : rangeEnd;
+  }
+
+  return count;
 }
 
 @end
