@@ -1,5 +1,6 @@
 package com.swmansion.enriched.textinput
 
+import android.graphics.Color
 import com.swmansion.enriched.common.parser.EnrichedSpanFactory
 import com.swmansion.enriched.common.spans.EnrichedImageSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputAlignmentSpan
@@ -25,6 +26,8 @@ import com.swmansion.enriched.textinput.spans.EnrichedInputUnorderedListSpan
 import com.swmansion.enriched.textinput.styles.HtmlStyle
 
 class EnrichedTextInputSpannableFactory : EnrichedSpanFactory<HtmlStyle> {
+  override var textColor: Int = Color.BLACK
+
   override fun createAlignmentSpan(cssValue: String) = EnrichedInputAlignmentSpan(cssValue)
 
   override fun createBoldSpan(style: HtmlStyle) = EnrichedInputBoldSpan(style)
@@ -54,7 +57,7 @@ class EnrichedTextInputSpannableFactory : EnrichedSpanFactory<HtmlStyle> {
     source: String,
     width: Int,
     height: Int,
-  ): EnrichedImageSpan = EnrichedInputImageSpan.createEnrichedImageSpan(source, width, height)
+  ): EnrichedImageSpan = EnrichedInputImageSpan.createEnrichedImageSpan(source, width, height, textColor)
 
   override fun createH1Span(style: HtmlStyle) = EnrichedInputH1Span(style)
 

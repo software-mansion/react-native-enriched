@@ -545,12 +545,20 @@ class EnrichedTextInputView :
   }
 
   fun setColor(colorInt: Int?) {
-    if (colorInt == null) {
-      setTextColor(Color.BLACK)
-      return
-    }
+    val resolvedColor = colorInt ?: Color.BLACK
 
-    setTextColor(colorInt)
+    setTextColor(resolvedColor)
+    spannableFactory.textColor = resolvedColor
+    refreshImagePlaceholderTints(resolvedColor)
+  }
+
+  private fun refreshImagePlaceholderTints(color: Int) {
+    val liveText = text ?: return
+    val spans = liveText.getSpans(0, liveText.length, EnrichedInputImageSpan::class.java)
+
+    for (span in spans) {
+      span.refreshPlaceholderTint(color)
+    }
   }
 
   fun setFontSize(size: Float) {

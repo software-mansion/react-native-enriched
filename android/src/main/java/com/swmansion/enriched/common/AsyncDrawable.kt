@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toDrawable
 import com.swmansion.enriched.R
 import java.net.URL
@@ -21,11 +22,14 @@ import java.util.concurrent.Executors
 
 class AsyncDrawable(
   private val url: String,
+  private var placeholderTintColor: Int,
 ) : Drawable() {
   private var internalDrawable: Drawable = Color.TRANSPARENT.toDrawable()
   private val mainHandler = Handler(Looper.getMainLooper())
   private val executor = Executors.newSingleThreadExecutor()
   var isLoaded = false
+  var isShowingPlaceholder = false
+    private set
 
   init {
     internalDrawable.bounds = bounds
@@ -94,7 +98,20 @@ class AsyncDrawable(
   }
 
   private fun loadPlaceholderImage() {
-    internalDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
+    val drawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
+
+    DrawableCompat.setTint(drawable, placeholderTintColor)
+
+    isShowingPlaceholder = true
+    internalDrawable = drawable
+  }
+
+  fun applyPlaceholderTint(color: Int) {
+    placeholderTintColor = color
+
+    if (!isShowingPlaceholder) return
+
+    DrawableCompat.setTint(internalDrawable, color)
   }
 
   override fun draw(canvas: Canvas) {

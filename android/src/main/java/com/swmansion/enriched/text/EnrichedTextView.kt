@@ -292,12 +292,20 @@ class EnrichedTextView : AppCompatTextView {
   }
 
   fun setColor(colorInt: Int?) {
-    if (colorInt == null) {
-      setTextColor(Color.BLACK)
-      return
-    }
+    val resolvedColor = colorInt ?: Color.BLACK
 
-    setTextColor(colorInt)
+    setTextColor(resolvedColor)
+    spannableFactory.textColor = resolvedColor
+    refreshImagePlaceholderTints(resolvedColor)
+  }
+
+  private fun refreshImagePlaceholderTints(color: Int) {
+    val spanned = text as? Spanned ?: return
+    val spans = spanned.getSpans(0, spanned.length, EnrichedTextImageSpan::class.java)
+
+    for (span in spans) {
+      span.refreshPlaceholderTint(color)
+    }
   }
 
   fun setFontSize(size: Float) {

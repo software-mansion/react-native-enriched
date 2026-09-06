@@ -355,7 +355,7 @@ class ParametrizedStyles(
     }
 
     val (imageStart, imageEnd) = spannable.getSafeSpanBoundaries(start, start + 1)
-    val span = EnrichedInputImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt())
+    val span = EnrichedInputImageSpan.createEnrichedImageSpan(src, width.toInt(), height.toInt(), view.currentTextColor)
     span.observeAsyncDrawableLoaded(view.text)
 
     spannable.setSpan(span, imageStart, imageEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
