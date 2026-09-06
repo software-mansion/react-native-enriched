@@ -27,12 +27,8 @@ open class EnrichedOrderedListSpan(
     paint: Paint,
     highestIndex: Int,
   ): Boolean {
-    val highestIndexText = "$highestIndex."
-
-    val originalTypeface = paint.typeface
-    paint.typeface = getTypeface(enrichedStyle.olMarkerFontWeight, originalTypeface)
-    val highestIndexWidth = ceil(paint.measureText(highestIndexText)).toInt()
-    paint.typeface = originalTypeface
+    val (digitWidth, dotWidth) = markerMetricsFor(paint, paint.typeface)
+    val highestIndexWidth = ceil(digitCountOf(highestIndex) * digitWidth + dotWidth).toInt()
 
     val newColumnMargin = max(enrichedStyle.olMarginLeft, highestIndexWidth)
     if (newColumnMargin == columnMargin) return false
@@ -99,4 +95,39 @@ open class EnrichedOrderedListSpan(
         Typeface.create(originalTypeface, Typeface.NORMAL)
       }
     }
+
+  private fun markerMetricsFor(
+    paint: Paint,
+    baseTypeface: Typeface,
+  ): Pair<Float, Float> {
+    val key = MarkerMetricsKey(baseTypeface, enrichedStyle.olMarkerFontWeight, paint.textSize)
+    return markerMetricsCache.getOrPut(key) {
+      val originalTypeface = paint.typeface
+      paint.typeface = getTypeface(enrichedStyle.olMarkerFontWeight, baseTypeface)
+      val digitWidth = paint.measureText("0")
+      val dotWidth = paint.measureText(".")
+      paint.typeface = originalTypeface
+      Pair(digitWidth, dotWidth)
+    }
+  }
+
+  private data class MarkerMetricsKey(
+    val baseTypeface: Typeface,
+    val fontWeight: Int?,
+    val textSize: Float,
+  )
+
+  companion object {
+    private val markerMetricsCache = mutableMapOf<MarkerMetricsKey, Pair<Float, Float>>()
+
+    private fun digitCountOf(n: Int): Int {
+      var count = 1
+      var value = max(n, 1)
+      while (value >= 10) {
+        value /= 10
+        count++
+      }
+      return count
+    }
+  }
 }

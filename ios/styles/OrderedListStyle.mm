@@ -4,7 +4,13 @@
 #import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 
-@implementation OrderedListStyle
+@implementation OrderedListStyle {
+  // we don't want to re-measure each marker's actual
+  // width. We estimate the width with cached metrics instead
+  UIFont *_cachedMarkerFont;
+  CGFloat _cachedDigitWidth;
+  CGFloat _cachedDotWidth;
+}
 
 + (StyleType)getType {
   return OrderedList;
@@ -87,17 +93,35 @@
   }
 }
 
+- (void)ensureMarkerMetricsForFont:(UIFont *)font {
+  if (_cachedMarkerFont != nil && [_cachedMarkerFont isEqual:font]) {
+    return;
+  }
+  _cachedMarkerFont = font;
+  NSDictionary *attrs = @{NSFontAttributeName : font};
+  _cachedDigitWidth = [@"0" sizeWithAttributes:attrs].width;
+  _cachedDotWidth = [@"." sizeWithAttributes:attrs].width;
+}
+
+- (NSInteger)digitCountOf:(NSInteger)n {
+  NSInteger count = 1;
+  NSInteger value = MAX(n, 1);
+  while (value >= 10) {
+    value /= 10;
+    count += 1;
+  }
+  return count;
+}
+
 // computes the shared marker-column indent for a list of the given item
 // count. The largest marker value equals the item count (numbering starts
 // at 1); if its width overflows the configured margin we expand to fit it
 - (CGFloat)headIndentForItemCount:(NSInteger)itemCount {
-  NSString *widestMarker =
-      [NSString stringWithFormat:@"%d.", (int)MAX(itemCount, 1)];
-  CGFloat widestMarkerWidth =
-      [widestMarker sizeWithAttributes:@{
-        NSFontAttributeName : [self.host.config orderedListMarkerFont]
-      }]
-          .width;
+  UIFont *markerFont = [self.host.config orderedListMarkerFont];
+  [self ensureMarkerMetricsForFont:markerFont];
+
+  NSInteger digitCount = [self digitCountOf:itemCount];
+  CGFloat widestMarkerWidth = digitCount * _cachedDigitWidth + _cachedDotWidth;
 
   CGFloat markerColumnWidth =
       MAX([self.host.config orderedListMarginLeft], widestMarkerWidth);
