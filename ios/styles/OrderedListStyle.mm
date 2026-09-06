@@ -1,16 +1,11 @@
 #import "EnrichedTextInputView.h"
+#import "OrderedListMetricsUtils.h"
 #import "RangeUtils.h"
 #import "StyleHeaders.h"
 #import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 
-@implementation OrderedListStyle {
-  // we don't want to re-measure each marker's actual
-  // width. We estimate the width with cached metrics instead
-  UIFont *_cachedMarkerFont;
-  CGFloat _cachedDigitWidth;
-  CGFloat _cachedDotWidth;
-}
+@implementation OrderedListStyle
 
 + (StyleType)getType {
   return OrderedList;
@@ -37,8 +32,10 @@
   // re-indent all of it - even when only a single paragraph is dirty (e.g. an
   // item was just added)
   NSInteger itemCount = 0;
-  NSRange listRange = [self contiguousOrderedListRangeContaining:range
-                                                       itemCount:&itemCount];
+  NSRange listRange =
+      [OrderedListMetricsUtils contiguousOrderedListRangeContaining:range
+                                                           forStyle:self
+                                                          itemCount:&itemCount];
 
   [self applyIndentForListRange:listRange itemCount:itemCount];
 }
@@ -85,52 +82,20 @@
     }
 
     NSInteger itemCount = 0;
-    NSRange listRange =
-        [self contiguousOrderedListRangeContaining:NSMakeRange(seed, 0)
-                                         itemCount:&itemCount];
+    NSRange listRange = [OrderedListMetricsUtils
+        contiguousOrderedListRangeContaining:NSMakeRange(seed, 0)
+                                    forStyle:self
+                                   itemCount:&itemCount];
     [handled addObject:[NSValue valueWithRange:listRange]];
     [self applyIndentForListRange:listRange itemCount:itemCount];
   }
 }
 
-- (void)ensureMarkerMetricsForFont:(UIFont *)font {
-  if (_cachedMarkerFont != nil && [_cachedMarkerFont isEqual:font]) {
-    return;
-  }
-  _cachedMarkerFont = font;
-  NSDictionary *attrs = @{NSFontAttributeName : font};
-  _cachedDigitWidth = [@"0" sizeWithAttributes:attrs].width;
-  _cachedDotWidth = [@"." sizeWithAttributes:attrs].width;
-}
-
-- (NSInteger)digitCountOf:(NSInteger)n {
-  NSInteger count = 1;
-  NSInteger value = MAX(n, 1);
-  while (value >= 10) {
-    value /= 10;
-    count += 1;
-  }
-  return count;
-}
-
-// computes the shared marker-column indent for a list of the given item
-// count. The largest marker value equals the item count (numbering starts
-// at 1); if its width overflows the configured margin we expand to fit it
-- (CGFloat)headIndentForItemCount:(NSInteger)itemCount {
-  UIFont *markerFont = [self.host.config orderedListMarkerFont];
-  [self ensureMarkerMetricsForFont:markerFont];
-
-  NSInteger digitCount = [self digitCountOf:itemCount];
-  CGFloat widestMarkerWidth = digitCount * _cachedDigitWidth + _cachedDotWidth;
-
-  CGFloat markerColumnWidth =
-      MAX([self.host.config orderedListMarginLeft], widestMarkerWidth);
-  return markerColumnWidth + [self.host.config orderedListGapWidth];
-}
-
 - (void)applyIndentForListRange:(NSRange)listRange
                       itemCount:(NSInteger)itemCount {
-  CGFloat listHeadIndent = [self headIndentForItemCount:itemCount];
+  CGFloat listHeadIndent =
+      [OrderedListMetricsUtils headIndentForItemCount:itemCount
+                                               config:self.host.config];
 
   [self.host.textView.textStorage
       enumerateAttribute:NSParagraphStyleAttributeName
@@ -185,99 +150,14 @@
     pStyle.headIndent = existingStyle.headIndent;
     pStyle.firstLineHeadIndent = existingStyle.firstLineHeadIndent;
   } else {
-    CGFloat fallbackIndent = [self headIndentForItemCount:1];
+    CGFloat fallbackIndent =
+        [OrderedListMetricsUtils headIndentForItemCount:1
+                                                 config:self.host.config];
     pStyle.headIndent = fallbackIndent;
     pStyle.firstLineHeadIndent = fallbackIndent;
   }
 
   attributes[NSParagraphStyleAttributeName] = pStyle;
-}
-
-// walks paragraphs backward and forward from the given range to find the full
-// contiguous run of ordered-list items it belongs to, and counts them
-- (NSRange)contiguousOrderedListRangeContaining:(NSRange)range
-                                      itemCount:(NSInteger *)outCount {
-  NSString *fullText = self.host.textView.textStorage.string;
-  NSUInteger length = fullText.length;
-  if (length == 0) {
-    if (outCount != nullptr) {
-      *outCount = 0;
-    }
-    return NSMakeRange(range.location, 0);
-  }
-
-  NSTextStorage *textStorage = self.host.textView.textStorage;
-  NSRange fullRange = NSMakeRange(0, length);
-  NSUInteger seedLocation = MIN(range.location, length - 1);
-
-  NSRange seedRun;
-  [textStorage attribute:NSParagraphStyleAttributeName
-                    atIndex:seedLocation
-      longestEffectiveRange:&seedRun
-                    inRange:fullRange];
-
-  NSUInteger firstParagraphStart = seedRun.location;
-  NSUInteger lastParagraphEnd = NSMaxRange(seedRun);
-
-  // seek backward over preceding ordered-list runs
-  while (firstParagraphStart > 0) {
-    if (![self detect:NSMakeRange(firstParagraphStart - 1, 0)]) {
-      break;
-    }
-    NSRange previousRun;
-    [textStorage attribute:NSParagraphStyleAttributeName
-                      atIndex:firstParagraphStart - 1
-        longestEffectiveRange:&previousRun
-                      inRange:fullRange];
-    firstParagraphStart = previousRun.location;
-  }
-
-  // seek forward over following ordered-list runs
-  while (lastParagraphEnd < length) {
-    if (![self detect:NSMakeRange(lastParagraphEnd, 0)]) {
-      break;
-    }
-    NSRange nextRun;
-    [textStorage attribute:NSParagraphStyleAttributeName
-                      atIndex:lastParagraphEnd
-        longestEffectiveRange:&nextRun
-                      inRange:fullRange];
-    lastParagraphEnd = NSMaxRange(nextRun);
-  }
-
-  NSRange listRange =
-      NSMakeRange(firstParagraphStart, lastParagraphEnd - firstParagraphStart);
-
-  if (outCount != nullptr) {
-    *outCount =
-        [self countParagraphsInRange:listRange
-                              inText:self.host.textView.textStorage.string];
-  }
-  return listRange;
-}
-
-// counts paragraphs (newline-delimited) within a range that is already known
-// to start and end exactly on paragraph boundaries
-- (NSInteger)countParagraphsInRange:(NSRange)listRange inText:(NSString *)text {
-  if (listRange.length == 0) {
-    return 0;
-  }
-
-  NSCharacterSet *newlineSet = [NSCharacterSet newlineCharacterSet];
-  NSUInteger rangeEnd = NSMaxRange(listRange);
-  NSUInteger cursor = listRange.location;
-  NSInteger count = 0;
-
-  while (cursor < rangeEnd) {
-    count += 1;
-    NSRange newline =
-        [text rangeOfCharacterFromSet:newlineSet
-                              options:0
-                                range:NSMakeRange(cursor, rangeEnd - cursor)];
-    cursor = newline.location != NSNotFound ? NSMaxRange(newline) : rangeEnd;
-  }
-
-  return count;
 }
 
 @end
