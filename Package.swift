@@ -47,8 +47,6 @@ let package = Package(
               "android",
               "lib",
               "src",
-              "apps",
-              "docs",
             ],
             sources: [
                 "cpp/GumboParser",
