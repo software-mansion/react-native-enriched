@@ -2,7 +2,10 @@ import Link, { type LinkOptions } from '@tiptap/extension-link';
 import { mergeAttributes, type CommandProps } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 
-import { nativePosToTiptapPos } from '../nativeMappers/positionMapping';
+import {
+  nativeLeafText,
+  nativePosToTiptapPos,
+} from '../nativeMappers/positionMapping';
 import { isLinkBlocked } from './formatRules';
 import { findAutolinkRangesInWord } from '../pmPlugins/AutolinkPlugin/autolinkRegex';
 
@@ -138,15 +141,20 @@ export function setLink(
   text: string,
   url: string
 ) {
-  if (url.length === 0 || text.length === 0) {
-    return;
-  }
   const { state } = editor;
   const doc = state.doc;
   const from = nativePosToTiptapPos(doc, start);
   const to = nativePosToTiptapPos(doc, end);
 
   if (isRangeLinkBlocked(editor, from, to)) {
+    return;
+  }
+
+  if (text.length === 0 && from !== to) {
+    editor.chain().focus().deleteRange({ from, to }).run();
+  }
+
+  if (text.length === 0 || url.length === 0) {
     return;
   }
 
@@ -162,7 +170,7 @@ export function setLink(
         const marksWithLink = linkMark.addToSet(marksAtRangeStart);
         tr.insert(from, s.schema.text(text, marksWithLink));
       } else {
-        const currentText = doc.textBetween(from, to);
+        const currentText = nativeLeafText(doc, from, to);
 
         if (text !== currentText) {
           const marksAtRangeStart = doc.resolve(from).marks();

@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "react-native-enriched-html": ["../../src/index.native.tsx"]
+      "react-native-enriched-html": ["../../src/index.native.tsx"],
+      // Pin a single `@types/react` copy so the library source typechecked here
+      // doesn't mix react types with the example's copy (which makes codegen
+      // command ref types collapse to `never`).
+      "react": ["../../node_modules/@types/react"],
+      "react/*": ["../../node_modules/@types/react/*"]
     }
   }
 }

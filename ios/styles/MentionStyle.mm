@@ -4,8 +4,8 @@
 #import "MaxLengthUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
-#import "UIView+React.h"
 #import "WordsUtils.h"
+#import <React/UIView+React.h>
 
 // custom NSAttributedStringKey to differentiate from links
 static NSString *const MentionAttributeName = @"EnrichedMention";

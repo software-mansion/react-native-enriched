@@ -1,10 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { EnrichedInputStyle } from '../../types';
-import type {
-  AnimatableNumericValue,
-  DimensionValue,
-  TextStyle,
-} from 'react-native';
+import type { DimensionValue, TextStyle } from 'react-native';
 import { toColor } from './toColor';
 
 export interface StyleConversionExtraOptions {
@@ -185,9 +181,7 @@ export function enrichedBaseStyleToCSSProperties(
   );
 }
 
-function toPx(
-  value?: DimensionValue | AnimatableNumericValue | string
-): string | undefined {
+function toPx(value?: DimensionValue | number | string): string | undefined {
   if (value == null) return undefined;
   if (typeof value === 'number') return `${value}px`;
   if (typeof value === 'string') return value;

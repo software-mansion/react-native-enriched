@@ -51,7 +51,7 @@
     "typecheck:lib": "tsc -p tsconfig.build.json",
     "typecheck:example": "tsc -p apps/example/tsconfig.json",
     "typecheck:example-web": "tsc -p apps/example-web/tsconfig.app.json",
-    "typecheck:docs": "tsc -p docs/tsconfig.json",
+    "typecheck:docs": "cd docs && yarn typecheck",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "lint:android": "cd apps/example/android && ./gradlew lintVerify",
     "lint:android:fix": "cd apps/example/android && ./gradlew lintFormat",
@@ -119,9 +119,9 @@
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
     "@playwright/test": "1.58.2",
-    "@react-native-community/cli": "20.1.0",
-    "@react-native/eslint-config": "^0.86.0",
-    "@react-native/jest-preset": "^0.86.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native/eslint-config": "^0.87.0",
+    "@react-native/jest-preset": "^0.87.0",
     "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
     "@types/react": "^19.2.0",
@@ -138,15 +138,15 @@
     "prettier": "^3.0.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-native": "0.86.0",
+    "react-native": "0.87.0",
     "react-native-builder-bob": "^0.43.0",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": ">=0.82.0"
   },
   "workspaces": [
     "apps/example",
@@ -160,7 +160,7 @@
     "projects": [
       {
         "displayName": "native",
-        "preset": "react-native",
+        "preset": "@react-native/jest-preset",
         "modulePathIgnorePatterns": [
           "<rootDir>/apps/example/node_modules",
           "<rootDir>/lib/"

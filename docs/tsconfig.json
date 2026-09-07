@@ -6,9 +6,9 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "paths": {
       "@site/*": ["./*"],
-      "react-native-enriched-html": ["../src/index.tsx"]
-    }
+      "react-native-enriched-html": ["../src/index.tsx"],
+    },
   },
   "include": ["src"],
-  "exclude": [".docusaurus", "build"]
+  "exclude": [".docusaurus", "build"],
 }
