@@ -25,7 +25,7 @@ apply plugin: "com.android.library"
 // "Cannot add extension with name 'kotlin'". Only apply it when nothing has
 // registered that extension yet.
 if (project.extensions.findByName('kotlin') == null) {
-  apply plugin: "kotlin-android"
+	apply plugin: "kotlin-android"
 }
 
 apply plugin: "com.facebook.react"
