@@ -21,12 +21,8 @@ let headerSearchPaths: [String] = [
     ".",
 ]
 
-let cSettings: [CSetting] = headerSearchPaths.map { .headerSearchPath($0) } + [
-    .unsafeFlags(["-include", "react-native-spm-prefix.h"]),
-]
-
+let cSettings: [CSetting] = headerSearchPaths.map { .headerSearchPath($0) }
 let cxxSettings: [CXXSetting] = headerSearchPaths.map { .headerSearchPath($0) } + [
-    .unsafeFlags(["-include", "react-native-spm-prefix.h"]),
     .define("DEBUG", .when(configuration: .debug)),
     .define("NDEBUG", .when(configuration: .release)),
 ]
@@ -51,6 +47,8 @@ let package = Package(
               "android",
               "lib",
               "src",
+              "apps",
+              "docs",
             ],
             sources: [
                 "cpp/GumboParser",
