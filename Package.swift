@@ -2,6 +2,35 @@
 
 import PackageDescription
 
+let headerSearchPaths: [String] = [
+    "cpp/GumboParser",
+    "cpp/parser",
+    "ios",
+    "ios/config",
+    "ios/enrichedInputTextView",
+    "ios/enrichedTextTextView",
+    "ios/extensions",
+    "ios/generated/ReactCodegen/ReactNativeEnrichedSpec",
+    "ios/htmlParser",
+    "ios/inputAttributesManager",
+    "ios/inputHtmlParser",
+    "ios/interfaces",
+    "ios/internals",
+    "ios/textHtmlParser",
+    "ios/utils",
+    ".",
+]
+
+let cSettings: [CSetting] = headerSearchPaths.map { .headerSearchPath($0) } + [
+    .unsafeFlags(["-include", "react-native-spm-prefix.h"]),
+]
+
+let cxxSettings: [CXXSetting] = headerSearchPaths.map { .headerSearchPath($0) } + [
+    .unsafeFlags(["-include", "react-native-spm-prefix.h"]),
+    .define("DEBUG", .when(configuration: .debug)),
+    .define("NDEBUG", .when(configuration: .release)),
+]
+
 let package = Package(
     name: "ReactNativeEnrichedHtml",
     platforms: [.iOS(.v15)],
@@ -29,8 +58,8 @@ let package = Package(
                 "ios"
             ],
             publicHeadersPath: "ios",
-            cSettings: [.headerSearchPath("cpp/GumboParser"), .headerSearchPath("cpp/parser"), .headerSearchPath("ios"), .headerSearchPath("ios/config"), .headerSearchPath("ios/enrichedInputTextView"), .headerSearchPath("ios/enrichedTextTextView"), .headerSearchPath("ios/extensions"), .headerSearchPath("ios/generated/ReactCodegen/ReactNativeEnrichedSpec"), .headerSearchPath("ios/htmlParser"), .headerSearchPath("ios/inputAttributesManager"), .headerSearchPath("ios/inputHtmlParser"), .headerSearchPath("ios/interfaces"), .headerSearchPath("ios/internals"), .headerSearchPath("ios/textHtmlParser"), .headerSearchPath("ios/utils"), .headerSearchPath("."), .unsafeFlags(["-include", "react-native-spm-prefix.h"])],
-            cxxSettings: [.headerSearchPath("cpp/GumboParser"), .headerSearchPath("cpp/parser"), .headerSearchPath("ios"), .headerSearchPath("ios/config"), .headerSearchPath("ios/enrichedInputTextView"), .headerSearchPath("ios/enrichedTextTextView"), .headerSearchPath("ios/extensions"), .headerSearchPath("ios/generated/ReactCodegen/ReactNativeEnrichedSpec"), .headerSearchPath("ios/htmlParser"), .headerSearchPath("ios/inputAttributesManager"), .headerSearchPath("ios/inputHtmlParser"), .headerSearchPath("ios/interfaces"), .headerSearchPath("ios/internals"), .headerSearchPath("ios/textHtmlParser"), .headerSearchPath("ios/utils"), .headerSearchPath("."), .unsafeFlags(["-include", "react-native-spm-prefix.h"]), .define("DEBUG", .when(configuration: .debug)), .define("NDEBUG", .when(configuration: .release))],
+            cSettings: cSettings,
+            cxxSettings: cxxSettings,
             linkerSettings: [.linkedFramework("UIKit"), .linkedFramework("Foundation"), .linkedFramework("CoreGraphics")]
         ),
     ],
