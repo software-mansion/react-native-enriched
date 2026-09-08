@@ -4,7 +4,10 @@ import { getMarkRange, getMarksBetween } from '@tiptap/core';
 import type { EditorState } from '@tiptap/pm/state';
 import type { MarkType } from '@tiptap/pm/model';
 import { emitLinkDetected, type LinkEmitterRef } from './emitLinkDetected';
-import { tiptapPosToNativePos } from '../nativeMappers/positionMapping';
+import {
+  nativeLeafText,
+  tiptapPosToNativePos,
+} from '../nativeMappers/positionMapping';
 
 function findLinkRangeAt(
   state: EditorState,
@@ -53,7 +56,7 @@ export const useOnLinkDetected = (
       if (!linkMark) return;
 
       emitLinkDetected(ref.current, {
-        text: state.doc.textBetween(range.from, range.to, '\n'),
+        text: nativeLeafText(state.doc, range.from, range.to),
         url: (linkMark.attrs.href as string | undefined) ?? '',
         start: tiptapPosToNativePos(state.doc, range.from),
         end: tiptapPosToNativePos(state.doc, range.to),

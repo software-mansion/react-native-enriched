@@ -130,7 +130,7 @@ object MeasurementStore {
     props: ReadableMap?,
   ): Float {
     val propsFontSize = props?.getDouble("fontSize")?.toFloat()
-    if (propsFontSize == null) return defaultView.textSize
+    if (propsFontSize == null || propsFontSize <= 0) return defaultView.textSize
 
     return ceil(pixelFromSpOrDp(propsFontSize, allowFontScalingFromProps(props)))
   }

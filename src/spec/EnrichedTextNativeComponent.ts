@@ -1,14 +1,8 @@
 import { codegenNativeComponent, type ColorValue } from 'react-native';
-import type { HostComponent, ViewProps } from 'react-native';
-import type {
-  DirectEventHandler,
-  Float,
-  Int32,
-  UnsafeMixed,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import type { CodegenTypes, HostComponent, ViewProps } from 'react-native';
 
 type Heading = {
-  fontSize?: Float;
+  fontSize?: CodegenTypes.Float;
   bold?: boolean;
 };
 
@@ -21,13 +15,13 @@ export interface EnrichedTextHtmlStyleInternal {
   h6?: Heading;
   blockquote?: {
     borderColor?: ColorValue;
-    borderWidth?: Float;
-    gapWidth?: Float;
+    borderWidth?: CodegenTypes.Float;
+    gapWidth?: CodegenTypes.Float;
     color?: ColorValue;
   };
   codeblock?: {
     color?: ColorValue;
-    borderRadius?: Float;
+    borderRadius?: CodegenTypes.Float;
     backgroundColor?: ColorValue;
   };
   code?: {
@@ -42,23 +36,23 @@ export interface EnrichedTextHtmlStyleInternal {
   };
   // This is a workaround for the fact that codegen does not support Records.
   // On native Android side this will become a ReadableMap, on native iOS we can work with a folly::dynamic object.
-  mention?: UnsafeMixed;
+  mention?: CodegenTypes.UnsafeMixed;
   ol?: {
-    gapWidth?: Float;
-    marginLeft?: Float;
+    gapWidth?: CodegenTypes.Float;
+    marginLeft?: CodegenTypes.Float;
     markerFontWeight?: string;
     markerColor?: ColorValue;
   };
   ul?: {
     bulletColor?: ColorValue;
-    bulletSize?: Float;
-    marginLeft?: Float;
-    gapWidth?: Float;
+    bulletSize?: CodegenTypes.Float;
+    marginLeft?: CodegenTypes.Float;
+    gapWidth?: CodegenTypes.Float;
   };
   ulCheckbox?: {
-    gapWidth?: Float;
-    boxSize?: Float;
-    marginLeft?: Float;
+    gapWidth?: CodegenTypes.Float;
+    boxSize?: CodegenTypes.Float;
+    marginLeft?: CodegenTypes.Float;
     boxColor?: ColorValue;
   };
 }
@@ -70,7 +64,7 @@ export interface OnLinkPressEvent {
 export interface OnMentionPressEventInternal {
   text: string;
   indicator: string;
-  attributes: UnsafeMixed;
+  attributes: CodegenTypes.UnsafeMixed;
 }
 
 export interface OnMentionPressEvent {
@@ -88,19 +82,19 @@ export interface NativeProps extends ViewProps {
 
   // ReactNative TextProps
   ellipsizeMode: string;
-  numberOfLines: Int32;
+  numberOfLines: CodegenTypes.Int32;
   selectable: boolean;
   selectionColor?: ColorValue;
 
   // Events
-  onLinkPress?: DirectEventHandler<OnLinkPressEvent>;
-  onMentionPress?: DirectEventHandler<OnMentionPressEventInternal>;
+  onLinkPress?: CodegenTypes.DirectEventHandler<OnLinkPressEvent>;
+  onMentionPress?: CodegenTypes.DirectEventHandler<OnMentionPressEventInternal>;
 
   // Style related props - used for generating proper setters in component's manager
   // These should not be passed as regular props
   color?: ColorValue;
-  fontSize?: Float;
-  lineHeight?: Float;
+  fontSize?: CodegenTypes.Float;
+  lineHeight?: CodegenTypes.Float;
   fontFamily?: string;
   fontWeight?: string;
   fontStyle?: string;

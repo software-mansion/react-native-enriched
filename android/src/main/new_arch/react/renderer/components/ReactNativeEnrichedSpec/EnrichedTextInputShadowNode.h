@@ -47,7 +47,7 @@ public:
                  const LayoutConstraints &layoutConstraints) const override;
 
 private:
-  int forceHeightRecalculationCounter_;
+  int forceHeightRecalculationCounter_{0};
   std::shared_ptr<EnrichedTextInputMeasurementManager> measurementsManager_;
 };
 } // namespace facebook::react

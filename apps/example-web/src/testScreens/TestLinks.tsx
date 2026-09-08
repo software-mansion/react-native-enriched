@@ -3,6 +3,7 @@ import {
   EnrichedTextInput,
   type EnrichedInputStyle,
   type EnrichedTextInputInstance,
+  type OnChangeSelectionEvent,
   type OnLinkDetected,
 } from 'react-native-enriched-html';
 import { WEB_DEFAULT_HTML_STYLE } from '../defaultHtmlStyle';
@@ -34,6 +35,8 @@ export function TestLinks() {
   const [selEndInput, setSelEndInput] = useState('0');
   const [lastOnLinkDetected, setLastOnLinkDetected] =
     useState<OnLinkDetected | null>(null);
+  const [lastSelection, setLastSelection] =
+    useState<OnChangeSelectionEvent | null>(null);
 
   useEffect(() => {
     setLinkRegexError('');
@@ -67,6 +70,9 @@ export function TestLinks() {
           }}
           onLinkDetected={(e) => {
             setLastOnLinkDetected(e);
+          }}
+          onChangeSelection={(e) => {
+            setLastSelection(e.nativeEvent);
           }}
           linkRegex={appliedLinkRegex}
         />
@@ -223,7 +229,26 @@ export function TestLinks() {
         >
           setSelection
         </button>
+        <button
+          type="button"
+          data-testid="test-links-apply-setlink-from-selection-button"
+          onClick={() => {
+            if (!lastSelection) return;
+            ref.current?.setLink(
+              lastSelection.start,
+              lastSelection.end,
+              lastSelection.text,
+              linkUrlInput
+            );
+          }}
+        >
+          setLink from selection
+        </button>
       </div>
+
+      <pre data-testid="test-links-selection-payload">
+        {JSON.stringify(lastSelection)}
+      </pre>
 
       <pre data-testid="on-link-detected-payload">
         {JSON.stringify(lastOnLinkDetected)}

@@ -844,6 +844,12 @@ details.
 - `text: string` - displayed text of the link
 - `url: string` - URL of the link
 
+:::note
+
+Using this method with `text=""` will result in removal of the text marked by the `start` and `end` indexes.
+
+;;;
+
 ### `.removeLink()`
 
 ```ts

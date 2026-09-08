@@ -2,7 +2,10 @@ import type { RefObject } from 'react';
 import type {
   ColorValue,
   DimensionValue,
-  NativeMethods,
+  HostInstance,
+  MeasureInWindowOnSuccessCallback,
+  MeasureLayoutOnSuccessCallback,
+  MeasureOnSuccessCallback,
   NativeSyntheticEvent,
   ReturnKeyTypeOptions,
   TargetedEvent,
@@ -34,7 +37,7 @@ export interface EnrichedInputStyle {
   display?: TextStyle['display'];
   end?: DimensionValue;
   flex?: number;
-  flexBasis?: DimensionValue;
+  flexBasis?: string | number;
   flexGrow?: number;
   flexShrink?: number;
   height?: DimensionValue;
@@ -430,7 +433,16 @@ export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
  * to the component's `ref` prop. All methods are safe to call after the
  * component has mounted.
  */
-export interface EnrichedTextInputInstance extends NativeMethods {
+export interface EnrichedTextInputInstance {
+  measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => void;
+  measure: (callback: MeasureOnSuccessCallback) => void;
+  measureLayout: (
+    relativeToNativeComponentRef: HostInstance | number,
+    onSuccess: MeasureLayoutOnSuccessCallback,
+    onFail?: () => void
+  ) => void;
+  setNativeProps: (nativeProps: object) => void;
+
   /** Focuses the editor, opening the software keyboard on mobile. */
   focus: () => void;
 
@@ -798,11 +810,22 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
 /**
  * Imperative handle exposed via `ref` on `<EnrichedText />`.
  *
- * Inherits the full React Native `NativeMethods` surface (`measure`,
- * `measureInWindow`, `measureLayout`, `setNativeProps`, `focus`, `blur`).
+ * Exposes native measurement helpers (`measure`, `measureInWindow`,
+ * `measureLayout`, `setNativeProps`, `focus`, `blur`).
  * Obtain a reference with `useRef<EnrichedTextInstance>(null)`.
  */
-export interface EnrichedTextInstance extends NativeMethods {}
+export interface EnrichedTextInstance {
+  measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => void;
+  measure: (callback: MeasureOnSuccessCallback) => void;
+  measureLayout: (
+    relativeToNativeComponentRef: HostInstance | number,
+    onSuccess: MeasureLayoutOnSuccessCallback,
+    onFail?: () => void
+  ) => void;
+  setNativeProps: (nativeProps: object) => void;
+  focus: () => void;
+  blur: () => void;
+}
 
 /**
  * Props for the `<EnrichedText />` read-only rich-text rendering component.
@@ -810,7 +833,7 @@ export interface EnrichedTextInstance extends NativeMethods {}
 export interface EnrichedTextProps extends ViewProps {
   /**
    * Ref to the imperative handle that exposes native measurement and focus
-   * methods inherited from `NativeMethods`.
+   * methods.
    * Create with `useRef<EnrichedTextInstance>(null)`.
    */
   ref?: RefObject<EnrichedTextInstance | null>;

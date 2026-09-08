@@ -15,10 +15,10 @@
 #import "StyleUtils.h"
 #import "TextBlockTapGestureRecognizer.h"
 #import "TextInsertionUtils.h"
-#import "UIView+React.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
 #import <React/RCTConversions.h>
+#import <React/UIView+React.h>
 #import <ReactNativeEnrichedHtml/EnrichedTextInputViewComponentDescriptor.h>
 #import <ReactNativeEnrichedHtml/EventEmitters.h>
 #import <ReactNativeEnrichedHtml/Props.h>

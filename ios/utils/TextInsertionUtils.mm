@@ -1,5 +1,5 @@
 #import "TextInsertionUtils.h"
-#import "UIView+React.h"
+#import <React/UIView+React.h>
 
 @implementation TextInsertionUtils
 + (void)insertText:(NSString *)text

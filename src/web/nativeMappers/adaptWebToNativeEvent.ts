@@ -17,6 +17,9 @@ export function adaptWebToNativeEvent<T>(
     cancelable: webEvent?.cancelable ?? false,
     currentTarget: (webEvent?.currentTarget ?? {}) as unknown as HostInstance,
     defaultPrevented: isDefaultPrevented,
+    dispatchConfig: {
+      registrationName: webEvent?.type ?? 'customEvent',
+    },
     eventPhase: webEvent?.eventPhase ?? 0,
     isTrusted: webEvent?.isTrusted ?? true,
     target: (webEvent?.target ?? {}) as unknown as HostInstance,
