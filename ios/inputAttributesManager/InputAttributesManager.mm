@@ -152,6 +152,11 @@
   // Typing attributes get reset (except alignment) when only selection changed
   // to an empty line (or empty line with newline).
   if (onlySelectionChanged) {
+    // if there is no content, there is no need to clear the typing attributes
+    if (textView.textStorage.string.length == 0) {
+      return;
+    }
+
     NSRange paragraphRange =
         [textView.textStorage.string paragraphRangeForRange:selectedRange];
     // User changed selection to an empty line (or empty line with a newline).
