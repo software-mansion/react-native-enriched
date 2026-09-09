@@ -23,6 +23,7 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
@@ -77,6 +78,7 @@ import com.swmansion.enriched.textinput.watchers.EnrichedSpanWatcher
 import com.swmansion.enriched.textinput.watchers.EnrichedTextWatcher
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
+import kotlin.math.abs
 import kotlin.math.ceil
 
 class EnrichedTextInputView :
@@ -139,6 +141,9 @@ class EnrichedTextInputView :
   private var typefaceDirty = false
   private var didAttachToWindow = false
   private var detectScrollMovement = false
+  private var initialTouchX = 0f
+  private var initialTouchY = 0f
+  private var touchSlop = 0f
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
@@ -224,6 +229,7 @@ class EnrichedTextInputView :
 
     setPadding(0, 0, 0, 0)
     setBackgroundColor(Color.TRANSPARENT)
+    touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
 
     // Ensure that every time new editable is created, it has EnrichedSpanWatcher attached
     val spanWatcher = EnrichedSpanWatcher(this)
@@ -288,6 +294,8 @@ class EnrichedTextInputView :
     when (ev.action) {
       MotionEvent.ACTION_DOWN -> {
         detectScrollMovement = true
+        initialTouchX = ev.x
+        initialTouchY = ev.y
         // Disallow parent views to intercept touch events, until we can detect if we should be
         // capturing these touches or not.
         this.parent.requestDisallowInterceptTouchEvent(true)
@@ -295,6 +303,30 @@ class EnrichedTextInputView :
 
       MotionEvent.ACTION_MOVE -> {
         if (detectScrollMovement) {
+          val deltaX = ev.x - initialTouchX
+          val deltaY = ev.y - initialTouchY
+          val movedPastSlop = abs(deltaX) > touchSlop || abs(deltaY) > touchSlop
+          val isVerticalDrag = abs(deltaY) > touchSlop && abs(deltaY) > abs(deltaX)
+          // Dragging down (positive delta) reveals the content above the viewport.
+          val verticalDirection = if (deltaY > 0) -1 else 1
+
+          if (
+            isVerticalDrag &&
+            (!scrollEnabled || !canScrollVertically(verticalDirection))
+          ) {
+            // The gesture is a vertical drag we cannot consume, either because scrolling is
+            // disabled or because we are already at the edge of our own content. Let parent
+            // views take over, so a surrounding scrollable keeps working.
+            this.parent.requestDisallowInterceptTouchEvent(false)
+            detectScrollMovement = false
+            return false
+          }
+
+          // Wait until the gesture is unambiguous before deciding who owns it.
+          if (!movedPastSlop) {
+            return super.onTouchEvent(ev)
+          }
+
           if (!canScrollVertically(-1) &&
             !canScrollVertically(1) &&
             !canScrollHorizontally(-1) &&
@@ -306,14 +338,20 @@ class EnrichedTextInputView :
           detectScrollMovement = false
         }
       }
+
+      MotionEvent.ACTION_UP,
+      MotionEvent.ACTION_CANCEL,
+      -> {
+        detectScrollMovement = false
+      }
     }
 
     return super.onTouchEvent(ev)
   }
 
-  override fun canScrollVertically(direction: Int): Boolean = scrollEnabled
+  override fun canScrollVertically(direction: Int): Boolean = scrollEnabled && super.canScrollVertically(direction)
 
-  override fun canScrollHorizontally(direction: Int): Boolean = scrollEnabled
+  override fun canScrollHorizontally(direction: Int): Boolean = scrollEnabled && super.canScrollHorizontally(direction)
 
   override fun onSelectionChanged(
     selStart: Int,
