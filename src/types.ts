@@ -723,6 +723,15 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   /** Called when the editor auto-detects a URL matching `linkRegex`. */
   onLinkDetected?: (e: OnLinkDetected) => void;
 
+  /**
+   * Web only. Called when the user clicks a link inside the editor. If not
+   * provided, clicking a link has no effect (the default, cross-platform
+   * behavior).
+   *
+   * @platform web
+   */
+  onLinkPress?: (event: OnLinkPressEvent) => void;
+
   /** Called when the editor resolves a mention node. */
   onMentionDetected?: (e: OnMentionDetected) => void;
 

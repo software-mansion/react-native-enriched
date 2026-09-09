@@ -117,6 +117,7 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onLinkPress,
   onSubmitEditing,
   returnKeyType,
   submitBehavior,
@@ -162,6 +163,7 @@ export const EnrichedTextInput = ({
   const submitBehaviorRef = useStableRef(submitBehavior);
   const onSubmitEditingRef = useStableRef(onSubmitEditing);
   const onKeyPressRef = useStableRef(onKeyPress);
+  const onLinkPressRef = useStableRef(onLinkPress);
   const useHtmlNormalizerRef = useStableRef(useHtmlNormalizer);
   const sanitizationConfigRef = useStableRef(sanitizationConfig);
   const mentionCallbacksRef = useStableRef(mentionCallbacks);
@@ -187,6 +189,18 @@ export const EnrichedTextInput = ({
     }
 
     return false;
+  };
+
+  const handleLinkPress = (event: PointerEvent): boolean => {
+    const onPress = onLinkPressRef.current;
+    if (!onPress) return false;
+    const anchor = (event.target as HTMLElement).closest?.('a');
+    if (!anchor) return false;
+    const url = anchor.getAttribute('href');
+    if (!url) return false;
+    event.preventDefault();
+    onPress({ url });
+    return true;
   };
 
   const linkEmitterRef = useRef<LinkEmitterState>({
@@ -281,6 +295,9 @@ export const EnrichedTextInput = ({
       },
       editorProps: {
         handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
+        handleDOMEvents: {
+          click: (_view, event) => handleLinkPress(event),
+        },
         handlePaste: (_view, event) =>
           handleClipboardPasteImages(
             event,

@@ -14,6 +14,7 @@ import {
   type OnSubmitEditing,
   type OnChangeMentionEvent,
   type OnMentionDetected,
+  type OnLinkPressEvent,
 } from 'react-native-enriched-html';
 import { WEB_DEFAULT_HTML_STYLE } from './defaultHtmlStyle';
 import type { NativeSyntheticEvent } from 'react-native';
@@ -224,6 +225,10 @@ function App() {
     setCurrentLink(e);
   };
 
+  const handleLinkPress = (e: OnLinkPressEvent) => {
+    console.log('[EnrichedTextInput] onLinkPress event', e);
+  };
+
   const handlePasteImages = (e: NativeSyntheticEvent<OnPasteImagesEvent>) => {
     const DEFAULT_W = 80;
     const DEFAULT_H = 80;
@@ -275,6 +280,7 @@ function App() {
           onChangeState={handleChangeState}
           onSubmitEditing={handleSubmitEditing}
           onLinkDetected={handleOnLinkDetected}
+          onLinkPress={handleLinkPress}
           onPasteImages={handlePasteImages}
           onStartMention={handleStartMention}
           onChangeMention={handleChangeMention}
