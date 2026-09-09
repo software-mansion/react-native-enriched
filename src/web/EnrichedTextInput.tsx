@@ -79,7 +79,10 @@ import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { TextShortcutsPlugin } from './pmPlugins/TextShortcutsPlugin';
 import { returnKeyTypeToEnterKeyHint } from './nativeMappers/returnKeyTypeToEnterKeyHint';
-import { ENRICHED_TEXT_INPUT_CLASSNAME } from './constants/classNames';
+import {
+  ENRICHED_TEXT_INPUT_CLASSNAME,
+  LINK_PRESSABLE_CLASSNAME,
+} from './constants/classNames';
 import { AutolinkPlugin } from './pmPlugins/AutolinkPlugin';
 import { useStableRef } from './utils/useStableRef';
 import {
@@ -88,6 +91,7 @@ import {
 } from './sanitization/htmlSanitizer';
 import { assertBrowserEnvironment } from './utils/assertBrowserEnvironment';
 import { runSafelyInEditor } from './utils/runSafelyInEditor';
+import { useLinkPress } from './htmlExtensions/useLinkPress';
 
 function runFocused(
   editor: Editor,
@@ -191,17 +195,9 @@ export const EnrichedTextInput = ({
     return false;
   };
 
-  const handleLinkPress = (event: PointerEvent): boolean => {
-    const onPress = onLinkPressRef.current;
-    if (!onPress) return false;
-    const anchor = (event.target as HTMLElement).closest?.('a');
-    if (!anchor) return false;
-    const url = anchor.getAttribute('href');
-    if (!url) return false;
-    event.preventDefault();
-    onPress({ url });
-    return true;
-  };
+  const { handleLinkPress, handleLinkMouseDown } = useLinkPress(
+    () => onLinkPressRef.current
+  );
 
   const linkEmitterRef = useRef<LinkEmitterState>({
     linkRegex,
@@ -297,6 +293,7 @@ export const EnrichedTextInput = ({
         handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
         handleDOMEvents: {
           click: (_view, event) => handleLinkPress(event),
+          mousedown: (_view, event) => handleLinkMouseDown(event),
         },
         handlePaste: (_view, event) =>
           handleClipboardPasteImages(
@@ -475,7 +472,11 @@ export const EnrichedTextInput = ({
       {mentionRulesCSS ? <style>{mentionRulesCSS}</style> : null}
       <EditorContent
         editor={editor}
-        className={ENRICHED_TEXT_INPUT_CLASSNAME}
+        className={
+          onLinkPress
+            ? `${ENRICHED_TEXT_INPUT_CLASSNAME} ${LINK_PRESSABLE_CLASSNAME}`
+            : ENRICHED_TEXT_INPUT_CLASSNAME
+        }
         style={finalStyle}
         data-placeholder={placeholder}
       />

@@ -43,6 +43,7 @@ export const DEFAULT_HTML_STYLE: Required<HtmlStyle> = {
   a: {
     color: 'blue',
     textDecorationLine: 'underline',
+    pressColor: 'darkblue',
   },
   mention: {
     color: 'blue',
@@ -71,10 +72,6 @@ export const DEFAULT_HTML_STYLE: Required<HtmlStyle> = {
 
 export const DEFAULT_ENRICHED_TEXT_STYLE: Required<EnrichedTextHtmlStyle> = {
   ...DEFAULT_HTML_STYLE,
-  a: {
-    ...DEFAULT_HTML_STYLE.a,
-    pressColor: 'darkblue',
-  },
   mention: {
     ...DEFAULT_HTML_STYLE.mention,
     pressColor: 'darkblue',

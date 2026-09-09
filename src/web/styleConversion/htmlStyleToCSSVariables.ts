@@ -60,11 +60,6 @@ export function mergeWithDefaultEnrichedTextHtmlStyle(
     DEFAULT_ENRICHED_TEXT_STYLE
   );
 
-  const a = {
-    ...DEFAULT_ENRICHED_TEXT_STYLE.a,
-    ...style?.a,
-  };
-
   const mentionDefaults = DEFAULT_ENRICHED_TEXT_STYLE.mention;
   const passedMentionMap = htmlStyle?.mention;
   const mergedMentionMap = merged.mention as Record<
@@ -84,7 +79,6 @@ export function mergeWithDefaultEnrichedTextHtmlStyle(
 
   return {
     ...merged,
-    a,
     mention,
   } as Required<EnrichedTextHtmlStyle>;
 }
@@ -101,6 +95,7 @@ const ET_CSS_VARS = {
   codeblockBorderRadius: '--et-codeblock-border-radius',
   linkColor: '--et-link-color',
   linkTextDecorationLine: '--et-link-text-decoration-line',
+  linkPressColor: '--et-link-press-color',
   ulBulletColor: '--et-ul-bullet-color',
   ulBulletSize: '--et-ul-bullet-size',
   ulMarginLeft: '--et-ul-margin-left',
@@ -189,6 +184,7 @@ function applyLinkVars(
   if (anchor?.textDecorationLine != null) {
     vars[ET_CSS_VARS.linkTextDecorationLine] = anchor.textDecorationLine;
   }
+  setColorVar(vars, ET_CSS_VARS.linkPressColor, anchor?.pressColor);
 }
 
 function applyUnorderedListVars(
@@ -278,8 +274,6 @@ export function htmlStyleToCSSVariables(htmlStyle: HtmlStyle): CSSProperties {
   return vars as CSSProperties;
 }
 
-const ET_LINK_PRESS_COLOR_VAR = '--et-link-press-color';
-
 export const ET_MENTION_PRESS_CSS_VARS = {
   pressColor: (indicator: string) =>
     `--et-mention-${indicatorToMentionCssKey(indicator)}-press-color`,
@@ -289,17 +283,6 @@ export const ET_MENTION_PRESS_CSS_VARS = {
 
 const DEFAULT_MENTION_PRESS =
   DEFAULT_ENRICHED_TEXT_STYLE.mention as EnrichedTextMentionStyleProperties;
-
-function expandVarsWithEnrichedTextLink(
-  vars: Record<string, string>,
-  anchor?: EnrichedTextHtmlStyle['a']
-): void {
-  setColorVar(
-    vars,
-    ET_LINK_PRESS_COLOR_VAR,
-    anchor?.pressColor ?? DEFAULT_ENRICHED_TEXT_STYLE.a.pressColor
-  );
-}
 
 function expandVarsWithEnrichedTextMention(
   vars: Record<string, string>,
@@ -337,7 +320,6 @@ function expandCSSPropertiesWithEnrichedTextHtmlStyle(
   cssProperties: CSSProperties
 ): CSSProperties {
   const vars = { ...cssProperties } as Record<string, string>;
-  expandVarsWithEnrichedTextLink(vars, htmlStyle?.a);
   expandVarsWithEnrichedTextMention(vars, htmlStyle?.mention);
   return vars as CSSProperties;
 }

@@ -222,6 +222,8 @@ export interface HtmlStyle {
   a?: {
     color?: ColorValue;
     textDecorationLine?: 'underline' | 'none';
+    /** @platform web */
+    pressColor?: ColorValue;
   };
   mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
   ol?: {
@@ -908,13 +910,7 @@ export interface EnrichedTextMentionStyleProperties extends MentionStyleProperti
   pressBackgroundColor?: ColorValue;
 }
 
-export interface EnrichedTextHtmlStyle extends Omit<
-  HtmlStyle,
-  'a' | 'mention'
-> {
-  a?: HtmlStyle['a'] & {
-    pressColor?: ColorValue;
-  };
+export interface EnrichedTextHtmlStyle extends Omit<HtmlStyle, 'mention'> {
   mention?:
     | Record<string, EnrichedTextMentionStyleProperties>
     | EnrichedTextMentionStyleProperties;
