@@ -8,7 +8,6 @@ export function useLinkPress(
   const pressedLinkRef = useRef<HTMLElement | null>(null);
 
   const handleLinkPress = (event: PointerEvent): boolean => {
-    if (!getOnLinkPress()) return false;
     const onPress = getOnLinkPress();
     if (!onPress) return false;
     const anchor = (event.target as HTMLElement).closest?.('a');

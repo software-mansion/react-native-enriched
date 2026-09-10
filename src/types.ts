@@ -910,7 +910,16 @@ export interface EnrichedTextMentionStyleProperties extends MentionStyleProperti
   pressBackgroundColor?: ColorValue;
 }
 
-export interface EnrichedTextHtmlStyle extends Omit<HtmlStyle, 'mention'> {
+export interface EnrichedTextHtmlStyle extends Omit<
+  HtmlStyle,
+  'a' | 'mention'
+> {
+  a?: Omit<NonNullable<HtmlStyle['a']>, 'pressColor'> & {
+    // the documentation comment below is to suppress the base HtmlStyle's
+    // web-only note about pressColor, as in EnrichedText it is cross-platform
+    /***/
+    pressColor?: ColorValue;
+  };
   mention?:
     | Record<string, EnrichedTextMentionStyleProperties>
     | EnrichedTextMentionStyleProperties;
