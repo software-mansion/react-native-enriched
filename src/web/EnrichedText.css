@@ -7,6 +7,15 @@
   outline: none;
 }
 
+.tiptap {
+  flex: 1;
+}
+
+.eti-editor {
+  display: flex;
+  flex-direction: column;
+}
+
 .et-view {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
