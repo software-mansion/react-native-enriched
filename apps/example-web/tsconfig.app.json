@@ -4,8 +4,12 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "types": ["vite/client"],
     "paths": {
-      "react-native-enriched-html": ["../../src/index.tsx"]
-    }
+      "react-native-enriched-html": ["../../src/index.tsx"],
+      "react": ["../../node_modules/@types/react"],
+      "react/*": ["../../node_modules/@types/react/*"],
+      "react-dom": ["../../node_modules/@types/react-dom"],
+      "react-dom/*": ["../../node_modules/@types/react-dom/*"],
+    },
   },
-  "include": ["src"]
+  "include": ["src"],
 }
