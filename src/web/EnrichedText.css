@@ -1,13 +1,13 @@
-.tiptap.ProseMirror p {
+.eti-editor .tiptap.ProseMirror p {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.tiptap.ProseMirror-focused {
+.eti-editor .tiptap.ProseMirror-focused {
   outline: none;
 }
 
-.tiptap {
+.eti-editor .tiptap {
   flex: 1;
 }
 
