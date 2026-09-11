@@ -5,7 +5,6 @@ import type {
   HostComponent,
   ViewProps,
 } from 'react-native';
-import React from 'react';
 
 export interface LinkNativeRegex {
   pattern: string;
@@ -415,69 +414,69 @@ type ComponentType = HostComponent<NativeProps>;
 
 interface NativeCommands {
   // General commands
-  focus: (viewRef: React.ElementRef<ComponentType>) => void;
-  blur: (viewRef: React.ElementRef<ComponentType>) => void;
-  setValue: (viewRef: React.ElementRef<ComponentType>, text: string) => void;
+  focus: (viewRef: React.ComponentRef<ComponentType>) => void;
+  blur: (viewRef: React.ComponentRef<ComponentType>) => void;
+  setValue: (viewRef: React.ComponentRef<ComponentType>, text: string) => void;
   setSelection: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     start: CodegenTypes.Int32,
     end: CodegenTypes.Int32
   ) => void;
 
   // Text formatting commands
-  toggleBold: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleItalic: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleUnderline: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleStrikeThrough: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleInlineCode: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH1: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH2: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH3: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH4: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH5: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleH6: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleCodeBlock: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleBlockQuote: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleOrderedList: (viewRef: React.ElementRef<ComponentType>) => void;
-  toggleUnorderedList: (viewRef: React.ElementRef<ComponentType>) => void;
+  toggleBold: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleItalic: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleUnderline: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleStrikeThrough: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleInlineCode: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH1: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH2: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH3: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH4: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH5: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleH6: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleCodeBlock: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleBlockQuote: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleOrderedList: (viewRef: React.ComponentRef<ComponentType>) => void;
+  toggleUnorderedList: (viewRef: React.ComponentRef<ComponentType>) => void;
   toggleCheckboxList: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     checked: boolean
   ) => void;
   addLink: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     start: CodegenTypes.Int32,
     end: CodegenTypes.Int32,
     text: string,
     url: string
   ) => void;
   removeLink: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     start: CodegenTypes.Int32,
     end: CodegenTypes.Int32
   ) => void;
   addImage: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     uri: string,
     width: CodegenTypes.Float,
     height: CodegenTypes.Float
   ) => void;
   startMention: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     indicator: string
   ) => void;
   addMention: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     indicator: string,
     text: string,
     payload: string
   ) => void;
   requestHTML: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     requestId: CodegenTypes.Int32
   ) => void;
   setTextAlignment: (
-    viewRef: React.ElementRef<ComponentType>,
+    viewRef: React.ComponentRef<ComponentType>,
     alignment: string
   ) => void;
 }

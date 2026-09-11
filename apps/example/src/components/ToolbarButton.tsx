@@ -29,8 +29,7 @@ interface ToolbarButtonTextProps {
 }
 
 export type ToolbarButtonProps =
-  | ToolbarButtonIconProps
-  | ToolbarButtonTextProps;
+  ToolbarButtonIconProps | ToolbarButtonTextProps;
 
 export const ToolbarButton: FC<ToolbarButtonProps> = ({
   icon,

@@ -1,10 +1,13 @@
 {
   "extends": "./tsconfig.base.json",
+  "exclude": ["docs"],
   "compilerOptions": {
     "rootDir": ".",
     "types": ["jest"],
     "paths": {
-      "react-native-enriched-html": ["./src/index.native"]
-    }
-  }
+      "react-native-enriched-html": ["./src/index.native"],
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+    },
+  },
 }

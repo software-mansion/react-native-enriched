@@ -64,8 +64,7 @@ export function handleClipboardPasteImages(
   event: ClipboardEvent,
   getEditor: () => Editor | null,
   getOnPasteImages: () =>
-    | ((e: NativeSyntheticEvent<OnPasteImagesEvent>) => void)
-    | undefined
+    ((e: NativeSyntheticEvent<OnPasteImagesEvent>) => void) | undefined
 ): boolean {
   const clipboardData = event.clipboardData;
   if (!clipboardData) return false;
