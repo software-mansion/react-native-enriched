@@ -1,10 +1,19 @@
-.tiptap.ProseMirror p {
+.eti-editor .tiptap.ProseMirror p {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.tiptap.ProseMirror-focused {
+.eti-editor .tiptap.ProseMirror-focused {
   outline: none;
+}
+
+.eti-editor .tiptap {
+  flex: 1;
+}
+
+.eti-editor {
+  display: flex;
+  flex-direction: column;
 }
 
 .et-view {

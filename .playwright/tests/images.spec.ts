@@ -168,6 +168,7 @@ test.describe('images', () => {
 
     for (const key of toolbarOrder) {
       const editor = await focusEnrichedEditable(page);
+      await page.waitForTimeout(10);
       await editor.press('Meta+A');
       await toolbarButton(page, key).click();
       await expect
