@@ -479,6 +479,10 @@ class EnrichedTextInputViewManager :
     view?.setTextAlignment(alignment)
   }
 
+  override fun deleteAtSelection(view: EnrichedTextInputView?) {
+    view?.deleteAtSelection()
+  }
+
   override fun measure(
     context: Context,
     localData: ReadableMap?,

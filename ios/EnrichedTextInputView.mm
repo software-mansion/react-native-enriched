@@ -1296,6 +1296,8 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     if (!_placeholderLabel.isHidden) {
       [self refreshPlaceholderLabelStyles];
     }
+  } else if ([commandName isEqualToString:@"deleteAtSelection"]) {
+    [self deleteAtSelection];
   }
 }
 
@@ -1333,6 +1335,27 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   // set selectedRange and check for changes
   textView.selectedRange = NSRange(textView.textStorage.string.length, 0);
   [self anyTextMayHaveBeenModified];
+}
+
+- (void)deleteAtSelection {
+  NSRange range = textView.selectedRange;
+
+  // Checking if there is anything to delete
+  if (range.location > 0 || range.length > 0) {
+    // If we have no selection - we want to manually set range
+    // to cover the character before the caret
+    if (range.length == 0) {
+      range.location -= 1;
+      range.length = 1;
+    }
+
+    // This imitates delete button on keyboard press
+    if ([textView.delegate textView:textView
+            shouldChangeTextInRange:range
+                    replacementText:@""]) {
+      [textView deleteBackward];
+    }
+  }
 }
 
 - (void)setCustomSelection:(NSInteger)visibleStart end:(NSInteger)visibleEnd {

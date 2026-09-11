@@ -480,6 +480,7 @@ interface NativeCommands {
     viewRef: React.ElementRef<ComponentType>,
     alignment: string
   ) => void;
+  deleteAtSelection: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -514,6 +515,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'addMention',
     'requestHTML',
     'setTextAlignment',
+    'deleteAtSelection',
   ],
 });
 

@@ -419,6 +419,28 @@ export const EnrichedTextInput = ({
           runFocused(editor, (c) => c.setTextAlign(alignment));
         }
       },
+      deleteAtSelection: () => {
+        runFocused(editor, (c) => {
+          const { from, empty, $from } = editor.state.selection;
+
+          // If have selection - we delete it
+          if (!empty) {
+            return c.deleteSelection();
+          }
+
+          const isAtBlockStart = $from.parentOffset === 0;
+
+          if (isAtBlockStart) {
+            // If caret is in the beginning of the line - we join two lines together
+            return c.joinBackward();
+          } else if (from > 1) {
+            // If caret is not in the beginning of the line - we delete previous character
+            return c.deleteRange({ from: from - 1, to: from });
+          }
+
+          return c.focus();
+        });
+      },
     }),
     [editor, mentionIndicatorsRef, useHtmlNormalizerRef, sanitizationConfigRef]
   );
