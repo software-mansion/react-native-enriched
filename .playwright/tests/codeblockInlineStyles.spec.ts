@@ -13,7 +13,7 @@ const INLINE_MARK_TAG = /<\s*(b|i|u|s|code)\b/i;
 
 function htmlInsideCodeblock(serialized: string): string {
   const m = serialized.match(/<codeblock[^>]*>([\s\S]*?)<\/codeblock>/i);
-  return m ? m[1] : '';
+  return m && m[1] ? m[1] : '';
 }
 
 test.describe('codeblock inline styles', () => {
