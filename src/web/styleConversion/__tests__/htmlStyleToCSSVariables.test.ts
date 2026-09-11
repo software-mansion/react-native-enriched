@@ -16,7 +16,6 @@ const defaultMentionOnlyResolved = {
   default: { ...DEFAULT_HTML_STYLE.mention },
 };
 
-const DEFAULT_LINK_PRESS_COLOR = DEFAULT_ENRICHED_TEXT_STYLE.a.pressColor;
 const DEFAULT_MENTION_PRESS = DEFAULT_ENRICHED_TEXT_STYLE.mention as {
   pressColor?: string;
   pressBackgroundColor?: string;
@@ -205,11 +204,16 @@ describe('htmlStyleToCSSVariables', () => {
   it('maps anchor link styles to CSS variables', () => {
     expect(
       htmlStyleToCSSVariables({
-        a: { color: 'blue', textDecorationLine: 'underline' },
+        a: {
+          color: 'blue',
+          textDecorationLine: 'underline',
+          pressColor: 'red',
+        },
       })
     ).toMatchObject({
       '--et-link-color': 'blue',
       '--et-link-text-decoration-line': 'underline',
+      '--et-link-press-color': 'red',
     });
   });
 
@@ -350,7 +354,6 @@ describe('enrichedTextHtmlStyleToCSSVariables', () => {
       a: { color: 'blue' },
       mention: { color: '#f00' },
     }) as Record<string, string>;
-    expect(vars['--et-link-press-color']).toBe(DEFAULT_LINK_PRESS_COLOR);
     expect(vars['--et-mention-default-press-color']).toBe(
       DEFAULT_MENTION_PRESS_COLOR
     );
@@ -364,7 +367,6 @@ describe('enrichedTextHtmlStyleToCSSVariables', () => {
       string,
       string
     >;
-    expect(vars['--et-link-press-color']).toBe(DEFAULT_LINK_PRESS_COLOR);
     expect(vars['--et-mention-default-press-color']).toBe(
       DEFAULT_MENTION_PRESS_COLOR
     );

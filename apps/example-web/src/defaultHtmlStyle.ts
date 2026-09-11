@@ -43,6 +43,7 @@ export const WEB_DEFAULT_HTML_STYLE: HtmlStyle = {
   a: {
     color: 'green',
     textDecorationLine: 'underline',
+    pressColor: 'darkblue',
   },
   ol: {
     gapWidth: 16,

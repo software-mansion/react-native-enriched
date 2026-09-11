@@ -33,6 +33,8 @@ const sel = {
     '[data-testid="test-links-apply-setlink-from-selection-button"]',
   selectionPayload: '[data-testid="test-links-selection-payload"]',
   onLinkDetectedPayload: '[data-testid="on-link-detected-payload"]',
+  onLinkPressEnabled: '[data-testid="test-links-onlinkpress-enabled"]',
+  onLinkPressPayload: '[data-testid="on-link-press-payload"]',
   editorInner: '[data-testid="test-links-editor"] .eti-editor',
   editorScreenshot: '[data-testid="test-links-editor"]',
   linkRegexMode: '[data-testid="test-links-link-regex-mode"]',
@@ -61,6 +63,10 @@ async function setTestLinksEditorHtml(page: Page, html: string): Promise<void> {
 
 async function getOnLinkDetectedPayload(page: Page): Promise<string> {
   return (await page.locator(sel.onLinkDetectedPayload).textContent()) ?? '';
+}
+
+async function getOnLinkPressPayload(page: Page): Promise<string> {
+  return (await page.locator(sel.onLinkPressPayload).textContent()) ?? '';
 }
 
 test('links display visual regression', async ({ page }) => {
@@ -415,6 +421,39 @@ test.describe('test-links onLinkDetected', () => {
         start: 0,
         end: 0,
       });
+  });
+});
+
+test.describe('test-links onLinkPress', () => {
+  test('clicking a link does nothing when onLinkPress is not provided', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await setTestLinksEditorHtml(
+      page,
+      '<html><p><a href="https://example.com">Example</a></p></html>'
+    );
+
+    await page.locator(sel.editorInner).locator('a').click();
+
+    await expect(page.locator(sel.onLinkPressPayload)).toHaveText('null');
+  });
+
+  test('clicking a link fires onLinkPress with the url when provided', async ({
+    page,
+  }) => {
+    await gotoTestLinks(page);
+    await page.check(sel.onLinkPressEnabled);
+    await setTestLinksEditorHtml(
+      page,
+      '<html><p><a href="https://example.com">Example</a></p></html>'
+    );
+
+    await page.locator(sel.editorInner).locator('a').click();
+
+    await expect
+      .poll(async () => getOnLinkPressPayload(page))
+      .toBe(JSON.stringify({ url: 'https://example.com' }));
   });
 });
 

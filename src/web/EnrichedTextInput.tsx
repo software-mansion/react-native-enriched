@@ -79,7 +79,10 @@ import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { TextShortcutsPlugin } from './pmPlugins/TextShortcutsPlugin';
 import { returnKeyTypeToEnterKeyHint } from './nativeMappers/returnKeyTypeToEnterKeyHint';
-import { ENRICHED_TEXT_INPUT_CLASSNAME } from './constants/classNames';
+import {
+  ENRICHED_TEXT_INPUT_CLASSNAME,
+  LINK_PRESSABLE_CLASSNAME,
+} from './constants/classNames';
 import { AutolinkPlugin } from './pmPlugins/AutolinkPlugin';
 import { useStableRef } from './utils/useStableRef';
 import {
@@ -88,6 +91,7 @@ import {
 } from './sanitization/htmlSanitizer';
 import { assertBrowserEnvironment } from './utils/assertBrowserEnvironment';
 import { runSafelyInEditor } from './utils/runSafelyInEditor';
+import { useLinkPress } from './htmlExtensions/useLinkPress';
 
 function runFocused(
   editor: Editor,
@@ -117,6 +121,7 @@ export const EnrichedTextInput = ({
   onChangeHtml,
   onChangeState,
   onLinkDetected,
+  onLinkPress,
   onSubmitEditing,
   returnKeyType,
   submitBehavior,
@@ -162,6 +167,7 @@ export const EnrichedTextInput = ({
   const submitBehaviorRef = useStableRef(submitBehavior);
   const onSubmitEditingRef = useStableRef(onSubmitEditing);
   const onKeyPressRef = useStableRef(onKeyPress);
+  const onLinkPressRef = useStableRef(onLinkPress);
   const useHtmlNormalizerRef = useStableRef(useHtmlNormalizer);
   const sanitizationConfigRef = useStableRef(sanitizationConfig);
   const mentionCallbacksRef = useStableRef(mentionCallbacks);
@@ -188,6 +194,10 @@ export const EnrichedTextInput = ({
 
     return false;
   };
+
+  const { handleLinkPress, handleLinkMouseDown } = useLinkPress(
+    () => onLinkPressRef.current
+  );
 
   const linkEmitterRef = useRef<LinkEmitterState>({
     linkRegex,
@@ -281,6 +291,10 @@ export const EnrichedTextInput = ({
       },
       editorProps: {
         handleKeyDown: (view, event) => handleKeyDown(view.state.doc, event),
+        handleDOMEvents: {
+          click: (_view, event) => handleLinkPress(event),
+          mousedown: (_view, event) => handleLinkMouseDown(event),
+        },
         handlePaste: (_view, event) =>
           handleClipboardPasteImages(
             event,
@@ -458,7 +472,11 @@ export const EnrichedTextInput = ({
       {mentionRulesCSS ? <style>{mentionRulesCSS}</style> : null}
       <EditorContent
         editor={editor}
-        className={ENRICHED_TEXT_INPUT_CLASSNAME}
+        className={
+          onLinkPress
+            ? `${ENRICHED_TEXT_INPUT_CLASSNAME} ${LINK_PRESSABLE_CLASSNAME}`
+            : ENRICHED_TEXT_INPUT_CLASSNAME
+        }
         style={finalStyle}
         data-placeholder={placeholder}
       />

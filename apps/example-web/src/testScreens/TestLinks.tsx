@@ -5,6 +5,7 @@ import {
   type EnrichedTextInputInstance,
   type OnChangeSelectionEvent,
   type OnLinkDetected,
+  type OnLinkPressEvent,
 } from 'react-native-enriched-html';
 import { WEB_DEFAULT_HTML_STYLE } from '../defaultHtmlStyle';
 
@@ -37,6 +38,9 @@ export function TestLinks() {
     useState<OnLinkDetected | null>(null);
   const [lastSelection, setLastSelection] =
     useState<OnChangeSelectionEvent | null>(null);
+  const [onLinkPressEnabled, setOnLinkPressEnabled] = useState(false);
+  const [lastOnLinkPress, setLastOnLinkPress] =
+    useState<OnLinkPressEvent | null>(null);
 
   useEffect(() => {
     setLinkRegexError('');
@@ -74,8 +78,29 @@ export function TestLinks() {
           onChangeSelection={(e) => {
             setLastSelection(e.nativeEvent);
           }}
+          onLinkPress={
+            onLinkPressEnabled
+              ? (e) => {
+                  setLastOnLinkPress(e);
+                }
+              : undefined
+          }
           linkRegex={appliedLinkRegex}
         />
+      </div>
+
+      <div>
+        <label>
+          onLinkPress enabled{' '}
+          <input
+            data-testid="test-links-onlinkpress-enabled"
+            type="checkbox"
+            checked={onLinkPressEnabled}
+            onChange={(e) => {
+              setOnLinkPressEnabled(e.target.checked);
+            }}
+          />
+        </label>
       </div>
 
       <div>
@@ -252,6 +277,10 @@ export function TestLinks() {
 
       <pre data-testid="on-link-detected-payload">
         {JSON.stringify(lastOnLinkDetected)}
+      </pre>
+
+      <pre data-testid="on-link-press-payload">
+        {JSON.stringify(lastOnLinkPress)}
       </pre>
 
       <pre data-testid="test-links-html-output">{editorHtml}</pre>

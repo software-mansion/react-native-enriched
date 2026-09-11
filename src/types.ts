@@ -222,6 +222,8 @@ export interface HtmlStyle {
   a?: {
     color?: ColorValue;
     textDecorationLine?: 'underline' | 'none';
+    /** @platform web */
+    pressColor?: ColorValue;
   };
   mention?: Record<string, MentionStyleProperties> | MentionStyleProperties;
   ol?: {
@@ -723,6 +725,15 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
   /** Called when the editor auto-detects a URL matching `linkRegex`. */
   onLinkDetected?: (e: OnLinkDetected) => void;
 
+  /**
+   * Web only. Called when the user clicks a link inside the editor. If not
+   * provided, clicking a link has no effect (the default, cross-platform
+   * behavior).
+   *
+   * @platform web
+   */
+  onLinkPress?: (event: OnLinkPressEvent) => void;
+
   /** Called when the editor resolves a mention node. */
   onMentionDetected?: (e: OnMentionDetected) => void;
 
@@ -903,7 +914,10 @@ export interface EnrichedTextHtmlStyle extends Omit<
   HtmlStyle,
   'a' | 'mention'
 > {
-  a?: HtmlStyle['a'] & {
+  a?: Omit<NonNullable<HtmlStyle['a']>, 'pressColor'> & {
+    // the documentation comment below is to suppress the base HtmlStyle's
+    // web-only note about pressColor, as in EnrichedText it is cross-platform
+    /***/
     pressColor?: ColorValue;
   };
   mention?:

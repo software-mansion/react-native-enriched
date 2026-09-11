@@ -138,7 +138,16 @@
   transition: none;
 }
 
-.et-view a:active {
+.et-view a {
+  cursor: default
+}
+
+.et-link-pressable a {
+  cursor: pointer;
+}
+
+.et-link-pressable a:active,
+.et-link-pressable a.et-link-pressed {
   color: var(--et-link-press-color);
 }
 
