@@ -11,7 +11,7 @@ import { toolbarButton } from '../helpers/toolbar';
 
 function h1Inner(serialized: string): string | null {
   const m = serialized.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
-  return m && m[1] ? m[1] : null;
+  return m?.[1] ?? null;
 }
 
 const HTML_STYLE_H1_BOLD_TRUE = '{ "h1": { "bold": true } }';
