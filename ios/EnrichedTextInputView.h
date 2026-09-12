@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
   NSValue *dotReplacementRange;
 @public
   NSArray<NSDictionary *> *textShortcuts;
+@public
+  BOOL preserveTypingAttributesOnNextEmptyCheck;
 }
 - (CGSize)measureSize:(CGFloat)maxWidth;
 - (void)emitOnLinkDetectedEvent:(LinkData *)linkData range:(NSRange)range;

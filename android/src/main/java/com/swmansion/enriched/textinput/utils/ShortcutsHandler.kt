@@ -30,18 +30,25 @@ class ShortcutsHandler(
     val (start, end) = s.getParagraphBounds(cursorPosition)
     val paragraphText = s.substring(start, end)
 
-    val effectiveTriggerStart =
-      if (paragraphText.startsWith(EnrichedConstants.ZWS_STRING)) {
-        if (paragraphHasNonAlignmentSpan(s, start, end)) return
-        start + 1
-      } else {
-        start
-      }
+    val startsWithZws = paragraphText.startsWith(EnrichedConstants.ZWS_STRING)
+    val effectiveTriggerStart = if (startsWithZws) start + 1 else start
+    val paragraphHasActiveStyle = startsWithZws && paragraphHasNonAlignmentSpan(s, start, end)
 
     for ((trigger, styleName) in shortcuts) {
+      val isAlignmentShortcut = isAlignmentShortcutStyle(styleName)
       if (isInlineShortcutStyle(styleName)) continue
+      if (paragraphHasActiveStyle && !isAlignmentShortcut) continue
       if (trigger.isEmpty()) continue
       if (!s.substring(effectiveTriggerStart, end).startsWith(trigger)) continue
+
+      if (isAlignmentShortcut) {
+        if (view.alignmentStyles?.getCurrentAlignment() == styleName) continue
+
+        s.replace(effectiveTriggerStart, effectiveTriggerStart + trigger.length, "")
+        view.alignmentStyles?.setAlignment(styleName)
+        view.selection?.validateStyles()
+        return
+      }
 
       val resolvedStyle = resolveStyleName(styleName) ?: continue
 

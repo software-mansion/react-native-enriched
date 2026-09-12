@@ -4,6 +4,7 @@ import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 import type { TextShortcut, TextShortcutStyle, HtmlStyle } from '../../types';
 import {
+  getCurrentAlignment,
   isAnyParagraphFormatActive,
   isFormatBlocked,
 } from '../formats/formatRules';
@@ -19,6 +20,13 @@ const INLINE_STYLES = new Set<TextShortcutStyle>([
   'underline',
   'strikethrough',
   'inline_code',
+]);
+
+const ALIGNMENT_STYLES = new Set<TextShortcutStyle>([
+  'left',
+  'center',
+  'right',
+  'justify',
 ]);
 
 // Maps every TextShortcutStyle to its corresponding TipTap extension name.
@@ -39,6 +47,10 @@ const TIPTAP_NAME: Record<TextShortcutStyle, string> = {
   unordered_list: 'unorderedList',
   ordered_list: 'orderedList',
   checkbox_list: 'checkboxList',
+  left: 'textAlign',
+  center: 'textAlign',
+  right: 'textAlign',
+  justify: 'textAlign',
 };
 
 function applyParagraphCommand(style: string, editor: Editor): boolean {
@@ -65,6 +77,11 @@ function applyParagraphCommand(style: string, editor: Editor): boolean {
       return editor.commands.toggleOrderedList();
     case 'checkbox_list':
       return editor.commands.toggleCheckboxList(false);
+    case 'left':
+    case 'center':
+    case 'right':
+    case 'justify':
+      return editor.commands.setTextAlign(style);
     default:
       return false;
   }
@@ -124,6 +141,8 @@ function isDelimPartOfLongerTrigger(
  *
  * Fires only when the trigger is anchored at the very start of the current
  * text block and no paragraph style is already active on that block.
+ * Alignment shortcuts are the exception: they may fire regardless of the
+ * active paragraph style, as long as that alignment isn't already applied.
  */
 function tryParagraphShortcut(
   view: EditorView,
@@ -133,16 +152,16 @@ function tryParagraphShortcut(
   shortcuts: TextShortcut[],
   htmlStyle: Required<HtmlStyle>
 ): boolean {
-  if (isAnyParagraphFormatActive(editor)) return false;
-
   const ctx = getBlockContext(view.state.doc, from);
   if (!ctx) return false;
 
   const { blockStart } = ctx;
   const offsetInBlock = from - blockStart;
+  const anyParagraphFormatActive = isAnyParagraphFormatActive(editor);
 
   for (const { trigger, style } of shortcuts) {
     if (INLINE_STYLES.has(style)) continue;
+    if (anyParagraphFormatActive && !ALIGNMENT_STYLES.has(style)) continue;
     if (!trigger) continue;
 
     const lastChar = trigger[trigger.length - 1]!;
@@ -159,6 +178,8 @@ function tryParagraphShortcut(
       if (docPrefix !== trigger.slice(0, prefixLen)) continue;
     }
 
+    if (ALIGNMENT_STYLES.has(style) && getCurrentAlignment(editor) === style)
+      continue;
     if (isFormatBlocked(TIPTAP_NAME[style], editor, htmlStyle)) continue;
 
     const marksToPreserve = view.state.selection.$from.marks();
@@ -213,6 +234,7 @@ function tryInlineShortcut(
 
   for (const { trigger, style } of inlineShortcuts) {
     const markName = TIPTAP_NAME[style];
+    if (markName === undefined) continue;
 
     const lastChar = trigger[trigger.length - 1]!;
     if (text !== lastChar) continue;

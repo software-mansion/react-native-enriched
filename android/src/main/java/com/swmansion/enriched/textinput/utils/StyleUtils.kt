@@ -30,6 +30,10 @@ fun isInlineShortcutStyle(styleName: String): Boolean {
   return EnrichedSpans.inlineSpans.containsKey(resolvedStyle)
 }
 
+private val ALIGNMENT_SHORTCUT_STYLES = setOf("left", "center", "right", "justify")
+
+fun isAlignmentShortcutStyle(styleName: String): Boolean = styleName in ALIGNMENT_SHORTCUT_STYLES
+
 fun isStyleBlockedOnRange(
   styleName: String,
   start: Int,

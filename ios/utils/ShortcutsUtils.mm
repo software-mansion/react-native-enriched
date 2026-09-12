@@ -1,6 +1,8 @@
 #import "ShortcutsUtils.h"
+#import "AlignmentUtils.h"
 #import "ParagraphAttributesUtils.h"
 #import "StyleBase.h"
+#import "StyleHeaders.h"
 #import "StyleUtils.h"
 #import "TextInsertionUtils.h"
 
@@ -49,6 +51,10 @@ typedef struct {
       @"unordered_list" : @(UnorderedList),
       @"ordered_list" : @(OrderedList),
       @"checkbox_list" : @(CheckboxList),
+      @"left" : @(Alignment),
+      @"center" : @(Alignment),
+      @"right" : @(Alignment),
+      @"justify" : @(Alignment),
       // Inline shortcuts
       @"bold" : @(Bold),
       @"italic" : @(Italic),
@@ -331,20 +337,22 @@ typedef struct {
 /// Handles a paragraph-level shortcut (e.g. `# ` → H1, `- ` → unordered list)
 /// on character insertion.
 ///
-///  1. Skip if no shortcuts configured, or the paragraph already has an active
-///     paragraph style — triggers only apply to plain paragraphs.
+///  1. Skip if no shortcuts configured.
 ///  2. Find a paragraph shortcut whose trigger is anchored to the paragraph
-///     start. Skip if the resolved style is blocked by another active style.
-///  3. Save the current text alignment.
-///  4. Suppress events, delete the trigger text, unsuppress.
-///  5. Remove styles from the range that conflict with the new style (e.g.
-///     italic is removed when applying codeblock).
-//   6. Reset typing attrs to defaults preserving alignment — without this, the
-//   new paragraph
-///     style would inherit the alignment of the previous paragraph.
-///  7. Apply the paragraph style with withTyping:YES so the next typed
-///  character
-///     inherits it immediately.
+///     start. Non-alignment shortcuts only trigger on a plain paragraph;
+///     alignment is not a real paragraph style and can combine with one
+///     (e.g. an already-heading paragraph). Skip if the resolved style is
+///     blocked by another active style.
+///  3. Suppress events, delete the trigger text, unsuppress.
+///  4. For alignment, just layer the alignment marker on top of whatever
+///     paragraph style is already active.
+///  5. For other paragraph styles: remove styles from the range that
+///     conflict with the new style (e.g. italic is removed when applying
+///     codeblock), then reset typing attrs to defaults preserving alignment
+///     — without this, the new paragraph style would inherit stale typing
+///     attributes from the previous style.
+///  6. Apply the paragraph style withTyping:YES so the next typed
+///     character inherits it immediately.
 + (BOOL)tryHandlingParagraphShortcutsInRange:(NSRange)range
                              replacementText:(NSString *)text
                                        input:(EnrichedTextInputView *)input {
@@ -356,10 +364,9 @@ typedef struct {
                                                   replacementText:text
                                                             input:input];
 
-  if ([self paragraphHasActiveParagraphStyleInRange:context.paragraphRange
-                                              input:input]) {
-    return NO;
-  }
+  BOOL paragraphHasActiveStyle =
+      [self paragraphHasActiveParagraphStyleInRange:context.paragraphRange
+                                              input:input];
 
   for (NSDictionary *shortcut in input->textShortcuts) {
     if ([self isInlineShortcutStyleName:shortcut[@"style"] input:input]) {
@@ -385,16 +392,28 @@ typedef struct {
       continue;
     }
 
+    // we don't allow for paragraph style shortcuts in non-plain text
+    // paragraphs, where the only exception is a text alignment, which we can
+    // always apply. paragraphHasActiveStyle doesn't consider text alignment,
+    // so we can apply paragraph style shortcuts also when text alignment
+    // is already applied
+    if (type != Alignment && paragraphHasActiveStyle) {
+      continue;
+    }
+
+    if (type == Alignment) {
+      AlignmentStyle *alignmentStyle =
+          (AlignmentStyle *)input->stylesDict[@(type)];
+      if ([[alignmentStyle getStyleState] isEqualToString:styleName]) {
+        continue;
+      }
+    }
+
     if ([StyleUtils isStyleBlocked:type
                              range:context.paragraphRange
                            forHost:input]) {
       continue;
     }
-
-    NSParagraphStyle *currentParaStyle =
-        input->textView.typingAttributes[NSParagraphStyleAttributeName];
-    NSTextAlignment savedAlignment =
-        currentParaStyle ? currentParaStyle.alignment : NSTextAlignmentNatural;
 
     NSRange triggerRange = NSMakeRange(match.delimStart, match.delimPrefixLen);
 
@@ -407,6 +426,31 @@ typedef struct {
 
     input->blockEmitting = NO;
 
+    StyleBase *style = input->stylesDict[@(type)];
+    if (style == nil) {
+      return YES;
+    }
+
+    if (type == Alignment) {
+      [(AlignmentStyle *)style
+            addAlignment:[AlignmentUtils stringToAlignment:styleName]
+                   range:input->textView.selectedRange
+              withTyping:YES
+          withDirtyRange:YES];
+      // the trigger may have consumed the whole paragraph (e.g. an empty
+      // editor); don't let the empty-text reset wipe the alignment we just
+      // set on the typing attributes. This is an issue only with alignment
+      // shortcuts, as alignment doesn't use ZWS, which makes e.g. headings
+      // survive the empty-text typing attributes reset
+      input->preserveTypingAttributesOnNextEmptyCheck = YES;
+      return YES;
+    }
+
+    NSParagraphStyle *currentParaStyle =
+        input->textView.typingAttributes[NSParagraphStyleAttributeName];
+    NSTextAlignment savedAlignment =
+        currentParaStyle ? currentParaStyle.alignment : NSTextAlignmentNatural;
+
     // Drop conflicting inline styles (e.g. italic) across the whole paragraph
     // before applying the block style.
     NSRange paragraphRange = [input->textView.textStorage.string
@@ -418,12 +462,7 @@ typedef struct {
     [ParagraphAttributesUtils resetTypingAttributes:input
                                 preservingAlignment:savedAlignment];
 
-    StyleBase *style = input->stylesDict[@(type)];
-    if (style != nil) {
-      [style add:input->textView.selectedRange
-              withTyping:YES
-          withDirtyRange:YES];
-    }
+    [style add:input->textView.selectedRange withTyping:YES withDirtyRange:YES];
     return YES;
   }
 

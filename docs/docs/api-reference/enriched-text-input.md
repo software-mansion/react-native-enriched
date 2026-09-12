@@ -705,6 +705,9 @@ list item), typing the trigger pattern has no effect.
 
 :::
 
+**[Text alignment](/rich-text-formatting/text-alignment)** shortcuts fire with the same scheme
+as paragraph styles, but don't require a plain paragraph to be effective.
+
 **[Inline styles](/fundamentals/html-format-and-supported-tags#inline-tags)**
 fire when a closing delimiter is typed around text (e.g. `**text**` → bold). The
 trigger is the delimiter string (e.g. `**`, `*`, `~~`). Supported styles:

@@ -260,7 +260,11 @@ export type TextShortcutStyle =
   | 'codeblock'
   | 'unordered_list'
   | 'ordered_list'
-  | 'checkbox_list';
+  | 'checkbox_list'
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'justify';
 
 /**
  * Defines a single text shortcut: a character sequence that, when typed is replaced by the corresponding paragraph or inline style.
