@@ -1,5 +1,6 @@
 package com.swmansion.enriched.text
 
+import android.graphics.Color
 import com.swmansion.enriched.common.parser.EnrichedSpanFactory
 import com.swmansion.enriched.text.spans.EnrichedTextAlignmentSpan
 import com.swmansion.enriched.text.spans.EnrichedTextBlockQuoteSpan
@@ -23,6 +24,8 @@ import com.swmansion.enriched.text.spans.EnrichedTextUnderlineSpan
 import com.swmansion.enriched.text.spans.EnrichedTextUnorderedListSpan
 
 class EnrichedTextSpanFactory : EnrichedSpanFactory<EnrichedTextStyle> {
+  override var textColor: Int = Color.BLACK
+
   override fun createAlignmentSpan(cssValue: String) = EnrichedTextAlignmentSpan(cssValue)
 
   override fun createBoldSpan(style: EnrichedTextStyle) = EnrichedTextBoldSpan(style)
@@ -52,7 +55,7 @@ class EnrichedTextSpanFactory : EnrichedSpanFactory<EnrichedTextStyle> {
     source: String,
     width: Int,
     height: Int,
-  ) = EnrichedTextImageSpan.createEnrichedImageSpan(source, width, height)
+  ) = EnrichedTextImageSpan.createEnrichedImageSpan(source, width, height, textColor)
 
   override fun createH1Span(style: EnrichedTextStyle) = EnrichedTextH1Span(style)
 

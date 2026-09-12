@@ -66,7 +66,6 @@
                            imgView = [[UIImageView alloc] initWithFrame:rect];
                            imgView.contentMode =
                                UIViewContentModeScaleAspectFit;
-                           imgView.tintColor = [UIColor labelColor];
 
                            // Add it directly to the TextView
                            [textView addSubview:imgView];
@@ -76,6 +75,10 @@
                          if (!CGRectEqualToRect(imgView.frame, rect)) {
                            imgView.frame = rect;
                          }
+
+                         // Keep the placeholder tint in sync with the
+                         // current font color
+                         imgView.tintColor = [config primaryColor];
                          UIImage *targetImage =
                              attachment.storedAnimatedImage ?: attachment.image;
 

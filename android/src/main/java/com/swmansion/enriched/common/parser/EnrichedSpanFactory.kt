@@ -22,6 +22,8 @@ import com.swmansion.enriched.common.spans.EnrichedUnderlineSpan
 import com.swmansion.enriched.common.spans.EnrichedUnorderedListSpan
 
 interface EnrichedSpanFactory<T> {
+  var textColor: Int
+
   fun createAlignmentSpan(cssValue: String): EnrichedAlignmentSpan
 
   fun createBoldSpan(style: T): EnrichedBoldSpan

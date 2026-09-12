@@ -3,6 +3,7 @@ package com.swmansion.enriched.text.spans
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
+import androidx.core.graphics.drawable.DrawableCompat
 import com.swmansion.enriched.R
 import com.swmansion.enriched.common.AsyncDrawable
 import com.swmansion.enriched.common.ResourceManager
@@ -15,7 +16,8 @@ class EnrichedTextImageSpan(
   source: String,
   width: Int,
   height: Int,
-) : EnrichedImageSpan(drawable, source, width, height),
+  isStaticPlaceholder: Boolean = false,
+) : EnrichedImageSpan(drawable, source, width, height, isStaticPlaceholder),
   EnrichedTextSpan {
   override val dependsOnHtmlStyle = false
 
@@ -44,14 +46,18 @@ class EnrichedTextImageSpan(
       src: String,
       width: Int,
       height: Int,
+      placeholderTintColor: Int,
     ): EnrichedImageSpan {
-      var imgDrawable = prepareDrawableForImage(src, width, height)
+      var imgDrawable = prepareDrawableForImage(src, width, height, placeholderTintColor)
+      var isStaticPlaceholder = false
 
       if (imgDrawable == null) {
         imgDrawable = ResourceManager.getDrawableResource(R.drawable.broken_image)
+        isStaticPlaceholder = true
+        DrawableCompat.setTint(imgDrawable, placeholderTintColor)
       }
 
-      return EnrichedTextImageSpan(imgDrawable, src, width, height)
+      return EnrichedTextImageSpan(imgDrawable, src, width, height, isStaticPlaceholder)
     }
   }
 }

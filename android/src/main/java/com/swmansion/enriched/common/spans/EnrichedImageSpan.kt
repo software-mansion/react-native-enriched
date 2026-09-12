@@ -13,6 +13,7 @@ import android.os.Looper
 import android.text.Spannable
 import android.text.style.ImageSpan
 import android.util.Log
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.common.AsyncDrawable
@@ -26,9 +27,28 @@ open class EnrichedImageSpan :
   private var width: Int = 0
   private var height: Int = 0
 
-  constructor(drawable: Drawable, source: String, width: Int, height: Int) : super(drawable, source, ALIGN_BASELINE) {
+  private var isStaticPlaceholder: Boolean = false
+
+  constructor(
+    drawable: Drawable,
+    source: String,
+    width: Int,
+    height: Int,
+    isStaticPlaceholder: Boolean = false,
+  ) : super(drawable, source, ALIGN_BASELINE) {
     this.width = width
     this.height = height
+    this.isStaticPlaceholder = isStaticPlaceholder
+  }
+
+  fun refreshPlaceholderTint(color: Int) {
+    val d = drawable
+
+    if (d is AsyncDrawable) {
+      d.applyPlaceholderTint(color)
+    } else if (isStaticPlaceholder) {
+      DrawableCompat.setTint(d, color)
+    }
   }
 
   override fun draw(
@@ -134,11 +154,12 @@ open class EnrichedImageSpan :
       src: String,
       width: Int,
       height: Int,
+      placeholderTintColor: Int,
     ): Drawable? {
       var cleanPath = src
 
       if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
-        return AsyncDrawable(cleanPath)
+        return AsyncDrawable(cleanPath, placeholderTintColor)
       }
 
       if (cleanPath.startsWith("file://")) {
