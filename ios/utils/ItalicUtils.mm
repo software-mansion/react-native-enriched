@@ -1,5 +1,5 @@
 #import "ItalicUtils.h"
-#import "FontExtension.h"
+#import "extensions/FontExtension.h"
 
 // slant used when a font has no italic face
 static const CGFloat kObliquenessFallback = 0.2;

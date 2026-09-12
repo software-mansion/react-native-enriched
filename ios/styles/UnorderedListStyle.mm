@@ -1,8 +1,8 @@
 #import "EnrichedTextInputView.h"
-#import "RangeUtils.h"
-#import "StyleHeaders.h"
-#import "StyleUtils.h"
-#import "TextInsertionUtils.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/RangeUtils.h"
+#import "utils/StyleUtils.h"
+#import "utils/TextInsertionUtils.h"
 
 @implementation UnorderedListStyle
 

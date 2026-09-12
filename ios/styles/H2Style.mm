@@ -1,5 +1,5 @@
 #import "EnrichedTextInputView.h"
-#import "StyleHeaders.h"
+#import "interfaces/StyleHeaders.h"
 
 @implementation H2Style
 + (StyleType)getType {

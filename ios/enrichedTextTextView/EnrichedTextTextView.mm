@@ -1,7 +1,7 @@
 #import "EnrichedTextTextView.h"
-#import "EnrichedTextTouchHandler.h"
 #import "EnrichedTextView.h"
-#import "HtmlParser.h"
+#import "htmlParser/HtmlParser.h"
+#import "utils/EnrichedTextTouchHandler.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @implementation EnrichedTextTextView

@@ -1,6 +1,6 @@
 #import "EnrichedTextInputView.h"
-#import "ItalicUtils.h"
-#import "StyleHeaders.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/ItalicUtils.h"
 
 @implementation ItalicStyle : StyleBase
 

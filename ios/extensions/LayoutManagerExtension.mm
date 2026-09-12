@@ -1,9 +1,9 @@
 #import "LayoutManagerExtension.h"
 #import "ColorExtension.h"
-#import "EnrichedViewHost.h"
-#import "RangeUtils.h"
-#import "StyleHeaders.h"
-#import "WeakBox.h"
+#import "interfaces/EnrichedViewHost.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/RangeUtils.h"
+#import "utils/WeakBox.h"
 #import <objc/runtime.h>
 
 @implementation NSLayoutManager (LayoutManagerExtension)

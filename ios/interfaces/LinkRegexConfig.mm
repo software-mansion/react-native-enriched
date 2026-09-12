@@ -1,5 +1,5 @@
 #import "LinkRegexConfig.h"
-#import "StringExtension.h"
+#import "extensions/StringExtension.h"
 
 @implementation LinkRegexConfig
 

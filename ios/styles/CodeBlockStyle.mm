@@ -1,6 +1,6 @@
 #import "EnrichedTextInputView.h"
-#import "FontExtension.h"
-#import "StyleHeaders.h"
+#import "extensions/FontExtension.h"
+#import "interfaces/StyleHeaders.h"
 
 @implementation CodeBlockStyle
 

@@ -1,6 +1,6 @@
-#import "AlignmentUtils.h"
-#import "StyleHeaders.h"
-#import "TextListsUtils.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/AlignmentUtils.h"
+#import "utils/TextListsUtils.h"
 
 @implementation AlignmentStyle
 

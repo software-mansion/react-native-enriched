@@ -2,9 +2,9 @@
 #import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "RangeUtils.h"
-#import "StyleHeaders.h"
 #import "StyleUtils.h"
 #import "TextInsertionUtils.h"
+#import "interfaces/StyleHeaders.h"
 
 @implementation ParagraphAttributesUtils
 

@@ -1,6 +1,6 @@
 #import "EnrichedTextViewShadowNode.h"
 #import "CoreText/CoreText.h"
-#import <EnrichedTextView.h>
+#import "EnrichedTextView.h"
 #import <React/RCTShadowView+Layout.h>
 #import <react/utils/ManagedObjectWrapper.h>
 

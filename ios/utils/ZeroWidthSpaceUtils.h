@@ -1,4 +1,4 @@
-#import "EnrichedViewHost.h"
+#import "interfaces/EnrichedViewHost.h"
 #import <UIKit/UIKit.h>
 #pragma once
 

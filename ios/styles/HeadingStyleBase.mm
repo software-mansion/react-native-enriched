@@ -1,7 +1,7 @@
 #import "EnrichedTextInputView.h"
-#import "FontExtension.h"
-#import "StyleHeaders.h"
-#import "TextInsertionUtils.h"
+#import "extensions/FontExtension.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/TextInsertionUtils.h"
 
 @implementation HeadingStyleBase
 

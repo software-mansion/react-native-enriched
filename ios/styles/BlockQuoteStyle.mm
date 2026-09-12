@@ -1,6 +1,6 @@
-#import "ColorExtension.h"
 #import "EnrichedTextInputView.h"
-#import "StyleHeaders.h"
+#import "extensions/ColorExtension.h"
+#import "interfaces/StyleHeaders.h"
 
 @implementation BlockQuoteStyle
 

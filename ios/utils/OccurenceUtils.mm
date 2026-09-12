@@ -1,5 +1,5 @@
 #import "OccurenceUtils.h"
-#import "StyleBase.h"
+#import "interfaces/StyleBase.h"
 
 @implementation OccurenceUtils
 

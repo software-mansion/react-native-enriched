@@ -1,13 +1,13 @@
 #import "InputAttributesManager.h"
-#import "AlignmentUtils.h"
-#import "ArrayExtension.h"
-#import "AttributeEntry.h"
 #import "EnrichedTextInputView.h"
-#import "ParagraphAttributesUtils.h"
-#import "RangeUtils.h"
-#import "StyleHeaders.h"
-#import "StyleUtils.h"
-#import "ZeroWidthSpaceUtils.h"
+#import "extensions/ArrayExtension.h"
+#import "interfaces/AttributeEntry.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/AlignmentUtils.h"
+#import "utils/ParagraphAttributesUtils.h"
+#import "utils/RangeUtils.h"
+#import "utils/StyleUtils.h"
+#import "utils/ZeroWidthSpaceUtils.h"
 
 @implementation InputAttributesManager {
   NSMutableArray<NSValue *> *_dirtyRanges;

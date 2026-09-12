@@ -1,9 +1,9 @@
-#import "AttributeEntry.h"
-#import "ColorExtension.h"
 #import "EnrichedTextInputView.h"
-#import "StyleHeaders.h"
-#import "TextInsertionUtils.h"
-#import "WordsUtils.h"
+#import "extensions/ColorExtension.h"
+#import "interfaces/AttributeEntry.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/TextInsertionUtils.h"
+#import "utils/WordsUtils.h"
 #import <React/UIView+React.h>
 
 // custom NSAttributedStringKey to differentiate from links

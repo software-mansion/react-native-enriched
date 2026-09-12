@@ -1,8 +1,8 @@
 #import "EnrichedTextInputView.h"
-#import "RangeUtils.h"
-#import "StyleHeaders.h"
-#import "TextInsertionUtils.h"
-#import "TextListsUtils.h"
+#import "interfaces/StyleHeaders.h"
+#import "utils/RangeUtils.h"
+#import "utils/TextInsertionUtils.h"
+#import "utils/TextListsUtils.h"
 
 @implementation CheckboxListStyle
 

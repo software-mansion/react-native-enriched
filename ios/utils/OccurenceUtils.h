@@ -1,6 +1,6 @@
 #pragma once
-#import "EnrichedViewHost.h"
-#import "StylePair.h"
+#import "interfaces/EnrichedViewHost.h"
+#import "interfaces/StylePair.h"
 
 @interface OccurenceUtils : NSObject
 + (BOOL)detect:(NSAttributedStringKey _Nonnull)key

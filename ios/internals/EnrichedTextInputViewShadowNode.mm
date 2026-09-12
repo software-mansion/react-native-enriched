@@ -1,6 +1,6 @@
 #import "EnrichedTextInputViewShadowNode.h"
 #import "CoreText/CoreText.h"
-#import <EnrichedTextInputView.h>
+#import "EnrichedTextInputView.h"
 #import <React/RCTShadowView+Layout.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <yoga/Yoga.h>

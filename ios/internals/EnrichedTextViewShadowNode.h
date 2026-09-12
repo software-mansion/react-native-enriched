@@ -1,7 +1,7 @@
 #pragma once
 #include "EnrichedTextViewState.h"
-#include "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/EventEmitters.h"
-#include "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/Props.h"
+#include "generated/ReactCodegen/ReactNativeEnrichedSpec/EventEmitters.h"
+#include "generated/ReactCodegen/ReactNativeEnrichedSpec/Props.h"
 #include <jsi/jsi.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/core/LayoutConstraints.h>
