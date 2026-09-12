@@ -68,6 +68,8 @@ import com.swmansion.enriched.textinput.styles.ParametrizedStyles
 import com.swmansion.enriched.textinput.utils.EnrichedEditableFactory
 import com.swmansion.enriched.textinput.utils.EnrichedSelection
 import com.swmansion.enriched.textinput.utils.EnrichedSpanState
+import com.swmansion.enriched.textinput.utils.MaxLength
+import com.swmansion.enriched.textinput.utils.MaxLengthFilter
 import com.swmansion.enriched.textinput.utils.RichContentReceiver
 import com.swmansion.enriched.textinput.utils.ShortcutsHandler
 import com.swmansion.enriched.textinput.utils.mergeSpannables
@@ -122,6 +124,8 @@ class EnrichedTextInputView :
   var linkRegex: Pattern? = Patterns.WEB_URL
   var spanWatcher: EnrichedSpanWatcher? = null
   var layoutManager: EnrichedTextInputViewLayoutManager = EnrichedTextInputViewLayoutManager(this)
+
+  var maxLength: Int = MaxLength.UNLIMITED
 
   var shouldEmitHtml: Boolean = false
   var shouldEmitOnChangeText: Boolean = false
@@ -231,6 +235,10 @@ class EnrichedTextInputView :
 
     setEditableFactory(EnrichedEditableFactory(spanWatcher))
     addTextChangedListener(EnrichedTextWatcher(this))
+
+    // a single filter covers every change made to the text - typing, dictation,
+    // IME composition, pasting and setting the value imperatively
+    filters = arrayOf(MaxLengthFilter(this))
 
     // Handle checkbox list item clicks
     this.setCheckboxClickListener()
@@ -392,7 +400,11 @@ class EnrichedTextInputView :
         }
       }
 
-    val finalText = currentText.mergeSpannables(start, end, pastedSpannable, htmlStyle)
+    // the pasted fragment is what gets truncated - everything that follows the
+    // caret has to stay intact, so it can't be left to the maxLength filter
+    val truncatedPastedSpannable = truncateToRemainingLength(pastedSpannable, start, end) ?: return
+
+    val finalText = currentText.mergeSpannables(start, end, truncatedPastedSpannable, htmlStyle)
     setValue(finalText, false)
 
     // replacement-safe: oldLength - removed + inserted
@@ -403,6 +415,29 @@ class EnrichedTextInputView :
     // Update links and mentions in the newly pasted range
     val editable = text as? Editable ?: return
     parametrizedStyles?.afterTextChanged(editable, start.coerceAtMost(pasteEnd), pasteEnd)
+  }
+
+  /**
+   * Shortens [pasted] so that it fits in what's left of [maxLength] once the `[start, end)`
+   * selection is replaced. Returns null when there's no room for it at all.
+   */
+  private fun truncateToRemainingLength(
+    pasted: Spannable,
+    start: Int,
+    end: Int,
+  ): Spannable? {
+    if (maxLength == MaxLength.UNLIMITED) return pasted
+
+    val currentText = text ?: return pasted
+    val keptLength = MaxLength.plainTextLengthOf(currentText) - MaxLength.plainTextLengthOf(currentText, start, end)
+    val capacity = maxLength - keptLength
+
+    if (MaxLength.plainTextLengthOf(pasted) <= capacity) return pasted
+
+    val cut = MaxLength.cutIndexToFitWithin(pasted, 0, pasted.length, capacity)
+    if (cut == 0) return if (start == end) null else SpannableString("")
+
+    return pasted.subSequence(0, cut) as? Spannable ?: SpannableString(pasted.subSequence(0, cut))
   }
 
   fun requestFocusProgrammatically() {

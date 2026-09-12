@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import { EnrichedTextInput } from 'react-native-enriched-html';
 import { Button } from '../components/Button';
 import { Toolbar } from '../components/Toolbar';
@@ -25,6 +25,7 @@ export function TestScreen({
 }: TestScreenProps) {
   const editor = useEditorState();
   const [sizeMode, setSizeMode] = useState<'base' | 'max'>('base');
+  const [maxLength, setMaxLength] = useState<number | undefined>(undefined);
 
   return (
     <View style={styles.container}>
@@ -96,6 +97,7 @@ export function TestScreen({
               ANDROID_EXPERIMENTAL_SYNCHRONOUS_EVENTS
             }
             onPasteImages={(e) => editor.handlePasteImagesEvent(e.nativeEvent)}
+            maxLength={maxLength}
             testID="editor-input"
           />
           <Toolbar
@@ -119,6 +121,25 @@ export function TestScreen({
             style={styles.rowButton}
             testID="toggle-screen-button"
           />
+        </View>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle} testID="max-length-current">
+            maxLength: {maxLength ?? 'None'}
+          </Text>
+          <View style={styles.buttonRow}>
+            <Button
+              title="10"
+              onPress={() => setMaxLength(10)}
+              style={styles.rowButton}
+              testID="max-length-10-button"
+            />
+            <Button
+              title="None"
+              onPress={() => setMaxLength(undefined)}
+              style={styles.rowButton}
+              testID="max-length-undefined-button"
+            />
+          </View>
         </View>
         <View style={styles.buttonRow}>
           <Button
@@ -202,6 +223,19 @@ const styles = StyleSheet.create({
   },
   rowButton: {
     flex: 1,
+  },
+  sectionContainer: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'gray',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    alignSelf: 'flex-start',
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'black',
   },
   editorInput: {
     marginTop: 24,

@@ -375,6 +375,7 @@ export interface NativeProps extends ViewProps {
   returnKeyLabel?: string;
   submitBehavior?: string;
   allowFontScaling?: boolean;
+  maxLength?: CodegenTypes.WithDefault<CodegenTypes.Int32, -1>;
 
   // event callbacks
   onInputFocus?: CodegenTypes.DirectEventHandler<TargetedEvent>;

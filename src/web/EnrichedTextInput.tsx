@@ -76,6 +76,7 @@ import {
   useMentionEvents,
 } from './pmPlugins/MentionPlugin';
 import { StripMarksOnImagePlugin } from './pmPlugins/StripMarksOnImagePlugin';
+import { MaxLengthPlugin } from './pmPlugins/MaxLengthPlugin';
 import { ShortcutPlugin } from './pmPlugins/ShortcutPlugin';
 import { TextShortcutsPlugin } from './pmPlugins/TextShortcutsPlugin';
 import { returnKeyTypeToEnterKeyHint } from './nativeMappers/returnKeyTypeToEnterKeyHint';
@@ -130,6 +131,7 @@ export const EnrichedTextInput = ({
   useHtmlNormalizer = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.useHtmlNormalizer,
   sanitizationConfig,
   textShortcuts = ENRICHED_TEXT_INPUT_DEFAULT_PROPS.textShortcuts,
+  maxLength,
 }: EnrichedTextInputProps) => {
   assertBrowserEnvironment('EnrichedTextInput');
 
@@ -166,6 +168,7 @@ export const EnrichedTextInput = ({
   const sanitizationConfigRef = useStableRef(sanitizationConfig);
   const mentionCallbacksRef = useStableRef(mentionCallbacks);
   const textShortcutsRef = useStableRef(textShortcuts);
+  const maxLengthRef = useStableRef(maxLength);
 
   const editorInstanceRef = useRef<Editor | null>(null);
 
@@ -232,6 +235,9 @@ export const EnrichedTextInput = ({
       MergeAdjacentSameKindBlocksPlugin,
       OrderedListMarkerWidthPlugin,
       StrictMarksPlugin,
+      MaxLengthPlugin.configure({
+        getMaxLength: () => maxLengthRef.current,
+      }),
       MentionPlugin.configure({
         getIndicators: () => mentionIndicatorsRef.current,
       }),
@@ -250,7 +256,13 @@ export const EnrichedTextInput = ({
         showOnlyWhenEditable: true,
       }),
     ],
-    [placeholder, htmlStyleRef, mentionIndicatorsRef, textShortcutsRef]
+    [
+      placeholder,
+      htmlStyleRef,
+      mentionIndicatorsRef,
+      textShortcutsRef,
+      maxLengthRef,
+    ]
   );
 
   const editor = useEditor(

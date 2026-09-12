@@ -58,6 +58,7 @@
   // input only
   LinkRegexConfig *_linkRegexConfig;
   NSRegularExpression *_parsedLinkRegex;
+  NSInteger _maxLength;
 
   // text only
   UIColor *_linkPressColor;
@@ -68,6 +69,7 @@
   _primaryFontNeedsRecreation = YES;
   _monospacedFontNeedsRecreation = YES;
   _olMarkerFontNeedsRecreation = YES;
+  _maxLength = EnrichedMaxLengthUnlimited;
   return self;
 }
 
@@ -126,6 +128,7 @@
   // input only
   copy->_linkRegexConfig = [_linkRegexConfig copy];
   copy->_parsedLinkRegex = [_parsedLinkRegex copy];
+  copy->_maxLength = _maxLength;
 
   // text only
   copy->_linkPressColor = [_linkPressColor copy];
@@ -677,6 +680,14 @@
 }
 
 // MARK: - Input only props
+
+- (NSInteger)maxLength {
+  return _maxLength;
+}
+
+- (void)setMaxLength:(NSInteger)newValue {
+  _maxLength = newValue < 0 ? EnrichedMaxLengthUnlimited : newValue;
+}
 
 - (LinkRegexConfig *)linkRegexConfig {
   return _linkRegexConfig;

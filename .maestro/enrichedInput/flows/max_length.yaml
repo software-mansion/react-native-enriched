@@ -1,0 +1,78 @@
+appId: swmansion.enriched.example
+---
+# Test maxLength behavior: typing, native copy/paste, and HTML imperative setting
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+# 1. Press the button to set maxLength to 10
+- tapOn:
+    id: 'max-length-10-button'
+
+- tapOn:
+    id: 'editor-input'
+
+# 2. Write 1234567890, try to write more. The extra '123' should be rejected.
+- inputText: '1234567890'
+- inputText: '123'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'maxlength_typing_limit'
+
+# 3. Remove 4 characters to have '123456', select it, copy, and paste at the end.
+- tapOn:
+    id: 'editor-input'
+    point: '50%, 50%'
+
+- pressKey: backspace
+- pressKey: backspace
+- pressKey: backspace
+- pressKey: backspace
+
+- doubleTapOn:
+    id: 'editor-input'
+    point: '10%, 30%'
+
+- tapOn:
+    text: 'Copy'
+
+- tapOn:
+    id: 'editor-input'
+    point: '50%, 30%'
+
+- longPressOn:
+    id: 'editor-input'
+    point: '50%, 30%'
+
+- tapOn:
+    text: 'Paste'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'maxlength_paste_limit'
+
+# 4. Set inputs value as `123456 <a>some longer link</a>`, style should be present on remaining text
+- runFlow:
+    file: '../subflows/set_editor_value.yaml'
+    env:
+      VALUE: '<p>123456 <a href="https://swmansion.com">some longer link</a></p>'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'maxlength_link_kept'
+
+# 5. Set inputs value as `123456 <mention>John Doe</mention>`, style should be stripped
+- runFlow:
+    file: '../subflows/set_editor_value.yaml'
+    env:
+      VALUE: '<p>12345 <mention text="@John Doe" indicator="@">@John Doe</mention></p>'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'maxlength_mention_stripped'

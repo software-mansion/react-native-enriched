@@ -20,6 +20,22 @@ fun Spannable.getSafeSpanBoundaries(
   return Pair(safeStart, safeEnd)
 }
 
+fun SpannableStringBuilder.replaceAndCountInserted(
+  start: Int,
+  end: Int,
+  text: CharSequence,
+): Int {
+  val lengthBefore = length
+
+  if (start == end) {
+    insert(start, text)
+  } else {
+    replace(start, end, text)
+  }
+
+  return length - lengthBefore + (end - start)
+}
+
 fun Spannable.getParagraphBounds(
   start: Int,
   end: Int,

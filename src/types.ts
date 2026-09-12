@@ -648,6 +648,12 @@ export interface EnrichedTextInputProps extends Omit<ViewProps, 'children'> {
    */
   defaultValue?: string;
 
+  /**
+   * Maximum number of characters the editor's plain text may contain.
+   * If inserted content doesn't meet this limit, it gets truncated.
+   */
+  maxLength?: number;
+
   /** Placeholder text shown when the editor is empty. */
   placeholder?: string;
 

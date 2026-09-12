@@ -2,6 +2,7 @@
 #import "AlignmentUtils.h"
 #import "EnrichedTextInputView.h"
 #import "HtmlParser.h"
+#import "MaxLengthUtils.h"
 #import "StringExtension.h"
 #import "TextInsertionUtils.h"
 #import "TextListsUtils.h"
@@ -289,6 +290,15 @@
   }
 
   if (!plainText) {
+    return;
+  }
+
+  // a pasted fragment that doesn't fit gets truncated
+  plainText = [MaxLengthUtils truncate:plainText
+                            toCapacity:[MaxLengthUtils capacityForHost:input
+                                                        replacingRange:range]];
+
+  if (plainText.length == 0 && range.length == 0) {
     return;
   }
 

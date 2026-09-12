@@ -31,6 +31,7 @@ import com.swmansion.enriched.textinput.events.OnRequestHtmlResultEvent
 import com.swmansion.enriched.textinput.events.OnSubmitEditingEvent
 import com.swmansion.enriched.textinput.spans.EnrichedSpans
 import com.swmansion.enriched.textinput.styles.HtmlStyle
+import com.swmansion.enriched.textinput.utils.MaxLength
 import com.swmansion.enriched.textinput.utils.jsonStringToStringMap
 
 @ReactModule(name = EnrichedTextInputViewManager.NAME)
@@ -158,6 +159,14 @@ class EnrichedTextInputViewManager :
     editable: Boolean,
   ) {
     view?.isEnabled = editable
+  }
+
+  @ReactProp(name = "maxLength", defaultInt = MaxLength.UNLIMITED)
+  override fun setMaxLength(
+    view: EnrichedTextInputView?,
+    maxLength: Int,
+  ) {
+    view?.maxLength = if (maxLength < 0) MaxLength.UNLIMITED else maxLength
   }
 
   @ReactProp(name = "mentionIndicators")

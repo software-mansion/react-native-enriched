@@ -7,6 +7,7 @@
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
+#import "MaxLengthUtils.h"
 #import "ParagraphAttributesUtils.h"
 #import "RCTFabricComponentsPlugins.h"
 #import "ShortcutsUtils.h"
@@ -688,6 +689,11 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.editable = newViewProps.editable;
   }
 
+  // maxLength
+  if (newViewProps.maxLength != oldViewProps.maxLength) {
+    [config setMaxLength:newViewProps.maxLength];
+  }
+
   // useHtmlNormalizer
   if (newViewProps.useHtmlNormalizer != oldViewProps.useHtmlNormalizer) {
     useHtmlNormalizer = newViewProps.useHtmlNormalizer;
@@ -738,7 +744,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
         [parser initiallyProcessHtml:newDefaultValue];
     if (initiallyProcessedHtml == nullptr) {
       // just plain text
-      textView.text = newDefaultValue;
+      textView.text = [MaxLengthUtils
+            truncate:newDefaultValue
+          toCapacity:[MaxLengthUtils wholeContentCapacityForHost:self]];
     } else {
       // we've got some seemingly proper html
       [parser replaceWholeFromHtml:initiallyProcessedHtml];
@@ -1324,7 +1332,9 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     textView.text = @"";
     textView.typingAttributes = defaultTypingAttributes;
     // set new text
-    textView.text = value;
+    textView.text = [MaxLengthUtils
+          truncate:value
+        toCapacity:[MaxLengthUtils wholeContentCapacityForHost:self]];
   } else {
     // we've got some seemingly proper html
     [parser replaceWholeFromHtml:initiallyProcessedHtml];
@@ -1530,11 +1540,22 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
 
   // translate the output start-end notation to range
   NSRange linkRange = NSMakeRange(start, end - start);
+
+  // the link text is truncated when it doesn't fit in maxLength, the link
+  // itself is still applied to whatever made it into the input
+  NSString *linkText =
+      [MaxLengthUtils truncate:text
+                    toCapacity:[MaxLengthUtils capacityForHost:self
+                                                replacingRange:linkRange]];
+  if (linkText.length == 0) {
+    return;
+  }
+
   if ([StyleUtils handleStyleBlocksAndConflicts:[LinkStyle getType]
                                           range:linkRange
                                         forHost:self]) {
     LinkData *linkData = [[LinkData alloc] init];
-    linkData.text = text;
+    linkData.text = linkText;
     linkData.url = url;
     linkData.isManual = YES;
     [linkStyleClass addLink:linkData range:linkRange withSelection:YES];
@@ -1590,6 +1611,13 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
   ImageStyle *imageStyleClass =
       (ImageStyle *)stylesDict[@([ImageStyle getType])];
   if (imageStyleClass == nullptr) {
+    return;
+  }
+
+  // an image takes a single character and can't be truncated, so it is simply
+  // not added when maxLength leaves no room for it
+  if ([MaxLengthUtils capacityForHost:self
+                       replacingRange:textView.selectedRange] < 1) {
     return;
   }
 
@@ -2008,6 +2036,45 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
     [attributesManager repeatRecentTypingAttributesManagement];
   }
 
+  // maxLength has to be checked as the very last thing - the handlers above
+  // manage the text on their own and none of them makes it any longer
+  if ([self handleMaxLengthInRange:range replacementText:text]) {
+    return NO;
+  }
+
+  return YES;
+}
+
+/**
+ * Shortens `text` when it doesn't fit in the remaining `maxLength` capacity.
+ *
+ * Returns YES when the change has been handled here and must not be applied
+ * by the text view itself.
+ */
+- (BOOL)handleMaxLengthInRange:(NSRange)range replacementText:(NSString *)text {
+  NSInteger capacity = [MaxLengthUtils capacityForHost:self
+                                        replacingRange:range];
+  if ([MaxLengthUtils plainLengthOf:text] <= capacity) {
+    return NO;
+  }
+
+  NSString *truncated = [MaxLengthUtils truncate:text toCapacity:capacity];
+  if (truncated.length == 0) {
+    return YES;
+  }
+
+  range.length > 0 ? [TextInsertionUtils replaceText:truncated
+                                                  at:range
+                                additionalAttributes:nullptr
+                                                host:self
+                                       withSelection:YES]
+                   : [TextInsertionUtils insertText:truncated
+                                                 at:range.location
+                               additionalAttributes:nullptr
+                                               host:self
+                                      withSelection:YES];
+
+  [self anyTextMayHaveBeenModified];
   return YES;
 }
 

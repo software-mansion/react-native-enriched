@@ -4,6 +4,9 @@
 #import "TextDecorationLineEnum.h"
 #import <UIKit/UIKit.h>
 
+/// Value of the `maxLength` prop meaning "no limit".
+static const NSInteger EnrichedMaxLengthUnlimited = -1;
+
 @interface EnrichedConfig : NSObject <NSCopying>
 - (instancetype)init;
 
@@ -104,6 +107,8 @@
 - (UIImage *)checkboxUncheckedImage;
 
 // MARK: - Input only props
+- (NSInteger)maxLength;
+- (void)setMaxLength:(NSInteger)newValue;
 - (LinkRegexConfig *)linkRegexConfig;
 - (void)setLinkRegexConfig:(LinkRegexConfig *)newValue;
 - (NSRegularExpression *)parsedLinkRegex;

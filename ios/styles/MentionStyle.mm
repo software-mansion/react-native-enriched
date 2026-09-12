@@ -1,6 +1,7 @@
 #import "AttributeEntry.h"
 #import "ColorExtension.h"
 #import "EnrichedTextInputView.h"
+#import "MaxLengthUtils.h"
 #import "StyleHeaders.h"
 #import "TextInsertionUtils.h"
 #import "WordsUtils.h"
@@ -176,6 +177,13 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   NSString *newText =
       hasSpaceAfter ? text : [NSString stringWithFormat:@"%@ ", text];
 
+  // a mention that doesn't fit in maxLength inserts as much of its text as it
+  // can
+  newText = [MaxLengthUtils
+        truncate:newText
+      toCapacity:[MaxLengthUtils capacityForHost:self.host
+                                  replacingRange:rangeToBeReplaced]];
+
   [TextInsertionUtils replaceText:newText
                                at:rangeToBeReplaced
              additionalAttributes:nullptr
@@ -191,7 +199,8 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   }
 
   // THEN, add the attributes to not apply them on the space
-  NSRange mentionRange = NSMakeRange(rangeToBeReplaced.location, text.length);
+  NSRange mentionRange =
+      NSMakeRange(rangeToBeReplaced.location, MIN(text.length, newText.length));
   [self applyMentionMeta:params range:mentionRange];
   [self.host.attributesManager addDirtyRange:mentionRange];
   // mention editing should finish
@@ -237,6 +246,12 @@ static NSString *const MentionAttributeName = @"EnrichedMention";
   NSString *finalString =
       [NSString stringWithFormat:@"%@%@%@", addSpaceBefore ? @" " : @"",
                                  indicator, addSpaceAfter ? @" " : @""];
+
+  // check if an indicator can be inserted with the maxLength constraint
+  if ([MaxLengthUtils plainLengthOf:finalString] >
+      [MaxLengthUtils capacityForHost:self.host replacingRange:currentRange]) {
+    return;
+  }
 
   NSRange newSelect = NSMakeRange(
       currentRange.location + finalString.length + (addSpaceAfter ? -1 : 0), 0);
