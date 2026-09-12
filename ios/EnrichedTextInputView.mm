@@ -3,12 +3,12 @@
 #import "AttachmentLayoutUtils.h"
 #import "CoreText/CoreText.h"
 #import "DotReplacementUtils.h"
+#import "EnrichedTextInputViewComponentDescriptor.h"
 #import "HtmlParser.h"
 #import "ImageAttachment.h"
 #import "KeyboardUtils.h"
 #import "LayoutManagerExtension.h"
 #import "ParagraphAttributesUtils.h"
-#import "RCTFabricComponentsPlugins.h"
 #import "ShortcutsUtils.h"
 #import "StringExtension.h"
 #import "StyleHeaders.h"
@@ -17,12 +17,12 @@
 #import "TextInsertionUtils.h"
 #import "WordsUtils.h"
 #import "ZeroWidthSpaceUtils.h"
+#import "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/EventEmitters.h"
+#import "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/Props.h"
+#import "ios/generated/ReactCodegen/ReactNativeEnrichedSpec/RCTComponentViewHelpers.h"
 #import <React/RCTConversions.h>
+#import <React/RCTFabricComponentsPlugins.h>
 #import <React/UIView+React.h>
-#import <ReactNativeEnrichedHtml/EnrichedTextInputViewComponentDescriptor.h>
-#import <ReactNativeEnrichedHtml/EventEmitters.h>
-#import <ReactNativeEnrichedHtml/Props.h>
-#import <ReactNativeEnrichedHtml/RCTComponentViewHelpers.h>
 #import <folly/dynamic.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
