@@ -3,9 +3,9 @@ package com.swmansion.enriched.textinput.watchers
 import android.text.SpanWatcher
 import android.text.Spannable
 import android.text.style.MetricAffectingSpan
-import android.text.style.ParagraphStyle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import com.swmansion.enriched.common.EmptyParagraphSpan
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.common.spans.interfaces.EnrichedHeadingSpan
 import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
@@ -70,13 +70,11 @@ class EnrichedSpanWatcher(
     text: Spannable,
     end: Int,
   ) {
-    class EmptySpan : ParagraphStyle
-
     if (what is EnrichedHeadingSpan || (what is EnrichedInlineSpan && what is MetricAffectingSpan)) {
       val finalStart = (end + 1)
       val finalEnd = text.length
       val (safeStart, safeEnd) = text.getSafeSpanBoundaries(finalStart, finalEnd)
-      text.setSpan(EmptySpan(), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      text.setSpan(EmptyParagraphSpan(), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 

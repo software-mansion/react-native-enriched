@@ -43,6 +43,7 @@ import com.swmansion.enriched.common.EnrichedSpanFlags
 import com.swmansion.enriched.common.GumboNormalizer
 import com.swmansion.enriched.common.parser.EnrichedParser
 import com.swmansion.enriched.common.pixelFromSpOrDp
+import com.swmansion.enriched.common.updateOrderedListColumnMargins
 import com.swmansion.enriched.textinput.events.MentionHandler
 import com.swmansion.enriched.textinput.events.OnContextMenuItemPressEvent
 import com.swmansion.enriched.textinput.events.OnInputBlurEvent
@@ -448,6 +449,9 @@ class EnrichedTextInputView :
 
     runAsATransaction {
       val newText = if (shouldParseHtml) parseText(value) else value
+      // Compute ordered-list marker column widths before setText so the first layout reserves
+      // the correct leading margin (getLeadingMargin runs during layout, before drawing).
+      (newText as? Spannable)?.let { updateOrderedListColumnMargins(it, paint) }
       setText(newText)
       applyLineSpacing()
 

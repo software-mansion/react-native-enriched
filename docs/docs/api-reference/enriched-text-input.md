@@ -1242,6 +1242,14 @@ By marker, we mean the number that denotes consecutive lines of the list.
   [color](https://reactnative.dev/docs/colors) value; if not set, defaults to
   the input's [color](#style)
 
+:::note
+
+As you may have noticed, there is no way to define an ordered list marker’s width (unlike other list styles).
+This is because the marker value changes, so its width is dynamic.
+The marker is rendered _inside_ the space defined by `marginLeft` (right-aligned within it), so keep this in mind when styling your UI.
+
+:::
+
 ### ul (unordered list)
 
 By bullet, we mean the dot that begins each line of the list.

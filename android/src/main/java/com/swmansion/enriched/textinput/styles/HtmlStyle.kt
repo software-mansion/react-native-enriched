@@ -113,9 +113,7 @@ class HtmlStyle : EnrichedStyle {
     blockquoteStripeWidth = parseFloat(blockquoteStyle, "borderWidth").toInt()
 
     val olStyle = style.getMap("ol")
-    val userDefinedMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
-    val calculatedMarginLeft = calculateOlMarginLeft(view, userDefinedMarginLeft)
-    olMarginLeft = calculatedMarginLeft
+    olMarginLeft = parseFloat(olStyle, "marginLeft").toInt()
     olGapWidth = parseFloat(olStyle, "gapWidth").toInt()
     olMarkerColor = parseOptionalColor(olStyle, "markerColor")
     olMarkerFontWeight = parseOptionalFontWeight(olStyle, "markerFontWeight")
@@ -211,16 +209,6 @@ class HtmlStyle : EnrichedStyle {
     if (isDisabled) return false
 
     throw Error("Specified textDecorationLine value is not supported: $underline. Supported values are 'underline' and 'none'.")
-  }
-
-  private fun calculateOlMarginLeft(
-    view: EnrichedTextInputView?,
-    userMargin: Int,
-  ): Int {
-    val fontSize = view?.fontSize?.toInt() ?: 0
-    val leadMargin = fontSize / 2
-
-    return leadMargin + userMargin
   }
 
   private fun ensureValueIsSet(

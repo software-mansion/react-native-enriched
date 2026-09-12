@@ -448,7 +448,7 @@ static void const *kInputKey = &kInputKey;
               indent:(CGFloat)indent {
   CGFloat gapWidth = [host.config orderedListGapWidth];
   CGSize markerSize = [marker sizeWithAttributes:markerAttributes];
-  CGFloat markerX = origin.x + indent - gapWidth - markerSize.width / 2;
+  CGFloat markerX = origin.x + indent - gapWidth - markerSize.width;
   UIFont *markerFont = markerAttributes[NSFontAttributeName];
 
   // drawAtPoint draws from the top-left bounding box of the string.

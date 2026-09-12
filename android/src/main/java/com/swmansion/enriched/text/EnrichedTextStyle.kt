@@ -98,7 +98,7 @@ data class EnrichedTextStyle(
         blockquoteStripeWidth = parseFloat(blockquote, "borderWidth", allowFontScaling).toInt(),
         blockquoteGapWidth = parseFloat(blockquote, "gapWidth", allowFontScaling).toInt(),
         olGapWidth = parseFloat(orderedList, "gapWidth", allowFontScaling).toInt(),
-        olMarginLeft = calculateOlMarginLeft(fontSize, parseFloat(orderedList, "marginLeft", allowFontScaling).toInt()),
+        olMarginLeft = parseFloat(orderedList, "marginLeft", allowFontScaling).toInt(),
         olMarkerFontWeight = parseOptionalFontWeight(orderedList, "markerFontWeight"),
         olMarkerColor = parseOptionalColor(context, orderedList, "markerColor"),
         ulGapWidth = parseFloat(unorderedList, "gapWidth", allowFontScaling).toInt(),
@@ -167,14 +167,6 @@ data class EnrichedTextStyle(
     ): Int? {
       val weight = map?.getString(key) ?: return null
       return parseFontWeight(weight)
-    }
-
-    private fun calculateOlMarginLeft(
-      fontSize: Int,
-      userMargin: Int,
-    ): Int {
-      val leadMargin = fontSize / 2
-      return leadMargin + userMargin
     }
 
     private fun parseMentionsStyle(

@@ -6,6 +6,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import com.swmansion.enriched.common.EnrichedConstants
 import com.swmansion.enriched.common.EnrichedSpanFlags
+import com.swmansion.enriched.common.updateOrderedListColumnMargins
 import com.swmansion.enriched.textinput.EnrichedTextInputView
 import com.swmansion.enriched.textinput.spans.EnrichedInputCheckboxListSpan
 import com.swmansion.enriched.textinput.spans.EnrichedInputOrderedListSpan
@@ -115,6 +116,8 @@ class ListStyles(
       val index = getOrderedListIndex(text, spanStart)
       span.setListIndex(index)
     }
+
+    updateOrderedListColumnMargins(text, view.paint)
   }
 
   private fun toggleStyle(

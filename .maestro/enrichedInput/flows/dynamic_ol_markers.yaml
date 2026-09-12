@@ -1,0 +1,56 @@
+appId: swmansion.enriched.example
+---
+# Validates that ordered list margins dynamically adjust when transitioning
+# between single-digit (9) and double-digit (10) indexes.
+- launchApp
+
+- tapOn:
+    id: 'toggle-screen-button'
+
+- runFlow:
+    file: '../subflows/set_editor_value.yaml'
+    env:
+      VALUE: >
+        <html>
+          <ol>
+            <li>A</li>
+            <li>B</li>
+            <li>C</li>
+            <li>D</li>
+            <li>E</li>
+            <li>F</li>
+            <li>G</li>
+            <li>H</li>
+            <li>I</li>
+          </ol>
+        </html>
+
+- tapOn:
+    id: 'size-max-button'
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'dynamic_ol_markers_before'
+
+- tapOn:
+    id:  "editor-input"
+    point: "50%, 95%"
+- pressKey: Enter
+- inputText: "J"
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'dynamic_ol_markers_after'
+
+- tapOn:
+    id:  "editor-input"
+    point: "50%, 95%"
+- pressKey: Backspace
+- pressKey: Backspace
+
+- runFlow:
+    file: '../subflows/capture_or_assert_screenshot.yaml'
+    env:
+      SCREENSHOT_NAME: 'dynamic_ol_markers_revert'

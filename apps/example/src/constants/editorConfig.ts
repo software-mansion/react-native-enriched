@@ -111,7 +111,7 @@ export const htmlStyle = {
   },
   ol: {
     gapWidth: 16,
-    marginLeft: 24,
+    marginLeft: 16,
     markerColor: 'navy',
     markerFontWeight: 'bold',
   },

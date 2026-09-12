@@ -24,6 +24,7 @@
 
 - (CGFloat)headIndent {
   return [self.host.config unorderedListMarginLeft] +
+         [self.host.config unorderedListBulletSize] +
          [self.host.config unorderedListGapWidth];
 }
 

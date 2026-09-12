@@ -76,6 +76,7 @@
 @end
 
 @interface OrderedListStyle : StyleBase
+- (void)recalculateListsAroundEditedRange:(NSRange)range;
 @end
 
 @interface CheckboxListStyle : StyleBase
